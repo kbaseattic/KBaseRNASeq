@@ -106,6 +106,13 @@ class KBaseRNASeq:
         # ctx is the context object
         # return variables are: job_id
         #BEGIN CuffmergeCall
+
+        # parse your params here
+
+        #script call to your cuffmerge 
+
+        # make sure the output file is properly stored back to WS or SHock
+
         #END CuffmergeCall
 
         # At some point might do deeper type checking...
@@ -191,6 +198,10 @@ class KBaseRNASeq:
 
         pprint(params)
 
+
+        # actual working code logic to be HERE
+
+        # fill template empty expression matrix
         expr = {'type'  : 'level',
                 'scale' : 'raw',
                 'data'  : {
@@ -200,6 +211,7 @@ class KBaseRNASeq:
                          }
                }
         
+        # save back to workspace
         ws_client.save_objects(
             {"workspace":params['ws_id'],
             "objects": [{
@@ -207,6 +219,8 @@ class KBaseRNASeq:
                 "data":expr,
                 "name":params['out_id']}
             ]})
+
+        job_id ="no_job_id"
 
         #END createExpressionMatrix
 
