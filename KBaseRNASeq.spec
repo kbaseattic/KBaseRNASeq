@@ -350,6 +350,7 @@
 
    typedef structure{
        ws_rnaseqSample_id sample_id;
+       list<string> results;
        }fastqcParams;
 
 funcdef CallFastqc(fastqcParams params)
@@ -512,6 +513,7 @@ funcdef createExpressionHistogram(ExpressionHistogramParams params)
 
 typedef structure{
         RNASeqAnalysis analysis;
+	string out_obj_name;
         }ExpressionSeriesParams;
 
 funcdef createExpressionSeries(ExpressionSeriesParams params)
