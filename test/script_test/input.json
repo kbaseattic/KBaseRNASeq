@@ -1,0 +1,12 @@
+{
+	"version":"1.1",
+	"method":"KBaseRNASeq.createExpressionMatrix",
+	"context":null,
+	"params":[
+{"in_id": "fake_input", "out_id" :"test_expr_mtrx", "ws_id": "pranjan77:1442854662472"}
+	]
+
+
+
+
+}

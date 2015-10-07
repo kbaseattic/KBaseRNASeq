@@ -518,7 +518,10 @@ funcdef createExpressionSeries(ExpressionSeriesParams params)
    returns (string job_id) authentication required;
 
 typedef structure{
-        RNASeqAnalysis rnaseq_exp_details;
+        /* RNASeqAnalysis rnaseq_exp_details;*/
+	string in_id; /* the input pointer for rnaseq_exp_detail object? */
+	string ws_id; /* the working workspace name */
+	string out_id; /* final expression matrix name */
         }ExpressionMatrixParams;
 
 funcdef createExpressionMatrix(ExpressionMatrixParams params)
