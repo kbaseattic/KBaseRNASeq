@@ -177,6 +177,20 @@ class KBaseRNASeq(object):
                           [params], json_rpc_context)
         return resp[0]
   
+    def BuildBowtie2Index(self, params, json_rpc_context = None):
+        if json_rpc_context and type(json_rpc_context) is not dict:
+            raise ValueError('Method BuildBowtie2Index: argument json_rpc_context is not type dict as required.')
+        resp = self._call('KBaseRNASeq.BuildBowtie2Index',
+                          [params], json_rpc_context)
+        return resp[0]
+  
+    def CallBowtie2(self, params, json_rpc_context = None):
+        if json_rpc_context and type(json_rpc_context) is not dict:
+            raise ValueError('Method CallBowtie2: argument json_rpc_context is not type dict as required.')
+        resp = self._call('KBaseRNASeq.CallBowtie2',
+                          [params], json_rpc_context)
+        return resp[0]
+  
     def TophatCall(self, params, json_rpc_context = None):
         if json_rpc_context and type(json_rpc_context) is not dict:
             raise ValueError('Method TophatCall: argument json_rpc_context is not type dict as required.')
@@ -216,6 +230,13 @@ class KBaseRNASeq(object):
         if json_rpc_context and type(json_rpc_context) is not dict:
             raise ValueError('Method createExpressionHistogram: argument json_rpc_context is not type dict as required.')
         resp = self._call('KBaseRNASeq.createExpressionHistogram',
+                          [params], json_rpc_context)
+        return resp[0]
+  
+    def CallCummeRbund(self, params, json_rpc_context = None):
+        if json_rpc_context and type(json_rpc_context) is not dict:
+            raise ValueError('Method CallCummeRbund: argument json_rpc_context is not type dict as required.')
+        resp = self._call('KBaseRNASeq.CallCummeRbund',
                           [params], json_rpc_context)
         return resp[0]
   

@@ -40,7 +40,7 @@ def get_config():
 
 config = get_config()
 
-from biokbase.RNASeq.KBaseRNASeqImpl import KBaseRNASeq
+from KBaseRNASeqImpl import KBaseRNASeq
 impl_KBaseRNASeq = KBaseRNASeq(config)
 
 

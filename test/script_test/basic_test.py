@@ -13,35 +13,49 @@ from biokbase.auth import Token
 
 # Before all the tests, read the config file and get a user token and
 # save it to a file used by the main service script
-class TestGenomeUtilMethodsSetup(unittest.TestCase):
+class TestRNASeqMethodsSetup(unittest.TestCase):
   def setUp(self):
     config = ConfigParser.RawConfigParser()
     config.read('test/test.cfg')
     user_id = config.get('KBaseRNASeqTest','user')
     password = config.get('KBaseRNASeqTest','password')
-    token = Token(user_id=user_id, password=password)
-    token_file = open('test/script_test/token.txt','w')
-    token_file.write(token.token)
+    #token = Token(user_id=user_id, password=password)
+    #token_file = open('test/script_test/token.txt','w')
+    #token_file.write(token.token)
 
 # Define all our other test cases here
-class TestGenomeUtilMethods(TestGenomeUtilMethodsSetup):
-
-  def test_method(self):
-    print("\n\n----------- basic test ----------")
+class TestRNASeqMethods(TestRNASeqMethodsSetup): 
+  def test_TophatCall(self):
+	print("\n\n----------- test Tophat ----------")
+	
+	out =call(["run_KBaseRNASeq.sh",
+       	"test/script_test/tophat_input.json",
+       	"test/script_test/tophat_output.json",
+       	"test/script_test/token.txt"])
+	
+	# print error code of Implementation
+	print(out);
+	
+	with open('test/script_test/tophat_output.json') as o:
+		output =json.load(o)
+	pprint(output)
+		
+  def test_createExpressionMatrix(self):
+   	print("\n\n----------- basic test ----------")
 
     # call the script with some input
-    out = call(["run_KBaseRNASeq.sh", 
-       "test/script_test/input.json", 
-       "test/script_test/output.json", 
-       "test/script_test/token.txt"])
+    	out = call(["run_KBaseRNASeq.sh", 
+       	"test/script_test/input.json", 
+       	"test/script_test/output.json", 
+       	"test/script_test/token.txt"])
 
     # print error code of implementation
-    print(out);
+        print(out);
 
     # read and print output of the function
-    with open('test/script_test/output.json') as o:    
-        output = json.load(o)
-    pprint(output)
+    	with open('test/script_test/output.json') as o:    
+        	output = json.load(o)
+    	pprint(output)
 
 
 # start the tests if run as a script
