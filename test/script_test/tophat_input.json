@@ -1,0 +1,12 @@
+{	
+	"version":"1.1",
+	"method":"KBaseRNASeq.TophatCall",
+	"context": null,
+	"params":[
+	{"ws_rnaseqSample_id" : "input",
+	 "output_obj_name" : , "output"
+	 "ws_reference_assembly_id" : "assembly",
+	 "ws_bowtieIndex_id" : "sdsds",
+	 "opts_dict" : { "read-edit-dist" : 2 , "num-threads" : 2} ,
+	 "ws_referenceAnnotation_id" : "reference_annotation" } ]
+}

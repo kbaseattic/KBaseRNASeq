@@ -1,4 +1,5 @@
 #BEGIN_HEADER
+
 import simplejson
 import sys
 import os
@@ -6,10 +7,14 @@ import glob
 import json
 import logging
 import time
+import subprocess
 from pprint import pprint
-from biokbase.genome_util import script_util
+import script_util
 from biokbase.workspace.client import Workspace
+import download_ContigSet as c_download 
 from biokbase.auth import Token
+
+_KBaseRNASeq__DATA_VERSION = "0.2"
 #END_HEADER
 
 
@@ -29,23 +34,28 @@ class KBaseRNASeq:
     # the latter method is running.
     #########################################
     #BEGIN_CLASS_HEADER
-    __TEMP_DIR = 'temp_dir'
-    __WS_URL = 'https://ci.kbase.us/services/ws'
-    __SHOCK_URL = 'https://ci.kbase.us/services/shock-api/'
-    __LOGGER = None
-    __ERR_LOGGER = None
     #END_CLASS_HEADER
 
     # config contains contents of config file in a hash or None if it couldn't
     # be found
     def __init__(self, config):
         #BEGIN_CONSTRUCTOR
-        # This is where config variable for deploy.cfg are available
-        pprint(config)
+	 # This is where config variable for deploy.cfg are available
+        #pprint(config)
         if 'ws_url' in config:
               self.__WS_URL = config['ws_url']
         if 'shock_url' in config:
               self.__SHOCK_URL = config['shock_url']
+        if 'temp_dir' in config:
+              self.__TEMP_DIR = config['temp_dir']
+        if 'bowtie_dir' in config:
+              self.__BOWTIE_DIR = config['bowtie_dir']
+        if 'genome_input_fa' in config:
+              self.__GENOME_FA = config['genome_input_fa']
+        if 'svc_user' in config:
+              self.__SVC_USER = config['svc_user']
+        if 'svc_pass' in config:
+              self.__SVC_PASS = config['svc_pass']
 
         # logging
         self.__LOGGER = logging.getLogger('KBaseRNASeq')
@@ -60,18 +70,107 @@ class KBaseRNASeq:
         self.__LOGGER.addHandler(streamHandler)
         self.__LOGGER.info("Logger was set")
 
+
         #END_CONSTRUCTOR
         pass
 
-    def CallFastqc(self, ctx, params):
+    def fastqcCall(self, ctx, params):
         # ctx is the context object
         # return variables are: job_id
-        #BEGIN CallFastqc
-        #END CallFastqc
+        #BEGIN fastqcCall
+        #END fastqcCall
 
         # At some point might do deeper type checking...
         if not isinstance(job_id, basestring):
-            raise ValueError('Method CallFastqc return value ' +
+            raise ValueError('Method fastqcCall return value ' +
+                             'job_id is not type basestring as required.')
+        # return the results
+        return [job_id]
+
+    def SetupRNASeqAnalysis(self, ctx, params):
+        # ctx is the context object
+        # return variables are: job_id
+        #BEGIN SetupRNASeqAnalysis
+        #END SetupRNASeqAnalysis
+
+        # At some point might do deeper type checking...
+        if not isinstance(job_id, basestring):
+            raise ValueError('Method SetupRNASeqAnalysis return value ' +
+                             'job_id is not type basestring as required.')
+        # return the results
+        return [job_id]
+
+    def BuildBowtie2Index(self, ctx, params):
+        # ctx is the context object
+        # return variables are: job_id
+        #BEGIN BuildBowtie2Index
+	user_token=ctx['token']
+	print "start"
+        #svc_token = Token(user_id=self.__SVC_USER, password=self.__SVC_PASS).token
+        ws_client=Workspace(url=self.__WS_URL, token=user_token)
+	
+	assembly = ws_client.get_objects(
+				[{'name' : params['reference'],
+				  'workspace' : params['ws_id']}])
+	
+	#if 'handle' in assembly and 'id' in assembly['handle']:
+	#	shock_id = assembly['handle']['id']
+	#script_name = "/kb/dev_container/modules/KBaseRNASeq/lib/biokbase/RNASeq/download_ContigSet.py"
+	#res = subprocess.Popen(["python", script_name , "--workspace_service_url" ,self.__WS_URL,  "--workspace_name" , params['ws_id'] , --working_directory ,self.__TEMP_DIR , --output_file_name , params['output_obj_name'] , "--object_name" , params['reference'] , "--shock_service_url" , self.__SHOCK_URL ],stderr=subprocess.STDOUT,stdout = subprocess.PIPE )
+	
+	#out,err = res.communicate()
+
+	pprint(params)
+
+	#pull data from shock
+
+	#script_util.download_file_from_shock(self.__LOGGER,
+        #                         shock_service_url = self.__SHOCK_URL, 
+        #                         shock_id = shock_id,
+        #                         filename = self.__INDEX_ZIP,
+        #                         directory = self.__TEMP_DIR,
+        #                         token = svc_token)
+
+
+	#assembly_file = self.__TEMP_DIR + "/" + params["output_obj_name"] 
+	#index = subprocess.Popen(["bowtie-build" , assembly_file , assembly_file], stderr=subprocess.STDOUT,stdout = subprocess.PIPE )
+	#i_out, ierr = index.communicate()
+	
+	#upload file to shock
+	#out_url= 
+	
+ 	# create a dict for the handle object and wra Bowtie2Indexes
+
+	#output =
+	
+	# save objec to workspace
+
+	#ws_client.save_objects(
+        #    {"workspace":params['ws_id'],
+        #    "objects": [{
+        #        "type":"KBaseRNASeq.Bowtie2Indexes",
+        #        "data": output,
+        #        "name":params['out_obj_name']}
+        #    ]})
+        #job_id = { "job_id" : "no_job" }	
+        #END BuildBowtie2Index
+
+        # At some point might do deeper type checking...
+        if not isinstance(job_id, basestring):
+            raise ValueError('Method BuildBowtie2Index return value ' +
+                             'job_id is not type basestring as required.')
+        # return the results
+        return [job_id]
+
+    def Bowtie2Call(self, ctx, params):
+        # ctx is the context object
+        # return variables are: job_id
+        #BEGIN Bowtie2Call
+        #END Bowtie2Call
+
+        # At some point might do deeper type checking...
+        if not isinstance(job_id, basestring):
+            raise ValueError('Method Bowtie2Call return value ' +
                              'job_id is not type basestring as required.')
         # return the results
         return [job_id]
@@ -106,13 +205,6 @@ class KBaseRNASeq:
         # ctx is the context object
         # return variables are: job_id
         #BEGIN CuffmergeCall
-
-        # parse your params here
-
-        #script call to your cuffmerge 
-
-        # make sure the output file is properly stored back to WS or SHock
-
         #END CuffmergeCall
 
         # At some point might do deeper type checking...
@@ -161,6 +253,19 @@ class KBaseRNASeq:
         # return the results
         return [job_id]
 
+    def cummeRbundCall(self, ctx, params):
+        # ctx is the context object
+        # return variables are: job_id
+        #BEGIN cummeRbundCall
+        #END cummeRbundCall
+
+        # At some point might do deeper type checking...
+        if not isinstance(job_id, basestring):
+            raise ValueError('Method cummeRbundCall return value ' +
+                             'job_id is not type basestring as required.')
+        # return the results
+        return [job_id]
+
     def createExpressionSeries(self, ctx, params):
         # ctx is the context object
         # return variables are: job_id
@@ -178,50 +283,6 @@ class KBaseRNASeq:
         # ctx is the context object
         # return variables are: job_id
         #BEGIN createExpressionMatrix
-
-        user_token=ctx['token']
-        ws_client=Workspace(url=self.__WS_URL, token=user_token)
-
-
-        # pull data from ws example
-        #rnaseq_exp_details=ws_client.get_objects([{'name':params['in_id'], 
-        #                                      'workspace': params['ws_id']}])
-
-        # pull data from shock example
-        #script_util.download_file_from_shock(self.__LOGGER,
-        #                         shock_service_url = self.__SHOCK_URL, 
-        #                         shock_id = query_rst[0]['id'],
-        #                         filename = self.__INDEX_ZIP,
-        #                         directory = self.__TEMP_DIR,
-        #                         token = svc_token)
-        #script_util.unzip_files(self.__LOGGER, zip_fn, blast_dir)
-
-        pprint(params)
-
-
-        # actual working code logic to be HERE
-
-        # fill template empty expression matrix
-        expr = {'type'  : 'level',
-                'scale' : 'raw',
-                'data'  : {
-                            'row_ids' : [],
-                            'col_ids' : [],
-                            'values' : [[]]
-                         }
-               }
-        
-        # save back to workspace
-        ws_client.save_objects(
-            {"workspace":params['ws_id'],
-            "objects": [{
-                "type":"KBaseFeatureValues.ExpressionMatrix",
-                "data":expr,
-                "name":params['out_id']}
-            ]})
-
-        job_id ="no_job_id"
-
         #END createExpressionMatrix
 
         # At some point might do deeper type checking...
