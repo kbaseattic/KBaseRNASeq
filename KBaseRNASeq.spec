@@ -240,7 +240,7 @@
 	string aligned_using;
 	string aligner_version;
 	list<mapping<string opt_name, string opt_value>> aligner_opts;
-	KBaseFile.FileRef file;
+	Handle file;
 	RNASeqSampleMetaData metadata;
     }RNASeqSampleAlignment;
 
@@ -345,7 +345,7 @@
 /*
 
    typedef structure{
-	KBaseFile.FileRef file;
+	Handle file;
 	RNASeqAnalysis analysis;
 	}RNASeqCuffmergetranscriptome;
 
@@ -353,13 +353,13 @@
    Object RNASeqDifferentialExpression file structure
 */
    typedef structure {
-      	KBaseFile.FileRef file;
+      	Handle file;
 	RNASeqAnalysis analysis;
       	}RNASeqCuffdiffdifferentialExpression;
 	
 /* FUNCTIONS used in the service */
 
-/* Function parameters to call tophat */
+/* Function parameters to call fastqc */
 
    typedef structure{
        ws_rnaseqSample_id sample_id;
@@ -369,8 +369,28 @@
 
 funcdef CallFastqc(fastqcParams params)
      returns(string job_id) authentication required;
-
-   
+ 	
+   typedef structure{
+   	string experiment_id;
+   	string title;
+   	string experiment_desc;
+   	string platform;
+   	ws_genome_id genome_id;
+   	int num_samples;
+   	int num_replicates;
+   	list<string> tissue;
+   	list<string> condition;
+   	ws_referenceAnnotation_id annotation_id;
+   	string source;
+   	string Library_type;
+   	string publication_id;
+   	string source_id;
+   	string external_source_date;
+   	}SetupRNASeqAnalysisParams;
+   	
+funcdef SetupRNASeqAnalysis(SetupRNASeqAnalysisParams params)
+	returns(string job_id) authentication required;
+	
    typedef structure{
 	ws_reference_assembly_id reference;
 	string output_obj_name;
