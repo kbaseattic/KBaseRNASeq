@@ -1,0 +1,21 @@
+RNASeq SERVICE OVERVIEW
+-----------------------------------------
+The RNASeq Service 
+Interface Description Language (KIDL). It has the following primary features:
+1) Create RNASeqAnalysis
+2)  Build Bowtie2Index
+3)  Align Reads to Tophat
+4)  Align Reads to Bowtie2
+5)  Compute Gene Expression -Cufflinks
+6)  Merge transcripts to Transcriptome - Cuffmerge
+7)  Identify Differential Expression - Cuffdiff
+8)  Create ExpressionSeries
+9)  Create ExpressionMatrix
+10) View Expression Histogram
+11) View Alignment Statistics - Pie Chart
+
+---
+
+Will be updated with the first release
+
+---
