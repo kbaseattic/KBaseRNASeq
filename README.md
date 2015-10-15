@@ -1,4 +1,4 @@
-# KBaseRNASeq
+KBaseRNASeq
 ===========================
 
 This module provides functionality to perform  RNASeq analysis to enable users to quantify gene expression, identify splice junctions and measure differential expression using the Tuxedo suite of tools.
