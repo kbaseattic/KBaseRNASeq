@@ -1,0 +1,9 @@
+{	
+	"version":"1.1",
+	"method":"KBaseRNASeq.BuildBowtie2Index",
+	"context": null,
+	"params":[
+	{"ws_id" : "srividya22:1443128557822",
+	 "output_obj_name" :  "output" ,
+	 "reference" : "Escherichia_coli_str_K-12_substr_MG1655_KBase.contigset" } ]
+}

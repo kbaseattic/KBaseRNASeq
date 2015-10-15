@@ -25,7 +25,23 @@ class TestRNASeqMethodsSetup(unittest.TestCase):
 
 # Define all our other test cases here
 class TestRNASeqMethods(TestRNASeqMethodsSetup): 
-  def test_TophatCall(self):
+  
+ def test_BuildBowtie2Index(self):
+        print("\n\n----------- test Build Bowtie Index ----------")
+
+        out =call(["run_KBaseRNASeq.sh",
+        "test/script_test/bowtie_input.json",
+        "test/script_test/bowtie_output.json",
+        "test/script_test/token.txt"])
+
+        # print error code of Implementation
+        print(out);
+
+        with open('test/script_test/bowtie_output.json') as o:
+                output =json.load(o)
+        pprint(output)
+  
+ def test_TophatCall(self):
 	print("\n\n----------- test Tophat ----------")
 	
 	out =call(["run_KBaseRNASeq.sh",
@@ -40,7 +56,7 @@ class TestRNASeqMethods(TestRNASeqMethodsSetup):
 		output =json.load(o)
 	pprint(output)
 		
-  def test_createExpressionMatrix(self):
+ def test_createExpressionMatrix(self):
    	print("\n\n----------- basic test ----------")
 
     # call the script with some input
@@ -57,7 +73,7 @@ class TestRNASeqMethods(TestRNASeqMethodsSetup):
         	output = json.load(o)
     	pprint(output)
 
-
+  
 # start the tests if run as a script
 if __name__ == '__main__':
     unittest.main()

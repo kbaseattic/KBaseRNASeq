@@ -170,10 +170,17 @@ class KBaseRNASeq(object):
             raise ServerError('Unknown', 0, 'An unknown server error occurred')
         return resp['result']
  
-    def CallFastqc(self, params, json_rpc_context = None):
+    def fastqcCall(self, params, json_rpc_context = None):
         if json_rpc_context and type(json_rpc_context) is not dict:
-            raise ValueError('Method CallFastqc: argument json_rpc_context is not type dict as required.')
-        resp = self._call('KBaseRNASeq.CallFastqc',
+            raise ValueError('Method fastqcCall: argument json_rpc_context is not type dict as required.')
+        resp = self._call('KBaseRNASeq.fastqcCall',
+                          [params], json_rpc_context)
+        return resp[0]
+  
+    def SetupRNASeqAnalysis(self, params, json_rpc_context = None):
+        if json_rpc_context and type(json_rpc_context) is not dict:
+            raise ValueError('Method SetupRNASeqAnalysis: argument json_rpc_context is not type dict as required.')
+        resp = self._call('KBaseRNASeq.SetupRNASeqAnalysis',
                           [params], json_rpc_context)
         return resp[0]
   
@@ -184,10 +191,10 @@ class KBaseRNASeq(object):
                           [params], json_rpc_context)
         return resp[0]
   
-    def CallBowtie2(self, params, json_rpc_context = None):
+    def Bowtie2Call(self, params, json_rpc_context = None):
         if json_rpc_context and type(json_rpc_context) is not dict:
-            raise ValueError('Method CallBowtie2: argument json_rpc_context is not type dict as required.')
-        resp = self._call('KBaseRNASeq.CallBowtie2',
+            raise ValueError('Method Bowtie2Call: argument json_rpc_context is not type dict as required.')
+        resp = self._call('KBaseRNASeq.Bowtie2Call',
                           [params], json_rpc_context)
         return resp[0]
   
@@ -233,10 +240,10 @@ class KBaseRNASeq(object):
                           [params], json_rpc_context)
         return resp[0]
   
-    def CallCummeRbund(self, params, json_rpc_context = None):
+    def cummeRbundCall(self, params, json_rpc_context = None):
         if json_rpc_context and type(json_rpc_context) is not dict:
-            raise ValueError('Method CallCummeRbund: argument json_rpc_context is not type dict as required.')
-        resp = self._call('KBaseRNASeq.CallCummeRbund',
+            raise ValueError('Method cummeRbundCall: argument json_rpc_context is not type dict as required.')
+        resp = self._call('KBaseRNASeq.cummeRbundCall',
                           [params], json_rpc_context)
         return resp[0]
   

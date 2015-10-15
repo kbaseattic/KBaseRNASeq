@@ -37,6 +37,8 @@ compile-kb-module:
 build-executable-script-python: setup-local-dev-kb-py-libs
 	mkdir -p $(LBIN_DIR)
 	echo '#!/bin/bash' > $(LBIN_DIR)/$(EXECUTABLE_SCRIPT_NAME)
+	echo 'export KB_DEPLOYMENT_CONFIG="$(DIR)/deploy.cfg"' >> $(LBIN_DIR)/$(EXECUTABLE_SCRIPT_NAME)
+	echo 'export KB_SERVICE_NAME="$(MODULE_CAPS)"' >> $(LBIN_DIR)/$(EXECUTABLE_SCRIPT_NAME)
 	echo 'export PYTHONPATH="$(DIR)/$(LIB_DIR)"' >> $(LBIN_DIR)/$(EXECUTABLE_SCRIPT_NAME)
 	echo 'python $(DIR)/lib/biokbase/$(MODULE)/$(MODULE_CAPS).py $$1 $$2 $$3' \
 		>> $(LBIN_DIR)/$(EXECUTABLE_SCRIPT_NAME)
@@ -104,7 +106,7 @@ test-impl: create-test-wrapper
 create-test-wrapper:
 	@echo "Creating test script wrapper in test/script_test"
 	echo '#!/bin/bash' > test/script_test/run_tests.sh
-	echo 'export PYTHONPATH="$(DIR)/$(LIB_DIR)"' >> test/script_test/run_tests.sh
+	echo 'export KB_RUNTIME=$(DEPLOY_RUNTIME)' >> $(TARGET)/bin/$(EXECUTABLE_SCRIPT_NAME) >> test/script_test/run_tests.sh
 	echo 'export PYTHONPATH="$(DIR)/$(LIB_DIR)"' >> test/script_test/run_tests.sh
 	echo 'python $(DIR)/test/script_test/basic_test.py $$1 $$2 $$3' \
 		>> test/script_test/run_tests.sh

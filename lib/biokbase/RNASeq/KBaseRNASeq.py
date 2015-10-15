@@ -267,18 +267,22 @@ class Application(object):
         self.serverlog.set_log_level(6)
         self.rpc_service = JSONRPCServiceCustom()
         self.method_authentication = dict()
-        self.rpc_service.add(impl_KBaseRNASeq.CallFastqc,
-                             name='KBaseRNASeq.CallFastqc',
+        self.rpc_service.add(impl_KBaseRNASeq.fastqcCall,
+                             name='KBaseRNASeq.fastqcCall',
                              types=[dict])
-        self.method_authentication['KBaseRNASeq.CallFastqc'] = 'required'
+        self.method_authentication['KBaseRNASeq.fastqcCall'] = 'required'
+        self.rpc_service.add(impl_KBaseRNASeq.SetupRNASeqAnalysis,
+                             name='KBaseRNASeq.SetupRNASeqAnalysis',
+                             types=[dict])
+        self.method_authentication['KBaseRNASeq.SetupRNASeqAnalysis'] = 'required'
         self.rpc_service.add(impl_KBaseRNASeq.BuildBowtie2Index,
                              name='KBaseRNASeq.BuildBowtie2Index',
                              types=[dict])
         self.method_authentication['KBaseRNASeq.BuildBowtie2Index'] = 'required'
-        self.rpc_service.add(impl_KBaseRNASeq.CallBowtie2,
-                             name='KBaseRNASeq.CallBowtie2',
+        self.rpc_service.add(impl_KBaseRNASeq.Bowtie2Call,
+                             name='KBaseRNASeq.Bowtie2Call',
                              types=[dict])
-        self.method_authentication['KBaseRNASeq.CallBowtie2'] = 'required'
+        self.method_authentication['KBaseRNASeq.Bowtie2Call'] = 'required'
         self.rpc_service.add(impl_KBaseRNASeq.TophatCall,
                              name='KBaseRNASeq.TophatCall',
                              types=[dict])
@@ -303,10 +307,10 @@ class Application(object):
                              name='KBaseRNASeq.createExpressionHistogram',
                              types=[dict])
         self.method_authentication['KBaseRNASeq.createExpressionHistogram'] = 'required'
-        self.rpc_service.add(impl_KBaseRNASeq.CallCummeRbund,
-                             name='KBaseRNASeq.CallCummeRbund',
+        self.rpc_service.add(impl_KBaseRNASeq.cummeRbundCall,
+                             name='KBaseRNASeq.cummeRbundCall',
                              types=[dict])
-        self.method_authentication['KBaseRNASeq.CallCummeRbund'] = 'required'
+        self.method_authentication['KBaseRNASeq.cummeRbundCall'] = 'required'
         self.rpc_service.add(impl_KBaseRNASeq.createExpressionSeries,
                              name='KBaseRNASeq.createExpressionSeries',
                              types=[dict])

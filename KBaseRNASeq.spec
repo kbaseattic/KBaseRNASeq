@@ -367,7 +367,7 @@
        list<mapping<string parameter ,string values>> results;
        }fastqcParams;
 
-funcdef CallFastqc(fastqcParams params)
+funcdef fastqcCall(fastqcParams params)
      returns(string job_id) authentication required;
  	
    typedef structure{
@@ -440,7 +440,7 @@ typedef mapping<string Bowtie2_opts,b_opts opts_bowtie2> b_opts_str;
 	b_opts_str opts_dict;	
 	}Bowtie2Params;
 
-funcdef CallBowtie2(Bowtie2Params params) 
+funcdef Bowtie2Call(Bowtie2Params params) 
      returns(string job_id) authentication required;
 
 typedef structure{
@@ -605,7 +605,7 @@ typedef structure{
 	string out_obj_name;
 	}CummeRbundParams;
 	
-funcdef CallCummeRbund(CummeRbundParams params)
+funcdef cummeRbundCall(CummeRbundParams params)
    returns (string job_id) authentication required;
 
 funcdef createExpressionSeries(ExpressionSeriesParams params)
