@@ -74,7 +74,7 @@
 
 
   /*
-      @optional genome_id
+      @optional genome_id genome_scientific_name
       @metadata ws handle.file_name
       @metadata ws handle.type
       @metadata ws genome_scientific_name
@@ -95,7 +95,7 @@
         typedef string ws_referenceAnnotation_id;
 
   /*
-      @optional genome_id
+      @optional genome_id genome_scientific_name handle ftp_url
       @metadata ws handle.file_name
       @metadata ws handle.type
       @metadata ws genome_id
@@ -105,6 +105,7 @@
         typedef structure {
                 Handle handle;
                 ws_genome_id genome_id;
+		string ftp_url;
 		string genome_scientific_name;
         }Bowtie2Indexes;
 
@@ -146,7 +147,7 @@
   /* Specification for the RNASeqFastq Metadata
    
     Object for the RNASeq Metadata
-    @optional platform source tissue condition source_id ext_source_date sample_desc title sample_annotations genome_id genome_scientific_name*/
+    @optional platform source tissue condition source_id ext_source_date sample_desc title sample_annotations genome_id genome_scientific_name custom*/
    	
     typedef structure {
 		string sample_id;
@@ -158,7 +159,7 @@
        		string source;
        		string  source_id;
        		string ext_source_date;
-       		string domain;
+       		string domain; 
        		ws_genome_id genome_id;
 		string genome_scientific_name;
 		sample_annotations sample_annotations;
@@ -176,7 +177,7 @@
 
 /*
      RNASeq fastq  object
-     @optional  singleend_sample pairedend_sample metadata
+     @optional  singleend_sample pairedend_sample metadata analysis_id analysis_desc
      @metadata ws analysis_id
      @metadata ws analysis_desc
      @metadata ws metadata.sample_id
@@ -290,7 +291,7 @@
 
 /*
   Object to Describe the RNASeq analysis
-  @optional experiment_desc num_replicates title platform genome_id source tissue condition annotation_id publication_id source_ids external_source_date sample_ids alignments expression_values sample_annotations_map genome_scientific_name
+  @optional experiment_desc num_replicates title platform genome_id source tissue condition annotation_id publication_id source_ids external_source_date sample_ids alignments expression_values sample_annotations_map genome_scientific_name sample_rep_groups alignments expression_values transcriptome_id cuffdiff_diff_exp_id
   @metadata ws experiment_id
   @metadata ws title
   @metadata ws experiment_desc
@@ -369,15 +370,41 @@
 
 funcdef fastqcCall(fastqcParams params)
      returns(string job_id) authentication required;
+	
+   typedef structure{
+	string ws_id;
+	ws_singleEndLibrary_id singleend_sample;
+	ws_pairedEndLibrary_id pairedend_sample;
+	ws_rnaseq_analysis_id analysis_id;
+	string sample_id;
+	string library_type;
+	string replicate_id;
+	string platform;
+	string sample_desc;
+	string  title;
+	string source;
+	string source_id;
+	string ext_source_date;
+	string domain;
+	ws_genome_id genome_id;
+	list<string> tissue;
+	list<string> condition;
+   }associateReadsParams;
+	
+funcdef associateReads(associateReadsParams params)
+     returns(string job_id) authentication required;
  	
    typedef structure{
+	string ws_id;
    	string experiment_id;
    	string title;
    	string experiment_desc;
+	string experiment_design;
    	string platform;
    	ws_genome_id genome_id;
    	int num_samples;
    	int num_replicates;
+	list<ws_rnaseqSample_id> sample_ids;
    	list<string> tissue;
    	list<string> condition;
    	ws_referenceAnnotation_id annotation_id;
@@ -392,6 +419,7 @@ funcdef SetupRNASeqAnalysis(SetupRNASeqAnalysisParams params)
 	returns(string job_id) authentication required;
 	
    typedef structure{
+	string ws_id;
 	ws_reference_assembly_id reference;
 	string output_obj_name;
 	}Bowtie2IndexParams;
@@ -434,6 +462,7 @@ funcdef BuildBowtie2Index(Bowtie2IndexParams params)
 typedef mapping<string Bowtie2_opts,b_opts opts_bowtie2> b_opts_str;
 	
    typedef structure{
+	string ws_id;
 	ws_rnaseqSample_id sample_id;
         ws_bowtieIndex_id bowtie2_index;
 	string output_obj_name;
@@ -488,6 +517,7 @@ typedef structure{
 typedef mapping<string Tophat_opts,t_opts opts_tophat> t_opts_str;
 
  typedef structure{
+     string ws_id;
      ws_rnaseqSample_id sample_id;
      string output_obj_name;
      ws_reference_assembly_id reference;
@@ -529,6 +559,7 @@ funcdef TophatCall(TophatParams params)
 typedef mapping <string Cufflinks_opts,opts_cufflinks> cuff_opts;
 
 typedef structure{
+	string ws_id;
         ws_samplealignment_id alignment_sample_id;
         string output_obj_name;
         ws_referenceAnnotation_id annotation_gtf;
@@ -539,6 +570,7 @@ funcdef CufflinksCall(CufflinksParams params)
     returns (string job_id) authentication required;
 
 typedef structure{
+	string ws_id;
         RNASeqAnalysis analysis;
         string output_obj_name;
         mapping <string Cuffmerge_opts, int num_threads> opts_dict;
@@ -567,7 +599,8 @@ typedef structure{
 
 typedef mapping <string diff_opts,opts_cuffdiff> cuffdiff_opts;
 
-typedef structure{
+	typedef structure{
+	string ws_id;
         RNASeqAnalysis rnaseq_exp_details;
         string output_obj_name;
         ws_referenceAnnotation_id annotation_gtf;
@@ -579,6 +612,7 @@ funcdef CuffdiffCall(CuffdiffParams params)
 
 
 typedef structure{
+	string ws_id;
         ws_samplealignment_id alignment_sample_id;
 	string output_obj_name;
         }AlignmentStatsParams;
@@ -587,6 +621,7 @@ funcdef getAlignmentStats(AlignmentStatsParams params)
    returns (string job_id) authentication required;
 
 typedef structure{
+	string ws_id;
         ws_expression_sample_id expression_sample;
         int number_of_bins;
 	string output_obj_name;
@@ -596,11 +631,13 @@ funcdef createExpressionHistogram(ExpressionHistogramParams params)
    returns (string job_id) authentication required;
 
 typedef structure{
+	string ws_id;
         RNASeqAnalysis analysis;
 	string out_obj_name;
         }ExpressionSeriesParams;
 
 typedef structure{
+	string ws_id;
 	RNASeqAnalysis analysis;
 	string out_obj_name;
 	}CummeRbundParams;
@@ -612,9 +649,8 @@ funcdef createExpressionSeries(ExpressionSeriesParams params)
    returns (string job_id) authentication required;
 
 typedef structure{
+	string ws_id;
         RNASeqAnalysis rnaseq_exp_details;
-	/*string in_id; the input pointer for rnaseq_exp_detail object? */
-	string ws_id; /* the working workspace name */
 	string out_obj_name; /* final expression matrix name */
         }ExpressionMatrixParams;
 

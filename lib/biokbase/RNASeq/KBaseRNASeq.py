@@ -271,6 +271,10 @@ class Application(object):
                              name='KBaseRNASeq.fastqcCall',
                              types=[dict])
         self.method_authentication['KBaseRNASeq.fastqcCall'] = 'required'
+        self.rpc_service.add(impl_KBaseRNASeq.associateReads,
+                             name='KBaseRNASeq.associateReads',
+                             types=[dict])
+        self.method_authentication['KBaseRNASeq.associateReads'] = 'required'
         self.rpc_service.add(impl_KBaseRNASeq.SetupRNASeqAnalysis,
                              name='KBaseRNASeq.SetupRNASeqAnalysis',
                              types=[dict])
