@@ -1,7 +1,7 @@
-RNASeq SERVICE OVERVIEW
+OVERVIEW
 -----------------------------------------
 The RNASeq Service 
-Interface Description Language (KIDL). It has the following primary features:
+It has the following primary scripts for the following narrative methhods:
 1) Create RNASeqAnalysis
 2)  Build Bowtie2Index
 3)  Align Reads to Tophat
@@ -16,6 +16,7 @@ Interface Description Language (KIDL). It has the following primary features:
 
 ---
 
-Will be updated with the first release
+VERSION 0.1
 
 ---
+
