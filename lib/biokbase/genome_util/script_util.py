@@ -64,7 +64,7 @@ def zip_files(logger, src_path, output_fn):
     """
 
     files = [ f for f in listdir(src_path) if isfile(join(src_path,f)) ]
-    with ZipFile(output_fn, 'w') as izip:
+    with ZipFile(output_fn, 'w', allowZip64=True) as izip:
         for f in files:
             izip.write(join(src_path,f),f)
 
