@@ -1,7 +1,7 @@
 
 MODULE = RNASeq
 MODULE_CAPS = KBaseRNASeq
-
+MODULE_PORT = 6606
 SPEC_FILE = KBaseRNASeq.spec
 
 #End of user defined variables
@@ -20,7 +20,6 @@ LIB_DIR = lib
 LBIN_DIR = bin
 
 EXECUTABLE_SCRIPT_NAME = run_$(MODULE_CAPS).sh
-
 
 default: compile-kb-module build-executable-script-python
 
@@ -95,7 +94,10 @@ deploy-executable-script:
 	chmod +x $(TARGET)/bin/$(EXECUTABLE_SCRIPT_NAME)
 
 deploy-service-scripts:
+	@echo "Preparing start/stop scripts for service"
 
+deploy-cfg:
+	@echo "Generating real deployment.cfg based on template"
 
 test: test-impl create-test-wrapper
 

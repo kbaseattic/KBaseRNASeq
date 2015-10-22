@@ -424,7 +424,7 @@ funcdef SetupRNASeqAnalysis(SetupRNASeqAnalysisParams params)
 	string output_obj_name;
 	}Bowtie2IndexParams;
 
-funcdef BuildBowtie2Index(Bowtie2IndexParams params)
+async funcdef BuildBowtie2Index(Bowtie2IndexParams params)
      returns(string job_id) authentication required;
    
    typedef structure{
@@ -469,7 +469,7 @@ typedef mapping<string Bowtie2_opts,b_opts opts_bowtie2> b_opts_str;
 	b_opts_str opts_dict;	
 	}Bowtie2Params;
 
-funcdef Bowtie2Call(Bowtie2Params params) 
+async funcdef Bowtie2Call(Bowtie2Params params) 
      returns(string job_id) authentication required;
 
 typedef structure{
@@ -526,7 +526,7 @@ typedef mapping<string Tophat_opts,t_opts opts_tophat> t_opts_str;
      ws_referenceAnnotation_id annotation_gtf;
      }TophatParams;
 
-funcdef TophatCall(TophatParams params)
+async funcdef TophatCall(TophatParams params)
      returns (string job_id) authentication required;
 
  typedef structure{
@@ -566,7 +566,7 @@ typedef structure{
         cuff_opts opts_dict;
         }CufflinksParams;
 
-funcdef CufflinksCall(CufflinksParams params)
+async funcdef CufflinksCall(CufflinksParams params)
     returns (string job_id) authentication required;
 
 typedef structure{
@@ -577,7 +577,7 @@ typedef structure{
         }CuffmergeParams;
 
  
-funcdef CuffmergeCall(CuffmergeParams params)
+async funcdef CuffmergeCall(CuffmergeParams params)
     returns (string job_id) authentication required;
 
 typedef structure{
@@ -607,7 +607,7 @@ typedef mapping <string diff_opts,opts_cuffdiff> cuffdiff_opts;
         cuffdiff_opts  opts_dict;
         }CuffdiffParams;
 
-funcdef CuffdiffCall(CuffdiffParams params)
+async funcdef CuffdiffCall(CuffdiffParams params)
    returns (string job_id) authentication required;
 
 
@@ -617,7 +617,7 @@ typedef structure{
 	string output_obj_name;
         }AlignmentStatsParams;
 
-funcdef getAlignmentStats(AlignmentStatsParams params)
+async funcdef getAlignmentStats(AlignmentStatsParams params)
    returns (string job_id) authentication required;
 
 typedef structure{
@@ -642,10 +642,10 @@ typedef structure{
 	string out_obj_name;
 	}CummeRbundParams;
 	
-funcdef cummeRbundCall(CummeRbundParams params)
+async funcdef cummeRbundCall(CummeRbundParams params)
    returns (string job_id) authentication required;
 
-funcdef createExpressionSeries(ExpressionSeriesParams params)
+async funcdef createExpressionSeries(ExpressionSeriesParams params)
    returns (string job_id) authentication required;
 
 typedef structure{

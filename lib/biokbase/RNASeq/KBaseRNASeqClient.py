@@ -18,6 +18,7 @@ import random as _random
 import base64 as _base64
 from ConfigParser import ConfigParser as _ConfigParser
 import os as _os
+import time
 
 _CT = 'content-type'
 _AJ = 'application/json'
@@ -107,7 +108,8 @@ class KBaseRNASeq(object):
 
     def __init__(self, url=None, timeout=30 * 60, user_id=None,
                  password=None, token=None, ignore_authrc=False,
-                 trust_all_ssl_certificates=False):
+                 trust_all_ssl_certificates=False,
+                 async_job_check_time_ms=5000):
         if url is None:
             raise ValueError('A url is required')
         scheme, _, _, _, _, _ = _urlparse.urlparse(url)
@@ -117,6 +119,7 @@ class KBaseRNASeq(object):
         self.timeout = int(timeout)
         self._headers = dict()
         self.trust_all_ssl_certificates = trust_all_ssl_certificates
+        self.async_job_check_time = async_job_check_time_ms / 1000.0
         # token overrides user_id and password
         if token is not None:
             self._headers['AUTHORIZATION'] = token
@@ -165,6 +168,7 @@ class KBaseRNASeq(object):
                 raise ServerError('Unknown', 0, ret.text)
         if ret.status_code != _requests.codes.OK:
             ret.raise_for_status()
+        ret.encoding = 'utf-8'
         resp = _json.loads(ret.text)
         if 'result' not in resp:
             raise ServerError('Unknown', 0, 'An unknown server error occurred')
@@ -190,77 +194,176 @@ class KBaseRNASeq(object):
         resp = self._call('KBaseRNASeq.SetupRNASeqAnalysis',
                           [params], json_rpc_context)
         return resp[0]
-  
-    def BuildBowtie2Index(self, params, json_rpc_context = None):
+ 
+    def BuildBowtie2Index_async(self, params, json_rpc_context = None):
         if json_rpc_context and type(json_rpc_context) is not dict:
             raise ValueError('Method BuildBowtie2Index: argument json_rpc_context is not type dict as required.')
-        resp = self._call('KBaseRNASeq.BuildBowtie2Index',
-                          [params], json_rpc_context)
+        return self._call('KBaseRNASeq.BuildBowtie2Index_async',
+                          [params], json_rpc_context)[0]
+
+    def BuildBowtie2Index_check(self, job_id):
+        resp = self._call('KBaseRNASeq.BuildBowtie2Index_check', [job_id])
         return resp[0]
+
+    def BuildBowtie2Index(self, params, json_rpc_context = None):
+        job_id = self.BuildBowtie2Index_async(params, json_rpc_context)
+        while True:
+            time.sleep(self.async_job_check_time)
+            job_state = self.BuildBowtie2Index_check(job_id)
+            if job_state['finished']:
+                return job_state['result'][0]
   
-    def Bowtie2Call(self, params, json_rpc_context = None):
+    def Bowtie2Call_async(self, params, json_rpc_context = None):
         if json_rpc_context and type(json_rpc_context) is not dict:
             raise ValueError('Method Bowtie2Call: argument json_rpc_context is not type dict as required.')
-        resp = self._call('KBaseRNASeq.Bowtie2Call',
-                          [params], json_rpc_context)
+        return self._call('KBaseRNASeq.Bowtie2Call_async',
+                          [params], json_rpc_context)[0]
+
+    def Bowtie2Call_check(self, job_id):
+        resp = self._call('KBaseRNASeq.Bowtie2Call_check', [job_id])
         return resp[0]
+
+    def Bowtie2Call(self, params, json_rpc_context = None):
+        job_id = self.Bowtie2Call_async(params, json_rpc_context)
+        while True:
+            time.sleep(self.async_job_check_time)
+            job_state = self.Bowtie2Call_check(job_id)
+            if job_state['finished']:
+                return job_state['result'][0]
   
-    def TophatCall(self, params, json_rpc_context = None):
+    def TophatCall_async(self, params, json_rpc_context = None):
         if json_rpc_context and type(json_rpc_context) is not dict:
             raise ValueError('Method TophatCall: argument json_rpc_context is not type dict as required.')
-        resp = self._call('KBaseRNASeq.TophatCall',
-                          [params], json_rpc_context)
+        return self._call('KBaseRNASeq.TophatCall_async',
+                          [params], json_rpc_context)[0]
+
+    def TophatCall_check(self, job_id):
+        resp = self._call('KBaseRNASeq.TophatCall_check', [job_id])
         return resp[0]
+
+    def TophatCall(self, params, json_rpc_context = None):
+        job_id = self.TophatCall_async(params, json_rpc_context)
+        while True:
+            time.sleep(self.async_job_check_time)
+            job_state = self.TophatCall_check(job_id)
+            if job_state['finished']:
+                return job_state['result'][0]
   
-    def CufflinksCall(self, params, json_rpc_context = None):
+    def CufflinksCall_async(self, params, json_rpc_context = None):
         if json_rpc_context and type(json_rpc_context) is not dict:
             raise ValueError('Method CufflinksCall: argument json_rpc_context is not type dict as required.')
-        resp = self._call('KBaseRNASeq.CufflinksCall',
-                          [params], json_rpc_context)
+        return self._call('KBaseRNASeq.CufflinksCall_async',
+                          [params], json_rpc_context)[0]
+
+    def CufflinksCall_check(self, job_id):
+        resp = self._call('KBaseRNASeq.CufflinksCall_check', [job_id])
         return resp[0]
+
+    def CufflinksCall(self, params, json_rpc_context = None):
+        job_id = self.CufflinksCall_async(params, json_rpc_context)
+        while True:
+            time.sleep(self.async_job_check_time)
+            job_state = self.CufflinksCall_check(job_id)
+            if job_state['finished']:
+                return job_state['result'][0]
   
-    def CuffmergeCall(self, params, json_rpc_context = None):
+    def CuffmergeCall_async(self, params, json_rpc_context = None):
         if json_rpc_context and type(json_rpc_context) is not dict:
             raise ValueError('Method CuffmergeCall: argument json_rpc_context is not type dict as required.')
-        resp = self._call('KBaseRNASeq.CuffmergeCall',
-                          [params], json_rpc_context)
+        return self._call('KBaseRNASeq.CuffmergeCall_async',
+                          [params], json_rpc_context)[0]
+
+    def CuffmergeCall_check(self, job_id):
+        resp = self._call('KBaseRNASeq.CuffmergeCall_check', [job_id])
         return resp[0]
+
+    def CuffmergeCall(self, params, json_rpc_context = None):
+        job_id = self.CuffmergeCall_async(params, json_rpc_context)
+        while True:
+            time.sleep(self.async_job_check_time)
+            job_state = self.CuffmergeCall_check(job_id)
+            if job_state['finished']:
+                return job_state['result'][0]
   
-    def CuffdiffCall(self, params, json_rpc_context = None):
+    def CuffdiffCall_async(self, params, json_rpc_context = None):
         if json_rpc_context and type(json_rpc_context) is not dict:
             raise ValueError('Method CuffdiffCall: argument json_rpc_context is not type dict as required.')
-        resp = self._call('KBaseRNASeq.CuffdiffCall',
-                          [params], json_rpc_context)
+        return self._call('KBaseRNASeq.CuffdiffCall_async',
+                          [params], json_rpc_context)[0]
+
+    def CuffdiffCall_check(self, job_id):
+        resp = self._call('KBaseRNASeq.CuffdiffCall_check', [job_id])
         return resp[0]
+
+    def CuffdiffCall(self, params, json_rpc_context = None):
+        job_id = self.CuffdiffCall_async(params, json_rpc_context)
+        while True:
+            time.sleep(self.async_job_check_time)
+            job_state = self.CuffdiffCall_check(job_id)
+            if job_state['finished']:
+                return job_state['result'][0]
   
-    def getAlignmentStats(self, params, json_rpc_context = None):
+    def getAlignmentStats_async(self, params, json_rpc_context = None):
         if json_rpc_context and type(json_rpc_context) is not dict:
             raise ValueError('Method getAlignmentStats: argument json_rpc_context is not type dict as required.')
-        resp = self._call('KBaseRNASeq.getAlignmentStats',
-                          [params], json_rpc_context)
+        return self._call('KBaseRNASeq.getAlignmentStats_async',
+                          [params], json_rpc_context)[0]
+
+    def getAlignmentStats_check(self, job_id):
+        resp = self._call('KBaseRNASeq.getAlignmentStats_check', [job_id])
         return resp[0]
-  
+
+    def getAlignmentStats(self, params, json_rpc_context = None):
+        job_id = self.getAlignmentStats_async(params, json_rpc_context)
+        while True:
+            time.sleep(self.async_job_check_time)
+            job_state = self.getAlignmentStats_check(job_id)
+            if job_state['finished']:
+                return job_state['result'][0]
+   
     def createExpressionHistogram(self, params, json_rpc_context = None):
         if json_rpc_context and type(json_rpc_context) is not dict:
             raise ValueError('Method createExpressionHistogram: argument json_rpc_context is not type dict as required.')
         resp = self._call('KBaseRNASeq.createExpressionHistogram',
                           [params], json_rpc_context)
         return resp[0]
-  
-    def cummeRbundCall(self, params, json_rpc_context = None):
+ 
+    def cummeRbundCall_async(self, params, json_rpc_context = None):
         if json_rpc_context and type(json_rpc_context) is not dict:
             raise ValueError('Method cummeRbundCall: argument json_rpc_context is not type dict as required.')
-        resp = self._call('KBaseRNASeq.cummeRbundCall',
-                          [params], json_rpc_context)
+        return self._call('KBaseRNASeq.cummeRbundCall_async',
+                          [params], json_rpc_context)[0]
+
+    def cummeRbundCall_check(self, job_id):
+        resp = self._call('KBaseRNASeq.cummeRbundCall_check', [job_id])
         return resp[0]
+
+    def cummeRbundCall(self, params, json_rpc_context = None):
+        job_id = self.cummeRbundCall_async(params, json_rpc_context)
+        while True:
+            time.sleep(self.async_job_check_time)
+            job_state = self.cummeRbundCall_check(job_id)
+            if job_state['finished']:
+                return job_state['result'][0]
   
-    def createExpressionSeries(self, params, json_rpc_context = None):
+    def createExpressionSeries_async(self, params, json_rpc_context = None):
         if json_rpc_context and type(json_rpc_context) is not dict:
             raise ValueError('Method createExpressionSeries: argument json_rpc_context is not type dict as required.')
-        resp = self._call('KBaseRNASeq.createExpressionSeries',
-                          [params], json_rpc_context)
+        return self._call('KBaseRNASeq.createExpressionSeries_async',
+                          [params], json_rpc_context)[0]
+
+    def createExpressionSeries_check(self, job_id):
+        resp = self._call('KBaseRNASeq.createExpressionSeries_check', [job_id])
         return resp[0]
-  
+
+    def createExpressionSeries(self, params, json_rpc_context = None):
+        job_id = self.createExpressionSeries_async(params, json_rpc_context)
+        while True:
+            time.sleep(self.async_job_check_time)
+            job_state = self.createExpressionSeries_check(job_id)
+            if job_state['finished']:
+                return job_state['result'][0]
+   
     def createExpressionMatrix(self, params, json_rpc_context = None):
         if json_rpc_context and type(json_rpc_context) is not dict:
             raise ValueError('Method createExpressionMatrix: argument json_rpc_context is not type dict as required.')
