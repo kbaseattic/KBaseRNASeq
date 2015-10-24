@@ -254,6 +254,37 @@ class KBaseRNASeq:
         # ctx is the context object
         # return variables are: job_id
         #BEGIN TophatCall
+	ws_client=Workspace(url=self.__WS_URL, token=user_token)
+        hs = HandleService(url=self.__HS_URL, token=user_token)
+        try:
+            self.__LOGGER.info( "Downloading objects from workspace")
+            try:
+                assembly = ws_client.get_objects(
+                                        [{'name' : params['reference'],
+                                        'workspace' : params['ws_id']}])
+            except Exception,e:
+                raise KBaseRNASeqException("Error Downloading FASTA object from the workspace {0}".format(params['reference']))
+	# Move them to the temp tophat folder	 
+
+        # Build Fasta object from the ContigSet reference
+		
+	# Call tophat script with options
+	
+        # run samtools bam file created 
+
+        # create Json object for widget
+
+	# Zip tophat folder
+	
+	# Upload to Shock
+	
+	# run samtools bam file created 
+	
+	# create Json object for widget
+
+	# save to Tophat workspace
+
+	     
         #END TophatCall
 
         # At some point might do deeper type checking...

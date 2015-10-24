@@ -23,10 +23,11 @@ except ImportError:
     pprocess = False
     pass
 
-from bunch import bunchify
-from externals import *
+#from bunch import bunchify
+from biokbase.RNASeq.externals import *
+#from externals import *
 from errors import *
-from test_call_utils import *
+#from test_call_utils import *
 from misc import *
 
 def start_prog(args_prog, test_vals):

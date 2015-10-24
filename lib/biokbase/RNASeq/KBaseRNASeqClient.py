@@ -173,28 +173,61 @@ class KBaseRNASeq(object):
         if 'result' not in resp:
             raise ServerError('Unknown', 0, 'An unknown server error occurred')
         return resp['result']
- 
-    def fastqcCall(self, params, json_rpc_context = None):
+
+    def fastqcCall_async(self, params, json_rpc_context = None):
         if json_rpc_context and type(json_rpc_context) is not dict:
             raise ValueError('Method fastqcCall: argument json_rpc_context is not type dict as required.')
-        resp = self._call('KBaseRNASeq.fastqcCall',
-                          [params], json_rpc_context)
+        return self._call('KBaseRNASeq.fastqcCall_async',
+                          [params], json_rpc_context)[0]
+
+    def fastqcCall_check(self, job_id):
+        resp = self._call('KBaseRNASeq.fastqcCall_check', [job_id])
         return resp[0]
+
+    def fastqcCall(self, params, json_rpc_context = None):
+        job_id = self.fastqcCall_async(params, json_rpc_context)
+        while True:
+            time.sleep(self.async_job_check_time)
+            job_state = self.fastqcCall_check(job_id)
+            if job_state['finished']:
+                return job_state['result'][0]
   
-    def associateReads(self, params, json_rpc_context = None):
+    def associateReads_async(self, params, json_rpc_context = None):
         if json_rpc_context and type(json_rpc_context) is not dict:
             raise ValueError('Method associateReads: argument json_rpc_context is not type dict as required.')
-        resp = self._call('KBaseRNASeq.associateReads',
-                          [params], json_rpc_context)
+        return self._call('KBaseRNASeq.associateReads_async',
+                          [params], json_rpc_context)[0]
+
+    def associateReads_check(self, job_id):
+        resp = self._call('KBaseRNASeq.associateReads_check', [job_id])
         return resp[0]
+
+    def associateReads(self, params, json_rpc_context = None):
+        job_id = self.associateReads_async(params, json_rpc_context)
+        while True:
+            time.sleep(self.async_job_check_time)
+            job_state = self.associateReads_check(job_id)
+            if job_state['finished']:
+                return job_state['result'][0]
   
-    def SetupRNASeqAnalysis(self, params, json_rpc_context = None):
+    def SetupRNASeqAnalysis_async(self, params, json_rpc_context = None):
         if json_rpc_context and type(json_rpc_context) is not dict:
             raise ValueError('Method SetupRNASeqAnalysis: argument json_rpc_context is not type dict as required.')
-        resp = self._call('KBaseRNASeq.SetupRNASeqAnalysis',
-                          [params], json_rpc_context)
+        return self._call('KBaseRNASeq.SetupRNASeqAnalysis_async',
+                          [params], json_rpc_context)[0]
+
+    def SetupRNASeqAnalysis_check(self, job_id):
+        resp = self._call('KBaseRNASeq.SetupRNASeqAnalysis_check', [job_id])
         return resp[0]
- 
+
+    def SetupRNASeqAnalysis(self, params, json_rpc_context = None):
+        job_id = self.SetupRNASeqAnalysis_async(params, json_rpc_context)
+        while True:
+            time.sleep(self.async_job_check_time)
+            job_state = self.SetupRNASeqAnalysis_check(job_id)
+            if job_state['finished']:
+                return job_state['result'][0]
+  
     def BuildBowtie2Index_async(self, params, json_rpc_context = None):
         if json_rpc_context and type(json_rpc_context) is not dict:
             raise ValueError('Method BuildBowtie2Index: argument json_rpc_context is not type dict as required.')
@@ -320,14 +353,25 @@ class KBaseRNASeq(object):
             job_state = self.getAlignmentStats_check(job_id)
             if job_state['finished']:
                 return job_state['result'][0]
-   
-    def createExpressionHistogram(self, params, json_rpc_context = None):
+  
+    def createExpressionHistogram_async(self, params, json_rpc_context = None):
         if json_rpc_context and type(json_rpc_context) is not dict:
             raise ValueError('Method createExpressionHistogram: argument json_rpc_context is not type dict as required.')
-        resp = self._call('KBaseRNASeq.createExpressionHistogram',
-                          [params], json_rpc_context)
+        return self._call('KBaseRNASeq.createExpressionHistogram_async',
+                          [params], json_rpc_context)[0]
+
+    def createExpressionHistogram_check(self, job_id):
+        resp = self._call('KBaseRNASeq.createExpressionHistogram_check', [job_id])
         return resp[0]
- 
+
+    def createExpressionHistogram(self, params, json_rpc_context = None):
+        job_id = self.createExpressionHistogram_async(params, json_rpc_context)
+        while True:
+            time.sleep(self.async_job_check_time)
+            job_state = self.createExpressionHistogram_check(job_id)
+            if job_state['finished']:
+                return job_state['result'][0]
+  
     def cummeRbundCall_async(self, params, json_rpc_context = None):
         if json_rpc_context and type(json_rpc_context) is not dict:
             raise ValueError('Method cummeRbundCall: argument json_rpc_context is not type dict as required.')

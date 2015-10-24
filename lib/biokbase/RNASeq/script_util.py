@@ -285,6 +285,22 @@ def getHandles(logger = None,
                 raise
     return handles
 
+def dump_fasta(logger=None,
+	       ws_url=None,
+	       ws_name=None,
+	       out_dir=None,
+	       token =None):
+    """
+    Retrieve Fasta object from a ContigSet object.
+    """
+    
+    ws_client=Workspace(ws_url, token=user_token)
+    assembly = ws_client.get_objects(
+				    [{'name' : params['reference'],
+				     'workspace' : params['ws_id']}])
+
+    return [ k for k,v in json.loads(assembly).items()]
+    
 
 
 

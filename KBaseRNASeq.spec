@@ -368,7 +368,7 @@
        list<mapping<string parameter ,string values>> results;
        }fastqcParams;
 
-funcdef fastqcCall(fastqcParams params)
+async funcdef fastqcCall(fastqcParams params)
      returns(string job_id) authentication required;
 	
    typedef structure{
@@ -391,7 +391,7 @@ funcdef fastqcCall(fastqcParams params)
 	list<string> condition;
    }associateReadsParams;
 	
-funcdef associateReads(associateReadsParams params)
+async funcdef associateReads(associateReadsParams params)
      returns(string job_id) authentication required;
  	
    typedef structure{
@@ -415,7 +415,7 @@ funcdef associateReads(associateReadsParams params)
    	string external_source_date;
    	}SetupRNASeqAnalysisParams;
    	
-funcdef SetupRNASeqAnalysis(SetupRNASeqAnalysisParams params)
+async funcdef SetupRNASeqAnalysis(SetupRNASeqAnalysisParams params)
 	returns(string job_id) authentication required;
 	
    typedef structure{
@@ -459,7 +459,7 @@ async funcdef BuildBowtie2Index(Bowtie2IndexParams params)
 	string non-deterministic;
 	}b_opts;
 
-typedef mapping<string Bowtie2_opts,b_opts opts_bowtie2> b_opts_str;
+   typedef mapping<string Bowtie2_opts,b_opts opts_bowtie2> b_opts_str;
 	
    typedef structure{
 	string ws_id;
@@ -627,7 +627,7 @@ typedef structure{
 	string output_obj_name;
         }ExpressionHistogramParams;
         
-funcdef createExpressionHistogram(ExpressionHistogramParams params)
+async funcdef createExpressionHistogram(ExpressionHistogramParams params)
    returns (string job_id) authentication required;
 
 typedef structure{
