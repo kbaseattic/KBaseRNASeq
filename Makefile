@@ -1,4 +1,5 @@
-
+KB_TOP ?= /kb/dev_container
+TARGET ?= /kb/deployment
 MODULE = RNASeq
 MODULE_CAPS = KBaseRNASeq
 MODULE_PORT = 6606
@@ -76,6 +77,7 @@ TARGET ?= /kb/deployment
 deploy: deploy-scripts
 
 deploy-scripts: deploy-libs deploy-executable-script
+	bash $(DIR)/deps/pylib.sh
 
 deploy-service: deploy-libs deploy-executable-script deploy-service-scripts deploy-cfg
 
