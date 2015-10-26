@@ -18,6 +18,7 @@ from collections import defaultdict
 
 from bunch import Bunch
 
+from misc import email_notification
 from misc import get_time
 from misc import uniques
 from externals import runExternalApp, mkdirp
@@ -44,6 +45,7 @@ class BaseCall(object):
         self._hostname = socket.gethostname()
         self.mode = mode
         self.yargs = yargs
+        #self.email_info = email_info
         self.run_id = run_id
         self.log_dir = run_logs
         self.prgbar_regex = yargs.prgbar_regex
@@ -109,6 +111,36 @@ class BaseCall(object):
         else:
             raise errors.SanityCheckError(
                 'type(self._conditions) should be either int, str, or dict. It is: %s' % (type(self._conditions)))
+
+    def notify_start_of_call(self):
+        """
+        sends notification email informing user that ``self.call_id`` has been initiated
+        """
+        e = self.email_info
+
+        report_time = get_time()
+        email_sub = "[SITREP from %s] Run %s - Starting %s at %s" % (self._hostname, self.run_id, self.call_id,
+                                                                     report_time)
+        email_body = "%s\n\n%s" % (email_sub, self.cmd_string)
+        server_info = self.yargs.run_options.custom_smtp
+        email_notification(e.email_from, e.email_to, email_sub, email_body, base64.b64decode(e.email_li), server_info)
+
+    def notify_end_of_call(self):
+        """
+        sends notification email informing user that ``self.call_id`` has exited
+        """
+        e = self.email_info
+
+        report_time = get_time()
+        email_sub = "[SITREP from %s] Run %s - Exited %s at %s" % (self._hostname, self.run_id, self.call_id,
+                                                                   report_time)
+
+        #    repeat subject in body
+        email_body = email_sub
+
+        email_body += "\n\n ==> stderr <==\n\n%s" % self.stderr_msg
+        server_info = self.yargs.run_options.custom_smtp
+        email_notification(e.email_from, e.email_to, email_sub, email_body, base64.b64decode(e.email_li), server_info)
 
     def build_out_dir_path(self):
         """
@@ -253,14 +285,24 @@ class BaseCall(object):
                 elif isinstance(exc, KeyboardInterrupt):
                     email_sub = "[SITREP from %s] Run %s experienced KeyboardInterrupt in call %s. MOVING ON." % (
                         self._hostname, self.run_id, self.call_id)
+                    #email_notification(e.email_from, e.email_to, email_sub, email_body, base64.b64decode(e.email_li),
+                     #                  server_info)
                 else:
                     email_sub = "[SITREP from %s] Run %s experienced unhandled exception in call %s. EXITING." % (
                         self._hostname, self.run_id, self.call_id)
+                    #email_notification(e.email_from, e.email_to, email_sub, email_body, base64.b64decode(e.email_li),
+                    #                   server_info)
                     raise
 
         # DRY RUN
         elif self.mode == 'dry_run':
             print self.cmd_string + '\n'
+
+        # QSUB SCRIPT
+        elif self.mode == 'qsub_script':
+            self.build_qsub()
+        else:
+            raise errors.BlacktieError()
 
 
 class TophatCall(BaseCall):
@@ -368,7 +410,7 @@ class TophatCall(BaseCall):
         option = self.prog_yargs.positional_args.left_reads
         if option == 'from_conditions':
             lt_reads = self._conditions['left_reads']
-            return "%s" % (','.join(lt_reads))
+            return "%s" % (lt_reads)
         else:
             return option
 
@@ -379,7 +421,7 @@ class TophatCall(BaseCall):
         option = self.prog_yargs.positional_args.right_reads
         if option == 'from_conditions':
             rt_reads = self._conditions['right_reads']
-            return "%s" % (','.join(rt_reads))
+            return "%s" % (rt_reads)
         else:
             return option
 
@@ -429,6 +471,7 @@ class CufflinksCall(BaseCall):
 
         # now the positional args
         self.accepted_hits = self.get_accepted_hits()
+	print "accepted_hits" +  self.accepted_hits
 
         # combine and save arg_str
         self.options_list.extend([self.accepted_hits])
@@ -588,10 +631,10 @@ class CuffmergeCall(BaseCall):
         # set up options for program call
         self.opt_dict = self.init_opt_dict()
         self.opt_dict['o'] = self.out_dir
-	if 'gtf' in self.prog_yargs:
-        	self.opt_dict['gtf'] = self.get_gtf_anno()
-        if 'reference' in self.prog_yargs:
-		self.opt_dict['reference'] = self.get_genome()
+	if 'ref-gtf' in self.prog_yargs:
+        	self.opt_dict['ref-gtf'] = self.get_gtf_anno()
+        if 'ref-sequence' in self.prog_yargs:
+		self.opt_dict['ref-sequence'] = self.get_genome()
         self.construct_options_list()
 
         # now the positional args
@@ -615,7 +658,7 @@ class CuffmergeCall(BaseCall):
         """
         Handles ``yaml_config.cuffmerge_options.ref-gtf: from_conditions``.
         """
-        option = self.prog_yargs['gtf']
+        option = self.prog_yargs['ref-gtf']
         if option == 'from_conditions':
             # Make sure all conditions agree on anno.gtf
             gtf_path = set([c['gtf_annotation'] for c in self._conditions])
@@ -633,7 +676,7 @@ class CuffmergeCall(BaseCall):
         """
         Handles ``yaml_config.cuffmerge_options.ref-sequence: from_conditions``.
         """
-        option = self.prog_yargs['reference']
+        option = self.prog_yargs['ref-sequence']
         if option == 'from_conditions':
             # Make sure all conditions agree on their genome seq
             genome_path = set([c['genome_seq'] for c in self._conditions])
@@ -653,21 +696,24 @@ class CuffmergeCall(BaseCall):
         Handles ``yaml_config.cuffmerge_options.positional_args.assembly_list: from_conditions``.
         """
         option = self.prog_yargs.positional_args.assembly_list
-        #if option == 'from_conditions':
-        paths = []
-        for gtf_path in option:
-         	#gtf_path = self.get_cuff_gtf_path(condition)
+        if option == 'from_conditions':
+            paths = []
+            for condition in self._conditions:
+                gtf_path = self.get_cuff_gtf_path(condition)
                 paths.append(gtf_path)
-        mkdirp(self.out_dir)
-        assembly_list_file = open("%s/assembly_list.txt" % (self.out_dir.rstrip('/')), 'w')
-        assembly_list_file.write("\n".join(paths))
-        assembly_list_file.close()
+            mkdirp(self.out_dir)
+            assembly_list_file = open("%s/assembly_list.txt" % (self.out_dir.rstrip('/')), 'w')
+            assembly_list_file.write("\n".join(paths))
+            assembly_list_file.close()
 
-        if self.mode == 'dry_run':
+            if self.mode == 'dry_run':
                 shutil.rmtree(self.out_dir)
-        else:
+            else:
                 pass
-        return os.path.abspath(assembly_list_file.name)
+
+            return os.path.abspath(assembly_list_file.name)
+        else:
+            return option
 
     def get_cuff_gtf_path(self, condition):
         """
