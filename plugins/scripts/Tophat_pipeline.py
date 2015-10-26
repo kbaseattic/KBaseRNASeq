@@ -24,10 +24,9 @@ except ImportError:
     pass
 
 #from bunch import bunchify
-from biokbase.RNASeq.externals import *
-#from externals import *
+from externals import *
 from errors import *
-#from test_call_utils import *
+from call_utils import *
 from misc import *
 
 def start_prog(args_prog, test_vals):
@@ -66,11 +65,7 @@ def main():
     parser.add_argument('-base_dir',type=str, help= 'Option to set the base dir',required=True)
     parser.add_argument('-library_type', type=str, choices=['SingleEnd','PairedEnd'],help = 'Library type for the input Fastq files',required=True)
     parser.add_argument('-mode', type=str, choices=['analyze', 'dry_run'], default='analyze',
-                        help="""1) 'analyze': run the analysis pipeline. 2) 'dry_run': walk through all steps that
-                        would be run and print out the command lines; however, do not send the commands to the
-                        system to be run. 3) 'qsub_script': generate bash scripts suitable to be sent to a compute
-                        cluster's
-                        SGE through the qsub command. (default: %(default)s)""")    
+                        help="""1) 'analyze': run the analysis pipeline. 2) 'dry_run': walk through all the steps""")    
  
     if len(sys.argv) == 1:
         parser.print_help()
