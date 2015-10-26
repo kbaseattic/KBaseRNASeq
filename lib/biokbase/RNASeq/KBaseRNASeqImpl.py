@@ -15,6 +15,12 @@ import download_ContigSet as c_download
 from biokbase.auth import Token
 
 _KBaseRNASeq__DATA_VERSION = "0.2"
+
+class KBaseRNASeqException(Exception):
+	def __init__(self, msg):
+		self.msg = msg
+	def __str__(self):
+		return repr(self.msg)
 #END_HEADER
 
 
@@ -41,7 +47,7 @@ class KBaseRNASeq:
     def __init__(self, config):
         #BEGIN_CONSTRUCTOR
 	 # This is where config variable for deploy.cfg are available
-        #pprint(config)
+        pprint(config)
         if 'ws_url' in config:
               self.__WS_URL = config['ws_url']
         if 'shock_url' in config:
@@ -58,6 +64,10 @@ class KBaseRNASeq:
               self.__SVC_PASS = config['svc_pass']
 	if 'scripts_dir' in config:
 	      self.__SCRIPTS_DIR = config['scripts_dir']
+	
+	__SCRIPT_TYPE = { 'ContigSet_to_fasta' : 'ContigSet_to_fasta.py',
+			  'RNASeqSample_to_fastq' : 'RNASeqSample_to_fastq',
+			} 
 
         # logging
         self.__LOGGER = logging.getLogger('KBaseRNASeq')
@@ -162,7 +172,7 @@ class KBaseRNASeq:
 
 	    ## Zip the Index files 	
 	    try:
-		script_util.zip_files(self.__LOGGER, bowtie_dir, "%s.zip" % params['blastindex_name'])
+		script_util.zip_files(self.__LOGGER, bowtie_dir, "%s.zip" % params['output_obj_name'])
 	    except Exception, e:
 		raise KBaseRNASeqException("Failed to compress the index: %s" %(e))
 	    ## Upload the file using handle service
@@ -186,7 +196,7 @@ class KBaseRNASeq:
 					]})
 	
 	except Exception, e:
-		raise KBaseRNASeqException("")
+		raise 
     
 	#if 'handle' in assembly and 'id' in assembly['handle']:
 	#	shock_id = assembly['handle']['id']
@@ -257,13 +267,47 @@ class KBaseRNASeq:
 	ws_client=Workspace(url=self.__WS_URL, token=user_token)
         hs = HandleService(url=self.__HS_URL, token=user_token)
         try:
-            self.__LOGGER.info( "Downloading objects from workspace")
-            try:
-                assembly = ws_client.get_objects(
-                                        [{'name' : params['reference'],
+	    ### Make a function to download the workspace object  and prepare dict of genome ,lib_type 
+
+	    self.__LOGGER.info("Downloading RNASeq Sample file")
+	    try:
+                reads = ws_client.get_objects(
+                                        [{'name' : params['sample_id'],
                                         'workspace' : params['ws_id']}])
             except Exception,e:
-                raise KBaseRNASeqException("Error Downloading FASTA object from the workspace {0}".format(params['reference']))
+		 raise KBaseRNASeqException("Error Downloading FASTQ object from the workspace {0}".format(params['sample_id'])) 
+	    #Download reads from the JSON object
+	    genome = params['reference']
+	    if 'data' in reads: 
+		#if 'metadata' in reads['data']:
+		    	#genome = reads['data']['metadata']['ref_genome'] 
+		if 'singleend_sample' in reads['data']:
+			lib_type = "SingleEnd"
+			#cmdstring =
+	        elif 'pairedend_sample' in reads['data']:
+			lib_type = "PairedEnd"
+			#cmdstring =
+	    ####Complete download reads
+		#raise KBaseRNASeqException("Error Downloading FASTA object from the workspace {0}".format(params['reference']))
+               
+            self.__LOGGER.info( "Downloading FASTA from ContigSet")
+	
+	    cmdstring = "%s/%s --workspace_service_url %s --workspace_name %s --working_directory %s --output_file_name %s --object_name %s --shock_service_url %s" %( self.__SCRIPTS_DIR,self.__SCRIPT_TYPE['ContigSet_to_fasta'],self.__WS_URL,self.__TEMP_DIR,genome,genome,self.__SHOCK_URL)
+            
+	    tool_process = subprocess.Popen(cmdstring, stderr=subprocess.PIPE, shell=True)
+	    stdout, stderr = tool_process.communicate()
+	    if stdout is not None and len(stdout) > 0:
+		self.__LOGGER.info(stdout)
+	    if stderr is not None and len(stderr) > 0:
+		self.__LOGGER.error("Unable to Download Fasta from ContigSet: " + stderr)
+		
+
+	    #try:
+            #    assembly = ws_client.get_objects(
+            #                            [{'name' : params['reference'],
+            #                            'workspace' : params['ws_id']}])
+            #except Exception,e:
+            #    raise KBaseRNASeqException("Error Downloading FASTA object from the workspace {0}".format(params['reference']))
 	# Move them to the temp tophat folder	 
 
         # Build Fasta object from the ContigSet reference
@@ -283,7 +327,9 @@ class KBaseRNASeq:
 	# create Json object for widget
 
 	# save to Tophat workspace
-
+	except e:
+		raise 
+        job_id = "no_job_id"	
 	     
         #END TophatCall
 

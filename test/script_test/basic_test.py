@@ -40,7 +40,7 @@ class TestRNASeqMethods(TestRNASeqMethodsSetup):
         with open('test/script_test/bowtie_output.json') as o:
                 output =json.load(o)
         pprint(output)
-  
+
 # start the tests if run as a script
 if __name__ == '__main__':
     unittest.main()
