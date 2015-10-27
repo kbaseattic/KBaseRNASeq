@@ -103,6 +103,39 @@ class KBaseRNASeq:
         # ctx is the context object
         # return variables are: job_id
         #BEGIN associateReads
+	user_token=ctx['token']
+        ws_client=Workspace(url=self.__WS_URL, token=user_token)
+	self.__LOGGER.info( "Uploading RNASeqSample {0}".format(out_obj['experiment_id']))
+	out = dict()
+	out['metadata'] = { k:v for k,v in params.iteritems() if not k in ('ws_id', "analysis_id") and v}
+
+	if "analysis_id" in params:
+		out['analysis_id'] = params['analysis_id']
+	if 'singleend_sample' in params:
+	    try:
+               	out['singleend_sample'] = ws_client.get_objects(
+                                        [{'name' : params['singleend_sample'],
+                                          'workspace' : params['ws_id']}])
+            except Exception,e:
+                raise KBaseRNASeqException("Error Downloading SingleEndlibrary object from the workspace {0}".format(params['singleend_sample']))
+	if 'pairedend_sample' in params:
+ 	    try:
+                out['pairedend_sample'] = ws_client.get_objects(
+                                         [{'name' : params['pairedend_sample'],
+                                           'workspace' : params['ws_id']}])
+            except Exception,e:
+                raise KBaseRNASeqException("Error Downloading PairedEndlibrary object from the workspace {0}".format(params['pairedend_sample']))
+
+
+        res= ws_client.save_objects(
+                                {"workspace":params['ws_id'],
+                                 "objects": [{
+                                                "type":"KBaseRNASeq.RNASeqSample",
+                                                "data":out,
+                                                "name":out_obj['experiment_id']}]
+                                })
+        job_id = "no_job_id"
+
         #END associateReads
 
         # At some point might do deeper type checking...
@@ -114,7 +147,7 @@ class KBaseRNASeq:
 
     def SetupRNASeqAnalysis(self, ctx, params):
         # ctx is the context object
-        # return variables are: job_id
+        # return variables are: returnVal
         #BEGIN SetupRNASeqAnalysis
         user_token=ctx['token']
 	ws_client=Workspace(url=self.__WS_URL, token=user_token)
@@ -130,16 +163,16 @@ class KBaseRNASeq:
 						"data":out_obj,
 						"name":out_obj['experiment_id']}]
 				})
-	job_id = "no_job_id"
+	returnVal = {"workspace": params['ws_id'],"output" : out_obj['experiment_id'] }
 	
         #END SetupRNASeqAnalysis
 
         # At some point might do deeper type checking...
-        if not isinstance(job_id, basestring):
+        if not isinstance(returnVal, object):
             raise ValueError('Method SetupRNASeqAnalysis return value ' +
-                             'job_id is not type basestring as required.')
+                             'returnVal is not type object as required.')
         # return the results
-        return [job_id]
+        return [returnVal]
 
     def BuildBowtie2Index(self, ctx, params):
         # ctx is the context object
