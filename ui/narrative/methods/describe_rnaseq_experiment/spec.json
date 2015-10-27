@@ -2,7 +2,7 @@
   "ver" : "1.0.0",
   "authors" : [ ],
   "contact" : "help@kbase.us",
-  "visble" : true,
+  "visible" : true,
   "categories" : ["active"],
   "widgets" : {
     "input" : null,
@@ -218,15 +218,9 @@
       ],
       "output_mapping" : [
       	{
-      	 "service_method_output_path": [0,"SetupRNASeqAnalysis"],
+      	 "service_method_output_path": [0],
 	 "target_property": "SetupRNASeqAnalysis"
-	},{
-	"narrative_system_variable": "workspace",
-	"target_property": "workspaceName"
-	},{
-	"input_parameter": "output",
-	"target_property" : "output"
- 	}	
+	}
       ]
     }
   },
