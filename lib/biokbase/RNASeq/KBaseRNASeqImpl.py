@@ -101,7 +101,7 @@ class KBaseRNASeq:
 
     def associateReads(self, ctx, params):
         # ctx is the context object
-        # return variables are: job_id
+        # return variables are: returnVal
         #BEGIN associateReads
 	user_token=ctx['token']
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
@@ -126,45 +126,55 @@ class KBaseRNASeq:
             except Exception,e:
                 raise KBaseRNASeqException("Error Downloading PairedEndlibrary object from the workspace {0}".format(params['pairedend_sample']))
 
-
-        res= ws_client.save_objects(
+	try:
+        	res= ws_client.save_objects(
                                 {"workspace":params['ws_id'],
                                  "objects": [{
                                                 "type":"KBaseRNASeq.RNASeqSample",
                                                 "data":out,
-                                                "name":out_obj['experiment_id']}]
+                                                "name":out_obj['output_obj_name']}]
                                 })
-        job_id = "no_job_id"
+	        returnVal = {"workspace": params['ws_id'],"output" : out_obj['output_obj_name'] }
+
+
+	except Exception ,e:
+		raise KBaseRNASeqException("Error Saving the object to workspace {0}".format(out_obj['output_obj_name']))
+	
 
         #END associateReads
 
         # At some point might do deeper type checking...
-        if not isinstance(job_id, basestring):
+        if not isinstance(returnVal, object):
             raise ValueError('Method associateReads return value ' +
-                             'job_id is not type basestring as required.')
+                             'returnVal is not type object as required.')
         # return the results
-        return [job_id]
+        return [returnVal]
 
     def SetupRNASeqAnalysis(self, ctx, params):
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN SetupRNASeqAnalysis
-        user_token=ctx['token']
-	ws_client=Workspace(url=self.__WS_URL, token=user_token)
-	out_obj = { k:v for k,v in params.iteritems() if not k in ('ws_id') and v}
-	pprint(out_obj)
-	if "num_samples" in out_obj : out_obj["num_samples"] = int(out_obj["num_samples"])
-	if "num_replicates" in out_obj : out_obj["num_replicates"] = int(out_obj["num_replicates"])
-	self.__LOGGER.info( "Uploading RNASeq Analysis object to workspace {0}".format(out_obj['experiment_id']))
-	res= ws_client.save_objects(
-				{"workspace":params['ws_id'],
-				 "objects": [{
-						"type":"KBaseRNASeq.RNASeqAnalysis",
-						"data":out_obj,
-						"name":out_obj['experiment_id']}]
-				})
-	returnVal = {"workspace": params['ws_id'],"output" : out_obj['experiment_id'] }
-	
+	user_token=ctx['token']
+        ws_client=Workspace(url=self.__WS_URL, token=user_token)
+        out_obj = { k:v for k,v in params.iteritems() if not k in ('ws_id') and v}
+        pprint(out_obj)
+        if "num_samples" in out_obj : out_obj["num_samples"] = int(out_obj["num_samples"])
+        if "num_replicates" in out_obj : out_obj["num_replicates"] = int(out_obj["num_replicates"])
+        self.__LOGGER.info( "Uploading RNASeq Analysis object to workspace {0}".format(out_obj['experiment_id']))
+	try:
+        	res= ws_client.save_objects(
+                                {"workspace":params['ws_id'],
+                                 "objects": [{
+                                                "type":"KBaseRNASeq.RNASeqAnalysis",
+                                                "data":out_obj,
+                                                "name":out_obj['experiment_id']}]
+                                })
+		returnVal = {"workspace": params['ws_id'],"output" : out_obj['experiment_id'] }
+
+	except Exception,e:
+		raise KBaseRNASeqException("Error Saving the object to workspace {0}".format(out_obj['experiment_id']))
+
+
         #END SetupRNASeqAnalysis
 
         # At some point might do deeper type checking...
