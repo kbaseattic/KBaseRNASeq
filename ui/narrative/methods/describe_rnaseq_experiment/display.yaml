@@ -1,0 +1,112 @@
+#
+# Define basic display information
+#
+name     : Setup RNASeq Analysis
+
+tooltip  : |
+    Explain the analysis details in the RNASeq Experiment. 
+screenshots :
+    []
+
+#
+# Define the set of other narrative methods that should be suggested to the user.
+#
+method-suggestions :
+    related :
+        []
+    next :
+        []
+
+
+#
+# Configure the display and description of the parameters
+#
+parameters :
+    experiment_id :
+        ui-name : |
+            Experiment ID
+        short-hint : |
+            Specify an experiment ID for the RNASeq analysis
+    title :
+        ui-name : |
+            Title
+        short-hint : |
+            Specify a title for the RNASeq analysis
+        long-hint  : |
+            Specify a title for the RNASeq analysis
+    experiment_desc :
+        ui-name : |
+            Experiment Description
+        short-hint : |
+            Enter the description of the RNASeq analysis
+    experiment_design :
+        ui-name : |
+            Experiment design
+        short-hint : |
+            Explain the design of the RNASeq analysis
+    platform :
+        ui-name : |
+            Platform
+        short-hint : |
+            Specify the platform for the RNASeq Reads
+    Library_type :
+        ui-name : |
+            Library Type
+        short-hint : |
+            Choose the approriate Library_type from the dropdown
+    genome_id :
+        ui-name : |
+            Genome ID
+        short-hint : |
+            Select the reference Genome ID used in the Experiment
+    annotation_id :
+        ui-name : |
+            Genome Annotation
+        short-hint : |
+            Select the reference Genome Annoation used in the Experiment
+    num_samples :
+        ui-name : |
+            Number of Samples
+        short-hint : |
+            Enter the total number of Samples in the Experiment
+    num_replicates :
+        ui-name : |
+            Number of Replicates
+        short-hint : |
+            Enter the total number of Replicates in the Experiment
+    tissue :
+        ui-name : |
+            Tissue
+        short-hint : |
+            Enter the tissue type used to prepare RNASeq Libaries
+    condition :
+        ui-name : |
+            Condition
+        short-hint : |
+            Enter the conditions/treatments used in the RNASeq Experiment
+    source :
+        ui-name : |
+            Source
+        short-hint : |
+            Enter the Source from you got the RNASeq data
+    publication_id:
+        ui-name : |
+            Publication Id
+        short-hint : |
+            Enter the Publication Id from you got the RNASeq data
+    source_id:
+        ui-name : |
+            Publication Id
+        short-hint : |
+            Enter the Publication Id from you got the RNASeq data
+    external_source_date:
+        ui-name : |
+            Publication Date
+        short-hint : |
+            Enter the Publication Date from you got the RNASeq data 
+
+description : |
+    <p>This method allows you to records the details of  RNASeq analysis </p>
+    
+    <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
+    Michael Schatz, James Gurtowski, Michael Sneddon,Srividya Ramakrishnan,Sunita Kumari.</p>
