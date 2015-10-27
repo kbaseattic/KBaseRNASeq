@@ -10,7 +10,7 @@
   },
   "parameters" : [ {
     "id" : "singleend_sample",
-    "optional" : false,
+    "optional" : true,
     "advanced" : false,
     "allow_multiple" : false,
     "default_values" : [ "" ],
@@ -20,7 +20,7 @@
     }
   },{
     "id" : "pairedend_sample",
-    "optional" : false,
+    "optional" : true,
     "advanced" : false,
     "allow_multiple" : false,
     "default_values" : [ "" ],
@@ -40,7 +40,7 @@
     }
   },{
     "id" : "sample_id",
-    "optional" : true,
+    "optional" : false,
     "advanced" : false,
     "allow_multiple" : false,
     "default_values" : [ "" ],
@@ -55,7 +55,7 @@
   },{
     "id" : "sample_desc",
     "optional" : true,
-    "advanced" : false,
+    "advanced" : true,
     "allow_multiple" : false,
     "default_values" : [ "" ],
     "field_type" : "textarea",
@@ -65,7 +65,7 @@
   },{
     "id" :"title",
     "optional" : true,
-    "advanced" : false,
+    "advanced" : true,
     "allow_multiple" : false,
     "default_values" : [ "" ],
     "field_type" : "text"
@@ -100,13 +100,6 @@
       ]
     }
   },{
-    "id" : "platform",
-    "optional" : true,
-    "advanced" : false,
-    "allow_multiple" : false,
-    "default_values" : [ "" ],
-    "field_type" : "text"
-  },{
     "id" : "genome_id",
     "optional" : true,
     "advanced" : false,
@@ -133,12 +126,19 @@
   },{
     "id" : "source",
     "optional" : true,
-    "advanced" : false,
+    "advanced" : true,
     "allow_multiple" : false,
     "default_values" : [ "" ],
     "field_type" : "text"
   },{
     "id" : "source_id",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : true,
+    "default_values" : [ "" ],
+    "field_type" : "text"
+  },{
+    "id" : "domain",
     "optional" : true,
     "advanced" : true,
     "allow_multiple" : true,
@@ -213,14 +213,15 @@
         }
       ],
       "output_mapping" : [
-	 {
+	{
 	   "narrative_system_variable": "workspace",
 	   "target_property": "workspaceName"
 	},
 	{
 	   "input_parameter": "sample_id",
 	   "target_property": "output"
-      	{
+      	},
+	{
       	 "service_method_output_path": [0],
 	 "target_property": "associateReads"
 	}
