@@ -1,4 +1,4 @@
-#include <KBaseFile.spec>
+#include <KBaseAssembly.spec>
 #include <KBaseExpression.spec>
 
  module KBaseRNASeq{
@@ -34,8 +34,8 @@
    	typedef list<ws_expression_sample_id> ws_expression_sample_ids;
   
    /* 
-      Id for KBaseFile.SingleEndLibrary
-      @id ws KBaseFile.SingleEndLibrary
+      Id for KBaseAssembly.SingleEndLibrary
+      @id ws KBaseAssembly.SingleEndLibrary
    */
  
       	typedef string ws_singleEndLibrary_id;
@@ -47,8 +47,8 @@
         typedef string ws_reference_assembly_id;
  
    /* 
-      Id for KBaseFile.PairedEndLibrary
-      @id ws KBaseFile.PairedEndLibrary
+      Id for KBaseAssembly.PairedEndLibrary
+      @id ws KBaseAssembly.PairedEndLibrary
    */
  
       	typedef string ws_pairedEndLibrary_id;
@@ -196,8 +196,8 @@
 */
 
      typedef structure {
-	 KBaseFile.SingleEndLibrary singleend_sample;
-	 KBaseFile.PairedEndLibrary pairedend_sample;
+	 KBaseAssembly.SingleEndLibrary singleend_sample;
+	 KBaseAssembly.PairedEndLibrary pairedend_sample;
 	 ws_rnaseq_analysis_id  analysis_id;
 	 string analysis_desc;
 	 RNASeqSampleMetaData metadata;  
