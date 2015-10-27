@@ -416,7 +416,7 @@ async funcdef associateReads(associateReadsParams params)
    	}SetupRNASeqAnalysisParams;
    	
 async funcdef SetupRNASeqAnalysis(SetupRNASeqAnalysisParams params)
-	returns(string job_id) authentication required;
+	returns(UnspecifiedObject) authentication required;
 	
    typedef structure{
 	string ws_id;
