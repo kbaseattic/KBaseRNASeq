@@ -1,0 +1,232 @@
+{
+  "ver" : "1.0.0",
+  "authors" : [ ],
+  "contact" : "help@kbase.us",
+  "visible" : true,
+  "categories" : ["active"],
+  "widgets" : {
+    "input" : null,
+    "output" : null
+  },
+  "parameters" : [ {
+    "id" : "singleend_sample",
+    "optional" : true,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : [ "KBaseAssembly.SingleEndLibrary" ]
+    }
+  },{
+    "id" : "pairedend_sample",
+    "optional" : true,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : [ "KBaseAssembly.PairedEndLibrary" ]
+    }
+  },{
+    "id" : "analysis_id",
+    "optional" : true,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : [ "KBaseAssembly.RNASeqAnalysis" ]
+    }
+  },{
+    "id" : "sample_id",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text"
+  },{
+    "id" : "replicate_id",
+    "optional" : true,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text"
+  },{
+    "id" : "sample_desc",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "textarea",
+    "textarea_options" : {
+      "n_rows" : 4
+    }
+  },{
+    "id" :"title",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text"
+  },{
+    "id" : "platform",
+    "optional" : true,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text"
+  },{
+    "id" : "Library_type",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "dropdown",
+    "dropdown_options":{
+      "options": [
+        {
+          "value": "singleEnd",
+          "display": "Single-End",
+          "id": "singleEnd",
+          "ui_name": "singleEnd"
+        },
+        {
+          "value": "pairedEnd",
+          "display": "Paired-End",
+          "id": "pairedEnd",
+          "ui_name": "pairedEnd"
+        }
+      ]
+    }
+  },{
+    "id" : "genome_id",
+    "optional" : true,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : [ "KBaseGenomes.Genome" ]
+    }
+  },{
+    "id" : "tissue",
+    "optional" : true,
+    "advanced" : false,
+    "allow_multiple" : true,
+    "default_values" : [ "" ],
+    "field_type" : "text"
+  },{
+    "id" : "condition",
+    "optional" : true,
+    "advanced" : false,
+    "allow_multiple" : true,
+    "default_values" : [ "" ],
+    "field_type" : "text"
+  },{
+    "id" : "source",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text"
+  },{
+    "id" : "source_id",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : true,
+    "default_values" : [ "" ],
+    "field_type" : "text"
+  },{
+    "id" : "domain",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : true,
+    "default_values" : [ "" ],
+    "field_type" : "text"
+  },{
+    "id" : "ext_source_date",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text"
+  }],
+  "behavior" : {
+    "service-mapping" : {
+    	"url" : "",
+    	"name" : "KBaseRNASeq",
+    	"method" : "associateReads",
+	"input_mapping" : [    
+	{
+          "narrative_system_variable": "workspace",
+          "target_argument_position": 0
+        },
+        {
+          "input_parameter": "singleend_sample",
+          "target_argument_position": 1
+        },{
+          "input_parameter": "pairedend_sample",
+          "target_argument_position": 2
+        },{
+          "input_parameter": "analysis_id",
+          "target_argument_position": 3
+        },{
+          "input_parameter": "sample_id",
+          "target_argument_position": 4 
+        },{
+          "input_parameter": "replicate_id",
+          "target_argument_position": 6
+        },{
+          "input_parameter": "sample_desc",
+          "target_argument_position": 8
+        },{
+          "input_parameter": "platform",
+          "target_argument_position": 7
+        },{
+          "input_parameter": "library_type",
+          "target_argument_position": 5
+        },{
+          "input_parameter": "title",
+          "target_argument_position": 9
+        },{
+          "input_parameter": "source",
+          "target_argument_position": 10
+        },{
+          "input_parameter": "tissue",
+          "target_argument_position": 15
+        }, {
+          "input_parameter": "condition",
+          "target_argument_position": 16
+        }, {
+          "input_parameter": "source_id",
+          "target_argument_position": 11
+        },{
+          "input_parameter": "domain",
+          "target_argument_position": 13
+        },{
+          "input_parameter": "external_source_date",
+          "target_argument_position": 12
+	},{
+	  "input_parameter": "genome_id",
+          "target_argument_position": 14
+        }
+      ],
+      "output_mapping" : [
+	{
+	   "narrative_system_variable": "workspace",
+	   "target_property": "workspaceName"
+	},
+	{
+	   "input_parameter": "sample_id",
+	   "target_property": "output"
+      	},
+	{
+      	 "service_method_output_path": [0],
+	 "target_property": "associateReads"
+	}
+      ]
+    }
+  },
+  "job_id_output_field" : "docker"
+}

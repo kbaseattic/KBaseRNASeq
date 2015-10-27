@@ -392,7 +392,7 @@ async funcdef fastqcCall(fastqcParams params)
    }associateReadsParams;
 	
 async funcdef associateReads(associateReadsParams params)
-     returns(string job_id) authentication required;
+     returns(UnspecifiedObject) authentication required;
  	
    typedef structure{
 	string ws_id;
