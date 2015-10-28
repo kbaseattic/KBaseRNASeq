@@ -2,7 +2,7 @@ KB_TOP ?= /kb/dev_container
 TARGET ?= /kb/deployment
 MODULE = RNASeq
 MODULE_CAPS = KBaseRNASeq
-MODULE_PORT = 6606
+#MODULE_PORT = 6606
 SPEC_FILE = KBaseRNASeq.spec
 
 #End of user defined variables
