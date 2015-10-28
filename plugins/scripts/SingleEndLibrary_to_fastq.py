@@ -13,7 +13,7 @@ import hashlib
 import requests
 
 # KBase imports
-import biokbase.Transform.script_utils as script_utils
+import biokbase.RNASeq.script_util as script_utils
 import biokbase.workspace.client
 
 
@@ -39,7 +39,7 @@ def convert(workspace_service_url, shock_service_url, handle_service_url, worksp
 
     md5 = None 
     if logger is None:
-        logger = script_utils.getStderrLogger(__file__)
+        logger = script_utils.stderrLogger(__file__)
     
     logger.info("Starting conversion of KBaseAssembly.SingleEndLibrary to FASTA.")
 
@@ -47,7 +47,7 @@ def convert(workspace_service_url, shock_service_url, handle_service_url, worksp
     
     logger.info("Gathering information.")
 
-    ws_client = biokbase.workspace.client.Workspace('https://kbase.us/services/ws')
+    ws_client = biokbase.workspace.client.Workspace('https://ci.kbase.us/services/ws')
     single_end_library = ws_client.get_objects([{'workspace':workspace_name,'name':object_name}])[0]['data'] 
 
     shock_id = None
@@ -84,7 +84,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    logger = script_utils.getStderrLogger(__file__)
+    logger = script_utils.stderrlogger(__file__)
 
     try:
         convert(args.workspace_service_url,args.shock_service_url, args.handle_service_url,args.workspace_name,args.object_name, args.working_directory, logger=logger) 
