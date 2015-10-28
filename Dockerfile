@@ -11,7 +11,7 @@ RUN \
   cd /kb/dev_container/modules/jars && \
   make deploy && \
   cd /kb/dev_container/modules/kb_sdk && \
-  make && make deploy
+  make
 RUN \
   . /kb/dev_container/user-env.sh && \
   cd /kb/dev_container/modules && \
