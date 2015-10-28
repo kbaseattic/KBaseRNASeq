@@ -7,25 +7,27 @@ This module provides functionality to perform  RNASeq analysis to enable users t
 
 Examples of tools that will be developed in this module:
 
-1) Build Bowtie2Index
+1) Associate Reads to RNASeq Sample
 
-2) Align Reads to Tophat
+2) Build Bowtie2Index
 
-3) Align Reads to Bowtie2
+3) Align Reads to Tophat
 
-4) Compute Gene Expression -Cufflinks
+4) Align Reads to Bowtie2
 
-5) Merge transcripts to Transcriptome - Cuffmerge
+5) Compute Gene Expression -Cufflinks
 
-6) Identify Differential Expression  - Cuffdiff 
+6) Merge transcripts to Transcriptome - Cuffmerge
 
-7) Create ExpressionSeries 
+7) Identify Differential Expression  - Cuffdiff 
 
-8) Create ExpressionMatrix
+8) Create ExpressionSeries 
 
-9) View Expression Histogram
+9) Create ExpressionMatrix
 
-10) View Alignment Statistics - Pie Chart
+10) View Expression Histogram
+
+11) View Alignment Statistics - Pie Chart
 
 
 Notes for development:
