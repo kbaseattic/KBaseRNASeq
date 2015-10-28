@@ -11,7 +11,12 @@ RUN \
   cd /kb/dev_container/modules/jars && \
   make deploy && \
   cd /kb/dev_container/modules/kb_sdk && \
-  make
+  make && make deploy \
+  cd /kb/dev_container/modules && \
+  rm -rf genome_util && \
+  git clone https://github.com/kbase/genome_util && \
+  cd /kb/dev_container/modules/genome_util && \
+  make && make deploy
 #apt-get update && apt-get install -y ant && \
 
 # -----------------------------------------
