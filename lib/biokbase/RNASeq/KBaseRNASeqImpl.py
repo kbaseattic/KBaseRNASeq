@@ -11,7 +11,6 @@ import subprocess
 from pprint import pprint
 import script_util
 from biokbase.workspace.client import Workspace
-import download_ContigSet as c_download 
 from biokbase.auth import Token
 
 _KBaseRNASeq__DATA_VERSION = "0.2"
