@@ -29,7 +29,7 @@ COPY ./ /kb/module
 ENV PATH=$PATH:/kb/dev_container/modules/kb_sdk/bin
 WORKDIR /kb/module
 RUN make
-RUN make deploy
+#RUN make deploy
 RUN mkdir -p /kb/module/work
 ENTRYPOINT [ "./scripts/entrypoint.sh" ]
 CMD [ ]
