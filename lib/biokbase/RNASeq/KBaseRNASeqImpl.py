@@ -171,7 +171,7 @@ class KBaseRNASeq:
 		returnVal = {"workspace": params['ws_id'],"output" : out_obj['experiment_id'] }
 
 	except Exception,e:
-		raise KBaseRNASeqException("Error Saving the object to workspace {0}".format(out_obj['experiment_id']))
+		raise KBaseRNASeqException("Error Saving the object to workspace {0},{1} : {2}".format(out_obj['experiment_id'],e.errno,e.strerror))
 
 
         #END SetupRNASeqAnalysis
