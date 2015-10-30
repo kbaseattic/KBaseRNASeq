@@ -42,20 +42,34 @@ class TestRNASeqMethods(TestRNASeqMethodsSetup):
         pprint(output)
   
  def test_associateReads(self):
-        print("\n\n----------- test associateReads ----------")
+       print("\n\n----------- test associateReads ----------")
 
-        out =call(["run_KBaseRNASeq.sh",
-        "test/script_test/test_associateReads_input.json",
-        "test/script_test/test_associateReads_output.json",
-        "test/script_test/token.txt"])
+       out =call(["run_KBaseRNASeq.sh",
+       "test/script_test/test_associateReads_input.json",
+       "test/script_test/test_associateReads_output.json",
+       "test/script_test/token.txt"])
 
-        # print error code of Implementation
-        print(out);
+       # print error code of Implementation
+       print(out);
 
-        with open('test/script_test/test_associateReads_output.json') as o:
-                output =json.load(o)
-        pprint(output)
+       with open('test/script_test/test_associateReads_output.json') as o:
+               output =json.load(o)
+       pprint(output)
 
+# def test_TophatCall(self):
+#        print("\n\n----------- test TophatCall ----------")
+#
+#        out =call(["run_KBaseRNASeq.sh",
+#        "test/script_test/tophat_input.json",
+#        "test/script_test/tophat_output.json",
+#        "test/script_test/token.txt"])
+#
+#        # print error code of Implementation
+#        print(out);
+#
+#        with open('test/script_test/tophat_output.json') as o:
+#                output =json.load(o)
+#        pprint(output)
 
 # start the tests if run as a script
 if __name__ == '__main__':

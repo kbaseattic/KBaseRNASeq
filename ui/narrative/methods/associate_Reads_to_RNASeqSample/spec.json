@@ -160,67 +160,59 @@
 	"input_mapping" : [    
 	{
           "narrative_system_variable": "workspace",
-          "target_argument_position": 0
+          "target_property": 0
         },
         {
           "input_parameter": "singleend_sample",
-          "target_argument_position": 1
+          "target_property": "singleend_sample"
         },{
           "input_parameter": "pairedend_sample",
-          "target_argument_position": 2
+          "target_property": "pairedend_sample"
         },{
           "input_parameter": "analysis_id",
-          "target_argument_position": 3
+          "target_property": "analysis_id"
         },{
           "input_parameter": "sample_id",
-          "target_argument_position": 4 
+          "target_property": "sample_id"
         },{
           "input_parameter": "replicate_id",
-          "target_argument_position": 6
+          "target_property": "replicate_id"
         },{
           "input_parameter": "sample_desc",
-          "target_argument_position": 8
+          "target_property": "sample_desc"
         },{
           "input_parameter": "platform",
-          "target_argument_position": 7
+          "target_property": "platform"
         },{
           "input_parameter": "library_type",
-          "target_argument_position": 5
+          "target_property": "library_type"
         },{
           "input_parameter": "title",
-          "target_argument_position": 9
+          "target_property": "title"
         },{
           "input_parameter": "source",
-          "target_argument_position": 10
+          "target_property": "source"
         },{
           "input_parameter": "tissue",
-          "target_argument_position": 15
+          "target_property": "tissue"
         }, {
           "input_parameter": "condition",
-          "target_argument_position": 16
+          "target_property": "condition"
         }, {
           "input_parameter": "source_id",
-          "target_argument_position": 11
+          "target_property": "source_id"
         },{
           "input_parameter": "domain",
-          "target_argument_position": 13
+          "target_property": "domain"
         },{
           "input_parameter": "ext_source_date",
-          "target_argument_position": 12
+          "target_property": "ext_source_date"
 	},{
 	  "input_parameter": "genome_id",
-          "target_argument_position": 14
+          "target_property": "genome_id"
         }
       ],
       "output_mapping" : [
-	{
-	   "narrative_system_variable": "workspace",
-	   "target_property": "workspaceName"
-	},
-	{
-	   "input_parameter": "sample_id",
-	   "target_property": "output"
-      	},
 	{
       	 "service_method_output_path": [0],
 	 "target_property": "associateReads"

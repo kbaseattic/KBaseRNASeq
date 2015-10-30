@@ -80,7 +80,20 @@ class KBaseRNASeq:
         streamHandler.setFormatter(formatter)
         self.__LOGGER.addHandler(streamHandler)
         self.__LOGGER.info("Logger was set")
-
+	
+    def get_obj_info(self,objects,ws_id,token):
+	ret = []
+	ws_client=Workspace(url=self.__WS_URL, token=token)
+        for obj in  objects:
+         	try:
+                     obj_infos = ws_client.get_object_info_new({"objects": [{'name': obj, 'workspace': ws_id}]})
+		     print obj_infos
+                     ret.append("{0}/{1}/{2}".format(obj_infos[0][6],obj_infos[0][0],obj_infos[0][4]))
+		     print ret
+                except Exception, e:
+                     self.__LOGGER.error("Couldn't retrieve {0}:{1} from the workspace".format(ws_id, obj))
+                     raise KBaseRNASeqException("Couldn't retrieve %s:%s from the workspace , %s " %(ws_id,obj,e))
+	return ret
 
         #END_CONSTRUCTOR
         pass
@@ -104,26 +117,33 @@ class KBaseRNASeq:
         #BEGIN associateReads
 	user_token=ctx['token']
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
-	self.__LOGGER.info( "Uploading RNASeqSample {0}".format(out_obj['experiment_id']))
 	out = dict()
-	out['metadata'] = { k:v for k,v in params.iteritems() if not k in ('ws_id', "analysis_id") and v}
-
-	if "analysis_id" in params:
-		out['analysis_id'] = params['analysis_id']
-	if 'singleend_sample' in params:
+	out['metadata'] = { k:v for k,v in params.iteritems() if not k in ('ws_id', "analysis_id", "genome_id","singleend_sample","pairedend_sample") and v is not None }
+	self.__LOGGER.info( "Uploading RNASeqSample {0}".format(out['metadata']['sample_id']))
+	if "genome_id" in params and params['genome_id'] is not None:
+	    out["metadata"]["genome_id"] = self.get_obj_info([params["genome_id"]],params["ws_id"],user_token)[0]
+	if "analysis_id" in params and params['analysis_id'] is not None:
+            g_ref = self.get_obj_info([params['analysis_id']],params['ws_id'],user_token)[0]
+            out['analysis_id'] = g_ref
+	if 'singleend_sample' in params and params['singleend_sample']  is not None:
 	    try:
-               	out['singleend_sample'] = ws_client.get_objects(
+                s_res= ws_client.get_objects(
                                         [{'name' : params['singleend_sample'],
                                           'workspace' : params['ws_id']}])
+               	out['singleend_sample'] = s_res[0]['data']
+		print out['singleend_sample']
             except Exception,e:
-                raise KBaseRNASeqException("Error Downloading SingleEndlibrary object from the workspace {0}".format(params['singleend_sample']))
-	if 'pairedend_sample' in params:
+                raise KBaseRNASeqException("Error Downloading SingleEndlibrary object from the workspace {0},{1}".format(params['singleend_sample'],e))
+
+	if 'pairedend_sample' in params and params['pairedend_sample']  is not None:
  	    try:
-                out['pairedend_sample'] = ws_client.get_objects(
+		p_res= ws_client.get_objects(
                                          [{'name' : params['pairedend_sample'],
                                            'workspace' : params['ws_id']}])
+                out['pairedend_sample'] = p_res[0]['data']
+
             except Exception,e:
-                raise KBaseRNASeqException("Error Downloading PairedEndlibrary object from the workspace {0}".format(params['pairedend_sample']))
+                raise KBaseRNASeqException("Error Downloading PairedEndlibrary object from the workspace {0},{1}".format(params['pairedend_sample'],e))
 
 	try:
         	res= ws_client.save_objects(
@@ -131,13 +151,13 @@ class KBaseRNASeq:
                                  "objects": [{
                                                 "type":"KBaseRNASeq.RNASeqSample",
                                                 "data":out,
-                                                "name":out_obj['output_obj_name']}]
+                                                "name":out['metadata']['sample_id']}]
                                 })
-	        returnVal = {"workspace": params['ws_id'],"output" : out_obj['output_obj_name'] }
+	        returnVal = {"workspace": params['ws_id'],"output" : out['metadata']['sample_id'] }
 
 
 	except Exception ,e:
-		raise KBaseRNASeqException("Error Saving the object to workspace {0}".format(out_obj['output_obj_name']))
+		raise KBaseRNASeqException("Error Saving the object to workspace {0},{1} ".format(out['metadata']['sample_id'],e))
 	
 
         #END associateReads
@@ -155,10 +175,14 @@ class KBaseRNASeq:
         #BEGIN SetupRNASeqAnalysis
 	user_token=ctx['token']
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
-        out_obj = { k:v for k,v in params.iteritems() if not k in ('ws_id') and v}
+        out_obj = { k:v for k,v in params.iteritems() if not k in ('ws_id','genome_id','annotation_id') and v}
         pprint(out_obj)
         if "num_samples" in out_obj : out_obj["num_samples"] = int(out_obj["num_samples"])
         if "num_replicates" in out_obj : out_obj["num_replicates"] = int(out_obj["num_replicates"])
+	if "genome_id" in params and params['genome_id'] is not None: out_obj["genome_id"] = self.get_obj_info([params["genome_id"]],params["ws_id"],user_token)[0]
+	if "annotation_id" in params and params['annotation_id'] is not None: 
+	    g_ref = self.get_obj_info([params['annotation_id']],params['ws_id'],user_token)[0]
+	    out_obj['annotation_id'] = g_ref
         self.__LOGGER.info( "Uploading RNASeq Analysis object to workspace {0}".format(out_obj['experiment_id']))
 	try:
         	res= ws_client.save_objects(
@@ -171,7 +195,7 @@ class KBaseRNASeq:
 		returnVal = {"workspace": params['ws_id'],"output" : out_obj['experiment_id'] }
 
 	except Exception,e:
-		raise KBaseRNASeqException("Error Saving the object to workspace {0},{1} : {2}".format(out_obj['experiment_id'],e.errno,e.strerror))
+		raise KBaseRNASeqException("Error Saving the object to workspace {0},{1}".format(out_obj['experiment_id'],e))
 
 
         #END SetupRNASeqAnalysis
@@ -185,7 +209,7 @@ class KBaseRNASeq:
 
     def BuildBowtie2Index(self, ctx, params):
         # ctx is the context object
-        # return variables are: job_id
+        # return variables are: returnVal
         #BEGIN BuildBowtie2Index
 	user_token=ctx['token']
 	print "start"
@@ -283,11 +307,11 @@ class KBaseRNASeq:
         #END BuildBowtie2Index
 
         # At some point might do deeper type checking...
-        if not isinstance(job_id, basestring):
+        if not isinstance(returnVal, object):
             raise ValueError('Method BuildBowtie2Index return value ' +
-                             'job_id is not type basestring as required.')
+                             'returnVal is not type object as required.')
         # return the results
-        return [job_id]
+        return [returnVal]
 
     def Bowtie2Call(self, ctx, params):
         # ctx is the context object
@@ -304,7 +328,7 @@ class KBaseRNASeq:
 
     def TophatCall(self, ctx, params):
         # ctx is the context object
-        # return variables are: job_id
+        # return variables are: returnVal
         #BEGIN TophatCall
 	ws_client=Workspace(url=self.__WS_URL, token=user_token)
         hs = HandleService(url=self.__HS_URL, token=user_token)
@@ -313,11 +337,14 @@ class KBaseRNASeq:
 
 	    self.__LOGGER.info("Downloading RNASeq Sample file")
 	    try:
-                reads = ws_client.get_objects(
-                                        [{'name' : params['sample_id'],
-                                        'workspace' : params['ws_id']}])
+                ret  = ws_client.get_objects(
+                                        [{'name' : params['sample_id'],'workspace' : params['ws_id']},
+					{ 'name' : params['reference'], 'workspace' : params['ws_id']},
+					{ 'name' : params['bowtie_index'], 'workspace' : params['ws_id']},
+					{ 'name' : params['annotation_gtf'] , 'workspace' : params['ws_id']}])
             except Exception,e:
-		 raise KBaseRNASeqException("Error Downloading FASTQ object from the workspace {0}".format(params['sample_id'])) 
+		 raise KBaseRNASeqException("Error Downloading objects from the workspace ") 
+	    
 	    #Download reads from the JSON object
 	    genome = params['reference']
 	    if 'data' in reads: 
@@ -332,16 +359,16 @@ class KBaseRNASeq:
 	    ####Complete download reads
 		#raise KBaseRNASeqException("Error Downloading FASTA object from the workspace {0}".format(params['reference']))
                
-            self.__LOGGER.info( "Downloading FASTA from ContigSet")
+            #self.__LOGGER.info( "Downloading FASTA from ContigSet")
 	
-	    cmdstring = "%s/%s --workspace_service_url %s --workspace_name %s --working_directory %s --output_file_name %s --object_name %s --shock_service_url %s" %( self.__SCRIPTS_DIR,self.__SCRIPT_TYPE['ContigSet_to_fasta'],self.__WS_URL,self.__TEMP_DIR,genome,genome,self.__SHOCK_URL)
+	   # cmdstring = "%s/%s --workspace_service_url %s --workspace_name %s --working_directory %s --output_file_name %s --object_name %s --shock_service_url %s" %( self.__SCRIPTS_DIR,self.__SCRIPT_TYPE['ContigSet_to_fasta'],self.__WS_URL,self.__TEMP_DIR,genome,genome,self.__SHOCK_URL)
             
-	    tool_process = subprocess.Popen(cmdstring, stderr=subprocess.PIPE, shell=True)
-	    stdout, stderr = tool_process.communicate()
-	    if stdout is not None and len(stdout) > 0:
-		self.__LOGGER.info(stdout)
-	    if stderr is not None and len(stderr) > 0:
-		self.__LOGGER.error("Unable to Download Fasta from ContigSet: " + stderr)
+	    #tool_process = subprocess.Popen(cmdstring, stderr=subprocess.PIPE, shell=True)
+	    #stdout, stderr = tool_process.communicate()
+	    #if stdout is not None and len(stdout) > 0:
+            #	self.__LOGGER.info(stdout)
+	    #if stderr is not None and len(stderr) > 0:
+	    #	self.__LOGGER.error("Unable to Download Fasta from ContigSet: " + stderr)
 		
 
 	    #try:
@@ -376,112 +403,127 @@ class KBaseRNASeq:
         #END TophatCall
 
         # At some point might do deeper type checking...
-        if not isinstance(job_id, basestring):
+        if not isinstance(returnVal, object):
             raise ValueError('Method TophatCall return value ' +
-                             'job_id is not type basestring as required.')
+                             'returnVal is not type object as required.')
         # return the results
-        return [job_id]
+        return [returnVal]
 
     def CufflinksCall(self, ctx, params):
         # ctx is the context object
-        # return variables are: job_id
+        # return variables are: returnVal
         #BEGIN CufflinksCall
         #END CufflinksCall
 
         # At some point might do deeper type checking...
-        if not isinstance(job_id, basestring):
+        if not isinstance(returnVal, object):
             raise ValueError('Method CufflinksCall return value ' +
-                             'job_id is not type basestring as required.')
+                             'returnVal is not type object as required.')
         # return the results
-        return [job_id]
+        return [returnVal]
 
     def CuffmergeCall(self, ctx, params):
         # ctx is the context object
-        # return variables are: job_id
+        # return variables are: returnVal
         #BEGIN CuffmergeCall
         #END CuffmergeCall
 
         # At some point might do deeper type checking...
-        if not isinstance(job_id, basestring):
+        if not isinstance(returnVal, object):
             raise ValueError('Method CuffmergeCall return value ' +
-                             'job_id is not type basestring as required.')
+                             'returnVal is not type object as required.')
         # return the results
-        return [job_id]
+        return [returnVal]
 
     def CuffdiffCall(self, ctx, params):
         # ctx is the context object
-        # return variables are: job_id
+        # return variables are: returnVal
         #BEGIN CuffdiffCall
         #END CuffdiffCall
 
         # At some point might do deeper type checking...
-        if not isinstance(job_id, basestring):
+        if not isinstance(returnVal, object):
             raise ValueError('Method CuffdiffCall return value ' +
-                             'job_id is not type basestring as required.')
+                             'returnVal is not type object as required.')
         # return the results
-        return [job_id]
+        return [returnVal]
 
     def getAlignmentStats(self, ctx, params):
         # ctx is the context object
-        # return variables are: job_id
+        # return variables are: returnVal
         #BEGIN getAlignmentStats
+	returnVal =  {	"dataset" : { 
+			  "properly_paired" : 100 , 
+			  "multiple_alignments": 50 , 
+                          "singletons": 50 , 
+	                  "alignment_rate": 80,
+                          "mapped_reads" : 200,
+                          "unmapped_reads"  :  50,
+                          "total_reads" : 250,
+  	                  "mapped_reads" : {
+ 	                  	"introns" : 50,
+	                  	"exons" : 75,
+	                  	"splice_junctions" : 100,
+				"intergenic_regions" : 55
+			  }
+		      } }
         #END getAlignmentStats
 
         # At some point might do deeper type checking...
-        if not isinstance(job_id, basestring):
+        if not isinstance(returnVal, object):
             raise ValueError('Method getAlignmentStats return value ' +
-                             'job_id is not type basestring as required.')
+                             'returnVal is not type object as required.')
         # return the results
-        return [job_id]
+        return [returnVal]
 
     def createExpressionHistogram(self, ctx, params):
         # ctx is the context object
-        # return variables are: job_id
+        # return variables are: returnVal
         #BEGIN createExpressionHistogram
         #END createExpressionHistogram
 
         # At some point might do deeper type checking...
-        if not isinstance(job_id, basestring):
+        if not isinstance(returnVal, object):
             raise ValueError('Method createExpressionHistogram return value ' +
-                             'job_id is not type basestring as required.')
+                             'returnVal is not type object as required.')
         # return the results
-        return [job_id]
+        return [returnVal]
 
     def cummeRbundCall(self, ctx, params):
         # ctx is the context object
-        # return variables are: job_id
+        # return variables are: returnVal
         #BEGIN cummeRbundCall
         #END cummeRbundCall
 
         # At some point might do deeper type checking...
-        if not isinstance(job_id, basestring):
+        if not isinstance(returnVal, object):
             raise ValueError('Method cummeRbundCall return value ' +
-                             'job_id is not type basestring as required.')
+                             'returnVal is not type object as required.')
         # return the results
-        return [job_id]
+        return [returnVal]
 
     def createExpressionSeries(self, ctx, params):
         # ctx is the context object
-        # return variables are: job_id
+        # return variables are: returnVal
         #BEGIN createExpressionSeries
         #END createExpressionSeries
 
         # At some point might do deeper type checking...
-        if not isinstance(job_id, basestring):
+        if not isinstance(returnVal, object):
             raise ValueError('Method createExpressionSeries return value ' +
-                             'job_id is not type basestring as required.')
+                             'returnVal is not type object as required.')
         # return the results
-        return [job_id]
+        return [returnVal]
 
     def createExpressionMatrix(self, ctx, params):
         # ctx is the context object
-        # return variables are: job_id
+        # return variables are: returnVal
         #BEGIN createExpressionMatrix
         #END createExpressionMatrix
 
         # At some point might do deeper type checking...
-        if not isinstance(job_id, basestring):
+        if not isinstance(returnVal, object):
             raise ValueError('Method createExpressionMatrix return value ' +
-                             'job_id is not type basestring as required.')
+                             'returnVal is not type object as required.')
         # return the results
-        return [job_id]
+        return [returnVal]

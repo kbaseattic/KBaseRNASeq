@@ -88,8 +88,8 @@
    	} ReferenceAnnotation;
 
   /*
-      Id for ReferenceAnnotation
-      @id ws ReferenceAnnotation
+      Id for KBaseRNASeq.ReferenceAnnotation
+      @id ws KBaseRNASeq.ReferenceAnnotation
    */
 
         typedef string ws_referenceAnnotation_id;
@@ -110,8 +110,8 @@
         }Bowtie2Indexes;
 
   /*
-      Id for BowtieIndexes
-      @id ws BowtieIndexes
+      Id for KBaseRNASeq.BowtieIndexes
+      @id ws KBaseRNASeq.BowtieIndexes
    */
 
         typedef string ws_bowtieIndex_id;
@@ -425,7 +425,7 @@ async funcdef SetupRNASeqAnalysis(SetupRNASeqAnalysisParams params)
 	}Bowtie2IndexParams;
 
 async funcdef BuildBowtie2Index(Bowtie2IndexParams params)
-     returns(string job_id) authentication required;
+     returns(UnspecifiedObject) authentication required;
    
    typedef structure{
 	int skip;
@@ -522,12 +522,21 @@ typedef mapping<string Tophat_opts,t_opts opts_tophat> t_opts_str;
      string output_obj_name;
      ws_reference_assembly_id reference;
      ws_bowtieIndex_id bowtie_index;
-     t_opts_str opts_dict;
+     /* t_opts_str opts_dict; */ 
+     int read_mismatches;
+     int read_gap_length;
+     int read_edit_dist;
+     int min_intron_length;
+     int max_intron_length;
+     int num_threads;
+     string report_secondary_alignments;
+     string no_coverage_search;
+     string library_type; 
      ws_referenceAnnotation_id annotation_gtf;
      }TophatParams;
 
 async funcdef TophatCall(TophatParams params)
-     returns (string job_id) authentication required;
+     returns (UnspecifiedObject) authentication required;
 
  typedef structure{
         int num_threads;
@@ -567,7 +576,7 @@ typedef structure{
         }CufflinksParams;
 
 async funcdef CufflinksCall(CufflinksParams params)
-    returns (string job_id) authentication required;
+    returns (UnspecifiedObject) authentication required;
 
 typedef structure{
 	string ws_id;
@@ -578,7 +587,7 @@ typedef structure{
 
  
 async funcdef CuffmergeCall(CuffmergeParams params)
-    returns (string job_id) authentication required;
+    returns (UnspecifiedObject) authentication required;
 
 typedef structure{
         int num-threads;
@@ -608,7 +617,7 @@ typedef mapping <string diff_opts,opts_cuffdiff> cuffdiff_opts;
         }CuffdiffParams;
 
 async funcdef CuffdiffCall(CuffdiffParams params)
-   returns (string job_id) authentication required;
+   returns (UnspecifiedObject) authentication required;
 
 
 typedef structure{
@@ -618,7 +627,7 @@ typedef structure{
         }AlignmentStatsParams;
 
 async funcdef getAlignmentStats(AlignmentStatsParams params)
-   returns (string job_id) authentication required;
+   returns (UnspecifiedObject) authentication required;
 
 typedef structure{
 	string ws_id;
@@ -628,7 +637,7 @@ typedef structure{
         }ExpressionHistogramParams;
         
 async funcdef createExpressionHistogram(ExpressionHistogramParams params)
-   returns (string job_id) authentication required;
+   returns (UnspecifiedObject) authentication required;
 
 typedef structure{
 	string ws_id;
@@ -643,10 +652,10 @@ typedef structure{
 	}CummeRbundParams;
 	
 async funcdef cummeRbundCall(CummeRbundParams params)
-   returns (string job_id) authentication required;
+   returns (UnspecifiedObject) authentication required;
 
 async funcdef createExpressionSeries(ExpressionSeriesParams params)
-   returns (string job_id) authentication required;
+   returns (UnspecifiedObject) authentication required;
 
 typedef structure{
 	string ws_id;
@@ -655,6 +664,6 @@ typedef structure{
         }ExpressionMatrixParams;
 
 funcdef createExpressionMatrix(ExpressionMatrixParams params)
-   returns (string job_id) authentication required;
+   returns (UnspecifiedObject) authentication required;
 
 };
