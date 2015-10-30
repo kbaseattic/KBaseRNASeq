@@ -1,17 +1,20 @@
 {	
 	"version":"1.1",
-	"method":"KBaseRNASeq.SetupRNASeqAnalysis",
+	"method":"KBaseRNASeq.associateReads",
 	"context": null,
 	"params":[ 	
 	{
-  	"Library_type": "singleEnd",
-  	"num_replicates": "2",
-  	"external_source_date": null,
-  	"title": "qweqe",
-  	"publication_id": null,
-  	"annotation_id": null,
-  	"num_samples": "2",
-  	"experiment_desc": "qweqwe",
+	"singleend_sample": "Ptricocarpa_SE" ,
+	"pairedend_sample" : null ,
+	"analysis_id" : "test_experiment1",
+	"domain" : "plants" ,
+	"genome_id" : "Populus_trichocarpa",
+  	"library_type": "singleEnd",
+  	"sample_id": "Ptrichocarpa_test_RNASeq_SE",
+	"replicate_id" : "1" ,
+  	"ext_source_date": null,
+  	"title": "test",
+  	"sample_desc": "qweqwe",
   	"platform": "qweqwe",
   	"tissue": [
     		"sdfsf",
@@ -19,11 +22,8 @@
     		"dfsfsdf"
   		],
   	"source": "dsfsfsdf",
-  	"experiment_id": "sri_exp_1",
-  	"experiment_design": "qweqwe",
   	"source_id": null,
-  	"ws_id": "srividya22:1445021847193",
-  	"genome_id": null,
+  	"ws_id": "RNASeqTestData",
   	"condition": [
     			"sdfsdf",
     			"sdfsf",
