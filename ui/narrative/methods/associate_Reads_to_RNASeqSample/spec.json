@@ -47,7 +47,7 @@
     "field_type" : "text"
   },{
     "id" : "replicate_id",
-    "optional" : true,
+    "optional" : false,
     "advanced" : false,
     "allow_multiple" : false,
     "default_values" : [ "" ],
@@ -140,8 +140,8 @@
   },{
     "id" : "domain",
     "optional" : true,
-    "advanced" : true,
-    "allow_multiple" : true,
+    "advanced" : false,
+    "allow_multiple" : false,
     "default_values" : [ "" ],
     "field_type" : "text"
   },{

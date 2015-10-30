@@ -15,10 +15,7 @@
     "advanced" : false,
     "allow_multiple" : false,
     "default_values" : [ "" ],
-    "field_type" : "text",
-    /*"text_options" : {
-      "valid_ws_types" : [ "KBaseRNASeq.RNASeqSample" ]
-    }*/
+    "field_type" : "text"
   } ],
   "behavior" : {
     "service-mapping" : {
