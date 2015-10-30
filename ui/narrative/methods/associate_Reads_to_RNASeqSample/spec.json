@@ -36,7 +36,7 @@
     "default_values" : [ "" ],
     "field_type" : "text",
     "text_options" : {
-      "valid_ws_types" : [ "KBaseAssembly.RNASeqAnalysis" ]
+      "valid_ws_types" : [ "KBaseRNASeq.RNASeqAnalysis" ]
     }
   },{
     "id" : "sample_id",
@@ -160,7 +160,7 @@
 	"input_mapping" : [    
 	{
           "narrative_system_variable": "workspace",
-          "target_property": 0
+          "target_property": "ws_id"
         },
         {
           "input_parameter": "singleend_sample",

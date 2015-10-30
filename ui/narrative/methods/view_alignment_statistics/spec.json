@@ -16,9 +16,9 @@
     "allow_multiple" : false,
     "default_values" : [ "" ],
     "field_type" : "text",
-    "text_options" : {
+    /*"text_options" : {
       "valid_ws_types" : [ "KBaseRNASeq.RNASeqSample" ]
-    }
+    }*/
   } ],
   "behavior" : {
     "service-mapping" : {
@@ -42,5 +42,6 @@
 	}
       ]
     }
-  }
+  },
+  "job_id_output_field" : "docker"
 }
