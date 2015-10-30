@@ -71,6 +71,22 @@ class TestRNASeqMethods(TestRNASeqMethodsSetup):
 #                output =json.load(o)
 #        pprint(output)
 
+ def test_getAlignmentStats(self):
+       print("\n\n----------- test Get Alignment Statistics ----------")
+
+       out =call(["run_KBaseRNASeq.sh",
+       "test/script_test/test_getAlignmentStats_input.json",
+       "test/script_test/test_getAlignmentStats_output.json",
+       "test/script_test/token.txt"])
+
+       # print error code of Implementation
+       print(out);
+
+       with open('test/script_test/test_getAlignmentStats_output.json') as o:
+               output =json.load(o)
+       pprint(output)
+
+
 # start the tests if run as a script
 if __name__ == '__main__':
     unittest.main()

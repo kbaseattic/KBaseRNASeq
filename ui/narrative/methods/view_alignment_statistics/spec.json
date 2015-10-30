@@ -17,20 +17,29 @@
     "default_values" : [ "" ],
     "field_type" : "text",
     "text_options" : {
-      "valid_ws_types" : [ "KBaseRNASeq.RNASeqSampleAlignment" ]
+      "valid_ws_types" : [ "KBaseRNASeq.RNASeqSample" ]
     }
   } ],
   "behavior" : {
-    "none" : {
-      "output_mapping" : [
+    "service-mapping" : {
+    "url" : "",
+    "name" : "KBaseRNASeq",
+    "method" : "getAlignmentStats",
+    "input_mapping" : [
         {
           "input_parameter": "alignment_sample_id",
           "target_property": "alignment_sample_id"
         },
         {
           "narrative_system_variable": "workspace",
-          "target_property": "workspaceID"
+          "target_property": "ws_id"
         }
+    ],
+    "output_mapping": [
+	{
+	 "service_method_output_path": [0],
+         "target_property": "getAlignmentStats"
+	}
       ]
     }
   }

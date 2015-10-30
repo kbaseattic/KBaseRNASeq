@@ -1,0 +1,10 @@
+{	
+	"version":"1.1",
+	"method":"KBaseRNASeq.getAlignmentStats",
+	"context": null,
+	"params":[ 	
+	{
+  	"ws_id": "RNASeqTestData",
+	"alignment_sample_id" : "Ptrichocarpa_Root_Sample_Alignment"
+	}]	
+}
