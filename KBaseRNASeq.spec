@@ -622,7 +622,8 @@ async funcdef CuffdiffCall(CuffdiffParams params)
 
 typedef structure{
 	string ws_id;
-        ws_samplealignment_id alignment_sample_id;
+        /*ws_samplealignment_id alignment_sample_id;*/
+	string alignment_sample_id;
 	string output_obj_name;
         }AlignmentStatsParams;
 
