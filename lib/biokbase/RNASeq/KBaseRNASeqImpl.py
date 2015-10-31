@@ -12,6 +12,10 @@ from pprint import pprint
 import script_util
 from biokbase.workspace.client import Workspace
 from biokbase.auth import Token
+try:
+    from biokbase.HandleService.Client import HandleService
+except:
+    from biokbase.AbstractHandle.Client import AbstractHandle as HandleService
 
 _KBaseRNASeq__DATA_VERSION = "0.2"
 
@@ -20,6 +24,8 @@ class KBaseRNASeqException(Exception):
 		self.msg = msg
 	def __str__(self):
 		return repr(self.msg)
+
+
 #END_HEADER
 
 
@@ -39,6 +45,10 @@ class KBaseRNASeq:
     # the latter method is running.
     #########################################
     #BEGIN_CLASS_HEADER
+    __TEMP_DIR = 'temp'
+    __BOWTIE_DIR = 'bowtie'
+    __TOPHAT_DIR = 'tophat'
+    __CUFFLINKS_DIR = 'cufflinks'
     #END_CLASS_HEADER
 
     # config contains contents of config file in a hash or None if it couldn't
@@ -51,6 +61,8 @@ class KBaseRNASeq:
               self.__WS_URL = config['ws_url']
         if 'shock_url' in config:
               self.__SHOCK_URL = config['shock_url']
+	if 'hs_url' in config:
+	      self.__HS_URL = config['hs_url']
         if 'temp_dir' in config:
               self.__TEMP_DIR = config['temp_dir']
         if 'bowtie_dir' in config:
@@ -64,9 +76,9 @@ class KBaseRNASeq:
 	if 'scripts_dir' in config:
 	      self.__SCRIPTS_DIR = config['scripts_dir']
 	
-	__SCRIPT_TYPE = { 'ContigSet_to_fasta' : 'ContigSet_to_fasta.py',
-			  'RNASeqSample_to_fastq' : 'RNASeqSample_to_fastq',
-			} 
+	self.__SCRIPT_TYPE = { 'ContigSet_to_fasta' : 'ContigSet_to_fasta.py',
+			  	'RNASeqSample_to_fastq' : 'RNASeqSample_to_fastq',
+			     } 
 
         # logging
         self.__LOGGER = logging.getLogger('KBaseRNASeq')
@@ -81,20 +93,6 @@ class KBaseRNASeq:
         self.__LOGGER.addHandler(streamHandler)
         self.__LOGGER.info("Logger was set")
 	
-    def get_obj_info(self,objects,ws_id,token):
-	ret = []
-	ws_client=Workspace(url=self.__WS_URL, token=token)
-        for obj in  objects:
-         	try:
-                     obj_infos = ws_client.get_object_info_new({"objects": [{'name': obj, 'workspace': ws_id}]})
-		     print obj_infos
-                     ret.append("{0}/{1}/{2}".format(obj_infos[0][6],obj_infos[0][0],obj_infos[0][4]))
-		     print ret
-                except Exception, e:
-                     self.__LOGGER.error("Couldn't retrieve {0}:{1} from the workspace".format(ws_id, obj))
-                     raise KBaseRNASeqException("Couldn't retrieve %s:%s from the workspace , %s " %(ws_id,obj,e))
-	return ret
-
         #END_CONSTRUCTOR
         pass
 
@@ -121,9 +119,9 @@ class KBaseRNASeq:
 	out['metadata'] = { k:v for k,v in params.iteritems() if not k in ('ws_id', "analysis_id", "genome_id","singleend_sample","pairedend_sample") and v is not None }
 	self.__LOGGER.info( "Uploading RNASeqSample {0}".format(out['metadata']['sample_id']))
 	if "genome_id" in params and params['genome_id'] is not None:
-	    out["metadata"]["genome_id"] = self.get_obj_info([params["genome_id"]],params["ws_id"],user_token)[0]
+	    out["metadata"]["genome_id"] = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params["genome_id"]],params["ws_id"],user_token)[0]
 	if "analysis_id" in params and params['analysis_id'] is not None:
-            g_ref = self.get_obj_info([params['analysis_id']],params['ws_id'],user_token)[0]
+            g_ref = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params['analysis_id']],params['ws_id'],user_token)[0]
             out['analysis_id'] = g_ref
 	if 'singleend_sample' in params and params['singleend_sample']  is not None:
 	    try:
@@ -179,9 +177,9 @@ class KBaseRNASeq:
         pprint(out_obj)
         if "num_samples" in out_obj : out_obj["num_samples"] = int(out_obj["num_samples"])
         if "num_replicates" in out_obj : out_obj["num_replicates"] = int(out_obj["num_replicates"])
-	if "genome_id" in params and params['genome_id'] is not None: out_obj["genome_id"] = self.get_obj_info([params["genome_id"]],params["ws_id"],user_token)[0]
+	if "genome_id" in params and params['genome_id'] is not None: out_obj["genome_id"] = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params["genome_id"]],params["ws_id"],user_token)[0]
 	if "annotation_id" in params and params['annotation_id'] is not None: 
-	    g_ref = self.get_obj_info([params['annotation_id']],params['ws_id'],user_token)[0]
+	    g_ref = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params['annotation_id']],params['ws_id'],user_token)[0]
 	    out_obj['annotation_id'] = g_ref
         self.__LOGGER.info( "Uploading RNASeq Analysis object to workspace {0}".format(out_obj['experiment_id']))
 	try:
@@ -215,97 +213,67 @@ class KBaseRNASeq:
 	print "start"
         #svc_token = Token(user_id=self.__SVC_USER, password=self.__SVC_PASS).token
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
-	hs = HandleService(url=self.__HS_URL, token=user_token)
+	#hs = HandleService(url=self.__HS_URL, token=user_token)
 	try:
 	    self.__LOGGER.info( "Downloading KBaseGenome.ContigSet object from workspace")
             try:
-	    	assembly = ws_client.get_objects(
-                                	[{'name' : params['reference'],
-                                  	'workspace' : params['ws_id']}])
-	    except Exception,e:
-		raise KBaseRNASeqException("Error Downloading FASTA object from the workspace {0}".format(params['reference']))	
+	    #	assembly = ws_client.get_objects(
+            #                    	[{'name' : params['reference'],
+            #                      	'workspace' : params['ws_id']}])['data']
+	    #except Exception,e:
+            #   raise KBaseRNASeqException("Error Downloading FASTA object from the workspace {0}".format(params['reference']))	
 
 	    ## Check if the bowtie_dir is present; remove files in bowtie_dir if exists ; create a new dir if doesnt exists	
-	    bowtie_dir = self.__BOWTIE_DIR
-	    if os.path.exists(bowtie_dir):
-		files=glob.glob("%s/*" % bowtie_dir)
-		for f in files: os.remove(f)
-	    if not os.path.exists(bowtie_dir): os.makedirs(bowtie_dir)
+	    	bowtie_dir = self.__BOWTIE_DIR
+	    	if os.path.exists(bowtie_dir):
+			files=glob.glob("%s/*" % bowtie_dir)
+			for f in files: os.remove(f)
+	   	if not os.path.exists(bowtie_dir): os.makedirs(bowtie_dir)
 	   
-	    ## dump fasta object to a file in bowtie_dir
-	       
-	    ## Run the bowtie_indexing on the  command line
+	    	## dump fasta object to a file in bowtie_dir
 
-	    ## Zip the Index files 	
+	   	dumpfasta= "--workspace_service_url {0} --workspace_name {1} --working_directory {2} --output_file_name {3} --object_name {4} --shock_service_url {5}".format(self.__WS_URL , params['ws_id'],bowtie_dir,params['reference'],params['reference'],self.__SHOCK_URL)
+		print dumpfasta
+
+            	script_util.runProgram(self.__LOGGER,self.__SCRIPT_TYPE['ContigSet_to_fasta'],dumpfasta,self.__SCRIPTS_DIR,os.getcwd())
+	    except Exception,e:
+		raise KBaseRNASeqException("Error Creating  FASTA object from the workspace {0},{1}".format(params['reference'],e))
+		 
+	   
+	    ## Run the bowtie_indexing on the  command line
+	    try:
+	    	bowtie_index_cmd = "{0} {1}".format(params['reference'],params['reference']) 
+	    	script_util.runProgram(self.__LOGGER,"bowtie2-build",bowtie_index_cmd,None,bowtie_dir)
+	    except Exception,e:
+		raise KBaseRNASeqException("Error while running BowtieIndex {0},{1}".format(params['reference'],e))
+
+		
+	    ## Zip the Index files
+		 	
 	    try:
 		script_util.zip_files(self.__LOGGER, bowtie_dir, "%s.zip" % params['output_obj_name'])
 	    except Exception, e:
 		raise KBaseRNASeqException("Failed to compress the index: %s" %(e))
 	    ## Upload the file using handle service
 	    try:
-		handle = hs.upload("%s.zip" % (params['output_obj_name']))
+		bowtie_handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)	
 	    except Exception, e:
 		raise KBaseRNASeqException("Failed to upload the index: %s" %(e))
-	    ## Prepare handle dict object
-	        	
-	    ## Prepare bowtie indexes workspace object
-	    self.__LOGGER.info( "Preparing the workspace object")
-
+	    bowtie2index = { "handle" : bowtie_handle }	
 	    ## Save object to workspace
 	    self.__LOGGER.info( "Saving bowtie indexes object to  workspace")
 	    res= ws_client.save_objects(
 					{"workspace":params['ws_id'],
 					 "objects": [{
 					 "type":"KBaseRNASeq.Bowtie2Indexes",
-					 "data":bi,
+					 "data":bowtie_handle,
 					 "name":params['output_obj_name']}
 					]})
-	
+	    returnVal = { "output" : params['output_obj_name'],"workspace" : params['ws_id'] }	
 	except Exception, e:
-		raise 
-    
-	#if 'handle' in assembly and 'id' in assembly['handle']:
-	#	shock_id = assembly['handle']['id']
-	#script_name = "/kb/dev_container/modules/KBaseRNASeq/lib/biokbase/RNASeq/download_ContigSet.py"
-	#res = subprocess.Popen(["python", script_name , "--workspace_service_url" ,self.__WS_URL,  "--workspace_name" , params['ws_id'] , --working_directory ,self.__TEMP_DIR , --output_file_name , params['output_obj_name'] , "--object_name" , params['reference'] , "--shock_service_url" , self.__SHOCK_URL ],stderr=subprocess.STDOUT,stdout = subprocess.PIPE )
-	
-	#out,err = res.communicate()
+		raise KBaseRNASeqException("Build Bowtie2Index failed: %s" %(e))
 
-	pprint(params)
-	job_id = "no_job_id"
-	#pull data from shock
-
-	#script_util.download_file_from_shock(self.__LOGGER,
-        #                         shock_service_url = self.__SHOCK_URL, 
-        #                         shock_id = shock_id,
-        #                         filename = self.__INDEX_ZIP,
-        #                         directory = self.__TEMP_DIR,
-        #                         token = svc_token)
-
-
-	#assembly_file = self.__TEMP_DIR + "/" + params["output_obj_name"] 
-	#index = subprocess.Popen(["bowtie-build" , assembly_file , assembly_file], stderr=subprocess.STDOUT,stdout = subprocess.PIPE )
-	#i_out, ierr = index.communicate()
-	
-	#upload file to shock
-	#out_url= 
-	
- 	# create a dict for the handle object and wra Bowtie2Indexes
-
-	#output =
-	
-	# save objec to workspace
-
-	#ws_client.save_objects(
-        #    {"workspace":params['ws_id'],
-        #    "objects": [{
-        #        "type":"KBaseRNASeq.Bowtie2Indexes",
-        #        "data": output,
-        #        "name":params['out_obj_name']}
-        #    ]})
-        #job_id = { "job_id" : "no_job" }	
-        #END BuildBowtie2Index
-
+	 
         # At some point might do deeper type checking...
         if not isinstance(returnVal, object):
             raise ValueError('Method BuildBowtie2Index return value ' +

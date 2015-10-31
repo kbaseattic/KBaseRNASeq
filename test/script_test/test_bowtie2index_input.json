@@ -1,0 +1,11 @@
+{	
+	"version":"1.1",
+	"method":"KBaseRNASeq.BuildBowtie2Index",
+	"context": null,
+	"params":[ 	
+	{
+  	"ws_id": "RNASeqTestData",
+	"reference" : "Shewanella_oneidensis_MR-1_contigs",
+	"output_obj_name" : "test_bowtie_index"
+	}]	
+}

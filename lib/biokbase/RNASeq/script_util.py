@@ -4,6 +4,7 @@ import json
 import re
 import io
 import urllib
+import hashlib
 import requests
 import logging
 import time
@@ -285,26 +286,100 @@ def getHandles(logger = None,
                 raise
     return handles
 
-def dump_fasta(logger=None,
-	       ws_url=None,
-	       ws_name=None,
-	       out_dir=None,
-	       token =None):
+def get_obj_info(logger,ws_url,objects,ws_id,token):
     """
-    Retrieve Fasta object from a ContigSet object.
+    function to get the workspace object id from a object name
     """
+    ret = []
+    ws_client=Workspace(url=ws_url, token=token)
+    for obj in  objects:
+    	try:
+            obj_infos = ws_client.get_object_info_new({"objects": [{'name': obj, 'workspace': ws_id}]})
+            print obj_infos
+            ret.append("{0}/{1}/{2}".format(obj_infos[0][6],obj_infos[0][0],obj_infos[0][4]))
+            print ret
+        except Exception, e:
+                     logger.error("Couldn't retrieve %s:%s from the workspace , %s " %(ws_id,obj,e))
+    return ret
+
+def whereis(program):
+    """
+    returns path of program if it exists in your ``$PATH`` variable or ``None`` otherwise
+    """
+    for path in os.environ.get('PATH', '').split(':'):
+    	if os.path.exists(os.path.join(path, program)) and not os.path.isdir(os.path.join(path, program)):
+            return os.path.join(path, program)
+    return None
+
+def runProgram(logger=None,
+	       progName=None,
+	       argStr=None,
+	       script_dir=None,
+	       working_dir=None):
+        """
+        Convenience func to handle calling and monitoring output of external programs.
     
-    ws_client=Workspace(ws_url, token=user_token)
-    assembly = ws_client.get_objects(
-				    [{'name' : params['reference'],
-				     'workspace' : params['ws_id']}])
-
-    return [ k for k,v in json.loads(assembly).items()]
+        :param progName: name of system program command
+        :param argStr: string containing command line options for ``progName``
     
+        :returns: subprocess.communicate object
+        """
+
+        # Ensure program is callable.
+        if script_dir is not None:
+                progPath= os.path.join(script_dir,progName)
+        else:
+		progPath = whereis(progName)
+               	if not progPath:
+                    raise logger.error(None,'"%s" command not found in your PATH environmental variable.' % (progName))
+
+        # Construct shell command
+        cmdStr = "%s %s" % (progPath,argStr)
+
+        # Set up process obj
+        process = subprocess.Popen(cmdStr,
+                               shell=True,
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE,
+                               cwd=working_dir)
+        # Get results
+        result  = process.communicate()
+
+        # Check returncode for success/failure
+        if process.returncode != 0:
+                raise logger.error(process.returncode,result[1],progName)
+
+        # Return result
+        return result
+
+def hashfile(filepath):
+       sha1 = hashlib.sha1()
+       f = open(filepath, 'rb')
+       try:
+         sha1.update(f.read())
+       finally:
+         f.close()
+       return sha1.hexdigest()
 
 
-
-
-
-
-
+def create_shock_handle(logger=None,
+			file_name=None,
+			shock_url=None,
+			handle_url=None,
+			obj_type=None,
+			token=None):
+     	
+        hs = HandleService(url=handle_url, token=token)
+        f_shock = upload_file_to_shock(logger,shock_url,file_name,'{}',True,token)
+        f_sha1 =  hashfile(file_name)
+        hid = getHandles(logger,shock_url,handle_url,[f_shock['id']],None,token)[0]
+        handle = { 'hid' : hid , 
+	           "file_name" : f_shock['file']['name'] , 
+                   "id" : f_shock['id'] , 
+                   "type" : obj_type ,
+	           "url" : shock_url,
+	           "remote_md5" : f_shock['file']['checksum']['md5'],
+	           "remote_sha1" : f_sha1 }	
+   
+        return handle
+     

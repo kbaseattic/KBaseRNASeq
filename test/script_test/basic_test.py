@@ -56,6 +56,21 @@ class TestRNASeqMethods(TestRNASeqMethodsSetup):
                output =json.load(o)
        pprint(output)
 
+ def test_BuildBowtie2Index(self):
+       print("\n\n----------- test BuildBowtie2index ----------")
+
+       out =call(["run_KBaseRNASeq.sh",
+       "test/script_test/test_bowtie2index_input.json",
+       "test/script_test/test_bowtie2index_output.json",
+       "test/script_test/token.txt"])
+
+       # print error code of Implementation
+       print(out);
+
+       with open('test/script_test/test_bowtie2index_output.json') as o:
+               output =json.load(o)
+       pprint(output)
+
 # def test_TophatCall(self):
 #        print("\n\n----------- test TophatCall ----------")
 #
