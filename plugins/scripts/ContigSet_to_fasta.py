@@ -19,7 +19,7 @@ import biokbase.workspace.client
 # Note the logger has different levels it could be run.  See: https://docs.python.org/2/library/logging.html#logging-levels
 # The default level is set to INFO which includes everything except DEBUG
 def transform(workspace_service_url=None, shock_service_url=None, handle_service_url=None, 
-              workspace_name=None, object_name=None, object_id=None, 
+              workspace_name=None,token=None,object_name=None, object_id=None, 
               object_version_number=None, working_directory=None, output_file_name=None, 
               level=logging.INFO, logger=None):  
     """
@@ -162,7 +162,14 @@ if __name__ == "__main__":
                         action="store", 
                         type=str, 
                         nargs="?", 
-                        required=True)
+                        required=True)	
+
+    parser.add_argument("--token",
+                        help="Auth Token",
+                        action="store",
+                        type=str,
+                        nargs="?",
+                        required=False)
 
     parser.add_argument("--output_file_name", 
                         help="output_file_name", 
@@ -209,7 +216,8 @@ if __name__ == "__main__":
         transform(workspace_service_url = args.workspace_service_url, 
                   shock_service_url = args.shock_service_url, 
                   handle_service_url = args.handle_service_url, 
-                  workspace_name = args.workspace_name, 
+                  workspace_name = args.workspace_name,
+		  token = args.token, 
                   object_name = args.object_name, 
                   object_id = args.object_id, 
                   object_version_number = args.object_version_number, 
