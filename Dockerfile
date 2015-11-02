@@ -19,6 +19,13 @@ RUN \
   git clone https://github.com/kbase/genome_util && \
   cd /kb/dev_container/modules/genome_util && \
   make && make deploy
+RUN \
+  cd /kb/module && \
+  rm -rf KBaseRNASeq && \
+  git clone https://github.com/kbase/KBaseRNASeq && \
+  cd /kb/dev_container/modules/KBaseRNASeq && \
+  /bin/sh deps/kb_tophat/install-tophat.sh
+
 ####END OF KBASE #############################
 #apt-get update && apt-get install -y ant && \
 # -----------------------------------------
@@ -26,7 +33,7 @@ RUN \
 # any required dependencies for your module.
 # -----------------------------------------
 COPY ./ /kb/module
-ENV PATH=$PATH:/kb/dev_container/modules/kb_sdk/bin
+ENV PATH=$PATH:/kb/module/bin:/kb/dev_container/modules/kb_sdk/bin
 WORKDIR /kb/module
 RUN make
 #RUN make deploy
