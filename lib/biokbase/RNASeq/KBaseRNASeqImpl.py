@@ -19,7 +19,7 @@ except:
 
 _KBaseRNASeq__DATA_VERSION = "0.2"
 
-class KBaseRNASeqException(Exception):
+class KBaseRNASeqException(BaseException):
 	def __init__(self, msg):
 		self.msg = msg
 	def __str__(self):
