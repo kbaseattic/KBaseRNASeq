@@ -237,7 +237,7 @@ class KBaseRNASeq:
 
             	script_util.runProgram(self.__LOGGER,self.__SCRIPT_TYPE['ContigSet_to_fasta'],dumpfasta,self.__SCRIPTS_DIR,os.getcwd())
 	    except Exception,e:
-		raise KBaseRNASeqException("Error Creating  FASTA object from the workspace {0},{1}".format(params['reference'],e))
+		raise KBaseRNASeqException("Error Creating  FASTA object from the workspace {0},{1},{2}".format(params['reference'],os.getcwd(),e))
 		 
 	   
 	    ## Run the bowtie_indexing on the  command line
