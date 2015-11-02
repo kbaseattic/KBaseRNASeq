@@ -209,6 +209,70 @@ class KBaseRNASeq:
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN BuildBowtie2Index
+	user_token=ctx['token']
+	print "start"
+        #svc_token = Token(user_id=self.__SVC_USER, password=self.__SVC_PASS).token
+        ws_client=Workspace(url=self.__WS_URL, token=user_token)
+	#hs = HandleService(url=self.__HS_URL, token=user_token)
+	try:
+	    self.__LOGGER.info( "Downloading KBaseGenome.ContigSet object from workspace")
+            try:
+	    #	assembly = ws_client.get_objects(
+            #                    	[{'name' : params['reference'],
+            #                      	'workspace' : params['ws_id']}])['data']
+	    #except Exception,e:
+            #   raise KBaseRNASeqException("Error Downloading FASTA object from the workspace {0}".format(params['reference']))	
+
+	    ## Check if the bowtie_dir is present; remove files in bowtie_dir if exists ; create a new dir if doesnt exists	
+	    	bowtie_dir = self.__BOWTIE_DIR
+	    	if os.path.exists(bowtie_dir):
+			files=glob.glob("%s/*" % bowtie_dir)
+			for f in files: os.remove(f)
+	   	if not os.path.exists(bowtie_dir): os.makedirs(bowtie_dir)
+	   
+	    	## dump fasta object to a file in bowtie_dir
+
+	   	dumpfasta= "--workspace_service_url {0} --workspace_name {1} --working_directory {2} --output_file_name {3} --object_name {4} --shock_service_url {5}".format(self.__WS_URL , params['ws_id'],bowtie_dir,params['reference'],params['reference'],self.__SHOCK_URL)
+		print dumpfasta
+
+            	script_util.runProgram(self.__LOGGER,self.__SCRIPT_TYPE['ContigSet_to_fasta'],dumpfasta,self.__SCRIPTS_DIR,os.getcwd())
+	    except Exception,e:
+		raise KBaseRNASeqException("Error Creating  FASTA object from the workspace {0},{1}".format(params['reference'],e))
+		 
+	   
+	    ## Run the bowtie_indexing on the  command line
+	    try:
+	    	bowtie_index_cmd = "{0} {1}".format(params['reference'],params['reference']) 
+	    	script_util.runProgram(self.__LOGGER,"bowtie2-build",bowtie_index_cmd,None,bowtie_dir)
+	    except Exception,e:
+		raise KBaseRNASeqException("Error while running BowtieIndex {0},{1}".format(params['reference'],e))
+
+		
+	    ## Zip the Index files
+		 	
+	    try:
+		script_util.zip_files(self.__LOGGER, bowtie_dir, "%s.zip" % params['output_obj_name'])
+	    except Exception, e:
+		raise KBaseRNASeqException("Failed to compress the index: %s" %(e))
+	    ## Upload the file using handle service
+	    try:
+		bowtie_handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)	
+	    except Exception, e:
+		raise KBaseRNASeqException("Failed to upload the index: %s" %(e))
+	    bowtie2index = { "handle" : bowtie_handle }	
+	    ## Save object to workspace
+	    self.__LOGGER.info( "Saving bowtie indexes object to  workspace")
+	    res= ws_client.save_objects(
+					{"workspace":params['ws_id'],
+					 "objects": [{
+					 "type":"KBaseRNASeq.Bowtie2Indexes",
+					 "data":bowtie_handle,
+					 "name":params['output_obj_name']}
+					]})
+	    returnVal = { "output" : params['output_obj_name'],"workspace" : params['ws_id'] }	
+	except Exception, e:
+		raise KBaseRNASeqException("Build Bowtie2Index failed: %s" %(e))
+
         #END BuildBowtie2Index
 
         # At some point might do deeper type checking...
