@@ -342,7 +342,13 @@ def runProgram(logger=None,
                                stderr=subprocess.PIPE,
                                cwd=working_dir)
         # Get results
-        result  = process.communicate()
+        result,stderr  = process.communicate()
+      
+        # keep this until your code is stable for easier debugging
+        if result is not None and len(result) > 0:
+            logger.info(result)
+        if stderr is not None and len(stderr) > 0:
+            logger.info(stderr)
 
         # Check returncode for success/failure
         if process.returncode != 0:
