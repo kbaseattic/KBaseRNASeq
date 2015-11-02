@@ -330,7 +330,7 @@ def runProgram(logger=None,
         else:
 		progPath = whereis(progName)
                	if not progPath:
-                    raise logger.error(None,'"%s" command not found in your PATH environmental variable.' % (progName))
+                    raise RuntimeError(None,'"%s" command not found in your PATH environmental variable.' % (progName))
 
         # Construct shell command
         cmdStr = "%s %s" % (progPath,argStr)
