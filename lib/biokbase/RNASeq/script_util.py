@@ -346,7 +346,7 @@ def runProgram(logger=None,
 
         # Check returncode for success/failure
         if process.returncode != 0:
-                raise logger.error(process.returncode,result[1],progName)
+                raise logger.error('Return Code : {0} , result {1} , progName {2}'.format(process.returncode,result[1],progName))
 
         # Return result
         return result
