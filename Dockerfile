@@ -19,8 +19,14 @@ RUN \
   git clone https://github.com/kbase/genome_util && \
   cd /kb/dev_container/modules/genome_util && \
   make && make deploy
-#apt-get update && apt-get install -y ant && \
-
+####END OF KBASE #############################
+apt-get update && apt-get install -y ant && \
+  requests \
+  toolbelt \
+  filemagic \
+  ftputil \
+  bunch \
+  requests_toolbelt
 # -----------------------------------------
 # Insert apt-get instructions here to install
 # any required dependencies for your module.
