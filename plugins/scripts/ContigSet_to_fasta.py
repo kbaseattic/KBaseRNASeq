@@ -56,22 +56,28 @@ def transform(workspace_service_url=None, shock_service_url=None, handle_service
         logger = script_utils.stderrlogger(__file__)
     
     logger.info("Starting conversion of KBaseGenomes.ContigSet to FASTA.DNA.Assembly")
+
     token = os.environ.get("KB_AUTH_TOKEN")
-    
+
     if not os.path.isdir(args.working_directory): 
         raise Exception("The working directory does not exist {0} does not exist".format(working_directory)) 
 
     logger.info("Grabbing Data.")
  
     try:
-        ws_client = biokbase.workspace.client.Workspace(workspace_service_url) 
+        ws_client = biokbase.workspace.client.Workspace(workspace_service_url,token=token) 
         if object_version_number and object_name:
+            print "111-----------" + object_name + ":" + workspace_name
             contig_set = ws_client.get_objects([{"workspace":workspace_name,"name":object_name, "ver":object_version_number}])[0] 
         elif object_name:
+            print "222-----------" + object_name + ":" + workspace_name
             contig_set = ws_client.get_objects([{"workspace":workspace_name,"name":object_name}])[0]
+            print "222-----------"
         elif object_version_number and object_id:
+            print "333-----------" + object_name + ":" + workspace_name
             contig_set = ws_client.get_objects([{"workspace":workspace_name,"objid":object_id, "ver":object_version_number}])[0]
         else:
+            print "444-----------" + object_name + ":" + workspace_name
             contig_set = ws_client.get_objects([{"workspace":workspace_name,"objid":object_id}])[0] 
     except Exception, e: 
         logger.exception("Unable to retrieve workspace object from {0}:{1}.".format(workspace_service_url,workspace_name))
