@@ -273,7 +273,8 @@ class KBaseRNASeq:
 	except Exception, e:
 		raise KBaseRNASeqException("Build Bowtie2Index failed: %s" %(e))
 
-	 
+        #END BuildBowtie2Index
+
         # At some point might do deeper type checking...
         if not isinstance(returnVal, object):
             raise ValueError('Method BuildBowtie2Index return value ' +

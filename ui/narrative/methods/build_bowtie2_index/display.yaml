@@ -1,0 +1,48 @@
+#
+# Define basic display information
+#
+name     : Build Bowtie2 Index 
+tooltip  : |
+    Build bowtie2 Index for a genome object
+
+screenshots :
+    []
+
+replacement-text : Created a new bowtie2 Index  for {{{input_genome}}}
+
+#
+# Define the set of other narrative methods that should be suggested to the user.
+#
+suggestions :
+    apps:
+        related :
+            []
+        next :
+            []
+    methods:
+        related :
+            []
+        next :
+            []
+
+
+#
+# Configure the display and description of the parameters
+#
+parameters :
+    input_genome:
+        ui-name : |
+            Genome
+        short-hint : |
+            Select a reference genome 
+
+    out_index_name:
+        ui-name : |
+            output
+        short-hint : |
+            Enter a name for the output index object
+
+description : |
+   This method is used to create the Bowtie2 Indexes for a reference genome object
+   
+    

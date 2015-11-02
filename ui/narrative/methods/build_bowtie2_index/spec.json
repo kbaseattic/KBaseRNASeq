@@ -1,0 +1,55 @@
+{
+  "ver" : "1.0.0",
+  "authors" : [ ],
+  "contact" : "help@kbase.us",
+  "visble" : true,
+  "categories" : ["active"],
+  "widgets" : {
+    "input" : null,
+    "output" : "null"
+  },
+  "parameters" : [ {
+    "id" : "input_genome",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : [ "KBaseGenomes.ContigSet" ]
+    }
+  }, {
+    "id" : "out_index_name",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text"
+  } ],
+  "behavior" : {
+      "service-mapping" : {
+      	"url" : "",
+        "name" : "KBaseRNASeq",
+        "method" : "BuildBowtie2Index",
+        "input_mapping" : [
+        {
+          "narrative_system_variable": "workspace",
+          "target_property": "ws_id"
+        },{
+          "input_parameter": "input_genome",
+          "target_property": "reference"
+        },{
+          "input_parameter": "out_index_name",
+          "target_property": "output_obj_name"
+        }],
+     "output_mapping" : [
+        {
+         "service_method_output_path": [0],
+         "target_property": "BuildBowtie2Index"
+        }
+      ]
+    }
+  },
+  "job_id_output_field" : "docker"
+}
+
