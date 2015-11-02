@@ -57,7 +57,7 @@ def transform(workspace_service_url=None, shock_service_url=None, handle_service
     
     logger.info("Starting conversion of KBaseGenomes.ContigSet to FASTA.DNA.Assembly")
 
-    token = os.environ.get("KB_AUTH_TOKEN")
+    #token = os.environ.get("KB_AUTH_TOKEN")
 
     if not os.path.isdir(args.working_directory): 
         raise Exception("The working directory does not exist {0} does not exist".format(working_directory)) 
