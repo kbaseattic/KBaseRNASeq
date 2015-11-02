@@ -239,7 +239,7 @@ class KBaseRNASeq:
 
             	script_util.runProgram(self.__LOGGER,self.__SCRIPT_TYPE['ContigSet_to_fasta'],dumpfasta,self.__SCRIPTS_DIR,os.getcwd())
 	    except Exception,e:
-		raise KBaseRNASeqException("Error Creating  FASTA object from the workspace {0},{1},{2}".format(params['reference'],os.getcwd(),e.msg))
+		raise KBaseRNASeqException("Error Creating  FASTA object from the workspace {0},{1},{2}".format(params['reference'],os.getcwd(),e))
 		 
 	   
 	    ## Run the bowtie_indexing on the  command line
@@ -247,7 +247,7 @@ class KBaseRNASeq:
 	    	bowtie_index_cmd = "{0} {1}".format(params['reference'],params['reference']) 
 	    	script_util.runProgram(self.__LOGGER,"bowtie2-build",bowtie_index_cmd,None,bowtie_dir)
 	    except Exception,e:
-		raise KBaseRNASeqException("Error while running BowtieIndex {0},{1}".format(params['reference'],e.msg))
+		raise KBaseRNASeqException("Error while running BowtieIndex {0},{1}".format(params['reference'],e))
 
 		
 	    ## Zip the Index files
@@ -255,12 +255,12 @@ class KBaseRNASeq:
 	    try:
 		script_util.zip_files(self.__LOGGER, bowtie_dir, "%s.zip" % params['output_obj_name'])
 	    except Exception, e:
-		raise KBaseRNASeqException("Failed to compress the index: {0}".format(e.msg))
+		raise KBaseRNASeqException("Failed to compress the index: {0}".format(e))
 	    ## Upload the file using handle service
 	    try:
 		bowtie_handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)	
 	    except Exception, e:
-		raise KBaseRNASeqException("Failed to upload the index: {0}".format(e.msg))
+		raise KBaseRNASeqException("Failed to upload the index: {0}".format(e))
 	    bowtie2index = { "handle" : bowtie_handle }	
 	    ## Save object to workspace
 	    self.__LOGGER.info( "Saving bowtie indexes object to  workspace")
@@ -273,7 +273,7 @@ class KBaseRNASeq:
 					]})
 	    returnVal = { "output" : params['output_obj_name'],"workspace" : params['ws_id'] }	
 	except Exception, e:
-		raise KBaseRNASeqException("Build Bowtie2Index failed: {0}".format(e.msg))
+		raise KBaseRNASeqException("Build Bowtie2Index failed: {0}".format(e))
 
         #END BuildBowtie2Index
 
