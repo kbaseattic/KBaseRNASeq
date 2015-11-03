@@ -25,6 +25,7 @@ CMD \
   git clone https://github.com/kbase/KBaseRNASeq ;\
   cd /kb/module/KBaseRNASeq ;\
   exec deps/kb_tophat/install-tophat.sh
+  exec deps/kb_bowtie/install-bowtie2.sh
 
 ####END OF KBASE #############################
 #apt-get update && apt-get install -y ant && \
