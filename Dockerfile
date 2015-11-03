@@ -47,6 +47,8 @@ ENV PATH=$PATH:/kb/module/bin:/kb/dev_container/modules/kb_sdk/bin
 WORKDIR /kb/module
 RUN make
 #RUN make deploy
+RUN bowtie2-build --version
+RUN tophat --version
 RUN mkdir -p /kb/module/work
 ENTRYPOINT [ "./scripts/entrypoint.sh" ]
 CMD [ ]
