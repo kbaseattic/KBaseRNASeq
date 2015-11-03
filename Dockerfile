@@ -1,4 +1,4 @@
-FROM kbase/depl:latest
+FROM kbase/deplbase:latest
 MAINTAINER KBase Developer
 # Install the SDK (should go away eventually)
 RUN \
@@ -34,7 +34,7 @@ RUN \
 # any required dependencies for your module.
 # -----------------------------------------
 RUN apt-get update && apt-get install -y unzip gcc bzip2 ncurses-dev
-WORKDIR /kb/module
+WORKDIR /usr/bin
 RUN \ 
   rm -rf KBaseRNASeq && \
   git clone https://github.com/kbase/KBaseRNASeq && \
@@ -43,12 +43,13 @@ RUN \
   exec deps/kb_bowtie/install-bowtie2.sh && \
   rm -rf KBaseRNASeq
 COPY ./ /kb/module
-ENV PATH=$PATH:/kb/module/bin:/kb/dev_container/modules/kb_sdk/bin
+ENV PATH=$PATH:/kb/dev_container/modules/kb_sdk/bin
 WORKDIR /kb/module
 RUN make
 #RUN make deploy
-RUN bowtie2-build --version
-RUN tophat --version
+RUN \
+  which bowtie2-build && \
+  which tophat 
 RUN mkdir -p /kb/module/work
 ENTRYPOINT [ "./scripts/entrypoint.sh" ]
 CMD [ ]
