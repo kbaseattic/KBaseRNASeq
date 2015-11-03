@@ -38,9 +38,9 @@ WORKDIR /usr/bin
 RUN \ 
   rm -rf KBaseRNASeq && \
   git clone https://github.com/kbase/KBaseRNASeq && \
-  cd /kb/module/KBaseRNASeq && \
-  exec deps/kb_tophat/install-tophat.sh && \
-  exec deps/kb_bowtie/install-bowtie2.sh && \
+  cd /usr/bin/KBaseRNASeq && \
+  exec ./deps/kb_tophat/install-tophat.sh && \
+  exec ./deps/kb_bowtie/install-bowtie2.sh && \
   rm -rf KBaseRNASeq
 COPY ./ /kb/module
 ENV PATH=$PATH:/kb/dev_container/modules/kb_sdk/bin
