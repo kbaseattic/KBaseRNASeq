@@ -31,12 +31,12 @@ def get_service_name():
 
 
 def get_config():
-    if not get_config_file() or not get_service_name():
+    if not get_config_file():
         return None
     retconfig = {}
     config = ConfigParser()
     config.read(get_config_file())
-    for nameval in config.items(get_service_name()):
+    for nameval in config.items(get_service_name() or 'KBaseRNASeq'):
         retconfig[nameval[0]] = nameval[1]
     return retconfig
 
