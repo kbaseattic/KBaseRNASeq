@@ -11,7 +11,7 @@ RUN \
   cd /kb/dev_container/modules/jars && \
   make deploy && \
   cd /kb/dev_container/modules/kb_sdk && \
-  make
+  make && make deploy
 RUN \
   . /kb/dev_container/user-env.sh && \
   cd /kb/dev_container/modules && \
@@ -19,13 +19,6 @@ RUN \
   git clone https://github.com/kbase/genome_util && \
   cd /kb/dev_container/modules/genome_util && \
   make && make deploy
-#CMD \
-#  cd /kb/module ; \
-#  rm -rf KBaseRNASeq ;\
-#  git clone https://github.com/kbase/KBaseRNASeq ;\
-#  cd /kb/module/KBaseRNASeq ;\
-#  exec deps/kb_tophat/install-tophat.sh;\
-#  exec deps/kb_bowtie/install-bowtie2.sh
 
 ####END OF KBASE #############################
 #apt-get update && apt-get install -y ant && \
@@ -34,22 +27,18 @@ RUN \
 # any required dependencies for your module.
 # -----------------------------------------
 RUN apt-get update && apt-get install -y unzip gcc bzip2 ncurses-dev
-WORKDIR /usr/bin
-RUN \ 
-  rm -rf KBaseRNASeq && \
-  git clone https://github.com/kbase/KBaseRNASeq && \
-  cd /usr/bin/KBaseRNASeq && \
-  exec ./deps/kb_tophat/install-tophat.sh && \
-  exec ./deps/kb_bowtie/install-bowtie2.sh && \
-  rm -rf KBaseRNASeq
+WORKDIR /kb/module
+COPY ./deps /kb/deps
+RUN \
+  sh /kb/deps/kb_tophat/install-tophat.sh && \
+  sh /kb/deps/kb_bowtie/install-bowtie2.sh
+
 COPY ./ /kb/module
+RUN \
+  cd /kb/module && \
+  make
 ENV PATH=$PATH:/kb/dev_container/modules/kb_sdk/bin
 WORKDIR /kb/module
-RUN make
-#RUN make deploy
-RUN \
-  which bowtie2-build && \
-  which tophat 
 RUN mkdir -p /kb/module/work
 ENTRYPOINT [ "./scripts/entrypoint.sh" ]
 CMD [ ]

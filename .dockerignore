@@ -1,2 +1,2 @@
 # Ignore .git folder
-.git*
+.git/config.lock

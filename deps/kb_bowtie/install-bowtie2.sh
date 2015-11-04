@@ -1,6 +1,6 @@
 #!/bin/bash
 
-dest=${TARGET-/usr/bin}
+dest=${TARGET-/usr/}/bin
 echo "using $dest as installation directory";
 mkdir -p $dest
 
