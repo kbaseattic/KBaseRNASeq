@@ -1,4 +1,7 @@
 auth
-kb_sbk
-genome_util
+jars
+kb_sdk
+kbapi_common
+handle_service
 workspace_deluxe
+genome_util

@@ -12,6 +12,8 @@ from pprint import pprint
 import script_util
 from biokbase.workspace.client import Workspace
 from biokbase.auth import Token
+from mpipe import OrderedStage , Pipeline
+
 try:
     from biokbase.HandleService.Client import HandleService
 except:
@@ -308,24 +310,41 @@ class KBaseRNASeq:
 
 	    self.__LOGGER.info("Downloading RNASeq Sample file")
 	    try:
-                ret  = ws_client.get_objects(
+            	sample ,reference,bowtie_index,annotation = ws_client.get_objects(
                                         [{'name' : params['sample_id'],'workspace' : params['ws_id']},
 					{ 'name' : params['reference'], 'workspace' : params['ws_id']},
 					{ 'name' : params['bowtie_index'], 'workspace' : params['ws_id']},
 					{ 'name' : params['annotation_gtf'] , 'workspace' : params['ws_id']}])
             except Exception,e:
 		 raise KBaseRNASeqException("Error Downloading objects from the workspace ") 
+                     
+            #returnVal =ret 
+            if 'data' in sample:
+		if 'metadata' in sample['data']:
+			genome = sample['data']['metadata']['ref_genome']
+	    if 'singleend_sample' in reads['data']:
+		lib_type = "SingleEnd"
+		#cmdstring =
+	    if 'pairedend_sample' in reads['data']: 
+		lib_type = "PairedEnd"
+		#cmdstring =
+	     
+	    # Download reads from JSON object 
+		
+	   
+	except Exception,e:
+	    KBaseRNASeqException("Error Running TophatCall ") 
 	    
 	    #Download reads from the JSON object
-	    genome = params['reference']
-	    if 'data' in reads: 
-		#if 'metadata' in reads['data']:
+	    #genome = params['reference']
+	    #if 'data' in reads: 
+	    	#if 'metadata' in reads['data']:
 		    	#genome = reads['data']['metadata']['ref_genome'] 
-		if 'singleend_sample' in reads['data']:
-			lib_type = "SingleEnd"
-			#cmdstring =
-	        elif 'pairedend_sample' in reads['data']:
-			lib_type = "PairedEnd"
+	    # 	if 'singleend_sample' in reads['data']:
+	    #		lib_type = "SingleEnd"
+	     		#cmdstring =
+	    #    elif 'pairedend_sample' in reads['data']:
+	    #		lib_type = "PairedEnd"
 			#cmdstring =
 	    ####Complete download reads
 		#raise KBaseRNASeqException("Error Downloading FASTA object from the workspace {0}".format(params['reference']))
@@ -393,19 +412,6 @@ class KBaseRNASeq:
         # return the results
         return [returnVal]
 
-    def CuffmergeCall(self, ctx, params):
-        # ctx is the context object
-        # return variables are: returnVal
-        #BEGIN CuffmergeCall
-        #END CuffmergeCall
-
-        # At some point might do deeper type checking...
-        if not isinstance(returnVal, object):
-            raise ValueError('Method CuffmergeCall return value ' +
-                             'returnVal is not type object as required.')
-        # return the results
-        return [returnVal]
-
     def CuffdiffCall(self, ctx, params):
         # ctx is the context object
         # return variables are: returnVal
@@ -441,9 +447,9 @@ class KBaseRNASeq:
         #END getAlignmentStats
 
         # At some point might do deeper type checking...
-        if not isinstance(returnVal, object):
+        if not isinstance(returnVal, dict):
             raise ValueError('Method getAlignmentStats return value ' +
-                             'returnVal is not type object as required.')
+                             'returnVal is not type dict as required.')
         # return the results
         return [returnVal]
 

@@ -259,6 +259,34 @@
 
  typedef string ws_samplealignment_id;
 
+/* Structure Read_mapping_sections
+   @optional introns exons splice_junctions intergenic_regions
+*/
+
+   typedef structure{
+        int introns;
+        int exons;
+        int splice_junctions;
+        int intergenic_regions;
+        }Read_mapping_sections;
+
+/*
+    Object - getAlignmentStats method
+    @optional singletons multiple_alignments properly_paired alignment_rate unmapped_reads mapped_sections total_reads mapped_reads
+*/
+    typedef structure{
+        /* later change this to ws_samplealignment_id */
+        string alignment_id;
+        int properly_paired;
+        int multiple_alignments;
+        int singletons;
+        float alignment_rate;
+        Read_mapping_sections mapped_sections;
+        int unmapped_reads;
+        int mapped_reads;
+        int total_reads;
+        }AlignmentStatsResults;
+
 /*
   Object type to define replicate group
 /*
@@ -466,7 +494,18 @@ async funcdef BuildBowtie2Index(Bowtie2IndexParams params)
 	ws_rnaseqSample_id sample_id;
         ws_bowtieIndex_id bowtie2_index;
 	string output_obj_name;
-	b_opts_str opts_dict;	
+       /* b_opts_str opts_dict;	*/
+        string phred33;
+        string phred64;
+        string local;
+        string very-fast;
+        string fast;
+        string very-sensitive;
+        string sensitive;
+        string very-fast-local;
+        string very-sensitive-local;
+        string fast-local;
+        string fast-sensitive;
 	}Bowtie2Params;
 
 async funcdef Bowtie2Call(Bowtie2Params params) 
@@ -572,7 +611,13 @@ typedef structure{
         ws_samplealignment_id alignment_sample_id;
         string output_obj_name;
         ws_referenceAnnotation_id annotation_gtf;
-        cuff_opts opts_dict;
+        /*cuff_opts opts_dict;*/
+	int num_threads;
+        string library-type;
+        string library-norm-method;
+	int min-intron-length;
+	int max-intron-length;
+	int overhang-tolerance;
         }CufflinksParams;
 
 async funcdef CufflinksCall(CufflinksParams params)
@@ -582,7 +627,7 @@ typedef structure{
 	string ws_id;
         RNASeqAnalysis analysis;
         string output_obj_name;
-        mapping <string Cuffmerge_opts, int num_threads> opts_dict;
+        /*mapping <string Cuffmerge_opts, int num_threads> opts_dict; *
         }CuffmergeParams;
 
  
@@ -613,7 +658,13 @@ typedef mapping <string diff_opts,opts_cuffdiff> cuffdiff_opts;
         RNASeqAnalysis rnaseq_exp_details;
         string output_obj_name;
         ws_referenceAnnotation_id annotation_gtf;
-        cuffdiff_opts  opts_dict;
+        /*cuffdiff_opts  opts_dict;*/
+	int num-threads;
+        string time-series;
+	string library-type;
+        string library-norm-method;
+	string multi-read-correct;
+        string min-alignment-count;
         }CuffdiffParams;
 
 async funcdef CuffdiffCall(CuffdiffParams params)
@@ -628,7 +679,7 @@ typedef structure{
         }AlignmentStatsParams;
 
 async funcdef getAlignmentStats(AlignmentStatsParams params)
-   returns (UnspecifiedObject) authentication required;
+   returns (AlignmentStatsResults) authentication required;
 
 typedef structure{
 	string ws_id;

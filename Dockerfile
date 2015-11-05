@@ -1,4 +1,4 @@
-FROM kbase/depl:latest
+FROM kbase/deplbase:latest
 MAINTAINER KBase Developer
 # Install the SDK (should go away eventually)
 RUN \
@@ -27,6 +27,7 @@ RUN \
 # any required dependencies for your module.
 # -----------------------------------------
 RUN apt-get update && apt-get install -y unzip gcc bzip2 ncurses-dev
+RUN pip install mpipe
 WORKDIR /kb/module
 COPY ./deps /kb/deps
 RUN \

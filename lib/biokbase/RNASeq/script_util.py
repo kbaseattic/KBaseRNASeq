@@ -9,6 +9,8 @@ import requests
 import logging
 import time
 from requests_toolbelt import MultipartEncoder
+from multiprocessing import Pool
+from functools import partial
 import subprocess
 from zipfile import ZipFile
 from os import listdir
@@ -388,4 +390,19 @@ def create_shock_handle(logger=None,
 	           "remote_sha1" : f_sha1 }	
    
         return handle
+
+def parallel_function(f):
+    def easy_parallize(f, sequence):
+        pool = Pool(processes=8)
+        # f is given sequence. guaranteed to be in order
+        result = pool.map(f, sequence)
+        cleaned = [x for x in result if not x is None]
+        cleaned = asarray(cleaned)
+        # not optimal but safe
+        pool.close()
+        pool.join()
+        return cleaned
+    from functools import partial
+    # this assumes f has one argument, fairly easy with Python's global scope
+    return partial(easy_parallize, f)
      
