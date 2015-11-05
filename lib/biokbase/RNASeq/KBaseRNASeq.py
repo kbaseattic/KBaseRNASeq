@@ -31,12 +31,12 @@ def get_service_name():
 
 
 def get_config():
-    if not get_config_file():
+    if not get_config_file() or not get_service_name():
         return None
     retconfig = {}
     config = ConfigParser()
     config.read(get_config_file())
-    for nameval in config.items(get_service_name() or 'KBaseRNASeq'):
+    for nameval in config.items(get_service_name()):
         retconfig[nameval[0]] = nameval[1]
     return retconfig
 
@@ -74,8 +74,6 @@ async_run_methods['KBaseRNASeq.TophatCall_async'] = ['KBaseRNASeq', 'TophatCall'
 async_check_methods['KBaseRNASeq.TophatCall_check'] = ['KBaseRNASeq', 'TophatCall']
 async_run_methods['KBaseRNASeq.CufflinksCall_async'] = ['KBaseRNASeq', 'CufflinksCall']
 async_check_methods['KBaseRNASeq.CufflinksCall_check'] = ['KBaseRNASeq', 'CufflinksCall']
-async_run_methods['KBaseRNASeq.CuffmergeCall_async'] = ['KBaseRNASeq', 'CuffmergeCall']
-async_check_methods['KBaseRNASeq.CuffmergeCall_check'] = ['KBaseRNASeq', 'CuffmergeCall']
 async_run_methods['KBaseRNASeq.CuffdiffCall_async'] = ['KBaseRNASeq', 'CuffdiffCall']
 async_check_methods['KBaseRNASeq.CuffdiffCall_check'] = ['KBaseRNASeq', 'CuffdiffCall']
 async_run_methods['KBaseRNASeq.getAlignmentStats_async'] = ['KBaseRNASeq', 'getAlignmentStats']
@@ -387,10 +385,6 @@ class Application(object):
                              name='KBaseRNASeq.CufflinksCall',
                              types=[dict])
         self.method_authentication['KBaseRNASeq.CufflinksCall'] = 'required'
-        self.rpc_service.add(impl_KBaseRNASeq.CuffmergeCall,
-                             name='KBaseRNASeq.CuffmergeCall',
-                             types=[dict])
-        self.method_authentication['KBaseRNASeq.CuffmergeCall'] = 'required'
         self.rpc_service.add(impl_KBaseRNASeq.CuffdiffCall,
                              name='KBaseRNASeq.CuffdiffCall',
                              types=[dict])
