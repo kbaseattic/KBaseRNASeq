@@ -10,7 +10,7 @@ import logging
 import time
 from requests_toolbelt import MultipartEncoder
 from multiprocessing import Pool
-from functools import partial
+#from functools import partial
 import subprocess
 from zipfile import ZipFile
 from os import listdir

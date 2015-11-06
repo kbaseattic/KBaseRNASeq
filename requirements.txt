@@ -2,3 +2,4 @@ requests
 rpy2
 bunch
 mpipe
+multiprocessing
