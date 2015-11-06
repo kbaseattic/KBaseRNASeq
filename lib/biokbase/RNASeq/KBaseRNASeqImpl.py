@@ -303,9 +303,10 @@ class KBaseRNASeq:
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN TophatCall
+	user_token=ctx['token']
 	ws_client=Workspace(url=self.__WS_URL, token=user_token)
         hs = HandleService(url=self.__HS_URL, token=user_token)
-        try:
+	try:
 	    ### Make a function to download the workspace object  and prepare dict of genome ,lib_type 
 
 	    self.__LOGGER.info("Downloading RNASeq Sample file")
@@ -318,7 +319,7 @@ class KBaseRNASeq:
             except Exception,e:
 		 raise KBaseRNASeqException("Error Downloading objects from the workspace ") 
                      
-            #returnVal =ret 
+            returnVal = annotation 
             if 'data' in sample:
 		if 'metadata' in sample['data']:
 			genome = sample['data']['metadata']['ref_genome']
@@ -386,9 +387,6 @@ class KBaseRNASeq:
 	# create Json object for widget
 
 	# save to Tophat workspace
-	except e:
-		raise 
-        job_id = "no_job_id"	
 	     
         #END TophatCall
 
