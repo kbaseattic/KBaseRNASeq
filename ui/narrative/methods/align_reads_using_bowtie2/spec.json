@@ -36,7 +36,7 @@
     "default_values" : [ "" ],
     "field_type" : "text"
   }, {
-    "id" : "assembly_id",
+    "id" : "reference",
     "optional" : false,
     "advanced" : false,
     "allow_multiple" : false,
@@ -182,8 +182,8 @@
           "target_property" : "sample_id"
         },
         {
-          "input_parameter" : "assembly_id",
-          "target_property" : "assembly_id"
+          "input_parameter" : "reference",
+          "target_property" : "reference"
         },
         {
           "input_parameter" : "bowtie2_index",
@@ -232,11 +232,11 @@
        {
           "input_parameter" : "fast-sensitive",
           "target_property" : "fast-sensitive"
-      ],
+      }],
       "output_mapping" : [
         {
           "service_method_output_path": [0],
-          "target_property": "alignReadsUsingBowtie2"
+          "target_property": "Bowtie2Call"
         }
       ]
     }
