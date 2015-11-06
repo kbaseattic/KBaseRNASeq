@@ -1,0 +1,101 @@
+#
+# Define basic display information
+#
+name     : align_reads_using_bowtie2
+tooltip  : |
+    align_reads_using_bowtie2
+
+screenshots :
+    []
+
+#
+# Define the set of other narrative methods that should be suggested to the user.
+#
+method-suggestions :
+    related :
+        []
+    next :
+        []
+
+
+#
+# Configure the display and description of the parameters
+#
+parameters :
+    sample_id :
+        ui-name : |
+            RNASeq Sample
+        short-hint : |
+            RNASeq Sample
+    output_obj_name :
+        ui-name : |
+            bowtie2 read alignment output
+        short-hint : |
+            bowtie2 read alignment output
+    assembly_id :
+        ui-name : |
+            Reference Assembly Id
+        short-hint : |
+            Reference Assembly Id
+    bowtie2_index :
+        ui-name : |
+            Bowtie Index Id
+        short-hint : |
+            Bowtie Index Id
+    phred33 :
+        ui-name : |
+            phred33
+        short-hint : |
+            phred33
+    phred64 :
+        ui-name : |
+            phred64
+        short-hint : |
+            phred64
+    local :
+        ui-name : |
+            local
+        short-hint : |
+            local
+    very-fast :
+        ui-name : |
+            very fast
+        short-hint : |
+            very fast
+    fast :
+        ui-name : |
+            fast
+        short-hint : |
+            fast
+    very-sensitive :
+        ui-name : |
+            very sensitive
+        short-hint : |
+            very sensitive
+    sensitive :
+        ui-name : |
+            sensitive
+        short-hint : |
+            sensitive
+    very-fast-local :
+        ui-name : |
+            very fast local
+        short-hint : |
+            very fast local
+    very-sensitive-local :
+        ui-name : |
+            very sensitive local
+        short-hint : |
+           very sensitive local
+    fast-local :
+        ui-name : |
+            fast local
+        short-hint : |
+           fast local
+    fast-sensitive :
+        ui-name : |
+            fast sensitive
+        short-hint : |
+           fast sensitive
+description : |
+    <p>This method allows align reads using bowtie2.</p>
