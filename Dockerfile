@@ -1,4 +1,4 @@
-FROM kbase/deplbase:latest
+FROM kbase/depl:latest
 MAINTAINER KBase Developer
 # Install the SDK (should go away eventually)
 RUN \

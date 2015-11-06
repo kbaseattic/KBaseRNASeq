@@ -3,10 +3,16 @@
 	"method":"KBaseRNASeq.TophatCall",
 	"context": null,
 	"params":[
-	{"ws_rnaseqSample_id" : "input",
-	 "output_obj_name" : , "output"
-	 "ws_reference_assembly_id" : "assembly",
-	 "ws_bowtieIndex_id" : "sdsds",
-	 "opts_dict" : { "read-edit-dist" : 2 , "num-threads" : 2} ,
-	 "ws_referenceAnnotation_id" : "reference_annotation" } ]
+	{
+	 "ws_id" : "RNASeqTestData",
+	 "sample_id" : "Ptrichocarpa_singleEnd_RNASeqSample" ,
+	 "output_obj_name" : "test_tophat_output" ,
+	 "reference" : "Escherichia_coli_str_K-12_substr_MG1655.contigset",
+	 "bowtie_index" : "Ptrichocarpa_bowtie_indexes",
+	 "annotation_gtf" : "Ptrichocarpa_v3_annotation_gtf",
+	 "read_mismatches" : "2",
+	 "read_gap_length" : null ,
+         "min_intron_length" :  null ,
+	 "num_threads" : "2",
+	 "no_coverage_search" : "0" } ]
 }

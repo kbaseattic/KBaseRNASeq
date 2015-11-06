@@ -98,17 +98,19 @@ def download_file_from_shock(logger,
 
     header = dict()
     header["Authorization"] = "Oauth {0}".format(token)
+    print header
 
     logger.info("Downloading shock node {0}/node/{1}".format(shock_service_url,shock_id))
 
     metadata_response = requests.get("{0}/node/{1}?verbosity=metadata".format(shock_service_url, shock_id), headers=header, stream=True, verify=True)
     shock_metadata = metadata_response.json()['data']
+    print shock_metadata
     shockFileName = shock_metadata['file']['name']
     shockFileSize = shock_metadata['file']['size']
     metadata_response.close()
         
     download_url = "{0}/node/{1}?download_raw".format(shock_service_url, shock_id)
-        
+    print downlaod_url    
     data = requests.get(download_url, headers=header, stream=True, verify=True)
     if filename is not None:
         shockFileName = filename
