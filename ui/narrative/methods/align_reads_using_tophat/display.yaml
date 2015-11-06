@@ -22,7 +22,7 @@ method-suggestions :
 # Configure the display and description of the parameters
 #
 parameters :
-    ws_rnaseqSample_id :
+    sample_id :
         ui-name : |
             RNASeq Sample
         short-hint : |
@@ -33,7 +33,7 @@ parameters :
             placeholder text is possible
 
 
-    ws_referenceAnnotation_id :
+    annotation_id :
         ui-name : |
             Reference Annotation
         short-hint : |
@@ -51,7 +51,7 @@ parameters :
         placeholder : |
             tophat read alignment output
             
-    ws_reference_assembly_id :
+    reference :
         ui-name : |
             Reference Assembly Id
         short-hint : |
@@ -59,7 +59,7 @@ parameters :
         description  : |
             Reference Assembly Id
             
-    ws_bowtieIndex_id :
+    bowtie_index :
         ui-name : |
             Bowtie Index Id
         short-hint : |
@@ -142,34 +142,4 @@ parameters :
 
 
 description : |
-    <p>This description can be marked up with <b>html</b> and can have <a href="https://kbase.us">links</a></p>
-    <p>This description should be understandable by a novice biologist user.</p>
-
-technical-description : |
-    <p>A technical description should describe exactly what is going on under the covers, probably linking to
-    some publications, providing algorithms, etc.</p>
-    <pre>
-       # some psuedocode
-       # or examples should go here
-    </pre>
-    <p>This section should be for experts who actually want to know what it is you are doing in the method.</p>
-
-
-#
-# various ways to include publications, probably the best approach
-# is to use a pmid so the front-end can query pubmed directly
-# and render whatever information is needed.  display-text and
-# link could be included for backup, for instance if pubmed is down.
-#
-publications :
-    -
-        pmid: 2231712
-        display-text: Basic local alignment search tool.
-        link: http://www.ncbi.nlm.nih.gov/pubmed/2231712
-    -
-        display-text: Some made up paper
-    -
-        link: http://www.ncbi.nlm.nih.gov/pubmed/2231712
-    -
-        pmid: 2231712
-
+    <p>This method allows reads alignment using tophat.</p>
