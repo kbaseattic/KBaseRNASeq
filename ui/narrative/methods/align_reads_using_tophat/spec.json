@@ -1,0 +1,223 @@
+{
+  "ver" : "1.0.0",
+  "authors" : [ ],
+  "contact" : "help@kbase.us",
+  "visble" : true,
+  "categories" : ["active"],
+  "widgets" : {
+    "input" : null,
+    "output" : "null"
+  },
+   "parameters" : [ {
+    "id" : "ws_rnaseqSample_id",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : true,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : ["KBaseRNASeq.RNASeqSample" ]
+    }
+  }, {
+    "id" : "ws_referenceAnnotation_id",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : ["KBaseRNASeq.ReferenceAnnotation" ]
+    }
+  }, {
+    "id" : "output_obj_name",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text"
+  }, {
+    "id" : "ws_reference_assembly_id",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : ["KBaseRNASeq.ReferenceAssembly" ]
+    }
+  }, {
+    "id" : "ws_bowtieIndex_id",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : ["KBaseRNASeq.BowtieIndex" ]
+    }
+  }, {
+    "id" : "read_mismatches",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "validate_as" : "int"
+    }
+  }, {
+    "id" : "read_gap_length",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+     "text_options" : {
+      "validate_as" : "int"
+    }
+  }, {
+    "id" : "read_edit_dist",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "validate_as" : "int"
+    }
+  }, {
+    "id" : "min_intron_length",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "validate_as" : "int"
+    }
+  }, {
+    "id" : "max_intron_length",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "validate_as" : "int"
+    }
+  }, {
+    "id" : "num_threads",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "validate_as" : "int"
+    }
+  }, {
+    "id" : "report_secondary_alignments",
+    "optional":false,
+    "advanced":false,
+    "allow_multiple":false,
+    "default_values":[""],
+    "field_type" : "checkbox",
+    "checkbox_options":{
+    "checked_value": 1,
+    "unchecked_value": 0
+    }
+  }, {
+    "id" : "no_coverage_search",
+    "optional":false,
+    "advanced":false,
+    "allow_multiple":false,
+    "default_values":[""],
+    "field_type" : "checkbox",
+    "checkbox_options":{
+      "checked_value": 1,
+      "unchecked_value": 0
+    }
+  }, {
+    "id" : "library_type",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text"
+  } ],
+  "behavior" : {
+    "service-mapping" : {
+      "url" : "",
+      "name" : "KBaseRNASeq",
+      "method" : "align_reads_using_tophat",
+      "input_mapping" : [
+        {
+          "input_parameter" : "ws_rnaseqSample_id",
+          "target_property" : "ws_rnaseqSample_id"
+        },
+        {
+          "input_parameter" : "ws_referenceAnnotation_id",
+          "target_property" : "ws_referenceAnnotation_id"
+        },
+        {
+          "narrative_system_variable": "workspace",
+          "target_property" : "ws_id"
+        },
+        {
+          "input_parameter" : "ws_reference_assembly_id",
+          "target_property" : "ws_reference_assembly_id"
+        },
+        {
+          "input_parameter" : "ws_bowtieIndex_id",
+          "target_property" : "ws_bowtieIndex_id"
+        },
+        {
+          "input_parameter" : "read_mismatches",
+          "target_property" : "read_mismatches"
+        },
+        {
+          "input_parameter" : "read_gap_length",
+          "target_property" : "read_gap_length"
+        },
+        {
+          "input_parameter" : "read_edit_dist",
+          "target_property" : "read_edit_dist"
+        },
+        {
+          "input_parameter" : "min_intron_length",
+          "target_property" : "min_intron_length"
+        },
+        {
+          "input_parameter" : "max_intron_length",
+          "target_property" : "maxi_intron_length"
+        },
+        {
+          "input_parameter" : "num_threads",
+          "target_property" : "num_threads"
+        },
+        {
+          "input_parameter" : "report_secondary_alignments",
+          "target_property" : "report_secondary_alignments"
+        },
+        {
+          "input_parameter" : "no_coverage_search",
+          "target_property" : "no_coverage_search"
+        },
+        {
+          "input_parameter" : "library_type",
+          "target_property" : "library_type"
+        }
+      ],
+      "output_mapping" : [
+        {
+          "narrative_system_variable": "workspace",
+          "target_property": "workspaceName"
+        },
+        {
+          "input_parameter": "output_obj_name",
+          "target_property": "tophat_read_alignment_output_name"
+        }
+      ]
+    }
+  }
+}
