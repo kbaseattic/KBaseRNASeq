@@ -122,6 +122,8 @@ else
 ####
 # Assumption: make deploy is done before test, which will be satisfied in Dockerfile
 ####
+# TEMP HACK
+KB_TOP = /kb/dev_container
 TOP_DIR = $(KB_TOP)
 KB_SERVICE_NAME = $(MODULE_CAPS)
 KB_DEPLOYMENT_CONFIG = $(TARGET)/deployment.cfg
