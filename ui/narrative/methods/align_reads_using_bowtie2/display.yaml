@@ -32,7 +32,7 @@ parameters :
             bowtie2 read alignment output
         short-hint : |
             bowtie2 read alignment output
-    assembly_id :
+    reference :
         ui-name : |
             Reference Assembly Id
         short-hint : |
