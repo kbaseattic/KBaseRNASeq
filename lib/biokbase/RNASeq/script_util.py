@@ -91,6 +91,7 @@ def download_file_from_shock(logger,
                              shock_id = None,
                              filename = None,
                              directory = None,
+			     filesize= None,
                              token = None):
     """
     Given a SHOCK instance URL and a SHOCK node id, download the contents of that node
@@ -124,6 +125,9 @@ def download_file_from_shock(logger,
         filePath = os.path.join(directory, shockFileName)
     else:
         filePath = shockFileName
+
+    if filesize is not None:
+	shockFileSize = filesize
 
     chunkSize = shockFileSize/4
     

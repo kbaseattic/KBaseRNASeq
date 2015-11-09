@@ -165,11 +165,19 @@ class KBaseGenomeUtil(object):
                 raise ServerError('Unknown', 0, ret.text)
         if ret.status_code != _requests.codes.OK:
             ret.raise_for_status()
+        ret.encoding = 'utf-8'
         resp = _json.loads(ret.text)
         if 'result' not in resp:
             raise ServerError('Unknown', 0, 'An unknown server error occurred')
         return resp['result']
  
+    def index_genomes(self, params, json_rpc_context = None):
+        if json_rpc_context and type(json_rpc_context) is not dict:
+            raise ValueError('Method index_genomes: argument json_rpc_context is not type dict as required.')
+        resp = self._call('KBaseGenomeUtil.index_genomes',
+                          [params], json_rpc_context)
+        return resp[0]
+  
     def blast_against_genome(self, params, json_rpc_context = None):
         if json_rpc_context and type(json_rpc_context) is not dict:
             raise ValueError('Method blast_against_genome: argument json_rpc_context is not type dict as required.')

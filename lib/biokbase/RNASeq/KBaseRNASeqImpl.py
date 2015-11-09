@@ -273,21 +273,22 @@ class KBaseRNASeq:
 		 	
 	    try:
 		script_util.zip_files(self.__LOGGER, bowtie_dir, "%s.zip" % params['output_obj_name'])
+		out_file_path = os.path.join("%s.zip" % params['output_obj_name'])
 	    except Exception, e:
 		raise KBaseRNASeqException("Failed to compress the index: {0}".format(e))
 	    ## Upload the file using handle service
 	    try:
-		bowtie_handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)	
+		bowtie_handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
 	    except Exception, e:
 		raise KBaseRNASeqException("Failed to upload the index: {0}".format(e))
-	    bowtie2index = { "handle" : bowtie_handle }	
+	    bowtie2index = { "handle" : bowtie_handle ,"size" : os.path.getsize(out_file_path)}	
 	    ## Save object to workspace
 	    self.__LOGGER.info( "Saving bowtie indexes object to  workspace")
 	    res= ws_client.save_objects(
 					{"workspace":params['ws_id'],
 					 "objects": [{
 					 "type":"KBaseRNASeq.Bowtie2Indexes",
-					 "data":bowtie_handle,
+					 "data":bowtie2index,
 					 "name":params['output_obj_name']}
 					]})
 	    returnVal = { "output" : params['output_obj_name'],"workspace" : params['ws_id'] }	
@@ -405,14 +406,11 @@ class KBaseRNASeq:
 	    if 'handle' in bowtie_index['data'] and bowtie_index['data']['handle'] is not None:
 		b_shock_id = bowtie_index['data']['handle']['id']
 		b_filename = bowtie_index['data']['handle']['file_name']
+		b_filesize = bowtie_index['data']['size']
 		print b_shock_id 
 		print b_filename
 	    try:
-		#script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=b_shock_id,filename=b_filename,directory=tophat_dir,token=user_token)
-		h = hs.hids_to_handles([bowtie_index['data']['handle']['hid']])
-		print h
-		print h[0]
-		hs.download(h[0],os.path.join(tophat_dir,b_filename))
+		script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=b_shock_id,filename=b_filename,directory=tophat_dir,filesize=b_filesize,token=user_token)
 	    except Exception,e :
 		self.__LOGGER.exception("".join(traceback.format_exc()))
 		raise Exception( "Unable to download shock file , {0}".format(e))
@@ -420,13 +418,14 @@ class KBaseRNASeq:
             if 'handle' in annotation['data'] and annotation['data']['handle'] is not None:
                 a_shock_id = annotation['data']['handle']['id']
                 a_filename = annotation['data']['handle']['file_name']
+		a_filesize = annotation['data']['size']
                 print a_shock_id
                 print a_filename
+		print a_filesize
             try:
-                #script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=b_shock_id,filename=b_filename,directory=tophat_dir,token=user_token)
-		h1 = hs.hids_to_handles([annotation['data']['handle']['hid']])
-                hs.download(h1[0],os.path.join(tophat_dir,a_filename))
+                script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=b_shock_id,filename=b_filename,directory=tophat_dir,filesize=a_filesize,token=user_token)
             except Exception,e :
+		self.__LOGGER.exception("".join(traceback.format_exc()))
                 raise Exception( "Unable to download shock file , {0}".format(e))
 	
 	    ### Build command line 

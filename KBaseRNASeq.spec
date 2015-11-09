@@ -83,6 +83,7 @@
 
    	typedef structure {
        		Handle handle;
+                int size;	
        		ws_genome_id genome_id;
 		string genome_scientific_name;
    	} ReferenceAnnotation;
@@ -104,14 +105,15 @@
 
         typedef structure {
                 Handle handle;
+		int size;
                 ws_genome_id genome_id;
 		string ftp_url;
 		string genome_scientific_name;
         }Bowtie2Indexes;
 
   /*
-      Id for KBaseRNASeq.BowtieIndexes
-      @id ws KBaseRNASeq.BowtieIndexes
+      Id for KBaseRNASeq.Bowtie2Indexes
+      @id ws KBaseRNASeq.Bowtie2Indexes
    */
 
         typedef string ws_bowtieIndex_id;

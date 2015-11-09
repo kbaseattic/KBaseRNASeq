@@ -9,7 +9,7 @@
 	 "output_obj_name" : "test_tophat_output" ,
 	 "reference" : "Ptrichocarpa_contigset",
 	 "bowtie_index" : "kb_g.166828_bowtie_indexes",
-	 "annotation_gtf" : "Ptrichocarpa_v3_annotation_gtf",
+	 "annotation_gtf" : "kb_g.166828_reference_annotation",
 	 "read_mismatches" : "2",
 	 "read_gap_length" : null ,
          "min_intron_length" :  null ,
