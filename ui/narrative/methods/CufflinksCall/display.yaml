@@ -1,10 +1,10 @@
 #
 # Define basic display information
 #
-name     : {NAME}
+name     : Compute gene expression using Cufflinks
 
 tooltip  : |
-    {TOOLTIP_NAME}
+    Compute gene expression using Cufflinks
 screenshots :
     []
 
@@ -24,53 +24,53 @@ method-suggestions :
 parameters :
         alignment_sample_id
         ui-name : |
-            alignment_sample_id
+            Alignment sample id
         short-hint : |
-            alignment_sample_id
+            Alignment sample id
         output_obj_name
         ui-name : |
-            output_obj_name
+            Output obj name
         short-hint : |
-            output_obj_name
+            Output obj name
         annotation_gtf
         ui-name : |
-            annotation_gtf
+            Annotation gtf
         short-hint : |
-            annotation_gtf
+            Annotation gtf
         num_threads
         ui-name : |
-            num_threads
+            Num threads
         short-hint : |
-            num_threads
+            Num threads
         library-type
         ui-name : |
-            library-type
+            Library type
         short-hint : |
-            library-type
+            Library type
         library-norm-method
         ui-name : |
-            library-norm-method
+            Library norm method
         short-hint : |
-            library-norm-method
+            Library norm method
         min-intron-length
         ui-name : |
-            min-intron-length
+            Min intron length
         short-hint : |
-            min-intron-length
+            Min intron length
         max-intron-length
         ui-name : |
-            max-intron-length
+            Max intron length
         short-hint : |
-            max-intron-length
+            Max intron length
         overhang-tolerance
         ui-name : |
-            overhang-tolerance
+            Overhang tolerance
         short-hint : |
-            overhang-tolerance
+            Overhang tolerance
 
 
 description : |
-    <p>{DESC} </p>
+    <p>This method is used to compute gene expression using Cufflinks </p>
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
     {TEAM}</p>
 
