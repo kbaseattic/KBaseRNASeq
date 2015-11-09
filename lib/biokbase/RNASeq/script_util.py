@@ -8,6 +8,7 @@ import hashlib
 import requests
 import logging
 import time
+import traceback
 from requests_toolbelt import MultipartEncoder
 from multiprocessing import Pool
 #from functools import partial
@@ -90,6 +91,7 @@ def download_file_from_shock(logger,
                              shock_id = None,
                              filename = None,
                              directory = None,
+			     filesize= None,
                              token = None):
     """
     Given a SHOCK instance URL and a SHOCK node id, download the contents of that node
@@ -104,14 +106,18 @@ def download_file_from_shock(logger,
 
     metadata_response = requests.get("{0}/node/{1}?verbosity=metadata".format(shock_service_url, shock_id), headers=header, stream=True, verify=True)
     shock_metadata = metadata_response.json()['data']
-    print shock_metadata
-    shockFileName = shock_metadata['file']['name']
-    shockFileSize = shock_metadata['file']['size']
+    print "shock metadata is {0}".format(shock_metadata)
+    if shock_metadata is not None:
+    	shockFileName = shock_metadata['file']['name']
+    	shockFileSize = shock_metadata['file']['size']
     metadata_response.close()
         
     download_url = "{0}/node/{1}?download_raw".format(shock_service_url, shock_id)
-    print downlaod_url    
-    data = requests.get(download_url, headers=header, stream=True, verify=True)
+    print "download_url is {0}".format(download_url)
+    try: 
+    	data = requests.get(download_url, headers=header, stream=True, verify=True)
+    except Exception,e:
+	print(traceback.format_exc())
     if filename is not None:
         shockFileName = filename
 
@@ -119,6 +125,9 @@ def download_file_from_shock(logger,
         filePath = os.path.join(directory, shockFileName)
     else:
         filePath = shockFileName
+
+    if filesize is not None:
+	shockFileSize = filesize
 
     chunkSize = shockFileSize/4
     

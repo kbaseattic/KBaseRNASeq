@@ -1,0 +1,36 @@
+#
+# Define basic display information
+#
+name     : Create Expression Matrix
+
+tooltip  : |
+    Create the expression matrix using the parameters given by user 
+screenshots :
+    []
+
+#
+# Define the set of other narrative methods that should be suggested to the user.
+#
+method-suggestions :
+    related :
+        []
+    next :
+        []
+
+
+#
+# Configure the display and description of the parameters
+#
+parameters :
+    rnaseq_exp_details :
+        ui-name : |
+            Details of RNASeq exp
+        short-hint : |
+            Details of RNASeq exp
+    output_obj_name :
+        ui-name : |
+            Provide the name of matrix object
+        short-hint : |
+            Provide the name of matrix object
+description : |
+    <p>This method allows you to cretae the expression matrix. </p>

@@ -1,0 +1,245 @@
+{
+  "ver" : "1.0.0",
+  "authors" : [ ],
+  "contact" : "help@kbase.us",
+  "visible" : true,
+  "categories" : ["active"],
+  "widgets" : {
+    "input" : null,
+    "output" : "null"
+  },
+   "parameters" : [ {
+    "id" : "sample_id",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : true,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : ["KBaseRNASeq.RNASeqSample" ]
+    }
+  }, {
+    "id" : "bowtie2_index",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : ["KBaseRNASeq.BowtieIndexes" ]
+    }
+  }, {
+    "id" : "output_obj_name",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text"
+  }, {
+    "id" : "reference",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : ["KBaseRNASeq.KBaseGenomes.ContigSet" ]
+    }
+  }, {
+    "id" : "phred33",
+    "optional":true,
+    "advanced":true,
+    "allow_multiple":false,
+    "default_values":[""],
+    "field_type" : "checkbox",
+    "checkbox_options":{
+    "checked_value": 1,
+    "unchecked_value": 0
+    }
+  }, {
+    "id" : "phred64",
+    "optional":true,
+    "advanced":true,
+    "allow_multiple":false,
+    "default_values":[""],
+    "field_type" : "checkbox",
+    "checkbox_options":{
+      "checked_value": 1,
+      "unchecked_value": 0
+    }
+  }, {
+    "id" : "local",
+    "optional":true,
+    "advanced":true,
+    "allow_multiple":false,
+    "default_values":[""],
+    "field_type" : "checkbox",
+    "checkbox_options":{
+      "checked_value": 1,
+      "unchecked_value": 0
+    }
+  }, {
+   "id" : "very-fast",
+    "optional":true,
+    "advanced":true,
+    "allow_multiple":false,
+    "default_values":[""],
+    "field_type" : "checkbox",
+    "checkbox_options":{
+      "checked_value": 1,
+      "unchecked_value": 0
+    }
+  }, {
+   "id" : "fast",
+    "optional":true,
+    "advanced":true,
+    "allow_multiple":false,
+    "default_values":[""],
+    "field_type" : "checkbox",
+    "checkbox_options":{
+      "checked_value": 1,
+      "unchecked_value": 0
+    }
+  }, {
+    "id" : "very-sensitive",
+    "optional":true,
+    "advanced":true,
+    "allow_multiple":false,
+    "default_values":[""],
+    "field_type" : "checkbox",
+    "checkbox_options":{
+      "checked_value": 1,
+      "unchecked_value": 0
+    }
+  }, {
+    "id" : "sensitive",
+    "optional":true,
+    "advanced":true,
+    "allow_multiple":false,
+    "default_values":[""],
+    "field_type" : "checkbox",
+    "checkbox_options":{
+      "checked_value": 1,
+      "unchecked_value": 0
+    }
+  }, {
+    "id" : "very-fast-local",
+    "optional":true,
+    "advanced":true,
+    "allow_multiple":false,
+    "default_values":[""],
+    "field_type" : "checkbox",
+    "checkbox_options":{
+      "checked_value": 1,
+      "unchecked_value": 0
+    }
+  }, {
+   "id" : "very-sensitive-local",
+    "optional":true,
+    "advanced":true,
+    "allow_multiple":false,
+    "default_values":[""],
+    "field_type" : "checkbox",
+    "checkbox_options":{
+      "checked_value": 1,
+      "unchecked_value": 0
+    }
+  }, {
+   "id" : "fast-local",
+    "optional":true,
+    "advanced":true,
+    "allow_multiple":false,
+    "default_values":[""],
+    "field_type" : "checkbox",
+    "checkbox_options":{
+      "checked_value": 1,
+      "unchecked_value": 0
+    }
+  }, {
+    "id" : "fast-sensitive",
+    "optional":true,
+    "advanced":true,
+    "allow_multiple":false,
+    "default_values":[""],
+    "field_type" : "checkbox",
+    "checkbox_options":{
+      "checked_value": 1,
+      "unchecked_value": 0
+    }
+  } ],
+  "behavior" : {
+    "service-mapping" : {
+      "url" : "",
+      "name" : "KBaseRNASeq",
+      "method" : "Bowtie2Call",
+      "input_mapping" : [
+        {
+          "narrative_system_variable": "workspace",
+          "target_property" : "ws_id"
+        },
+        {
+          "input_parameter" : "sample_id",
+          "target_property" : "sample_id"
+        },
+        {
+          "input_parameter" : "reference",
+          "target_property" : "reference"
+        },
+        {
+          "input_parameter" : "bowtie2_index",
+          "target_property" : "bowtie2_index"
+        },
+        {
+          "input_parameter" : "phred33",
+          "target_property" : "phred33"
+        },
+        {
+          "input_parameter" : "phred64",
+          "target_property" : "phred64"
+        },
+        {
+          "input_parameter" : "local",
+          "target_property" : "local"
+        },
+        {
+          "input_parameter" : "very-fast",
+          "target_property" : "very-fast"
+        },
+        {
+          "input_parameter" : "fast",
+          "target_property" : "fast"
+        },
+        {
+          "input_parameter" : "very-sensitive",
+          "target_property" : "very-sensitive"
+        },
+        {
+          "input_parameter" : "sensitive",
+          "target_property" : "sensitive"
+        },
+        {
+          "input_parameter" : "very-fast-local",
+          "target_property" : "very-fast-local"
+        },
+       {
+          "input_parameter" : "very-sensitive-local",
+          "target_property" : "very-sensitive-local"
+        },
+       {
+          "input_parameter" : "fast-local",
+          "target_property" : "fast-local"
+        },
+       {
+          "input_parameter" : "fast-sensitive",
+          "target_property" : "fast-sensitive"
+      }],
+      "output_mapping" : [
+        {
+          "service_method_output_path": [0],
+          "target_property": "Bowtie2Call"
+        }
+      ]
+    }
+  },
+  "job_id_output_field" : "docker"
+}

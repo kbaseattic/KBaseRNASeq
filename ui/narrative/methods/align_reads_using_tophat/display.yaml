@@ -1,0 +1,145 @@
+#
+# Define basic display information
+#
+name     : align_reads_using_tophat
+tooltip  : |
+    align_reads_using_tophat
+
+screenshots :
+    []
+
+#
+# Define the set of other narrative methods that should be suggested to the user.
+#
+method-suggestions :
+    related :
+        []
+    next :
+        []
+
+
+#
+# Configure the display and description of the parameters
+#
+parameters :
+    sample_id :
+        ui-name : |
+            RNASeq Sample
+        short-hint : |
+            RNASeq Sample
+        description  : |
+            RNASeq Sample
+        placeholder : |
+            placeholder text is possible
+
+
+    annotation_id :
+        ui-name : |
+            Reference Annotation
+        short-hint : |
+            Reference Annotation
+        description  : |
+            Reference Annotation
+            
+    output_obj_name :
+        ui-name : |
+            tophat read alignment output
+        short-hint : |
+            tophat read alignment output
+        description  : |
+            tophat read alignment output
+        placeholder : |
+            tophat read alignment output
+            
+    reference :
+        ui-name : |
+            Reference Assembly Id
+        short-hint : |
+            Reference Assembly Id
+        description  : |
+            Reference Assembly Id
+            
+    bowtie_index :
+        ui-name : |
+            Bowtie Index Id
+        short-hint : |
+            Bowtie Index Id
+        description  : |
+            Bowtie Index Id
+    
+    read_mismatches :
+        ui-name : |
+            Mismatches in Reads
+        short-hint : |
+            Mismatches in Reads
+        description  : |
+            Mismatches in Reads
+    
+    read_gap_length :
+        ui-name : |
+            Gap length in reads
+        short-hint : |
+            Gap length in reads
+        description  : |
+            Gap length in reads
+            
+    read_edit_dist :
+        ui-name : |
+            read distance
+        short-hint : |
+            read distance
+        description  : |
+            read distance    
+    
+    min_intron_length :
+        ui-name : |
+            minimum length of intron
+        short-hint : |
+            minimum length of intron
+        description  : |
+            minimum length of intron
+
+    max_intron_length :
+        ui-name : |
+            max length of intron
+        short-hint : |
+            max length of intron
+        description  : |
+            max length of intron
+            
+    num_threads :
+        ui-name : |
+            number of threads
+        short-hint : |
+            number of threads
+        description  : |
+            number of threads    
+    
+    report_secondary_alignments :
+        ui-name : |
+            report secondary alignments
+        short-hint : |
+            report secondary alignments
+        description  : |
+           
+    
+    no_coverage_search :
+        ui-name : |
+            no coverage search
+        short-hint : |
+            no coverage search
+        description  : |
+            
+ 
+    library_type :
+        ui-name : |
+            library type
+        short-hint : |
+            library type
+        description  : |
+            library type    
+
+
+
+description : |
+    <p>This method allows reads alignment using tophat.</p>
