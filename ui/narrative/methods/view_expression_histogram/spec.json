@@ -1,0 +1,74 @@
+{
+  "name" : "View Expression Histogram",
+  "ver" : "1.0.0",
+  "authors" : [ ],
+  "contact" : "help@kbase.us",
+  "visible" : true,
+  "categories" : ["active"],
+  "widgets" : {
+    "input" : null,
+    "output" : "createExpressionHistogram"
+  },
+  "parameters" : [ {
+    "id" : "expression_sample",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text"
+    "text_options" : {
+      "valid_ws_types" : [ "KBaseExpression.ExpressionSample" ]
+    }
+  },{
+    "id" : "number_of_bins",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],    
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : [ ],
+      "validate_as": "int",
+      "min_int" : 2
+    }
+  },{
+    "id" : "output_obj_name",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text"
+  } ],
+  "behavior" : {
+    "service-mapping" : {
+    "url" : "",
+    "name" : "KBaseRNASeq",
+    "method" : "createExpressionHistogram",
+    "input_mapping" : [
+         {
+          "narrative_system_variable": "workspace",
+          "target_property": "ws_id"
+        }
+        {
+          "input_parameter": "expression_sample",
+          "target_property": "expression_sample"
+        },
+        {
+          "input_parameter": "number_of_bins",
+          "target_property": "number_of_bins"
+        },
+        {
+          "input_parameter": "output_obj_name",
+          "target_property": "output_obj_name"
+        },
+    ],
+    "output_mapping": [
+	{
+	 "service_method_output_path": [0],
+         "target_property": "createExpressionHistogram"
+	}
+      ]
+    }
+  },
+  "job_id_output_field" : "docker"
+}
