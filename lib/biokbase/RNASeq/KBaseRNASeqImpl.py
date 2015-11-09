@@ -8,11 +8,13 @@ import json
 import logging
 import time
 import subprocess
+import traceback
 from pprint import pprint
 import script_util
 from biokbase.workspace.client import Workspace
 from biokbase.auth import Token
 from mpipe import OrderedStage , Pipeline
+import  multiprocessing as mp
 
 try:
     from biokbase.HandleService.Client import HandleService
@@ -94,9 +96,24 @@ class KBaseRNASeq:
         streamHandler.setFormatter(formatter)
         self.__LOGGER.addHandler(streamHandler)
         self.__LOGGER.info("Logger was set")
-	
+
+    def parallel(function):                        
+	 def apply(values,num_threads):
+         	_pool = mp.Pool(num_threads)
+        	_result = pool.map(function, values)
+         	_pool.close()
+         	_pool.join()         
+		return _result    
+	 return apply   
+
+    #def multiprocess(processes, samples, x, widths):
+    # 	 pool = mp.Pool(processes=processes)
+    #	 results = [pool.apply_async(parzen_estimation, args=(samples, x, w)) for w in widths]
+    #	 results = [p.get() for p in results]
+    #	 results.sort() # to sort the results by input window width
+    #return results	
         #END_CONSTRUCTOR
-        pass
+        #pass
 
     def fastqcCall(self, ctx, params):
         # ctx is the context object
@@ -308,9 +325,25 @@ class KBaseRNASeq:
         hs = HandleService(url=self.__HS_URL, token=user_token)
 	try:
 	    ### Make a function to download the workspace object  and prepare dict of genome ,lib_type 
+	    tophat_dir = self.__TOPHAT_DIR
+            if os.path.exists(tophat_dir):
+            	files=glob.glob("%s/*" % tophat_dir)
+                for f in files: os.remove(f)
+            if not os.path.exists(tophat_dir): os.makedirs(tophat_dir)
 
 	    self.__LOGGER.info("Downloading RNASeq Sample file")
 	    try:
+		#values = [{'name' : params['sample_id'],'workspace' : params['ws_id']},
+                #          {'name' : params['reference'], 'workspace' : params['ws_id']},
+                #          {'name' : params['bowtie_index'], 'workspace' : params['ws_id']},
+                #          {'name' : params['annotation_gtf'] , 'workspace' : params['ws_id']}]
+		
+		#pool = mp.Pool(processes=4)
+		#results = [pool.apply_async(ws_client.get_objects,args=(values[x],)) for x in range(0,3)]
+		#output = [p.get() for p in results]
+		#print(output)	
+		#@parallel(ws_client.get_objects(values,2))
+
             	sample ,reference,bowtie_index,annotation = ws_client.get_objects(
                                         [{'name' : params['sample_id'],'workspace' : params['ws_id']},
 					{ 'name' : params['reference'], 'workspace' : params['ws_id']},
@@ -319,59 +352,89 @@ class KBaseRNASeq:
             except Exception,e:
 		 raise KBaseRNASeqException("Error Downloading objects from the workspace ") 
                      
-            returnVal = annotation 
-            if 'data' in sample:
-		if 'metadata' in sample['data']:
-			genome = sample['data']['metadata']['ref_genome']
-	    if 'singleend_sample' in reads['data']:
+            returnVal = bowtie_index
+	    #return [returnVal]
+	    opts_dict = { k:v for k,v in params.iteritems() if not k in ('ws_id','sample_id','reference','bowtie_index','annotation_gtf','analysis_id','output_obj_name') and v is not None }
+	    
+	    #returnVal = opts_dict
+ 
+            if 'data' in sample and sample['data'] is not None:
+		self.__LOGGER.info("getting here")
+		if 'metadata' in sample['data'] and sample['data']['metadata'] is not None:
+			genome = sample['data']['metadata']['genome_id']
+			self.__LOGGER.info(genome)
+	    if 'singleend_sample' in sample['data'] and sample['data']['singleend_sample'] is not None:
 		lib_type = "SingleEnd"
-		#cmdstring =
-	    if 'pairedend_sample' in reads['data']: 
+		singleend_sample = sample['data']['singleend_sample']
+		sample_shock_id = singleend_sample['handle']['id']
+		try:
+               	     script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=sample_shock_id,filename=singleend_sample['handle']['file_name'], directory=tophat_dir,token=user_token)
+        	except Exception,e:
+                	raise Exception( "Unable to download shock file , {0}".format(e))
+	    if 'pairedend_sample' in sample['data'] and sample['data']['pairedend_sample'] is not None: 
 		lib_type = "PairedEnd"
-		#cmdstring =
-	     
-	    # Download reads from JSON object 
-		
-	   
+		pairedend_sample = sample['data']['pairedend_sample']
+		self.__LOGGER.info(lib_type)
+		if "handle_1" in pairedend_sample and "id" in pairedend_sample['handle_1']:
+                	sample_shock_id1  = pairedend_sample['handle_1']['id']
+        	if "handle_1" in pairedend_sample and "file_name" in pairedend_sample['handle_1']:
+                	filename1 = pairedend_sample['handle']['file_name']
+        	if sample_shock_id1 is None:
+                	raise Exception("Handle1 there was not shock id found.")
+        	if "handle_2" in pairedend_sample  and "id" in pairedend_sample['handle_2']:
+                	sample_shock_id2  = pairedend_sample['handle_2']['id']
+        	if "handle_2" in pairedend_sample and "file_name" in pairedend_sample['handle_2']:
+                	filename2 = pairedend_sample['handle']['file_name']
+
+        	if sample_shock_id2 is None:
+                	raise Exception("Handle2 there was not shock id found.")
+		try:
+        		script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=sample_shock_id1,filename=filename1,directory=tophat_dir, token=user_token)
+        		script_util.download_file_from_shock(self.__LOGGER,shock_service_url=self.__SHOCK_URL, shock_id=sample_shock_id2,filename=filename2,directory=tophat_dir, token=user_token)
+                except Exception,e:
+                        raise Exception( "Unable to download shock file , {0}".format(e))
+
+	    if 'analysis_id' in sample['data'] and sample['data']['analysis_id'] is not None:
+		# updata the analysis object with the alignment id
+		analysis_id = sample['data']['analysis_id']
+	   	self.__LOGGER.info("RNASeq Sample belongs to the {0}".format(analysis_id)) 
+
+	    returnVal = opts_dict
+            #self.__LOGGER.info("Tophat ran with the following options {0} ",format(str(opts_dict))) 
+	    # Download bowtie_Indexes
+	    if 'handle' in bowtie_index['data'] and bowtie_index['data']['handle'] is not None:
+		b_shock_id = bowtie_index['data']['handle']['id']
+		b_filename = bowtie_index['data']['handle']['file_name']
+		print b_shock_id 
+		print b_filename
+	    try:
+		#script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=b_shock_id,filename=b_filename,directory=tophat_dir,token=user_token)
+		h = hs.hids_to_handles([bowtie_index['data']['handle']['hid']])
+		print h
+		print h[0]
+		hs.download(h[0],os.path.join(tophat_dir,b_filename))
+	    except Exception,e :
+		self.__LOGGER.exception("".join(traceback.format_exc()))
+		raise Exception( "Unable to download shock file , {0}".format(e))
+	    
+            if 'handle' in annotation['data'] and annotation['data']['handle'] is not None:
+                a_shock_id = annotation['data']['handle']['id']
+                a_filename = annotation['data']['handle']['file_name']
+                print a_shock_id
+                print a_filename
+            try:
+                #script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=b_shock_id,filename=b_filename,directory=tophat_dir,token=user_token)
+		h1 = hs.hids_to_handles([annotation['data']['handle']['hid']])
+                hs.download(h1[0],os.path.join(tophat_dir,a_filename))
+            except Exception,e :
+                raise Exception( "Unable to download shock file , {0}".format(e))
+	
+	    ### Build command line 
+	    tophat_cmd = "-input {0} -output {1} -reference {2} -opts_dict {3} -gtf {4} -prog tophat -base_dir {5} -library_type {6} -mode {7}".format(filename,params['output_obj_name'],genome,opts_dict,annotation_gtf,tophat_dir,lib_type,"dry_run")    
+            
 	except Exception,e:
 	    KBaseRNASeqException("Error Running TophatCall ") 
 	    
-	    #Download reads from the JSON object
-	    #genome = params['reference']
-	    #if 'data' in reads: 
-	    	#if 'metadata' in reads['data']:
-		    	#genome = reads['data']['metadata']['ref_genome'] 
-	    # 	if 'singleend_sample' in reads['data']:
-	    #		lib_type = "SingleEnd"
-	     		#cmdstring =
-	    #    elif 'pairedend_sample' in reads['data']:
-	    #		lib_type = "PairedEnd"
-			#cmdstring =
-	    ####Complete download reads
-		#raise KBaseRNASeqException("Error Downloading FASTA object from the workspace {0}".format(params['reference']))
-               
-            #self.__LOGGER.info( "Downloading FASTA from ContigSet")
-	
-	   # cmdstring = "%s/%s --workspace_service_url %s --workspace_name %s --working_directory %s --output_file_name %s --object_name %s --shock_service_url %s" %( self.__SCRIPTS_DIR,self.__SCRIPT_TYPE['ContigSet_to_fasta'],self.__WS_URL,self.__TEMP_DIR,genome,genome,self.__SHOCK_URL)
-            
-	    #tool_process = subprocess.Popen(cmdstring, stderr=subprocess.PIPE, shell=True)
-	    #stdout, stderr = tool_process.communicate()
-	    #if stdout is not None and len(stdout) > 0:
-            #	self.__LOGGER.info(stdout)
-	    #if stderr is not None and len(stderr) > 0:
-	    #	self.__LOGGER.error("Unable to Download Fasta from ContigSet: " + stderr)
-		
-
-	    #try:
-            #    assembly = ws_client.get_objects(
-            #                            [{'name' : params['reference'],
-            #                            'workspace' : params['ws_id']}])
-            #except Exception,e:
-            #    raise KBaseRNASeqException("Error Downloading FASTA object from the workspace {0}".format(params['reference']))
-	# Move them to the temp tophat folder	 
-
-        # Build Fasta object from the ContigSet reference
-		
 	# Call tophat script with options
 	
         # run samtools bam file created 
