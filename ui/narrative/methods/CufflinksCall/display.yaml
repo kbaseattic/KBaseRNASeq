@@ -1,0 +1,77 @@
+#
+# Define basic display information
+#
+name     : {NAME}
+
+tooltip  : |
+    {TOOLTIP_NAME}
+screenshots :
+    []
+
+#
+# Define the set of other narrative methods that should be suggested to the user.
+#
+method-suggestions :
+    related :
+        []
+    next :
+        []
+
+
+#
+# Configure the display and description of the parameters
+#
+parameters :
+        alignment_sample_id
+        ui-name : |
+            alignment_sample_id
+        short-hint : |
+            alignment_sample_id
+        output_obj_name
+        ui-name : |
+            output_obj_name
+        short-hint : |
+            output_obj_name
+        annotation_gtf
+        ui-name : |
+            annotation_gtf
+        short-hint : |
+            annotation_gtf
+        num_threads
+        ui-name : |
+            num_threads
+        short-hint : |
+            num_threads
+        library-type
+        ui-name : |
+            library-type
+        short-hint : |
+            library-type
+        library-norm-method
+        ui-name : |
+            library-norm-method
+        short-hint : |
+            library-norm-method
+        min-intron-length
+        ui-name : |
+            min-intron-length
+        short-hint : |
+            min-intron-length
+        max-intron-length
+        ui-name : |
+            max-intron-length
+        short-hint : |
+            max-intron-length
+        overhang-tolerance
+        ui-name : |
+            overhang-tolerance
+        short-hint : |
+            overhang-tolerance
+
+
+description : |
+    <p>{DESC} </p>
+    <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
+    {TEAM}</p>
+
+

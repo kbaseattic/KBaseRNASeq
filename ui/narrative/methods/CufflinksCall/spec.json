@@ -1,0 +1,180 @@
+{
+    "authors": [],
+    "behavior": {
+        "service-mapping": {
+            "input_mapping": [
+                {
+                    "narrative_system_variable": "workspace",
+                    "target_property": "ws_id"
+                },
+                {
+                    "input_parameter": "alignment_sample_id",
+                    "target_property": "alignment_sample_id"
+                },
+                {
+                    "input_parameter": "output_obj_name",
+                    "target_property": "output_obj_name"
+                },
+                {
+                    "input_parameter": "annotation_gtf",
+                    "target_property": "annotation_gtf"
+                },
+                {
+                    "input_parameter": "num_threads",
+                    "target_property": "num_threads"
+                },
+                {
+                    "input_parameter": "library-type",
+                    "target_property": "library-type"
+                },
+                {
+                    "input_parameter": "library-norm-method",
+                    "target_property": "library-norm-method"
+                },
+                {
+                    "input_parameter": "min-intron-length",
+                    "target_property": "min-intron-length"
+                },
+                {
+                    "input_parameter": "max-intron-length",
+                    "target_property": "max-intron-length"
+                },
+                {
+                    "input_parameter": "overhang-tolerance",
+                    "target_property": "overhang-tolerance"
+                }
+            ],
+            "output_mapping": [
+                {
+                    "service_method_output_path": [
+                        0
+                    ],
+                    "target_property": "CufflinksCall"
+                }
+            ]
+        }
+    },
+    "categories": [
+        "active"
+    ],
+    "contact": "help@kbase.us",
+    "job_id_output_field": "docker",
+    "parameters": [
+        {
+            "advanced": false,
+            "allow_multiple": false,
+            "default_values": [
+                ""
+            ],
+            "field_type": "text",
+            "id": "ws_id",
+            "optional": false
+        },
+        {
+            "advanced": false,
+            "allow_multiple": false,
+            "default_values": [
+                ""
+            ],
+            "field_type": "text",
+            "id": "alignment_sample_id",
+            "optional": false,
+            "text_options": {
+                "valid_ws_types": [
+                    "KBaseRNASeq.RNASeqSampleAlignment"
+                ]
+            }
+        },
+        {
+            "advanced": false,
+            "allow_multiple": false,
+            "default_values": [
+                ""
+            ],
+            "field_type": "text",
+            "id": "output_obj_name",
+            "optional": false
+        },
+        {
+            "advanced": false,
+            "allow_multiple": false,
+            "default_values": [
+                ""
+            ],
+            "field_type": "text",
+            "id": "annotation_gtf",
+            "optional": false,
+            "text_options": {
+                "valid_ws_types": [
+                    "KBaseRNASeq.ReferenceAnnotation"
+                ]
+            }
+        },
+        {
+            "advanced": false,
+            "allow_multiple": false,
+            "default_values": [
+                ""
+            ],
+            "field_type": "text",
+            "id": "num_threads",
+            "optional": false
+        },
+        {
+            "advanced": false,
+            "allow_multiple": false,
+            "default_values": [
+                ""
+            ],
+            "field_type": "text",
+            "id": "library-type",
+            "optional": false
+        },
+        {
+            "advanced": false,
+            "allow_multiple": false,
+            "default_values": [
+                ""
+            ],
+            "field_type": "text",
+            "id": "library-norm-method",
+            "optional": false
+        },
+        {
+            "advanced": false,
+            "allow_multiple": false,
+            "default_values": [
+                ""
+            ],
+            "field_type": "text",
+            "id": "min-intron-length",
+            "optional": false
+        },
+        {
+            "advanced": false,
+            "allow_multiple": false,
+            "default_values": [
+                ""
+            ],
+            "field_type": "text",
+            "id": "max-intron-length",
+            "optional": false
+        },
+        {
+            "advanced": false,
+            "allow_multiple": false,
+            "default_values": [
+                ""
+            ],
+            "field_type": "text",
+            "id": "overhang-tolerance",
+            "optional": false
+        }
+    ],
+    "ver": "1.0.0",
+    "visible": true,
+    "widgets": {
+        "input": "null",
+        "output": "null"
+    }
+}
