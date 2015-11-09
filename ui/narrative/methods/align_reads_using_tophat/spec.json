@@ -43,7 +43,7 @@
     "default_values" : [ "" ],
     "field_type" : "text",
     "text_options" : {
-      "valid_ws_types" : ["KBaseRNASeq.ReferenceAssembly" ]
+      "valid_ws_types" : ["KBaseRNASeq.KBaseGenomes.ContigSet" ]
     }
   }, {
     "id" : "bowtie_index",
@@ -149,7 +149,7 @@
     "service-mapping" : {
       "url" : "",
       "name" : "KBaseRNASeq",
-      "method" : "align_reads_using_tophat",
+      "method" : "TophatCall",
       "input_mapping" : [
        {
           "narrative_system_variable": "workspace",
