@@ -118,7 +118,10 @@
             ],
             "field_type": "text",
             "id": "num_threads",
-            "optional": false
+            "optional": false,
+            "text_options": {
+                "validate_as": "int"
+            }
         },
         {
             "advanced": false,
@@ -148,7 +151,10 @@
             ],
             "field_type": "text",
             "id": "min-intron-length",
-            "optional": false
+            "optional": false,
+            "text_options": {
+                "validate_as": "int"
+            }
         },
         {
             "advanced": false,
@@ -158,7 +164,10 @@
             ],
             "field_type": "text",
             "id": "max-intron-length",
-            "optional": false
+            "optional": false,
+            "text_options": {
+                "validate_as": "int"
+            }
         },
         {
             "advanced": false,
@@ -168,7 +177,10 @@
             ],
             "field_type": "text",
             "id": "overhang-tolerance",
-            "optional": false
+            "optional": false,
+            "text_options": {
+                "validate_as": "int"
+            }
         }
     ],
     "ver": "1.0.0",
