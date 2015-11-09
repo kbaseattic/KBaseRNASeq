@@ -25,7 +25,7 @@ EXECUTABLE_SCRIPT_NAME = run_$(MODULE_CAPS).sh
 default: compile-kb-module build-executable-script-python
 
 compile-kb-module:
-	kb-mobu compile $(SPEC_FILE) \
+	kb-sdk compile $(SPEC_FILE) \
 		--out $(LIB_DIR) \
 		--pyclname biokbase.$(MODULE).$(MODULE_CAPS)Client \
 		--pysrvname biokbase.$(MODULE).$(MODULE_CAPS) \

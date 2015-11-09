@@ -5,10 +5,10 @@
 	"params":[
 	{
 	 "ws_id" : "RNASeqTestData",
-	 "sample_id" : "Ptrichocarpa_singleEnd_RNASeqSample" ,
+	 "sample_id" : "Ptrichocarpa_SE_RNASeq" ,
 	 "output_obj_name" : "test_tophat_output" ,
-	 "reference" : "Escherichia_coli_str_K-12_substr_MG1655.contigset",
-	 "bowtie_index" : "Ptrichocarpa_bowtie_indexes",
+	 "reference" : "Ptrichocarpa_contigset",
+	 "bowtie_index" : "kb_g.166828_bowtie_indexes",
 	 "annotation_gtf" : "Ptrichocarpa_v3_annotation_gtf",
 	 "read_mismatches" : "2",
 	 "read_gap_length" : null ,
