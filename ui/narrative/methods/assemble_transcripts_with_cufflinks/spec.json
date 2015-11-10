@@ -1,0 +1,126 @@
+{
+  "ver" : "1.0.0",
+  "authors" : [ ],
+  "contact" : "help@kbase.us",
+  "visible" : true,
+  "categories" : ["active"],
+  "widgets" : {
+    "input" : null,
+    "output" : null
+  },
+   "parameters" : [ {
+    "id" : "alignment_sample_id",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : ["KBaseRNASeq.RNASeqSampleAlignment" ]
+    }
+  }, {
+    "id" : "annotation_gtf",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : ["KBaseRNASeq.ReferenceAnnotation" ]
+    }
+  }, {
+    "id" : "output_obj_name",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text"
+  }, {
+   "id" : "num-threads",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],    
+    "field_type" : "text",
+    "text_options" : {
+      "validate_as": "int",
+    }
+  }, {
+   "id" : "min-intron-length",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],    
+    "field_type" : "text",
+    "text_options" : {
+      "validate_as": "int",
+    }
+  }, {
+    "id" : "max-intron-length",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],    
+    "field_type" : "text",
+    "text_options" : {
+      "validate_as": "int",
+    }
+  }, {
+    "id" : "overhang-tolerance",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],    
+    "field_type" : "text",
+    "text_options" : {
+      "validate_as": "int",
+    }
+  } ],
+  "behavior" : {
+    "service-mapping" : {
+      "url" : "",
+      "name" : "KBaseRNASeq",
+      "method" : "assemble_transcripts_with_cufflinks",
+      "input_mapping" : [
+        {
+          "narrative_system_variable": "workspace",
+          "target_property" : "ws_id"
+        },
+        {
+          "input_parameter" : "alignment_sample_id",
+          "target_property" : "alignment_sample_id"
+        },
+        {
+          "input_parameter" : "annotation_gtf",
+          "target_property" : "annotation_gtf"
+        },
+        {
+          "input_parameter" : "output_obj_name",
+          "target_property" : "output_obj_name"
+        },
+        {
+          "input_parameter" : "num-threads",
+          "target_property" : "num-threads"
+        },
+        {
+          "input_parameter" : "min-intron-length",
+          "target_property" : "min-intron-length"
+        },
+        {
+          "input_parameter" : "max-intron-length",
+          "target_property" : "max-intron-length"
+        },
+        {
+          "input_parameter" : "overhang-tolerance",
+          "target_property" : "overhang-tolerance"
+      }],
+      "output_mapping" : [
+        {
+          "service_method_output_path": [0],
+          "target_property": "assemble_transcripts_with_cufflinks"
+        }
+      ]
+    }
+  },
+  "job_id_output_field" : "docker"
+}
