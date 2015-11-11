@@ -1,0 +1,76 @@
+#
+# Define basic display information
+#
+name     : Identify differential expression using cuffdiff
+
+tooltip  : |
+    Identify differential expression using cuffdiff
+screenshots :
+    []
+
+#
+# Define the set of other narrative methods that should be suggested to the user.
+#
+method-suggestions :
+    related :
+        []
+    next :
+        []
+
+
+#
+# Configure the display and description of the parameters
+#
+parameters :
+  rnaseq_exp_details :
+    ui-name : |
+     RNA-Seq experiment details
+    short-hint : |
+      RNA-Seq experiment details
+ annotation_gtf :
+    ui-name : |
+      Reference genome annotation
+    short-hint : |
+      Reference genome annotation
+  output_obj_name :
+    ui-name : |
+      Output object name
+    short-hint : |
+      Output object name
+  num_threads :
+    ui-name : |
+      Number of  threads
+    short-hint : |
+      Number of  threads
+  min-alignment-count :
+    ui-name : |
+      Minimum count of alignment
+    short-hint : |
+      Minimum count of alignment
+  time-series :
+    ui-name : |
+      time series
+    short-hint : |
+      time series 
+  multi-read-correct:
+    ui-name : |
+      multi read correct
+    short-hint : |
+      multi read correct
+  labels  :
+    ui-name : |
+      labels
+    short-hint : |
+      labels
+  library_type  :
+    ui-name : |
+      library types
+    short-hint : |
+      library types
+  library-norm-method :
+    ui-name : |
+      library normalization method
+    short-hint : |
+      library normalization method
+description : |
+    <p>This method is used to identify differential expression using cuffdiff.</p>

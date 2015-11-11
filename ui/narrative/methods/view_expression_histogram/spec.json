@@ -7,7 +7,7 @@
   "categories" : ["active"],
   "widgets" : {
     "input" : null,
-    "output" : "createExpressionHistogram"
+    "output" : null
   },
   "parameters" : [ {
     "id" : "expression_sample",
@@ -15,7 +15,7 @@
     "advanced" : false,
     "allow_multiple" : false,
     "default_values" : [ "" ],
-    "field_type" : "text"
+    "field_type" : "text",
     "text_options" : {
       "valid_ws_types" : [ "KBaseExpression.ExpressionSample" ]
     }
@@ -27,9 +27,7 @@
     "default_values" : [ "" ],    
     "field_type" : "text",
     "text_options" : {
-      "valid_ws_types" : [ ],
       "validate_as": "int",
-      "min_int" : 2
     }
   },{
     "id" : "output_obj_name",
@@ -45,10 +43,10 @@
     "name" : "KBaseRNASeq",
     "method" : "createExpressionHistogram",
     "input_mapping" : [
-         {
+        {
           "narrative_system_variable": "workspace",
           "target_property": "ws_id"
-        }
+        },
         {
           "input_parameter": "expression_sample",
           "target_property": "expression_sample"
@@ -60,7 +58,7 @@
         {
           "input_parameter": "output_obj_name",
           "target_property": "output_obj_name"
-        },
+        }
     ],
     "output_mapping": [
 	{

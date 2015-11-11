@@ -1,0 +1,62 @@
+#
+# Define basic display information
+#
+name     : Assemble Transcripts With Cufflinks
+
+tooltip  : |
+    Assemble Transcripts With Cufflinks
+screenshots :
+    []
+
+#
+# Define the set of other narrative methods that should be suggested to the user.
+#
+method-suggestions :
+    related :
+        []
+    next :
+        []
+
+
+#
+# Configure the display and description of the parameters
+#
+parameters :
+  alignment_sample_id :
+    ui-name : |
+        Alignment sample ID
+    short-hint : |
+        Alignment sample ID
+  annotation_gtf :
+    ui-name : |
+      Reference genome annotation
+    short-hint : |
+      Reference genome annotation
+  output_obj_name :
+    ui-name : |
+      Output object name
+    short-hint : |
+      Output object name
+  num-threads :
+    ui-name : |
+      Number of  threads
+    short-hint : |
+      Number of  threads
+  min-intron-length :
+    ui-name : |
+      Minimum length of intron
+    short-hint : |
+      Minimum length of intron
+  max-intron-length :
+    ui-name : |
+      Maximum length of intron
+    short-hint : |
+      Maximum length of intron 
+  overhang-tolerance :
+    ui-name : |
+      Overhang tolerance
+    short-hint : |
+      Overhang tolerance
+
+description : |
+    <p>This method is used to assemble transcripts with Cufflinks.</p>

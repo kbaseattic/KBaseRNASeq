@@ -615,8 +615,8 @@ typedef structure{
         ws_referenceAnnotation_id annotation_gtf;
         /*cuff_opts opts_dict;*/
 	int num_threads;
-        string library-type;
-        string library-norm-method;
+        /*string library-type; */
+        /*string library-norm-method; */
 	int min-intron-length;
 	int max-intron-length;
 	int overhang-tolerance;
@@ -662,11 +662,12 @@ typedef mapping <string diff_opts,opts_cuffdiff> cuffdiff_opts;
         ws_referenceAnnotation_id annotation_gtf;
         /*cuffdiff_opts  opts_dict;*/
 	int num-threads;
+	list<string> labels;
         string time-series;
 	string library-type;
         string library-norm-method;
 	string multi-read-correct;
-        string min-alignment-count;
+        int  min-alignment-count;
         }CuffdiffParams;
 
 async funcdef CuffdiffCall(CuffdiffParams params)

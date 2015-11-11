@@ -23,23 +23,22 @@ method-suggestions :
 # Configure the display and description of the parameters
 #
 parameters :
-    expression_sample :
-        ui-name : |
-            Select the expression sample to view histogram 
-        short-hint : |
-            Select the expression sample to view histogram
-   number_of_bins :
-        ui-name : |
-            Select the number of bins 
-        short-hint : |
-            Select the number of bins
-   output_obj_name :
-        ui-name : |
-            Provide the name to output object
-        short-hint : |
-            Provide the name to output object
+  expression_sample :
+    ui-name : |
+      Select the expression sample to view histogram 
+    short-hint : |
+      Select the expression sample to view histogram
+  number_of_bins :
+    ui-name : |
+      Select the number of bins 
+    short-hint : |
+      Select the number of bins
+  output_obj_name :
+    ui-name : |
+      Provide the name to output object
+    short-hint : |
+      Provide the name to output object
 
 description : |
 
     <p>Create the expression histogram and users can view it</p>
-     
