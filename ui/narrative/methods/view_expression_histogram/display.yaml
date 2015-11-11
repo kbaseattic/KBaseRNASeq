@@ -23,17 +23,17 @@ method-suggestions :
 # Configure the display and description of the parameters
 #
 parameters :
-    expression_sample :
+  expression_sample :
         ui-name : |
             Select the expression sample to view histogram 
         short-hint : |
             Select the expression sample to view histogram
-   number_of_bins :
+  number_of_bins :
         ui-name : |
             Select the number of bins 
         short-hint : |
             Select the number of bins
-   output_obj_name :
+  output_obj_name :
         ui-name : |
             Provide the name to output object
         short-hint : |
