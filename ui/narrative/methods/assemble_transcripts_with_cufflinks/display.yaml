@@ -27,7 +27,7 @@ parameters :
         Alignment sample ID
     short-hint : |
         Alignment sample ID
- annotation_gtf :
+  annotation_gtf :
     ui-name : |
       Reference genome annotation
     short-hint : |
