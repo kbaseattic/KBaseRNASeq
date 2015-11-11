@@ -22,47 +22,47 @@ method-suggestions :
 # Configure the display and description of the parameters
 #
 parameters :
-        alignment_sample_id
+        alignment_sample_id:
         	ui-name : |
             		Alignment sample id
         	short-hint : |
             		Alignment sample id
-        output_obj_name
+        output_obj_name:
         	ui-name : |
             		Output obj name
         	short-hint : |
             		Output obj name
-        annotation_gtf
+        annotation_gtf:
         	ui-name : |
             		Annotation gtf
         	short-hint : |
             		Annotation gtf
-        num_threads
+        num_threads:
         	ui-name : |
             		Num threads
         	short-hint : |
             		Num threads
-        library-type
+        library-type:
       		  ui-name : |
             		Library type
         	short-hint : |
             		Library type
-        library-norm-method
+        library-norm-method:
        		 ui-name : |
             		Library norm method
         	short-hint : |
             		Library norm method
-        min-intron-length
+        min-intron-length:
         	ui-name : |
             		Min intron length
         	short-hint : |
             		Min intron length
-        max-intron-length
+        max-intron-length:
         	ui-name : |
            		 Max intron length
         	short-hint : |
             		Max intron length
-        overhang-tolerance
+        overhang-tolerance:
         	ui-name : |
             		Overhang tolerance
         	short-hint : |
