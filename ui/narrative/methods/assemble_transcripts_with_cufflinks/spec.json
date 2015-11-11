@@ -43,7 +43,7 @@
     "default_values" : [ "" ],    
     "field_type" : "text",
     "text_options" : {
-      "validate_as": "int",
+      "validate_as": "int"
     }
   }, {
    "id" : "min-intron-length",
@@ -53,7 +53,7 @@
     "default_values" : [ "" ],    
     "field_type" : "text",
     "text_options" : {
-      "validate_as": "int",
+      "validate_as": "int"
     }
   }, {
     "id" : "max-intron-length",
@@ -63,7 +63,7 @@
     "default_values" : [ "" ],    
     "field_type" : "text",
     "text_options" : {
-      "validate_as": "int",
+      "validate_as": "int"
     }
   }, {
     "id" : "overhang-tolerance",
@@ -73,7 +73,7 @@
     "default_values" : [ "" ],    
     "field_type" : "text",
     "text_options" : {
-      "validate_as": "int",
+      "validate_as": "int"
     }
   } ],
   "behavior" : {

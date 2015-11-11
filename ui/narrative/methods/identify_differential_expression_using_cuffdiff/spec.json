@@ -43,7 +43,7 @@
     "default_values" : [ "" ],    
     "field_type" : "text",
     "text_options" : {
-      "validate_as": "int",
+      "validate_as": "int"
     }
   }, {
     "id" : "min-alignment-count",
@@ -53,7 +53,7 @@
     "default_values" : [ "" ],    
     "field_type" : "text",
     "text_options" : {
-      "validate_as": "int",
+      "validate_as": "int"
     }
  }, {
     "id" : "time-series",
@@ -95,15 +95,15 @@
       "options": [
         {
           "value": "fr-unstranded",
-          "display": "Standard Illumina",
+          "display": "Standard Illumina"
         },
         {
           "value": "fr-firststrand",
-          "display": "Only sequenced for single end reads",
+          "display": "Only sequenced for single end reads"
         },
         {
           "value": "fr-secondstrand",
-          "display": "Directional Illumina",
+          "display": "Directional Illumina"
         }
      ]
     }
@@ -118,15 +118,15 @@
       "options": [
         {
           "value": "classic-fpkm",
-          "display": "no scaling to FPKM",
+          "display": "no scaling to FPKM"
         },
         {
           "value": "geometric",
-          "display": "geometric",
+          "display": "geometric"
         },
         {
           "value": "quartile",
-          "display": "quartile",
+          "display": "quartile"
         }
      ]
     }
