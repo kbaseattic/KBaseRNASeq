@@ -1,0 +1,194 @@
+{
+  "ver" : "1.0.0",
+  "authors" : [ ],
+  "contact" : "help@kbase.us",
+  "visible" : true,
+  "categories" : ["active"],
+  "widgets" : {
+    "input" : null,
+    "output" : null
+  },
+   "parameters" : [ {
+    "id" : "rnaseq_exp_details",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : true,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : ["KBaseRNASeq.RNASeqAnalysis" ]
+    }
+  }, {
+    "id" : "annotation_gtf",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : ["KBaseRNASeq.ReferenceAnnotation" ]
+    }
+  }, {
+    "id" : "output_obj_name",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text"
+  }, {
+    "id" : "num-threads",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],    
+    "field_type" : "text",
+    "text_options" : {
+      "validate_as": "int",
+    }
+  }, {
+    "id" : "min-alignment-count",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],    
+    "field_type" : "text",
+    "text_options" : {
+      "validate_as": "int",
+    }
+ }, {
+    "id" : "time-series",
+    "optional":true,
+    "advanced":true,
+    "allow_multiple":false,
+    "default_values":[""],
+    "field_type" : "checkbox",
+    "checkbox_options":{
+      "checked_value": 1,
+      "unchecked_value": 0
+    }
+  }, {
+    "id" : "multi-read-correct",
+    "optional":true,
+    "advanced":true,
+    "allow_multiple":false,
+    "default_values":[""],
+    "field_type" : "checkbox",
+    "checkbox_options":{
+      "checked_value": 1,
+      "unchecked_value": 0
+    }
+ }, {
+    "id" : "labels",
+    "optional" : true,
+    "advanced" : false,
+    "allow_multiple" : true,
+    "default_values" : [ "" ],
+    "field_type" : "text"
+    }, {
+    "id" : "library_type",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "dropdown",
+    "dropdown_options":{
+      "options": [
+        {
+          "value": "fr-unstranded",
+          "display": "Standard Illumina",
+        },
+        {
+          "value": "fr-firststrand",
+          "display": "Only sequenced for single end reads",
+        },
+        {
+          "value": "fr-secondstrand",
+          "display": "Directional Illumina",
+        }
+     ]
+    }
+    }, {
+   "id" : "library-norm-method",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "dropdown",
+    "dropdown_options":{
+      "options": [
+        {
+          "value": "classic-fpkm",
+          "display": "no scaling to FPKM",
+        },
+        {
+          "value": "geometric",
+          "display": "geometric",
+        },
+        {
+          "value": "quartile",
+          "display": "quartile",
+        }
+     ]
+    }
+    } ],
+  "behavior" : {
+    "service-mapping" : {
+      "url" : "",
+      "name" : "KBaseRNASeq",
+      "method" : "CuffdiffCall",
+      "input_mapping" : [
+        {
+          "narrative_system_variable": "workspace",
+          "target_property" : "ws_id"
+        },
+        {
+          "input_parameter" : "rnaseq_exp_details",
+          "target_property" : "rnaseq_exp_details"
+        },
+        {
+          "input_parameter" : "annotation_gtf",
+          "target_property" : "annotation_gtf"
+        },
+        {
+          "input_parameter" : "output_obj_name",
+          "target_property" : "output_obj_name"
+        },
+        {
+          "input_parameter" : "num-threads",
+          "target_property" : "num-threads"
+        },
+        {
+          "input_parameter" : "time-series",
+          "target_property" : "time-series"
+        },
+        {
+          "input_parameter" : "multi-read-correct",
+          "target_property" : "multi-read-correct"
+        },
+        {
+          "input_parameter" : "min-alignment-count",
+          "target_property" : "min-alignment-count"
+        },
+       {
+          "input_parameter" : "labels",
+          "target_property" : "labels"
+        },
+        {
+          "input_parameter" : "library-type",
+          "target_property" : "library-type"
+        },
+        {
+          "input_parameter" : "library-norm-method",
+          "target_property" : "library-norm-method"
+          
+      }],
+      "output_mapping" : [
+        {
+          "service_method_output_path": [0],
+          "target_property": "CuffdiffCall"
+        }
+      ]
+    }
+  },
+  "job_id_output_field" : "docker"
+}
