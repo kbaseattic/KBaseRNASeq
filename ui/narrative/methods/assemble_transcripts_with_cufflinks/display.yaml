@@ -37,7 +37,7 @@ parameters :
       Output object name
     short-hint : |
       Output object name
-  num_threads :
+  num-threads :
     ui-name : |
       Number of  threads
     short-hint : |
@@ -52,7 +52,7 @@ parameters :
       Maximum length of intron
     short-hint : |
       Maximum length of intron 
-  overhang-tolerance
+  overhang-tolerance :
     ui-name : |
       Overhang tolerance
     short-hint : |
