@@ -27,7 +27,7 @@ parameters :
      RNA-Seq experiment details
     short-hint : |
       RNA-Seq experiment details
- annotation_gtf :
+  annotation_gtf :
     ui-name : |
       Reference genome annotation
     short-hint : |
@@ -37,7 +37,7 @@ parameters :
       Output object name
     short-hint : |
       Output object name
-  num_threads :
+  num-threads :
     ui-name : |
       Number of  threads
     short-hint : |
@@ -52,7 +52,7 @@ parameters :
       time series
     short-hint : |
       time series 
-  multi-read-correct:
+  multi-read-correct :
     ui-name : |
       multi read correct
     short-hint : |
@@ -62,7 +62,7 @@ parameters :
       labels
     short-hint : |
       labels
-  library_type  :
+  library-type  :
     ui-name : |
       library types
     short-hint : |
