@@ -7,7 +7,7 @@
   "categories" : ["active"],
   "widgets" : {
     "input" : null,
-    "output" : "createExpressionMatrix"
+    "output" : null
   },
   "parameters" : [ {
     "id" : "rnaseq_exp_details",
@@ -33,7 +33,7 @@
     "name" : "KBaseRNASeq",
     "method" : "createExpressionMatrix",
     "input_mapping" : [
-         {
+        {
           "narrative_system_variable": "workspace",
           "target_property": "ws_id"
         },
