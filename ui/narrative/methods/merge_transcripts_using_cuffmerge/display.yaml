@@ -1,0 +1,36 @@
+#
+# Define basic display information
+#
+name     : Merge Transcripts Using Cuffmerge
+
+tooltip  : |
+    Merge the multiple transcripts from cufflinks using cuffmerge
+screenshots :
+    []
+
+#
+# Define the set of other narrative methods that should be suggested to the user.
+#
+method-suggestions :
+    related :
+        []
+    next :
+        []
+
+
+#
+# Configure the display and description of the parameters
+#
+parameters :
+    analysis :
+        ui-name : |
+            cufflinks transcripts
+        short-hint : |
+            cufflinks transcripts
+    output_obj_name :
+        ui-name : |
+            Provide the name of matrix object
+        short-hint : |
+            Provide the name of matrix object
+description : |
+    <p>This method allows you to merge the multiple transcripts from cufflinks using cuffmerge. </p>

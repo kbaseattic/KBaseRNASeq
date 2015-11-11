@@ -8,7 +8,7 @@ import json
 import logging
 import time
 import subprocess
-import traceback
+import threading, traceback
 from pprint import pprint
 import script_util
 from biokbase.workspace.client import Workspace
@@ -97,14 +97,14 @@ class KBaseRNASeq:
         self.__LOGGER.addHandler(streamHandler)
         self.__LOGGER.info("Logger was set")
 
-    def parallel(function):                        
-	 def apply(values,num_threads):
-         	_pool = mp.Pool(num_threads)
-        	_result = pool.map(function, values)
-         	_pool.close()
-         	_pool.join()         
-		return _result    
-	 return apply   
+    #def parallel(function):                        
+    #	 def apply(values,num_threads):
+    #     	_pool = mp.Pool(num_threads)
+    #    	_result = pool.map(function, values)
+    #     	_pool.close()
+    #     	_pool.join()         
+    #		return _result    
+    #	 return apply   
 
     #def multiprocess(processes, samples, x, widths):
     # 	 pool = mp.Pool(processes=processes)
@@ -113,7 +113,7 @@ class KBaseRNASeq:
     #	 results.sort() # to sort the results by input window width
     #return results	
         #END_CONSTRUCTOR
-        #pass
+        pass
 
     def fastqcCall(self, ctx, params):
         # ctx is the context object
@@ -334,13 +334,22 @@ class KBaseRNASeq:
 
 	    self.__LOGGER.info("Downloading RNASeq Sample file")
 	    try:
-		#values = [{'name' : params['sample_id'],'workspace' : params['ws_id']},
-                #          {'name' : params['reference'], 'workspace' : params['ws_id']},
-                #          {'name' : params['bowtie_index'], 'workspace' : params['ws_id']},
-                #          {'name' : params['annotation_gtf'] , 'workspace' : params['ws_id']}]
+		values = [{'name' : params['sample_id'],'workspace' : params['ws_id']},
+                          {'name' : params['reference'], 'workspace' : params['ws_id']},
+                          {'name' : params['bowtie_index'], 'workspace' : params['ws_id']},
+                          {'name' : params['annotation_gtf'] , 'workspace' : params['ws_id']}]
+	        	
+		#def func_call():
+        	#print current_thread()
+		#print [[x] for x in values]
 		
+		#for x in values:
+        	#	t1 = threading.Thread(target= ws_client.get_objects,args=([x]))
+        	#	t1.start()
+        	#	t1.join()
 		#pool = mp.Pool(processes=4)
-		#results = [pool.apply_async(ws_client.get_objects,args=(values[x],)) for x in range(0,3)]
+		#results = [pool.map(ws_client.get_objects,([x] for x in values))]
+		#print results
 		#output = [p.get() for p in results]
 		#print(output)	
 		#@parallel(ws_client.get_objects(values,2))
@@ -351,6 +360,7 @@ class KBaseRNASeq:
 					{ 'name' : params['bowtie_index'], 'workspace' : params['ws_id']},
 					{ 'name' : params['annotation_gtf'] , 'workspace' : params['ws_id']}])
             except Exception,e:
+		 self.__LOGGER.exception("".join(traceback.format_exc()))
 		 raise KBaseRNASeqException("Error Downloading objects from the workspace ") 
                      
             returnVal = bowtie_index
@@ -489,21 +499,40 @@ class KBaseRNASeq:
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN getAlignmentStats
-	returnVal =  {	"dataset" : { 
-			  "properly_paired" : 100 , 
-			  "multiple_alignments": 50 , 
-                          "singletons": 50 , 
-	                  "alignment_rate": 80,
-                          "mapped_reads" : 200,
-                          "unmapped_reads"  :  50,
-                          "total_reads" : 250,
-  	                  "mapped_reads" : {
- 	                  	"introns" : 50,
-	                  	"exons" : 75,
-	                  	"splice_junctions" : 100,
-				"intergenic_regions" : 55
-			  }
-		      } }
+
+	user_token=ctx['token']
+        ws_client=Workspace(url=self.__WS_URL, token=user_token)        
+	stats_data =  { 
+    			"alignment_id": params['alignment_sample_id'], 
+    			"alignment_rate": 80, 
+    			"mapped_sections": {
+        		"exons": 50, 
+        		"intergenic_regions": 50, 
+        		"introns": 50, 
+        		"splice_junctions": 50
+    			}, 
+    			"multiple_alignments": 50, 
+    			"properly_paired": 100, 
+    			"singletons": 50, 
+    			"total_reads": 250, 
+    			"unmapped_reads": 50
+			}
+	
+	## Save object to workspace
+        self.__LOGGER.info( "Saving Alignment Statistics to the Workspace")
+        try:
+		res= ws_client.save_objects(
+                                        {"workspace":params['ws_id'],
+                                         "objects": [{
+                                         "type":"KBaseRNASeq.AlignmentStatsResults",
+                                         "data":stats_data,
+                                         "name":"test_pie_chart"}
+                                        ]})
+                returnVal = { "output" : "test_pie_chart","workspace" : params['ws_id'] }
+        except Exception, e:
+                raise KBaseRNASeqException("get Alignment Statistics failed: {0}".format(e))
+
+
         #END getAlignmentStats
 
         # At some point might do deeper type checking...

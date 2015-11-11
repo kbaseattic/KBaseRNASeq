@@ -67,16 +67,6 @@
                 ""
             ],
             "field_type": "text",
-            "id": "ws_id",
-            "optional": false
-        },
-        {
-            "advanced": false,
-            "allow_multiple": false,
-            "default_values": [
-                ""
-            ],
-            "field_type": "text",
             "id": "alignment_sample_id",
             "optional": false,
             "text_options": {
