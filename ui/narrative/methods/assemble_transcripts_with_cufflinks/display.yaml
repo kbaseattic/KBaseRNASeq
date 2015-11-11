@@ -1,10 +1,10 @@
 #
 # Define basic display information
 #
-name     : Assemble transcripts with Cufflinks
+name     : Assemble Transcripts With Cufflinks
 
 tooltip  : |
-    Assemble transcripts with Cufflinks
+    Assemble Transcripts With Cufflinks
 screenshots :
     []
 
@@ -22,43 +22,41 @@ method-suggestions :
 # Configure the display and description of the parameters
 #
 parameters :
-        alignment_sample_id
-        ui-name : |
-            Alignment sample id
-        short-hint : |
-            Alignment sample id
-        output_obj_name
-        ui-name : |
-            Output obj name
-        short-hint : |
-            Output obj name
-        annotation_gtf
-        ui-name : |
-            reference genome
-        short-hint : |
-            reference genome
-        num_threads
-        ui-name : |
-            Num threads
-        short-hint : |
-            Number of  threads
-        min-intron-length
-        ui-name : |
-            Minimum intron length
-        short-hint : |
-            Minimum intron length
-        max-intron-length
-        ui-name : |
-            Maximum intron length
-        short-hint : |
-            Maximum intron length
-        overhang-tolerance
-        ui-name : |
-            Overhang tolerance
-        short-hint : |
-            Overhang tolerance
-
+  alignment_sample_id :
+    ui-name : |
+        Alignment sample ID
+    short-hint : |
+        Alignment sample ID
+ annotation_gtf :
+    ui-name : |
+      Reference genome annotation
+    short-hint : |
+      Reference genome annotation
+  output_obj_name :
+    ui-name : |
+      Output object name
+    short-hint : |
+      Output object name
+  num_threads :
+    ui-name : |
+      Number of  threads
+    short-hint : |
+      Number of  threads
+  min-intron-length :
+    ui-name : |
+      Minimum length of intron
+    short-hint : |
+      Minimum length of intron
+  max-intron-length :
+    ui-name : |
+      Maximum length of intron
+    short-hint : |
+      Maximum length of intron 
+  overhang-tolerance
+    ui-name : |
+      Overhang tolerance
+    short-hint : |
+      Overhang tolerance
 
 description : |
-    <p>This method is used to assemble transcripts with Cufflinks </p>
-
+    <p>This method is used to assemble transcripts with Cufflinks.</p>
