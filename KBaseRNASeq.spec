@@ -149,7 +149,7 @@
   /* Specification for the RNASeqFastq Metadata
    
     Object for the RNASeq Metadata
-    @optional platform source tissue condition source_id ext_source_date sample_desc title sample_annotations genome_id genome_scientific_name custom*/
+    @optional library_type platform source tissue condition source_id ext_source_date sample_desc title sample_annotations genome_id genome_scientific_name custom*/
    	
     typedef structure {
 		string sample_id;
@@ -165,8 +165,8 @@
        		ws_genome_id genome_id;
 		string genome_scientific_name;
 		sample_annotations sample_annotations;
-       		list<string> tissue;
-       		list<string> condition;
+       		string tissue;
+       		string condition;
 		string custom;
     	}RNASeqSampleMetaData;
 

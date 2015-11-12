@@ -49,11 +49,6 @@ parameters :
             Reference Genome
         short-hint : |
             Select the reference genome of the RNASeq Experiment
-    library_type :
-        ui-name : |
-            Library Type
-        short-hint : |
-            Select Library Type PairedEnd or SingleEnd
     sample_id :
         ui-name : |
             RNASeq Sample Id
