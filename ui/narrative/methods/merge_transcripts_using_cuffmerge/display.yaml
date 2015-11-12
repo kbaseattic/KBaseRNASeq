@@ -1,7 +1,7 @@
 #
 # Define basic display information
 #
-name     : Merge Transcripts Using Cuffmerge
+name     : Merge Transcripts using Cuffmerge
 
 tooltip  : |
     Merge the multiple transcripts from cufflinks using cuffmerge

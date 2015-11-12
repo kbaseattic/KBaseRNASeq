@@ -1,9 +1,9 @@
 #
 # Define basic display information
 #
-name     : align_reads_using_bowtie2
+name     : Align Reads using Bowtie2
 tooltip  : |
-    align_reads_using_bowtie2
+    Align Reads using Bowtie2
 
 screenshots :
     []

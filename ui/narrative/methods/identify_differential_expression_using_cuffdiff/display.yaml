@@ -1,10 +1,10 @@
 #
 # Define basic display information
 #
-name     : Identify differential expression using cuffdiff
+name     : Identify Differential Expression using Cuffdiff
 
 tooltip  : |
-    Identify differential expression using cuffdiff
+    Identify Differential Expression using Cuffdiff
 screenshots :
     []
 

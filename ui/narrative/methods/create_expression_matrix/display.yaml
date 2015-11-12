@@ -4,7 +4,7 @@
 name     : Create Expression Matrix
 
 tooltip  : |
-    Create the expression matrix using the parameters given by user 
+    Create the expression matrix for RNASeq expression data 
 screenshots :
     []
 

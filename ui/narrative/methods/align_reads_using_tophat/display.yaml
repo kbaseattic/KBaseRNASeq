@@ -1,9 +1,9 @@
 #
 # Define basic display information
 #
-name     : align_reads_using_tophat
+name     : Align Reads using Tophat
 tooltip  : |
-    align_reads_using_tophat
+    Align Reads using Tophat
 
 screenshots :
     []
@@ -33,7 +33,7 @@ parameters :
             placeholder text is possible
 
 
-    annotation_id :
+    annotation_gtf :
         ui-name : |
             Reference Annotation
         short-hint : |

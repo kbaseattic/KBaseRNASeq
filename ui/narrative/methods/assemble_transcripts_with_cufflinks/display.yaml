@@ -1,10 +1,10 @@
 #
 # Define basic display information
 #
-name     : Assemble Transcripts With Cufflinks
+name     : Assemble Transcripts with Cufflinks
 
 tooltip  : |
-    Assemble Transcripts With Cufflinks
+    Assemble Transcripts with Cufflinks
 screenshots :
     []
 
