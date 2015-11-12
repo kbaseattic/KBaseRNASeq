@@ -33,7 +33,7 @@ parameters :
             placeholder text is possible
 
 
-    annotation_id :
+    annotation_gtf :
         ui-name : |
             Reference Annotation
         short-hint : |
