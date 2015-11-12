@@ -96,7 +96,7 @@ parameters :
             Enter the Publication Id from you got the RNASeq data
     source_id:
         ui-name : |
-            Publication Id
+            Source Id
         short-hint : |
             Enter the Publication Id from you got the RNASeq data
     external_source_date:

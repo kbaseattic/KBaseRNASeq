@@ -111,7 +111,7 @@
     "text_options" : {
       "valid_ws_types" : [ ],
       "validate_as": "int",
-      "min_int" : 2
+      "min_int" : 1
     }
   },{
     "id" : "tissue",
@@ -217,14 +217,6 @@
         }
       ],
       "output_mapping" : [
-	{
-	 "narrative_system_variable": "workspace",
-         "target_property": "workspace"
-	},
-	{
-	 "input_parameter": "experiment_id",
-         "target_property": "output"
-	},
       	{
       	 "service_method_output_path": [0],
 	 "target_property": "SetupRNASeqAnalysis"
