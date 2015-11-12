@@ -111,7 +111,7 @@
     "text_options" : {
       "valid_ws_types" : [ ],
       "validate_as": "int",
-      "min_int" : 2
+      "min_int" : 1
     }
   },{
     "id" : "tissue",
