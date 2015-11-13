@@ -7,7 +7,7 @@
   "categories" : ["active"],
   "widgets" : {
     "input" : null,
-    "output" : "kbaseRNASeqPie"
+    "output" : "kbaseNarrativeDefaultOutput"
   },
   "parameters" : [ {
     "id" : "alignment_sample_id",
