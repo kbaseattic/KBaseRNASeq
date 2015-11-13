@@ -334,10 +334,10 @@ class KBaseRNASeq:
 
 	    self.__LOGGER.info("Downloading RNASeq Sample file")
 	    try:
-		values = [{'name' : params['sample_id'],'workspace' : params['ws_id']},
-                          {'name' : params['reference'], 'workspace' : params['ws_id']},
-                          {'name' : params['bowtie_index'], 'workspace' : params['ws_id']},
-                          {'name' : params['annotation_gtf'] , 'workspace' : params['ws_id']}]
+		#values = [{'name' : params['sample_id'],'workspace' : params['ws_id']},
+                #          {'name' : params['reference'], 'workspace' : params['ws_id']},
+                #          {'name' : params['bowtie_index'], 'workspace' : params['ws_id']},
+                #          {'name' : params['annotation_gtf'] , 'workspace' : params['ws_id']}]
 	        	
 		#def func_call():
         	#print current_thread()
@@ -433,7 +433,7 @@ class KBaseRNASeq:
                 print a_filename
 		print a_filesize
             try:
-                script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=b_shock_id,filename=b_filename,directory=tophat_dir,filesize=a_filesize,token=user_token)
+                script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=a_shock_id,filename=a_filename,directory=tophat_dir,filesize=a_filesize,token=user_token)
             except Exception,e :
 		self.__LOGGER.exception("".join(traceback.format_exc()))
                 raise Exception( "Unable to download shock file , {0}".format(e))
@@ -525,7 +525,7 @@ class KBaseRNASeq:
                                         {"workspace":params['ws_id'],
                                          "objects": [{
                                          "type":"KBaseRNASeq.AlignmentStatsResults",
-                                         "data":stats_data,
+                                         "data": {"dataset" : stats_data},
                                          "name":"test_pie_chart"}
                                         ]})
                 returnVal = { "output" : "test_pie_chart","workspace" : params['ws_id'] }
