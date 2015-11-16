@@ -7,7 +7,7 @@
   "categories" : ["active"],
   "widgets" : {
     "input" : null,
-    "output" : "kbaseNarrativeDefaultOutput"
+    "output" : "kbaseRNASeqPie"
   },
   "parameters" : [ {
     "id" : "alignment_sample_id",
@@ -16,7 +16,14 @@
     "allow_multiple" : false,
     "default_values" : [ "" ],
     "field_type" : "text"
-  } ],
+  },{
+    "id" : "output_obj_name",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text"
+  }],
   "behavior" : {
     "service-mapping" : {
     "url" : "",
@@ -28,11 +35,23 @@
           "target_property": "alignment_sample_id"
         },
         {
+         "input_parameter": "output_obj_name",
+         "target_property": "output_obj_name"
+        },
+        {
           "narrative_system_variable": "workspace",
           "target_property": "ws_id"
         }
     ],
     "output_mapping": [
+    	{
+         "input_parameter": "output_obj_name",
+         "target_property": "output_obj_name"
+        },
+        {
+          "narrative_system_variable": "workspace",
+          "target_property": "ws_id"
+        },
 	{
 	 "service_method_output_path": [0],
          "target_property": "getAlignmentStats"

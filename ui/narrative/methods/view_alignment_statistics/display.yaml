@@ -30,6 +30,14 @@ parameters :
             Select the Alignment to view Statistics
         long-hint  : |
             Select the Alignment to view Statistics
+    output_obj_name:
+        ui-name : |
+            Enter a name for the output stats object
+        short-hint : |
+            Enter a name for the output stats object
+        long-hint  : |
+            Enter a name for the output stats object
+    
 
 
 description : |
