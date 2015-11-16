@@ -525,7 +525,7 @@ class KBaseRNASeq:
                                         {"workspace":params['ws_id'],
                                          "objects": [{
                                          "type":"KBaseRNASeq.AlignmentStatsResults",
-                                         "data": {"dataset" : stats_data},
+                                         "data": stats_data,
                                          "name":"test_pie_chart"}
                                         ]})
                 returnVal = { "output" : "test_pie_chart","workspace" : params['ws_id'] }

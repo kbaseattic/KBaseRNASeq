@@ -273,12 +273,12 @@
         }Read_mapping_sections;
 	
 /*
-
+    Object - getAlignmentStats method
     @optional singletons multiple_alignments properly_paired alignment_rate unmapped_reads mapped_sections total_reads mapped_reads
 */
-
-  typedef structure{
- 	string alignment_id;
+    typedef structure{
+        /* later change this to ws_samplealignment_id */
+	string alignment_id;
         int properly_paired;
         int multiple_alignments;
         int singletons;
@@ -287,13 +287,6 @@
         int unmapped_reads;
         int mapped_reads;
         int total_reads;
-	}stats_opts;
-/*
-    Object - getAlignmentStats method
-*/
-    typedef structure{
-        /* later change this to ws_samplealignment_id */
-	stats_opts dataset;
         }AlignmentStatsResults;
 
 /*
