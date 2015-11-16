@@ -25,14 +25,14 @@ method-suggestions :
 parameters :
     alignment_sample_id:
         ui-name : |
-            Select the Alignment to view Statistics
+            Alignment Id
         short-hint : |
             Select the Alignment to view Statistics
         long-hint  : |
             Select the Alignment to view Statistics
     output_obj_name:
         ui-name : |
-            Enter a name for the output stats object
+            Output Object
         short-hint : |
             Enter a name for the output stats object
         long-hint  : |
