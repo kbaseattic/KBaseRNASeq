@@ -424,6 +424,12 @@ class KBaseRNASeq:
 	    except Exception,e :
 		self.__LOGGER.exception("".join(traceback.format_exc()))
 		raise Exception( "Unable to download shock file , {0}".format(e))
+
+	    try:
+                script_util.unzip_files(self.__LOGGER,os.path.join(tophat_dir,b_filename),tophat_dir)
+            except Exception, e:
+                   self.__LOGGER.error("Unzip indexfile error: Please contact help@kbase.us")
+                   raise Exception("Unzip indexfile error: Please contact help@kbase.us")
 	    
             if 'handle' in annotation['data'] and annotation['data']['handle'] is not None:
                 a_shock_id = annotation['data']['handle']['id']
@@ -437,7 +443,7 @@ class KBaseRNASeq:
             except Exception,e :
 		self.__LOGGER.exception("".join(traceback.format_exc()))
                 raise Exception( "Unable to download shock file , {0}".format(e))
-	
+	    
 	    ### Build command line 
 	    tophat_cmd = "-input {0} -output {1} -reference {2} -opts_dict {3} -gtf {4} -prog tophat -base_dir {5} -library_type {6} -mode {7}".format(filename,params['output_obj_name'],genome,opts_dict,annotation_gtf,tophat_dir,lib_type,"dry_run")    
             
@@ -526,9 +532,9 @@ class KBaseRNASeq:
                                          "objects": [{
                                          "type":"KBaseRNASeq.AlignmentStatsResults",
                                          "data": stats_data,
-                                         "name":"test_pie_chart"}
+                                         "name":params['output_obj_name']}
                                         ]})
-                returnVal = { "output" : "test_pie_chart","workspace" : params['ws_id'] }
+                returnVal = stats_data
         except Exception, e:
                 raise KBaseRNASeqException("get Alignment Statistics failed: {0}".format(e))
 
@@ -537,6 +543,7 @@ class KBaseRNASeq:
 
         # At some point might do deeper type checking...
         if not isinstance(returnVal, dict):
+	    
             raise ValueError('Method getAlignmentStats return value ' +
                              'returnVal is not type dict as required.')
         # return the results
