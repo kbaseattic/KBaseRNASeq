@@ -6,13 +6,13 @@
   "categories" : ["active"],
   "widgets" : {
     "input" : null,
-    "output" : "null"
+    "output" : null
   },
    "parameters" : [ {
     "id" : "sample_id",
     "optional" : false,
     "advanced" : false,
-    "allow_multiple" : true,
+    "allow_multiple" : false,
     "default_values" : [ "" ],
     "field_type" : "text",
     "text_options" : {
@@ -36,29 +36,29 @@
     "default_values" : [ "" ],
     "field_type" : "text"
   }, {
-    "id" : "reference",
+    "id" : "genome_id",
     "optional" : false,
     "advanced" : false,
     "allow_multiple" : false,
     "default_values" : [ "" ],
     "field_type" : "text",
     "text_options" : {
-      "valid_ws_types" : ["KBaseRNASeq.KBaseGenomes.ContigSet" ]
+      "valid_ws_types" : ["KBaseGenomes.Genome" ]
     }
   }, {
-    "id" : "bowtie_index",
+    "id" : "bowtie2_index",
     "optional" : false,
     "advanced" : false,
     "allow_multiple" : false,
     "default_values" : [ "" ],
     "field_type" : "text",
     "text_options" : {
-      "valid_ws_types" : ["KBaseRNASeq.BowtieIndex" ]
+      "valid_ws_types" : ["KBaseRNASeq.Bowtie2Indexes" ]
     }
   }, {
     "id" : "read_mismatches",
-    "optional" : false,
-    "advanced" : false,
+    "optional" : true,
+    "advanced" : true,
     "allow_multiple" : false,
     "default_values" : [ "" ],
     "field_type" : "text",
@@ -67,8 +67,8 @@
     }
   }, {
     "id" : "read_gap_length",
-    "optional" : false,
-    "advanced" : false,
+    "optional" : true,
+    "advanced" : true,
     "allow_multiple" : false,
     "default_values" : [ "" ],
     "field_type" : "text",
@@ -77,8 +77,8 @@
     }
   }, {
     "id" : "read_edit_dist",
-    "optional" : false,
-    "advanced" : false,
+    "optional" : true,
+    "advanced" : true,
     "allow_multiple" : false,
     "default_values" : [ "" ],
     "field_type" : "text",
@@ -87,8 +87,8 @@
     }
   }, {
     "id" : "min_intron_length",
-    "optional" : false,
-    "advanced" : false,
+    "optional" : true,
+    "advanced" : true,
     "allow_multiple" : false,
     "default_values" : [ "" ],
     "field_type" : "text",
@@ -97,8 +97,8 @@
     }
   }, {
     "id" : "max_intron_length",
-    "optional" : false,
-    "advanced" : false,
+    "optional" : true,
+    "advanced" : true,
     "allow_multiple" : false,
     "default_values" : [ "" ],
     "field_type" : "text",
@@ -107,8 +107,8 @@
     }
   }, {
     "id" : "num_threads",
-    "optional" : false,
-    "advanced" : false,
+    "optional" : true,
+    "advanced" : true,
     "allow_multiple" : false,
     "default_values" : [ "" ],
     "field_type" : "text",
@@ -117,30 +117,30 @@
     }
   }, {
     "id" : "report_secondary_alignments",
-    "optional":false,
-    "advanced":false,
-    "allow_multiple":false,
-    "default_values":[""],
+    "optional": true,
+    "advanced": true,
+    "allow_multiple": false,
+    "default_values": [""],
     "field_type" : "checkbox",
-    "checkbox_options":{
+    "checkbox_options": {
     "checked_value": 1,
     "unchecked_value": 0
     }
   }, {
     "id" : "no_coverage_search",
-    "optional":false,
-    "advanced":false,
-    "allow_multiple":false,
-    "default_values":[""],
+    "optional": true,
+    "advanced": true,
+    "allow_multiple": false,
+    "default_values": [""],
     "field_type" : "checkbox",
-    "checkbox_options":{
+    "checkbox_options": {
       "checked_value": 1,
       "unchecked_value": 0
     }
   }, {
     "id" : "library_type",
-    "optional" : false,
-    "advanced" : false,
+    "optional" : true,
+    "advanced" : true,
     "allow_multiple" : false,
     "default_values" : [ "" ],
     "field_type" : "text"
@@ -164,8 +164,8 @@
           "target_property" : "annotation_gtf"
         },
         {
-          "input_parameter" : "reference",
-          "target_property" : "reference"
+          "input_parameter" : "genome_id",
+          "target_property" : "genome_id"
         },
         {
           "input_parameter" : "bowtie_index",
