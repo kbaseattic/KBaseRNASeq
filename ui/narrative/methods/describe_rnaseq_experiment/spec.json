@@ -128,6 +128,13 @@
     "default_values" : [ "" ],
     "field_type" : "text"
   },{
+    "id" : "domain",
+    "optional" : true,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text"
+  },{
     "id" : "source",
     "optional" : true,
     "advanced" : false,
@@ -202,6 +209,9 @@
         }, {
           "input_parameter": "condition",
           "target_property": "condition"
+        }, {
+          "input_parameter": "domain",
+          "target_property": "domain"
         }, {
           "input_parameter": "source",
           "target_property": "source"
