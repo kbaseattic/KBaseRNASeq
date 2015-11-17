@@ -4,7 +4,7 @@
 name     : Setup RNASeq Analysis
 
 tooltip  : |
-    This method allows the users to provide the details on metadata to set up RNAseq experiment. 
+    This method allows the users to provide the metadata details to set up an RNAseq experiment. 
 screenshots :
     []
 
@@ -26,7 +26,7 @@ parameters :
         ui-name : |
             Experiment name
         short-hint : |
-            Specify output object name of RNAseq experiment
+            Specify output object name of the RNAseq experiment
     title :
         ui-name : |
             Title
@@ -46,7 +46,7 @@ parameters :
         ui-name : |
             Platform
         short-hint : |
-            Specify name of platform (e.g illumina)
+            Specify platform type (e.g illumina)
     Library_type :
         ui-name : |
             Library type
@@ -66,12 +66,12 @@ parameters :
         ui-name : |
             Number of samples
         short-hint : |
-            Enter the total number of samples including replicates in the experiment
+            Enter the total number of samples including replicates in the RNASeq experiment
     num_replicates :
         ui-name : |
             Number of replicates
         short-hint : |
-            Enter the total number of replicates in the experiment
+            Enter the total number of replicates in the RNASeq experiment
     tissue :
         ui-name : |
             Tissue
@@ -104,9 +104,9 @@ parameters :
             Enter the publication date (if available) 
 
 description : |
-    <p>This method allows the users to provide the metadata details to set up RNAseq experiment.</p>
-    <p>Users need to fill in the metadata requirements to set up the RNAseq experiment. The mandatory requirements are: name of experiment, title of the experiment, library type (single end or paired end), genome name, reference genome name, total number of samples, total number of replicates and domain (prokaryotes or eukaryotes).</p>
-    <p>In addition, there are optional parameters that users can fill in if desired. These optional parameters are: experiment description, experiment design, platform type, tissue type, conditions/treatments type and publication details.</p>
+    <p>This method allows the users to provide the metadata details to set up an RNAseq experiment.</p>
+    <p>Users need to fill in the metadata requirements to set up the RNAseq experiment. The mandatory requirements are: name of experiment, title of the experiment, library type (single end or paired end), genome name, total number of samples, total number of replicates and domain (prokaryotes or eukaryotes).</p>
+    <p>In addition, there are optional parameters that users can fill in if desired. These optional parameters are: experiment description, experiment design, reference genome annotation, platform type, tissue type, conditions/treatments type and publication details.</p>
     
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
-    Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Vivek Kumar, Michael Schatz.</p>
+    Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Fei He, Vivek Kumar.</p>
