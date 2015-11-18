@@ -181,3 +181,15 @@ create-test-wrapper:
 	chmod +x test/script_test/run_tests.sh
 
 endif
+
+##
+# NMS spec test
+#
+NMS_URL ?= ci
+submodule-init:
+	git submodule init
+	git submodule update
+
+spec_test: submodule-init
+	make -C narrative_method_store build-nms-bin
+	./narrative_method_store/bin/nms-validate --url $(NMS_URL)
