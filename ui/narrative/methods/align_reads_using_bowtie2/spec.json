@@ -26,7 +26,7 @@
     "default_values" : [ "" ],
     "field_type" : "text",
     "text_options" : {
-      "valid_ws_types" : ["KBaseRNASeq.BowtieIndexes" ]
+      "valid_ws_types" : ["KBaseRNASeq.Bowtie2Indexes" ]
     }
   }, {
     "id" : "output_obj_name",
@@ -36,14 +36,14 @@
     "default_values" : [ "" ],
     "field_type" : "text"
   }, {
-    "id" : "reference",
+    "id" : "genome_id",
     "optional" : false,
     "advanced" : false,
     "allow_multiple" : false,
     "default_values" : [ "" ],
     "field_type" : "text",
     "text_options" : {
-      "valid_ws_types" : ["KBaseRNASeq.KBaseGenomes.ContigSet" ]
+      "valid_ws_types" : ["KBaseRNASeq.KBaseGenomes" ]
     }
   }, {
     "id" : "phred33",
@@ -182,8 +182,8 @@
           "target_property" : "sample_id"
         },
         {
-          "input_parameter" : "reference",
-          "target_property" : "reference"
+          "input_parameter" : "genome_id",
+          "target_property" : "genome_id"
         },
         {
           "input_parameter" : "bowtie2_index",
