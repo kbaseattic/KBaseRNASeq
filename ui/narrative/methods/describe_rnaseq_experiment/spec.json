@@ -71,7 +71,7 @@
     }
   },{
     "id" : "genome_id",
-    "optional" : true,
+    "optional" : false,
     "advanced" : false,
     "allow_multiple" : false,
     "default_values" : [ "" ],
@@ -149,13 +149,6 @@
     "default_values" : [ "" ],
     "field_type" : "text"
   },{
-    "id" : "source_id",
-    "optional" : true,
-    "advanced" : true,
-    "allow_multiple" : true,
-    "default_values" : [ "" ],
-    "field_type" : "text"
-  },{
     "id" : "external_source_date",
     "optional" : true,
     "advanced" : true,
@@ -218,9 +211,6 @@
         },{
           "input_parameter": "publication_id",
           "target_property": "publication_id"
-        },{
-          "input_parameter": "source_id",
-          "target_property": "source_id"
         },{
           "input_parameter": "external_source_date",
           "target_property": "external_source_date"

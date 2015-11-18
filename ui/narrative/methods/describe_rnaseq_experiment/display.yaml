@@ -4,7 +4,7 @@
 name     : Setup RNASeq Analysis
 
 tooltip  : |
-    Explain the analysis details in the RNASeq Experiment. 
+    This method allows the users to provide the metadata details to set up an RNAseq experiment. 
 screenshots :
     []
 
@@ -24,89 +24,89 @@ method-suggestions :
 parameters :
     experiment_id :
         ui-name : |
-            Experiment ID
+            Experiment name
         short-hint : |
-            Specify an experiment ID for the RNASeq analysis
+            Specify output object name of the RNAseq experiment
     title :
         ui-name : |
             Title
         short-hint : |
-            Specify a title for the RNASeq analysis
-        long-hint  : |
-            Specify a title for the RNASeq analysis
+            Specify title of the RNASeq experiment
     experiment_desc :
         ui-name : |
-            Experiment Description
+            Experiment description
         short-hint : |
-            Enter the description of the RNASeq analysis
+            Provide detailed description of the RNASeq Experiment
     experiment_design :
         ui-name : |
             Experiment design
         short-hint : |
-            Explain the design of the RNASeq analysis
+            Specify name of experiment design (e.g time-series or wild versus mutant etc.)
     platform :
         ui-name : |
             Platform
         short-hint : |
-            Specify the platform for the RNASeq Reads
+            Specify platform type (e.g illumina)
     Library_type :
         ui-name : |
-            Library Type
+            Library type
         short-hint : |
-            Choose the approriate Library_type from the dropdown
+            Choose the approriate library type from the dropdown 
     genome_id :
         ui-name : |
-            Genome ID
+            Genome name
         short-hint : |
-            Select the reference Genome ID used in the Experiment
+            Select the genome name used in the experiment
     annotation_id :
         ui-name : |
-            Genome Annotation
+            Genome annotation
         short-hint : |
-            Select the reference Genome Annoation used in the Experiment
+            Select the reference genome annoation used in the experiment
     num_samples :
         ui-name : |
-            Number of Samples
+            Number of samples
         short-hint : |
-            Enter the total number of Samples in the Experiment
+            Enter the total number of samples including replicates in the RNASeq experiment
     num_replicates :
         ui-name : |
-            Number of Replicates
+            Number of replicates
         short-hint : |
-            Enter the total number of Replicates in the Experiment
+            Enter the total number of replicates in the RNASeq experiment
     tissue :
         ui-name : |
             Tissue
         short-hint : |
-            Enter the tissue type used to prepare RNASeq Libaries
+            Enter the tissue type used in RNASeq experiment
     condition :
         ui-name : |
             Condition
         short-hint : |
-            Enter the conditions/treatments used in the RNASeq Experiment
+            Enter the conditions/treatments used in RNASeq experiment
+    domain :
+        ui-name : |
+            Domain 
+        short-hint : |
+            Choose the approriate domain type from the dropdown
     source :
         ui-name : |
             Source
         short-hint : |
-            Enter the Source from you got the RNASeq data
+            Enter the source of the data used for RNASeq experiment (published or unpublished)
     publication_id:
         ui-name : |
-            Publication Id
+            Publication details 
         short-hint : |
-            Enter the Publication Id from you got the RNASeq data
-    source_id:
-        ui-name : |
-            Source Id
-        short-hint : |
-            Enter the Publication Id from you got the RNASeq data
+            Enter the publication details of the data for RNASeq experiment (if available)
     external_source_date:
         ui-name : |
-            Publication Date
+            Publication date
         short-hint : |
-            Enter the Publication Date from you got the RNASeq data 
+            Enter the publication date (if available) 
 
 description : |
-    <p>This method allows you to records the details of  RNASeq analysis </p>
+    <p>This method allows the users to provide the metadata details to set up an RNAseq experiment.</p>
+    <p>Users need to fill in the metadata requirements to set up the RNAseq experiment. The mandatory requirements are: name of experiment, title of the experiment, library type (single end or paired end), genome name, total number of samples, total number of replicates and domain (prokaryotes or eukaryotes).</p>
+    <p>In addition, there are optional parameters that users can fill in if desired. These optional parameters are: experiment description, experiment design, reference genome annotation, platform type, tissue type, conditions/treatments type and publication details.</p>
     
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
-    Michael Schatz, James Gurtowski, Michael Sneddon,Srividya Ramakrishnan,Sunita Kumari.</p>
+    Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Fei He, Vivek Kumar.</p>
