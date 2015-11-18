@@ -3,7 +3,7 @@
 #
 name     : Build Bowtie2 Index 
 tooltip  : |
-    Build bowtie2 Index for a genome object
+    Build bowtie2 index for a given genome
 
 screenshots :
     []
@@ -34,15 +34,29 @@ parameters :
         ui-name : |
             Genome
         short-hint : |
-            Select a reference genome 
+            Select genome that needs to be indexed 
 
     out_index_name:
         ui-name : |
-            output
+            Output
         short-hint : |
-            Enter a name for the output index object
+            Enter the name of the indexed genome
 
 description : |
-   This method is used to create the Bowtie2 Indexes for a reference genome object
-   
+   <p>This method allows to build the Bowtie2 Indexes for a given reference genome object.</p> 
+    <p>Bowtie indexes the reference genome using a scheme based on the Burrows-Wheeler transform (BWT) and the full-text minute-space (FM) index (similar to a suffix array) to keep its memory footprint small.</p>
     
+    <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
+    Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Fei He, Vivek Kumar</p>
+    
+publications :
+    -
+        display-text: |
+            Langmead B, Trapnell C, Pop M, Salzberg SL (2009) "Ultrafast and memory-efficient alignment of short DNA sequences to the human genome" Genome Biology 10 (3): 10:R25.
+        link: http://www.ncbi.nlm.nih.gov/pmc/articles/PMC2690996/
+        display-text: |
+            Langmead B, Salzberg SL (2012) "Fast gapped-read alignment with Bowtie 2" Nature Methods 9 (4): 357–359.
+        link: http://www.ncbi.nlm.nih.gov/pubmed/22388286
+        display-text: |
+            Karkkainen J (2007) "Fast BWT in small space by blockwise suffix sorting" Theor Comput Sci 2007, 387:249-257.
+        link: http://www.sciencedirect.com/science/article/pii/S0304397507005245
