@@ -3,7 +3,7 @@
 #
 name     : Align Reads using Tophat
 tooltip  : |
-    Align Reads using Tophat
+    This method allows aligning RNASeq reads to a genome using Tophat in order to identify exon-exon splice junctions using bowtie mapping program. 
 
 screenshots :
     []
@@ -24,9 +24,9 @@ method-suggestions :
 parameters :
     sample_id :
         ui-name : |
-            RNASeq Sample
+            Reads associated with RNASeq sample
         short-hint : |
-            RNASeq Sample
+            Select the reads associated with RNASeq sample
         description  : |
             RNASeq Sample
         placeholder : |
@@ -37,109 +37,95 @@ parameters :
         ui-name : |
             Reference Annotation
         short-hint : |
-            Reference Annotation
-        description  : |
-            Reference Annotation
+            Select the reference annotation
+
             
     output_obj_name :
         ui-name : |
-            tophat read alignment output
+            Alignment output
         short-hint : |
-            tophat read alignment output
-        description  : |
-            tophat read alignment output
-        placeholder : |
-            tophat read alignment output
-            
+            Provide the name of tophat read alignment output
+
     reference :
         ui-name : |
-            Reference Assembly Id
+            Genome
         short-hint : |
-            Reference Assembly Id
-        description  : |
-            Reference Assembly Id
-            
+            Specify the name of genome
+
     bowtie_index :
         ui-name : |
-            Bowtie Index Id
+            Indexed genome
         short-hint : |
-            Bowtie Index Id
-        description  : |
-            Bowtie Index Id
+            Select the indexed genome built using bowtie2
+
     
     read_mismatches :
         ui-name : |
             Mismatches in Reads
         short-hint : |
-            Mismatches in Reads
-        description  : |
-            Mismatches in Reads
-    
+            Final read alignments having more than these mismatches are discarded.The default is 2.
     read_gap_length :
         ui-name : |
             Gap length in reads
         short-hint : |
-            Gap length in reads
-        description  : |
-            Gap length in reads
-            
+            Final read alignments having more than these many total length of gaps are discarded.The default is 2.
     read_edit_dist :
         ui-name : |
-            read distance
+            Read distance
         short-hint : |
-            read distance
-        description  : |
-            read distance    
-    
+            Final read alignments having more than these many edit distance are discarded.The default is 2.
     min_intron_length :
         ui-name : |
-            minimum length of intron
+            Minimum intron length
         short-hint : |
-            minimum length of intron
-        description  : |
-            minimum length of intron
-
+            Tophat will ignore donor/acceptor pairs closer than this many bases apart. The default is 70.
     max_intron_length :
         ui-name : |
-            max length of intron
+            Maximum intron length
         short-hint : |
-            max length of intron
-        description  : |
-            max length of intron
-            
+            Tophat will ignore donor/acceptor pairs farther than this many bases apart. The default is 500000.
     num_threads :
         ui-name : |
-            number of threads
+            Number of threads
         short-hint : |
-            number of threads
-        description  : |
-            number of threads    
-    
+            Number of threads to align reads. The default is 1.
     report_secondary_alignments :
         ui-name : |
-            report secondary alignments
+            Report secondary alignments
         short-hint : |
-            report secondary alignments
-        description  : |
-           
-    
+            Use this option if you want to output secondary alignments.
     no_coverage_search :
         ui-name : |
-            no coverage search
+            No coverage search
         short-hint : |
-            no coverage search
-        description  : |
-            
- 
+            Disables the coverage based search for junctions.
     library_type :
         ui-name : |
             library type
         short-hint : |
-            library type
-        description  : |
-            library type    
+            Select the library type (fr-unstranded, fr-firststrand, fr-secondstrand)
 
 
 
 description : |
-    <p>This method allows reads alignment using tophat.</p>
+    <p>This method allows aligning RNASeq reads to a genome using Tophat in order to identify exon-exon splice junctions using bowtie mapping program. 
+</p>
+   <p>This method takes a bowtie2 index object and sequencing read file and outputs a set of read alignments in SAM format. It also provides A UCSC BED track of junctions and UCSC BED tracks of insertions and deletions as output files.</p> 
+    
+    <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
+    Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Fei He, Vivek Kumar</p>
+    
+publications :
+    -
+        display-text: |
+            Trapnell C, Pachter L, Salzberg SL. (2009) "TopHat: discovering splice junctions with RNA-Seq" Bioinformatics 25 (9): 1105-1111.
+        link: http://bioinformatics.oxfordjournals.org/content/25/9/1105.abstract
+        display-text: |
+            Langmead B, Salzberg SL (2012) "Fast gapped-read alignment with Bowtie 2" Nature Methods 9 (4): 357–359.
+        link: http://www.ncbi.nlm.nih.gov/pubmed/22388286
+        display-text: |
+            Kim D and Salzberg SL. (2011) "TopHat-Fusion: an algorithm for discovery of novel fusion transcripts" Genome Biology 12:R72
+        link: http://www.genomebiology.com/2011/12/8/R72/abstract
+        display-text: |
+            Kim D, Pertea G, Trapnell C, Pimentel H, Kelley R, Salzberg SL. (2013) "TopHat2: accurate alignment of transcriptomes in the presence of insertions, deletions and gene fusions" Genome Biology 14:R36.
+        link: http://www.genomebiology.com/2013/14/4/R36/abstract
