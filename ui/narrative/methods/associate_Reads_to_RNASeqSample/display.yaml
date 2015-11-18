@@ -4,7 +4,7 @@
 name     : Associate Reads to RNASeqSample
 
 tooltip  : |
-    Explain the sample details of a RNASeqSample. 
+    This method associates single-end or paired-end reads to individual RNASeq sample of a given RNASeq experiment.
 screenshots :
     []
 
@@ -26,88 +26,81 @@ parameters :
         ui-name : |
             SingleEnd Read
         short-hint : |
-            Select the SingleEnd Read for a RNASeq Sample.
+            Select the single-end read file for a RNASeq sample.
     pairedend_sample :
         ui-name : |
             PairedEnd Read
         short-hint : |
-            Select the PairedEnd Read for a RNASeq Sample
-        long-hint  : |
-            Select the PairedEnd Read for a RNASeq Sample
+            Select the paired-end read file for a RNASeq sample.
     analysis_id :
         ui-name : |
-            Analysis ID
+            RNASeq experiment name
         short-hint : |
-            Specify the RNASeq Analysis ID that sample belongs to
+            Select the RNASeq experiment object obtained from SetUp RNASeq Analysis method.
     domain:
         ui-name : |
-            Domain
+            Domain 
         short-hint : |
-            Enter the domain of the RNASeq Sample
+            Enter the domain of the RNASeq sample (prokaryotic or eukaryotic)
     genome_id :
         ui-name : |
-            Reference Genome
+            Reference genome
         short-hint : |
             Select the reference genome of the RNASeq Experiment
     library_type :
         ui-name : |
-            Library Type
+            Library type
         short-hint : |
-            Select Library Type PairedEnd or SingleEnd
+            Select the library Type from drop down
     sample_id :
         ui-name : |
-            RNASeq Sample Id
+            RNASeq sample label
         short-hint : |
-            Enter the RNASeq Sample ID.
+            Enter the RNASeq sample label
 
     replicate_id:
         ui-name : |
-            RNASeq Sample Replicate ID
+            RNASeq sample replicate id
         short-hint : |
             Specify the replicate ID for the sample replicates
     tissue: 
         ui-name : |
             Tissue
         short-hint : |
-            Enter the Tissue of the samples where extracted from
+            Enter the type of the tissue of the samples where extracted from
     condition:
         ui-name : |
             Condition
         short-hint : |
-            Enter the Specific condition of the RNASeq Sample
+            Enter the specific condition/treatment of the RNASeq sample
     platform:
         ui-name : |
-            Platform
+            Platform type
         short-hint : |
-            Enter the Sequencing Platform used
+            Enter the sequencing platform used
     sample_desc :
         ui-name : |
-            Sample Description
+            Sample description
         short-hint : |
-            Select the description of the RNASeq Sample
+            Select the description of the RNASeq sample
     title :
         ui-name : |
             Title
         short-hint : |
-            Title for the RNASeq sample in the Experiment
+            Title for the RNASeq sample in the experiment
     source  :
         ui-name : |
             Source 
         short-hint : |
-            Enter the Source for the RNASeq Sample
-    source_id :
-        ui-name : |
-            Source ID
-        short-hint : |
-            Enter the Source ID for the RNASeq Sample
+            Enter the source for the RNASeq sample
     ext_source_date:
         ui-name : |
-            Source Date
+            Publication date
         short-hint : |
-            Enter the Source Date
+            Enter the publication date
 
 description : |
-    <p>This method allows you to records the details of  RNASeqSample </p>
-    
+    <p>This method allows users to associate single-end or paired-end reads to individual RNASeq sample of a given RNASeq experiment.</p>
+    <p>This method also allows users to provide base line metadata for each sample that includes information on tissue type, condition/treatment type, title, replicate number, source, publication details etc.</p>
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
-    Michael Schatz, James Gurtowski, Michael Sneddon,Srividya Ramakrishnan,Sunita Kumari.</p>
+    Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Fei He, Vivek Kumar</p>
