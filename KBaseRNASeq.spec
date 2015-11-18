@@ -339,6 +339,7 @@
         string title;
 	string experiment_desc;
 	string experiment_design;
+	string domain;
         string platform;
         ws_genome_id genome_id;
 	string genome_scientific_name;
@@ -413,7 +414,6 @@ async funcdef fastqcCall(fastqcParams params)
 	string sample_desc;
 	string  title;
 	string source;
-	string source_id;
 	string ext_source_date;
 	string domain;
 	ws_genome_id genome_id;
@@ -430,6 +430,7 @@ async funcdef associateReads(associateReadsParams params)
    	string title;
    	string experiment_desc;
 	string experiment_design;
+	string domain;
    	string platform;
    	ws_genome_id genome_id;
    	int num_samples;
@@ -441,7 +442,6 @@ async funcdef associateReads(associateReadsParams params)
    	string source;
    	string Library_type;
    	string publication_id;
-   	string source_id;
    	string external_source_date;
    	}SetupRNASeqAnalysisParams;
    	

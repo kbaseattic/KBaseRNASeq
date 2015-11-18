@@ -16,19 +16,10 @@
   	"title": "test",
   	"sample_desc": "qweqwe",
   	"platform": "qweqwe",
-  	"tissue": [
-    		"sdfsf",
-    		"sdfsfds",
-    		"dfsfsdf"
-  		],
+  	"tissue": "sdfsf",
   	"source": "dsfsfsdf",
   	"source_id": null,
   	"ws_id": "RNASeqTestData",
-  	"condition": [
-    			"sdfsdf",
-    			"sdfsf",
-    			"sdfsdfsf",
-    			"sdfsffsd"
-  		]
+  	"condition": "test_condn"
 	}]	
 }
