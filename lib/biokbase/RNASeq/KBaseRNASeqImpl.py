@@ -322,10 +322,12 @@ class KBaseRNASeq:
         # return variables are: returnVal
         #BEGIN TophatCall
 	user_token=ctx['token']
+	print "starting Tophat"
 	ws_client=Workspace(url=self.__WS_URL, token=user_token)
         hs = HandleService(url=self.__HS_URL, token=user_token)
 	try:
 	    ### Make a function to download the workspace object  and prepare dict of genome ,lib_type 
+	    print " entereing the  try"
 	    tophat_dir = self.__TOPHAT_DIR
             if os.path.exists(tophat_dir):
             	files=glob.glob("%s/*" % tophat_dir)
@@ -445,16 +447,12 @@ class KBaseRNASeq:
                 raise Exception( "Unable to download shock file , {0}".format(e))
 	    
 	    ### Build command line 
-	    tophat_cmd = "-input {0} -output {1} -reference {2} -opts_dict {3} -gtf {4} -prog tophat -base_dir {5} -library_type {6} -mode {7}".format(filename,params['output_obj_name'],genome,opts_dict,annotation_gtf,tophat_dir,lib_type,"dry_run")    
+	    tophat_cmd = "-input {0} -output {1} -reference {2} -opts_dict {3} -gtf {4} -prog tophat -base_dir {5} -library_type {6} -mode {7}".format(filename,os.path.join(tophat_dir,params['output_obj_name']),genome,opts_dict,annotation_gtf,tophat_dir,lib_type,"dry_run")
+
+	    print tophat_cmd    
             
 	except Exception,e:
 	    KBaseRNASeqException("Error Running TophatCall ") 
-	    
-	# Call tophat script with options
-	
-        # run samtools bam file created 
-
-        # create Json object for widget
 
 	# Zip tophat folder
 	
