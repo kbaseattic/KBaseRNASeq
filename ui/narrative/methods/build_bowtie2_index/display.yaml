@@ -3,11 +3,7 @@
 #
 name     : Build Bowtie2 Index 
 tooltip  : |
-<<<<<<< HEAD
-    Build bowtie2 Index for a reference genome
-=======
     Build bowtie2 index for a given genome
->>>>>>> 52ea9db61dc534c3ac46c39cab423be9212d445b
 
 screenshots :
     []

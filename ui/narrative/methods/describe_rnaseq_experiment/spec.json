@@ -128,12 +128,24 @@
     "default_values" : [ "" ],
     "field_type" : "text"
   },{
-    "id" : "domain",
+     "id" : "domain",
     "optional" : true,
     "advanced" : false,
     "allow_multiple" : false,
     "default_values" : [ "" ],
-    "field_type" : "text"
+    "field_type" : "dropdown",
+    "dropdown_options":{
+      "options": [
+        {
+          "value": "Eukaryotes",
+          "display": "Eukaryotes"
+        },
+        {
+          "value": "Prokaryotes",
+          "display": "Prokaryotes"
+        }
+      ]
+    }
   },{
     "id" : "source",
     "optional" : true,
