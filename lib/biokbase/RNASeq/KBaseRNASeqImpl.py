@@ -12,6 +12,7 @@ import threading, traceback
 from pprint import pprint
 import script_util
 from biokbase.workspace.client import Workspace
+import handler_utils as handler_util
 from biokbase.auth import Token
 from mpipe import OrderedStage , Pipeline
 import  multiprocessing as mp
@@ -82,6 +83,7 @@ class KBaseRNASeq:
 	
 	self.__SCRIPT_TYPE = { 'ContigSet_to_fasta' : 'ContigSet_to_fasta.py',
 			  	'RNASeqSample_to_fastq' : 'RNASeqSample_to_fastq',
+				'tophat_script' : 'Tophat_pipeline.py'
 			     } 
 
         # logging
@@ -247,8 +249,9 @@ class KBaseRNASeq:
 	    ## Check if the bowtie_dir is present; remove files in bowtie_dir if exists ; create a new dir if doesnt exists	
 	    	bowtie_dir = self.__BOWTIE_DIR
 	    	if os.path.exists(bowtie_dir):
-			files=glob.glob("%s/*" % bowtie_dir)
-			for f in files: os.remove(f)
+			#files=glob.glob("%s/*" % bowtie_dir)
+			#for f in files: os.remove(f)
+			handler_util.cleanup(self.__LOGGER,bowtie_dir)
 	   	if not os.path.exists(bowtie_dir): os.makedirs(bowtie_dir)
 	   
 	    	## dump fasta object to a file in bowtie_dir
@@ -327,11 +330,12 @@ class KBaseRNASeq:
         hs = HandleService(url=self.__HS_URL, token=user_token)
 	try:
 	    ### Make a function to download the workspace object  and prepare dict of genome ,lib_type 
-	    print " entereing the  try"
+	    print " entering the  try"
 	    tophat_dir = self.__TOPHAT_DIR
             if os.path.exists(tophat_dir):
-            	files=glob.glob("%s/*" % tophat_dir)
-                for f in files: os.remove(f)
+            #	files=glob.glob("%s/*" % tophat_dir)
+            #    for f in files: os.remove(f)
+	    	handler_util.cleanup(self.__LOGGER,tophat_dir)
             if not os.path.exists(tophat_dir): os.makedirs(tophat_dir)
 
 	    self.__LOGGER.info("Downloading RNASeq Sample file")
@@ -380,6 +384,7 @@ class KBaseRNASeq:
 		lib_type = "SingleEnd"
 		singleend_sample = sample['data']['singleend_sample']
 		sample_shock_id = singleend_sample['handle']['id']
+		sample_filename = singleend_sample['handle']['file_name']
 		try:
                	     script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=sample_shock_id,filename=singleend_sample['handle']['file_name'], directory=tophat_dir,token=user_token)
         	except Exception,e:
@@ -445,24 +450,52 @@ class KBaseRNASeq:
             except Exception,e :
 		self.__LOGGER.exception("".join(traceback.format_exc()))
                 raise Exception( "Unable to download shock file , {0}".format(e))
-	    
+	    output_dir = os.path.join(tophat_dir,params['output_obj_name'])
+	    gtf_file = os.path.join(tophat_dir,a_filename)
+	    sample_file = os.path.join(tophat_dir,sample_filename)
+            bowtie_base = tophat_dir+"/kb_g.166828/kb_g.166828"
+	    print output_dir
+	    print gtf_file
+	    print sample_file
+	    topts_dict = { k:int(v) for k,v in opts_dict.iteritems() if k in ('num_threads','read_mismatches','read_gap_length','read_edit_dist','min_intron_length','max_intron_length') }
+	    topts_dict['no_coverage_search'] = true
+            topts_dict['report_secondary_alignments'] = false
+	    print topts_dict
 	    ### Build command line 
-	    tophat_cmd = "-input {0} -output {1} -reference {2} -opts_dict {3} -gtf {4} -prog tophat -base_dir {5} -library_type {6} -mode {7}".format(filename,os.path.join(tophat_dir,params['output_obj_name']),genome,opts_dict,annotation_gtf,tophat_dir,lib_type,"dry_run")
+	    tophat_cmd = "-input {0} -output {1} -reference {2} -opts_dict {3}  -gtf {4} -prog tophat -base_dir {5} -library_type {6} -mode dry_run".format(sample_file,output_dir,bowtie_base,opts_dict,gtf_file,tophat_dir,lib_type)
 
-	    print tophat_cmd    
-            
-	except Exception,e:
-	    KBaseRNASeqException("Error Running TophatCall ") 
+	    print tophat_cmd  
+	    try:  
+            	script_util.runProgram(self.__LOGGER,self.__SCRIPT_TYPE['tophat_script'],tophat_cmd,self.__SCRIPTS_DIR,tophat_dir)
+            except Exception,e:
+                raise KBaseRNASeqException("Error Running the tophat command {0},{1},{2}".format(tophat_cmd,tophat_dir,e))
+
+
 
 	# Zip tophat folder
+            try:
+                script_util.zip_files(self.__LOGGER, output_dir, "%s.zip" % params['output_obj_name'])
+                out_file_path = os.path.join("%s.zip" % params['output_obj_name'])
+            except Exception, e:
+                raise KBaseRNASeqException("Failed to compress the index: {0}".format(e))
+            ## Upload the file using handle service
+            try:
+                tophat_handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
+            except Exception, e:
+                raise KBaseRNASeqException("Failed to upload the index: {0}".format(e))
+            tophat_out = { "file" : tophat_handle ,"size" : os.path.getsize(out_file_path), "aligned_using" : "tophat" , "aligner_version" : "2.1.0", "aligner_opts" : [ (k,v) for k,v in opts_dict.items()],"metadata" :  sample['data']['metadata']}
+            ## Save object to workspace
+            self.__LOGGER.info( "Saving bowtie indexes object to  workspace")
+            res= ws_client.save_objects(
+                                        {"workspace":params['ws_id'],
+                                         "objects": [{
+                                         "type":"KBaseRNASeq.RNASeqSampleAlignment",
+                                         "data":tophatout,
+                                         "name":params['output_obj_name']}
+                                        ]})
+	except Exception,e:
+            KBaseRNASeqException("Error Running TophatCall ")
 	
-	# Upload to Shock
-	
-	# run samtools bam file created 
-	
-	# create Json object for widget
-
-	# save to Tophat workspace
 	     
         #END TophatCall
 
