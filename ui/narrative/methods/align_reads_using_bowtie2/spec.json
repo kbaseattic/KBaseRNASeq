@@ -36,7 +36,7 @@
     "default_values" : [ "" ],
     "field_type" : "text"
   }, {
-    "id" : "genome_id",
+    "id" : "reference",
     "optional" : false,
     "advanced" : false,
     "allow_multiple" : false,
@@ -182,8 +182,8 @@
           "target_property" : "sample_id"
         },
         {
-          "input_parameter" : "genome_id",
-          "target_property" : "genome_id"
+          "input_parameter" : "reference",
+          "target_property" : "reference"
         },
         {
           "input_parameter" : "bowtie2_index",
