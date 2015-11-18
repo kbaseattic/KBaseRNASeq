@@ -31,34 +31,26 @@ parameters :
             RNASeq Sample
         placeholder : |
             placeholder text is possible
-
-
     annotation_gtf :
         ui-name : |
             Reference Annotation
         short-hint : |
             Select the reference annotation
-
-            
     output_obj_name :
         ui-name : |
             Alignment output
         short-hint : |
             Provide the name of tophat read alignment output
-
     reference :
         ui-name : |
             Genome
         short-hint : |
             Specify the name of genome
-
     bowtie_index :
         ui-name : |
             Indexed genome
         short-hint : |
             Select the indexed genome built using bowtie2
-
-    
     read_mismatches :
         ui-name : |
             Mismatches in Reads
@@ -105,12 +97,8 @@ parameters :
         short-hint : |
             Select the library type (fr-unstranded, fr-firststrand, fr-secondstrand)
 
-
-
 description : |
-    <p>This method allows aligning RNASeq reads to a genome using Tophat in order to identify exon-exon splice junctions using bowtie mapping program. 
-</p>
-   <p>This method takes a bowtie2 index object and sequencing read file and outputs a set of read alignments in SAM format. It also provides A UCSC BED track of junctions and UCSC BED tracks of insertions and deletions as output files.</p> 
-    
+    <p>This method allows aligning RNASeq reads to a genome using Tophat in order to identify exon-exon splice junctions using bowtie mapping program.</p>
+    <p>This method takes a bowtie2 index object and sequencing read file and outputs a set of read alignments in SAM format. It also provides A UCSC BED track of junctions and UCSC BED tracks of insertions and deletions as output files.</p>
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
     Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Fei He, Vivek Kumar</p>
