@@ -114,18 +114,3 @@ description : |
     
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
     Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Fei He, Vivek Kumar</p>
-    
-publications :
-    -
-        display-text: |
-            Trapnell C, Pachter L, Salzberg SL. (2009) "TopHat: discovering splice junctions with RNA-Seq" Bioinformatics 25 (9): 1105-1111.
-        link: http://bioinformatics.oxfordjournals.org/content/25/9/1105.abstract
-        display-text: |
-            Langmead B, Salzberg SL (2012) "Fast gapped-read alignment with Bowtie 2" Nature Methods 9 (4): 357–359.
-        link: http://www.ncbi.nlm.nih.gov/pubmed/22388286
-        display-text: |
-            Kim D and Salzberg SL. (2011) "TopHat-Fusion: an algorithm for discovery of novel fusion transcripts" Genome Biology 12:R72
-        link: http://www.genomebiology.com/2011/12/8/R72/abstract
-        display-text: |
-            Kim D, Pertea G, Trapnell C, Pimentel H, Kelley R, Salzberg SL. (2013) "TopHat2: accurate alignment of transcriptomes in the presence of insertions, deletions and gene fusions" Genome Biology 14:R36.
-        link: http://www.genomebiology.com/2013/14/4/R36/abstract
