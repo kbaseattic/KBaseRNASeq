@@ -541,7 +541,6 @@ class KBaseRNASeq:
 
         # At some point might do deeper type checking...
         if not isinstance(returnVal, dict):
-	    
             raise ValueError('Method getAlignmentStats return value ' +
                              'returnVal is not type dict as required.')
         # return the results
