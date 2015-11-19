@@ -24,19 +24,24 @@ method-suggestions :
 parameters :
     sample_id :
         ui-name : |
-            Reads associated with RNASeq sample
+            Reads Associated with RNASeq Sample
         short-hint : |
             Select the reads associated with RNASeq sample
-    output_obj_name :
+    bowtie2_index :
         ui-name : |
-            Alignment output
+            Indexed Genome
         short-hint : |
-            Provide the name of bowtie2 read alignment output
+            Specify the indexed genome built using bowtie2
     reference :
         ui-name : |
             Genome
         short-hint : |
             Specify the name of genome
+    output_obj_name :
+        ui-name : |
+            Alignment Output
+        short-hint : |
+            Provide the name of bowtie2 read alignment output
     alignment_type :
         ui-name : |
             Alignment Type
@@ -56,7 +61,7 @@ parameters :
             Alignment Type Preset Options
         short-hint : |
             Select the preset options based on alignment type
-            long-hint : |
+        long-hint : |
             The presets ending in fast generally being faster but less sensitive and less accurate, and the presets ending in sensitive generally being slower but more sensitive and more accurate.
 
 description : |
