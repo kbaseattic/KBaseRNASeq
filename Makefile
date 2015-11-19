@@ -22,6 +22,22 @@ LBIN_DIR = bin
 
 EXECUTABLE_SCRIPT_NAME = run_$(MODULE_CAPS).sh
 
+##
+# NMS spec test
+#
+NMS_URL ?= ci
+submodule-init:
+	git submodule init
+	git submodule update
+
+spec_test: submodule-init
+	make -C narrative_method_store build-nms-bin
+	./narrative_method_store/bin/nms-validate --url $(NMS_URL) --nms-path ui/narrative --verbose
+
+
+##
+# Main makefiles
+#
 default: compile-kb-module build-executable-script-python
 
 compile-kb-module:
@@ -181,3 +197,4 @@ create-test-wrapper:
 	chmod +x test/script_test/run_tests.sh
 
 endif
+
