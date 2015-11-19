@@ -4,7 +4,7 @@
 name     : Assemble Transcripts with Cufflinks
 
 tooltip  : |
-    Assemble Transcripts with Cufflinks
+    This method allows to assemble transcriptomes from RNASeq data using cufflinks.
 screenshots :
     []
 
@@ -24,39 +24,42 @@ method-suggestions :
 parameters :
   alignment_sample_id :
     ui-name : |
-        Alignment sample ID
+        Read Alignments 
     short-hint : |
-        Alignment sample ID
+        Select the file of RNASeq read alignments in the SAM format from bowtie2 or tophat.
   annotation_gtf :
     ui-name : |
-      Reference genome annotation
+      Reference Annotation
     short-hint : |
-      Reference genome annotation
+      Select the reference annotation
   output_obj_name :
     ui-name : |
-      Output object name
+      Cufflinks Output
     short-hint : |
-      Output object name
+      Provide the name of cufflinks output
   num-threads :
     ui-name : |
       Number of  threads
     short-hint : |
-      Number of  threads
+      Number of threads used during analysis. The default is 1.
   min-intron-length :
     ui-name : |
-      Minimum length of intron
+      Minimum Intron Length
     short-hint : |
-      Minimum length of intron
+      Minimum intron size allowed in a genome. The default is 50bp.
   max-intron-length :
     ui-name : |
-      Maximum length of intron
+      Maximum lntron Length
     short-hint : |
-      Maximum length of intron 
+      Cufflinks will not report transcripts with introns longer than this. The default is 300,000. 
   overhang-tolerance :
     ui-name : |
-      Overhang tolerance
+      Overhang Tolerance
     short-hint : |
-      Overhang tolerance
+      The number of terminal exon base pair to tolerate in introns.The deafult is 8bp.
 
 description : |
-    <p>This method is used to assemble transcripts with Cufflinks.</p>
+    <p>This method allows to assemble transcripts, estimate their abundances using cufflinks.</p>
+    <p>It accepts aligned RNASeq reads from bowtie2 or tophat and assembles the alignments into a parsimonious set of transcripts. It then estimates the relative abundances of these transcripts based on how many reads support each one, taking into account biases in library preparation protocols.</p>
+    <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
+    Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Fei He, Vivek Kumar</p>
