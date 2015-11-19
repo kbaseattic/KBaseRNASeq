@@ -37,66 +37,28 @@ parameters :
             Genome
         short-hint : |
             Specify the name of genome
-    bowtie2_index :
+    alignment_type :
         ui-name : |
-            Indexed genome
+            Alignment Type
         short-hint : |
-            Select the indexed genome built using bowtie2
-    phred33 :
+            Select the alignment type
+        long-hint : |
+            By default, bowtie2 performs end-to-end read alignment. It searches for alignments involving all of read characters. For local option, it can clip some read characters from one or both ends of the alignment to maximize the alignment score.
+    quality_score :
         ui-name : |
-            phred33
+            Alignment Quality Score Type
         short-hint : |
+            Select the quality score type
+        long-hint : |
             phred+33 used by the latest illumina
-    phred64 :
+    preset_options :
         ui-name : |
-            phred64
+            Alignment Type Preset Options
         short-hint : |
-            phred+64
-    local :
-        ui-name : |
-            local
-        short-hint : |
-            local soft clipped
-    very-fast :
-        ui-name : |
-            very fast
-        short-hint : |
-            very fast
-    fast :
-        ui-name : |
-            fast
-        short-hint : |
-            fast
-    very-sensitive :
-        ui-name : |
-            very sensitive
-        short-hint : |
-            very sensitive
-    sensitive :
-        ui-name : |
-            sensitive
-        short-hint : |
-            sensitive
-    very-fast-local :
-        ui-name : |
-            very fast local
-        short-hint : |
-            very fast local
-    very-sensitive-local :
-        ui-name : |
-            very sensitive local
-        short-hint : |
-           very sensitive local
-    fast-local :
-        ui-name : |
-            fast local
-        short-hint : |
-           fast local
-    fast-sensitive :
-        ui-name : |
-            fast sensitive
-        short-hint : |
-           fast sensitive
+            Select the preset options based on alignment type
+            long-hint : |
+            The presets ending in fast generally being faster but less sensitive and less accurate, and the presets ending in sensitive generally being slower but more sensitive and more accurate.
+
 description : |
     <p>This method allows to align the sequencing reads to long reference sequences using bowtie2. It takes a bowtie2 index object and sequencing read file and outputs a set of alignments in SAM format.</p> 
     <p>Bowtie2 supports gapped, local and paired-end alignment modes. By default, Bowtie 2 performs end-to-end read alignment. That is, it searches for alignments involving all of the read characters. This is also called an "untrimmed" or "unclipped" alignment. It also supports a "local" alignment mode, which does not require that reads align end-to-end.This produces alignments that might be "trimmed" (or "soft clipped") at one or both extremes in a way that optimizes alignment score.</p>
