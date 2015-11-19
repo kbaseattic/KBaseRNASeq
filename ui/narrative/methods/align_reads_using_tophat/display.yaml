@@ -24,7 +24,7 @@ method-suggestions :
 parameters :
     sample_id :
         ui-name : |
-            Reads associated with RNASeq sample
+            Reads associated with RNASeq Sample
         short-hint : |
             Select the reads associated with RNASeq sample
         description  : |
@@ -38,7 +38,7 @@ parameters :
             Select the reference annotation
     output_obj_name :
         ui-name : |
-            Alignment output
+            Alignment Output
         short-hint : |
             Provide the name of tophat read alignment output
     reference :
@@ -48,7 +48,7 @@ parameters :
             Specify the name of genome
     bowtie_index :
         ui-name : |
-            Indexed genome
+            Indexed Genome
         short-hint : |
             Select the indexed genome built using bowtie2
     read_mismatches :
@@ -58,47 +58,47 @@ parameters :
             Final read alignments having more than these mismatches are discarded.The default is 2.
     read_gap_length :
         ui-name : |
-            Gap length in reads
+            Gap Length in Reads
         short-hint : |
             Final read alignments having more than these many total length of gaps are discarded.The default is 2.
     read_edit_dist :
         ui-name : |
-            Read distance
+            Read Distance
         short-hint : |
             Final read alignments having more than these many edit distance are discarded.The default is 2.
     min_intron_length :
         ui-name : |
-            Minimum intron length
+            Minimum Intron Length
         short-hint : |
             Tophat will ignore donor/acceptor pairs closer than this many bases apart. The default is 70.
     max_intron_length :
         ui-name : |
-            Maximum intron length
+            Maximum Intron Length
         short-hint : |
             Tophat will ignore donor/acceptor pairs farther than this many bases apart. The default is 500000.
     num_threads :
         ui-name : |
-            Number of threads
+            Number of Threads
         short-hint : |
             Number of threads to align reads. The default is 1.
     report_secondary_alignments :
         ui-name : |
-            Report secondary alignments
+            Report Secondary Alignments
         short-hint : |
             Use this option if you want to output secondary alignments.
     no_coverage_search :
         ui-name : |
-            No coverage search
+            No Coverage Search
         short-hint : |
             Disables the coverage based search for junctions.
     library_type :
         ui-name : |
-            library type
+            Library Type
         short-hint : |
             Select the library type (fr-unstranded, fr-firststrand, fr-secondstrand)
 
 description : |
     <p>This method allows aligning RNASeq reads to a genome using Tophat in order to identify exon-exon splice junctions using bowtie mapping program.</p>
-    <p>This method takes a bowtie2 index object and sequencing read file and outputs a set of read alignments in SAM format. It also provides A UCSC BED track of junctions and UCSC BED tracks of insertions and deletions as output files.</p>
+    <p>This method takes a bowtie2 index object and sequencing read file and outputs a set of read alignments in SAM format.</p>
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
     Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Fei He, Vivek Kumar</p>
