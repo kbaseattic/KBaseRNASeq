@@ -37,8 +37,8 @@ RUN \
 COPY ./ /kb/module
 RUN \
   cd /kb/module && \
-  rm -rf narrative_method_store \
   make && make deploy
+#  rm -rf narrative_method_store \
 ENV PATH=$PATH:/kb/dev_container/modules/kb_sdk/bin
 WORKDIR /kb/module
 RUN mkdir -p /kb/module/work
