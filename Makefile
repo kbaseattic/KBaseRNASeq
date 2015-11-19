@@ -32,7 +32,7 @@ submodule-init:
 
 spec_test: submodule-init
 	make -C narrative_method_store build-nms-bin
-	./narrative_method_store/bin/nms-validate --url $(NMS_URL) --nms-path ui/narrative
+	./narrative_method_store/bin/nms-validate --url $(NMS_URL) --nms-path ui/narrative --verbose
 
 
 ##
