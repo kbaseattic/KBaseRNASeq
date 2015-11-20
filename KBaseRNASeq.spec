@@ -222,7 +222,7 @@
     
  /*
     Object for the RNASeq Alignment bam file
-
+    @optional aligner_opts aligner_version aligned_using metadata
     @metadata ws metadata.sample_id
     @metadata ws metadata.replicate_id
     @metadata ws metadata.platform
@@ -244,6 +244,7 @@
 	string aligner_version;
 	list<mapping<string opt_name, string opt_value>> aligner_opts;
 	Handle file;
+	int size;
 	RNASeqSampleMetaData metadata;
     }RNASeqSampleAlignment;
 

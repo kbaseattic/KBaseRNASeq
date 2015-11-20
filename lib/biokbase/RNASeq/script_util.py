@@ -7,6 +7,7 @@ import urllib
 import hashlib
 import requests
 import logging
+import shutil
 import time
 import traceback
 from requests_toolbelt import MultipartEncoder
@@ -85,6 +86,16 @@ def unzip_files(logger, src_fn, dst_path):
     with ZipFile(src_fn, 'r') as ozip:
         ozip.extractall(dst_path)
 
+def move_files(logger, src, dest):
+    """
+    Move files from one folder to another.
+    """
+    
+    src_files = os.listdir(src)
+    for file_name in src_files:
+       full_file_name = os.path.join(src, file_name)
+       if (os.path.isfile(full_file_name)):
+          shutil.copy(full_file_name, dest)
 
 def download_file_from_shock(logger,
                              shock_service_url = None,
