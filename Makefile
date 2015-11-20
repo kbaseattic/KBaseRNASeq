@@ -150,9 +150,12 @@ DEPLOY_RUNTIME ?= /kb/runtime
 TARGET ?= /kb/deployment
 #SERVICE_DIR ?= $(TARGET)/services/$(MODULE)
 
-deploy: deploy-scripts deploy-cfg
+deploy: deploy-lscripts deploy-cfg
 
-deploy-scripts: deploy-libs deploy-executable-script
+deploy-ensure-dirs:
+	if [ ! -d $(TARGET)/shbin ]; then rm -rf $(TARGET)/shbin; mkdir -p $(TARGET)/shbin; fi
+
+deploy-lscripts: deploy-ensure-dirs deploy-libs deploy-executable-script deploy-scripts
 	bash $(DIR)/deps/pylib.sh
 
 deploy-service: deploy-libs deploy-executable-script deploy-service-scripts deploy-cfg

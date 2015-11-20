@@ -498,7 +498,7 @@ class KBaseRNASeq:
 		analysis_id = sample['data']['analysis_id']
 	   	self.__LOGGER.info("RNASeq Sample belongs to the {0}".format(analysis_id)) 
 
-	    returnVal = opts_dict
+	    #returnVal = opts_dict
             #self.__LOGGER.info("Tophat ran with the following options {0} ",format(str(opts_dict))) 
 	    # Download bowtie_Indexes
 	    if 'handle' in bowtie_index['data'] and bowtie_index['data']['handle'] is not None:
