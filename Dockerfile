@@ -32,7 +32,8 @@ WORKDIR /kb/module
 COPY ./deps /kb/deps
 RUN \
   sh /kb/deps/kb_tophat/install-tophat.sh && \
-  sh /kb/deps/kb_bowtie/install-bowtie2.sh
+  sh /kb/deps/kb_bowtie/install-bowtie2.sh && \
+  sh /kb/deps/kb_cufflinks/install-cufflinks.sh 
 
 COPY ./ /kb/module
 RUN \
