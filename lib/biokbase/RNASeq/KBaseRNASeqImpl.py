@@ -322,8 +322,9 @@ class KBaseRNASeq:
         # return variables are: returnVal
         #BEGIN TophatCall
 	user_token=ctx['token']
-	print "starting Tophat"
+	self.__LOGGER.info("Starting Tophat")
 	ws_client=Workspace(url=self.__WS_URL, token=user_token)
+	self.__LOGGER.info("Build HS Client")
         hs = HandleService(url=self.__HS_URL, token=user_token)
 	try:
 	    ### Make a function to download the workspace object  and prepare dict of genome ,lib_type 
@@ -541,7 +542,6 @@ class KBaseRNASeq:
 
         # At some point might do deeper type checking...
         if not isinstance(returnVal, dict):
-	    
             raise ValueError('Method getAlignmentStats return value ' +
                              'returnVal is not type dict as required.')
         # return the results
