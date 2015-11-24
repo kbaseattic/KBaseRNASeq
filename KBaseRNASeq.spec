@@ -222,7 +222,7 @@
     
  /*
     Object for the RNASeq Alignment bam file
-
+    @optional aligner_opts aligner_version aligned_using metadata
     @metadata ws metadata.sample_id
     @metadata ws metadata.replicate_id
     @metadata ws metadata.platform
@@ -244,6 +244,7 @@
 	string aligner_version;
 	list<mapping<string opt_name, string opt_value>> aligner_opts;
 	Handle file;
+	int size;
 	RNASeqSampleMetaData metadata;
     }RNASeqSampleAlignment;
 
@@ -339,6 +340,7 @@
         string title;
 	string experiment_desc;
 	string experiment_design;
+	string domain;
         string platform;
         ws_genome_id genome_id;
 	string genome_scientific_name;
@@ -413,7 +415,6 @@ async funcdef fastqcCall(fastqcParams params)
 	string sample_desc;
 	string  title;
 	string source;
-	string source_id;
 	string ext_source_date;
 	string domain;
 	ws_genome_id genome_id;
@@ -430,6 +431,7 @@ async funcdef associateReads(associateReadsParams params)
    	string title;
    	string experiment_desc;
 	string experiment_design;
+	string domain;
    	string platform;
    	ws_genome_id genome_id;
    	int num_samples;
@@ -441,7 +443,6 @@ async funcdef associateReads(associateReadsParams params)
    	string source;
    	string Library_type;
    	string publication_id;
-   	string source_id;
    	string external_source_date;
    	}SetupRNASeqAnalysisParams;
    	

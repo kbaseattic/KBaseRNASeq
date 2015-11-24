@@ -8,6 +8,7 @@
   	"num_replicates": "2",
   	"external_source_date": null,
   	"title": "qweqe",
+	"domain" : "eukaryotes",
   	"publication_id": null,
   	"annotation_id": "Ptrichocarpa_v3_annotation_gtf",
   	"num_samples": "2",

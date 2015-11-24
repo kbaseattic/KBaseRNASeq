@@ -36,135 +36,95 @@
     "default_values" : [ "" ],
     "field_type" : "text"
   }, {
-    "id" : "genome_id",
+    "id" : "reference",
     "optional" : false,
     "advanced" : false,
     "allow_multiple" : false,
     "default_values" : [ "" ],
     "field_type" : "text",
     "text_options" : {
-      "valid_ws_types" : ["KBaseGenomes.Genome" ]
+    "valid_ws_types" : ["KBaseGenomes.Genome" ]
     }
   }, {
-    "id" : "phred33",
-    "optional":true,
-    "advanced":true,
-    "allow_multiple":false,
-    "default_values":[""],
-    "field_type" : "checkbox",
-    "checkbox_options":{
-    "checked_value": 1,
-    "unchecked_value": 0
+    "id" : "quality_score",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "dropdown",
+    "dropdown_options":{
+      "options": [
+        {
+          "value": "phred33",
+          "display": "phred33",
+          "id": "phred33",
+          "ui_name": "phred33"
+        },
+        {
+          "value": "phred64",
+          "display": "phred64",
+          "id": "phred64",
+          "ui_name": "phred64"
+        }
+      ]
     }
   }, {
-    "id" : "phred64",
-    "optional":true,
-    "advanced":true,
-    "allow_multiple":false,
-    "default_values":[""],
-    "field_type" : "checkbox",
-    "checkbox_options":{
-      "checked_value": 1,
-      "unchecked_value": 0
+    "id" : "alignment_type",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "dropdown",
+    "dropdown_options":{
+      "options": [
+        {
+          "value": "end-to-end",
+          "display": "end-to-end",
+          "id": "end-to-end",
+          "ui_name": "end-to-end"
+        },
+        {
+          "value": "local",
+          "display": "local",
+          "id": "local",
+          "ui_name": "local"
+        }
+      ]
     }
   }, {
-    "id" : "local",
-    "optional":true,
-    "advanced":true,
-    "allow_multiple":false,
-    "default_values":[""],
-    "field_type" : "checkbox",
-    "checkbox_options":{
-      "checked_value": 1,
-      "unchecked_value": 0
-    }
-  }, {
-   "id" : "very-fast",
-    "optional":true,
-    "advanced":true,
-    "allow_multiple":false,
-    "default_values":[""],
-    "field_type" : "checkbox",
-    "checkbox_options":{
-      "checked_value": 1,
-      "unchecked_value": 0
-    }
-  }, {
-   "id" : "fast",
-    "optional":true,
-    "advanced":true,
-    "allow_multiple":false,
-    "default_values":[""],
-    "field_type" : "checkbox",
-    "checkbox_options":{
-      "checked_value": 1,
-      "unchecked_value": 0
-    }
-  }, {
-    "id" : "very-sensitive",
-    "optional":true,
-    "advanced":true,
-    "allow_multiple":false,
-    "default_values":[""],
-    "field_type" : "checkbox",
-    "checkbox_options":{
-      "checked_value": 1,
-      "unchecked_value": 0
-    }
-  }, {
-    "id" : "sensitive",
-    "optional":true,
-    "advanced":true,
-    "allow_multiple":false,
-    "default_values":[""],
-    "field_type" : "checkbox",
-    "checkbox_options":{
-      "checked_value": 1,
-      "unchecked_value": 0
-    }
-  }, {
-    "id" : "very-fast-local",
-    "optional":true,
-    "advanced":true,
-    "allow_multiple":false,
-    "default_values":[""],
-    "field_type" : "checkbox",
-    "checkbox_options":{
-      "checked_value": 1,
-      "unchecked_value": 0
-    }
-  }, {
-   "id" : "very-sensitive-local",
-    "optional":true,
-    "advanced":true,
-    "allow_multiple":false,
-    "default_values":[""],
-    "field_type" : "checkbox",
-    "checkbox_options":{
-      "checked_value": 1,
-      "unchecked_value": 0
-    }
-  }, {
-   "id" : "fast-local",
-    "optional":true,
-    "advanced":true,
-    "allow_multiple":false,
-    "default_values":[""],
-    "field_type" : "checkbox",
-    "checkbox_options":{
-      "checked_value": 1,
-      "unchecked_value": 0
-    }
-  }, {
-    "id" : "fast-sensitive",
-    "optional":true,
-    "advanced":true,
-    "allow_multiple":false,
-    "default_values":[""],
-    "field_type" : "checkbox",
-    "checkbox_options":{
-      "checked_value": 1,
-      "unchecked_value": 0
+    "id" : "preset_options",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "dropdown",
+    "dropdown_options":{
+      "options": [
+        {
+          "value": "sensitive",
+          "display": "sensitive",
+          "id": "sensitive",
+          "ui_name": "sensitive"
+        },
+        {
+          "value": "very-sensitive",
+          "display": "very-sensitive",
+          "id": "very-sensitive",
+          "ui_name": "very-sensitive"
+        },
+        {
+          "value": "fast",
+          "display": "fast",
+          "id": "fast",
+          "ui_name": "fast"
+        },
+        {
+          "value": "very-fast",
+          "display": "very-fast",
+          "id": "very-fast",
+          "ui_name": "very-fast"
+        }
+      ]
     }
   } ],
   "behavior" : {
@@ -182,56 +142,24 @@
           "target_property" : "sample_id"
         },
         {
-          "input_parameter" : "genome_id",
-          "target_property" : "genome_id"
+          "input_parameter" : "reference",
+          "target_property" : "reference"
         },
         {
           "input_parameter" : "bowtie2_index",
           "target_property" : "bowtie2_index"
         },
         {
-          "input_parameter" : "phred33",
-          "target_property" : "phred33"
+          "input_parameter" : "quality_score",
+          "target_property" : "quality_score"
         },
         {
-          "input_parameter" : "phred64",
-          "target_property" : "phred64"
+          "input_parameter" : "alignment_type",
+          "target_property" : "alignment_type"
         },
         {
-          "input_parameter" : "local",
-          "target_property" : "local"
-        },
-        {
-          "input_parameter" : "very-fast",
-          "target_property" : "very-fast"
-        },
-        {
-          "input_parameter" : "fast",
-          "target_property" : "fast"
-        },
-        {
-          "input_parameter" : "very-sensitive",
-          "target_property" : "very-sensitive"
-        },
-        {
-          "input_parameter" : "sensitive",
-          "target_property" : "sensitive"
-        },
-        {
-          "input_parameter" : "very-fast-local",
-          "target_property" : "very-fast-local"
-        },
-       {
-          "input_parameter" : "very-sensitive-local",
-          "target_property" : "very-sensitive-local"
-        },
-       {
-          "input_parameter" : "fast-local",
-          "target_property" : "fast-local"
-        },
-       {
-          "input_parameter" : "fast-sensitive",
-          "target_property" : "fast-sensitive"
+          "input_parameter" : "preset_options",
+          "target_property" : "preset_options"
       }],
       "output_mapping" : [
         {

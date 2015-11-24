@@ -4,7 +4,7 @@
 name     : View Alignment Statistics 
 
 tooltip  : |
-    View Alignment Statistics
+    This method allows users to view statistics of reads alignments built by bowtie2 or tophat.
 
 screenshots :
     []
@@ -25,22 +25,19 @@ method-suggestions :
 parameters :
     alignment_sample_id:
         ui-name : |
-            Alignment Id
+            Reads Alignment
         short-hint : |
-            Select the Alignment to view Statistics
-        long-hint  : |
-            Select the Alignment to view Statistics
+            Select the reads alignment to view statistics
     output_obj_name:
         ui-name : |
             Output Object
         short-hint : |
-            Enter a name for the output stats object
-        long-hint  : |
             Enter a name for the output stats object
     
 
 
 description : |
 
-    <p>View the alignment staticstics in a Piechart.</p>
-     
+    <p>This method allows users to view statistics of reads alignments built by bowtie2 or tophat. It takes the reads alignment as input and provides piechart as output.</p>
+    <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
+    Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Fei He, Vivek Kumar</p>

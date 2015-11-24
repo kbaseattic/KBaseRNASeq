@@ -22,6 +22,22 @@ LBIN_DIR = bin
 
 EXECUTABLE_SCRIPT_NAME = run_$(MODULE_CAPS).sh
 
+##
+# NMS spec test
+#
+#NMS_URL ?= ci
+#submodule-init:
+#	git submodule init
+#	git submodule update
+
+#spec_test: submodule-init
+#	make -C narrative_method_store build-nms-bin
+#	./narrative_method_store/bin/nms-validate --url $(NMS_URL) --nms-path ui/narrative --verbose
+
+
+##
+# Main makefiles
+#
 default: compile-kb-module build-executable-script-python
 
 compile-kb-module:
@@ -139,9 +155,12 @@ DEPLOY_RUNTIME ?= /kb/runtime
 TARGET ?= /kb/deployment
 #SERVICE_DIR ?= $(TARGET)/services/$(MODULE)
 
-deploy: deploy-scripts deploy-cfg
+deploy: deploy-lscripts deploy-cfg
 
-deploy-scripts: deploy-libs deploy-executable-script
+deploy-ensure-dirs:
+	if [ ! -d $(TARGET)/shbin ]; then rm -rf $(TARGET)/shbin; mkdir -p $(TARGET)/shbin; fi
+
+deploy-lscripts: deploy-ensure-dirs deploy-libs deploy-executable-script deploy-scripts
 	bash $(DIR)/deps/pylib.sh
 
 deploy-service: deploy-libs deploy-executable-script deploy-service-scripts deploy-cfg
@@ -186,3 +205,4 @@ create-test-wrapper:
 	chmod +x test/script_test/run_tests.sh
 
 endif
+

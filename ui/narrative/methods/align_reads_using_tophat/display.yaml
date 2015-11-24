@@ -3,7 +3,7 @@
 #
 name     : Align Reads using Tophat
 tooltip  : |
-    Align Reads using Tophat
+    This method allows aligning RNASeq reads to a genome using Tophat in order to identify exon-exon splice junctions using bowtie mapping program. 
 
 screenshots :
     []
@@ -24,122 +24,81 @@ method-suggestions :
 parameters :
     sample_id :
         ui-name : |
-            RNASeq Sample
+            Reads associated with RNASeq Sample
         short-hint : |
-            RNASeq Sample
+            Select the reads associated with RNASeq sample
         description  : |
             RNASeq Sample
         placeholder : |
             placeholder text is possible
-
-
     annotation_gtf :
         ui-name : |
             Reference Annotation
         short-hint : |
-            Reference Annotation
-        description  : |
-            Reference Annotation
-            
+            Select the reference annotation
     output_obj_name :
         ui-name : |
-            tophat read alignment output
+            Alignment Output
         short-hint : |
-            tophat read alignment output
-        description  : |
-            tophat read alignment output
-        placeholder : |
-            tophat read alignment output
-            
+            Provide the name of tophat read alignment output
     reference :
         ui-name : |
-            Reference Assembly Id
+            Genome
         short-hint : |
-            Reference Assembly Id
-        description  : |
-            Reference Assembly Id
-            
+            Specify the name of genome
     bowtie_index :
         ui-name : |
-            Bowtie Index Id
+            Indexed Genome
         short-hint : |
-            Bowtie Index Id
-        description  : |
-            Bowtie Index Id
-    
+            Select the indexed genome built using bowtie2
     read_mismatches :
         ui-name : |
             Mismatches in Reads
         short-hint : |
-            Mismatches in Reads
-        description  : |
-            Mismatches in Reads
-    
+            Final read alignments having more than these mismatches are discarded.The default is 2.
     read_gap_length :
         ui-name : |
-            Gap length in reads
+            Gap Length in Reads
         short-hint : |
-            Gap length in reads
-        description  : |
-            Gap length in reads
-            
+            Final read alignments having more than these many total length of gaps are discarded.The default is 2.
     read_edit_dist :
         ui-name : |
-            read distance
+            Read Distance
         short-hint : |
-            read distance
-        description  : |
-            read distance    
-    
+            Final read alignments having more than these many edit distance are discarded.The default is 2.
     min_intron_length :
         ui-name : |
-            minimum length of intron
+            Minimum Intron Length
         short-hint : |
-            minimum length of intron
-        description  : |
-            minimum length of intron
-
+            Tophat will ignore donor/acceptor pairs closer than this many bases apart. The default is 70.
     max_intron_length :
         ui-name : |
-            max length of intron
+            Maximum Intron Length
         short-hint : |
-            max length of intron
-        description  : |
-            max length of intron
-            
+            Tophat will ignore donor/acceptor pairs farther than this many bases apart. The default is 500000.
     num_threads :
         ui-name : |
-            number of threads
+            Number of Threads
         short-hint : |
-            number of threads
-        description  : |
-            number of threads    
-    
+            Number of threads to align reads. The default is 1.
     report_secondary_alignments :
         ui-name : |
-            report secondary alignments
+            Report Secondary Alignments
         short-hint : |
-            report secondary alignments
-        description  : |
-           
-    
+            Use this option if you want to output secondary alignments.
     no_coverage_search :
         ui-name : |
-            no coverage search
+            No Coverage Search
         short-hint : |
-            no coverage search
-        description  : |
-            
- 
+            Disables the coverage based search for junctions.
     library_type :
         ui-name : |
-            library type
+            Library Type
         short-hint : |
-            library type
-        description  : |
-            library type    
-
-
+            Select the library type (fr-unstranded, fr-firststrand, fr-secondstrand)
 
 description : |
-    <p>This method allows reads alignment using tophat.</p>
+    <p>This method allows aligning RNASeq reads to a genome using Tophat in order to identify exon-exon splice junctions using bowtie mapping program.</p>
+    <p>This method takes a bowtie2 index object and sequencing read file and outputs a set of read alignments in SAM format.</p>
+    <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
+    Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Fei He, Vivek Kumar</p>

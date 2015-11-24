@@ -36,7 +36,7 @@
     "default_values" : [ "" ],
     "field_type" : "text"
   }, {
-    "id" : "genome_id",
+    "id" : "reference",
     "optional" : false,
     "advanced" : false,
     "allow_multiple" : false,
@@ -46,7 +46,7 @@
       "valid_ws_types" : ["KBaseGenomes.Genome" ]
     }
   }, {
-    "id" : "bowtie2_index",
+    "id" : "bowtie_index",
     "optional" : false,
     "advanced" : false,
     "allow_multiple" : false,
@@ -143,7 +143,29 @@
     "advanced" : true,
     "allow_multiple" : false,
     "default_values" : [ "" ],
-    "field_type" : "text"
+    "field_type" : "dropdown",
+    "dropdown_options":{
+      "options": [
+        {
+          "value": "fr-unstranded",
+          "display": "fr-unstranded",
+          "id": "fr-unstranded",
+          "ui_name": "fr-unstranded"
+        },
+        {
+          "value": "fr-firststrand",
+          "display": "fr-firststrand",
+          "id": "fr-firststrand",
+          "ui_name": "fr-firststrand"
+        },
+        {
+          "value": "fr-secondstrand",
+          "display": "fr-secondstrand",
+          "id": "fr-secondstrand",
+          "ui_name": "fr-secondstrand"
+        }
+      ]
+    }
   } ],
   "behavior" : {
     "service-mapping" : {
@@ -164,8 +186,8 @@
           "target_property" : "annotation_gtf"
         },
         {
-          "input_parameter" : "genome_id",
-          "target_property" : "genome_id"
+          "input_parameter" : "reference",
+          "target_property" : "reference"
         },
         {
           "input_parameter" : "bowtie_index",
