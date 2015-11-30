@@ -450,7 +450,7 @@ class KBaseRNASeq:
 		 self.__LOGGER.exception("".join(traceback.format_exc()))
 		 raise KBaseRNASeqException("Error Downloading objects from the workspace ") 
                      
-            returnVal = bowtie_index
+            #returnVal = bowtie_index
 	    #return [returnVal]
 	    opts_dict = { k:v for k,v in params.iteritems() if not k in ('ws_id','sample_id','reference','bowtie_index','annotation_gtf','analysis_id','output_obj_name') and v is not None }
 	    
@@ -516,7 +516,8 @@ class KBaseRNASeq:
 	    try:
 		index_path = os.path.join(tophat_dir,b_filename)
                 script_util.unzip_files(self.__LOGGER,index_path,tophat_dir)
-		script_util.move_files(self.__LOGGER,os.path.join(tophat_dir,"kb_g.166828"),tophat_dir)
+		script_util.move_files(self.__LOGGER,handler_util.get_dir(tophat_dir),tophat_dir)
+		#script_util.move_files(self.__LOGGER,os.path.join(tophat_dir,"kb_g.166828"),tophat_dir)
             except Exception, e:
                    self.__LOGGER.exception("".join(traceback.format_exc()))
                    raise Exception("Unzip indexfile error: Please contact help@kbase.us")
@@ -535,7 +536,8 @@ class KBaseRNASeq:
                 raise Exception( "Unable to download shock file , {0}".format(e))
 	    output_dir = os.path.join(tophat_dir,params['output_obj_name'])
 	    gtf_file = os.path.join(tophat_dir,a_filename)
-            bowtie_base = os.path.join(tophat_dir,"kb_g.166828.fa")
+            #bowtie_base = os.path.join(tophat_dir,"kb_g.166828.fa")
+	    bowtie_base =os.path.join(tophat_dir,handler_util.get_file_with_suffix(tophat_dir,".1.bt2"))
 	    print output_dir
 	    print gtf_file
 	    print bowtie_base
@@ -585,6 +587,7 @@ class KBaseRNASeq:
             try:
                 script_util.zip_files(self.__LOGGER, output_dir, "%s.zip" % params['output_obj_name'])
                 out_file_path = os.path.join("%s.zip" % params['output_obj_name'])
+		#handler_util.cleanup(self.__LOGGER,tophat_dir)
             except Exception, e:
                 raise KBaseRNASeqException("Failed to compress the index: {0}".format(e))
             ## Upload the file using handle service
@@ -595,6 +598,7 @@ class KBaseRNASeq:
             tophat_out = { "file" : tophat_handle ,"size" : os.path.getsize(out_file_path), "aligned_using" : "tophat" , "aligner_version" : "3.1.0","metadata" :  sample['data']['metadata']}
             #tophat_out = { "file" : tophat_handle ,"size" : os.path.getsize(out_file_path), "aligned_using" : "tophat" , "aligner_version" : "3.1.0", "aligner_opts" : [ (k,v) for k,v in opts_dict.items()],"metadata" :  sample['data']['metadata']}
             returnVal = tophat_out
+	     
 	    ## Save object to workspace
             self.__LOGGER.info( "Saving Tophat object to  workspace")
 	    try:
@@ -605,12 +609,15 @@ class KBaseRNASeq:
                                          "data":tophat_out,
                                          "name":params['output_obj_name']}
                                         ]})
+	       
 	    except Exception, e:
                 raise KBaseRNASeqException("Failed to upload  the alignment: {0}".format(e))
 
 	except Exception,e:
-            KBaseRNASeqException("Error Running TophatCall ")
-	
+            raise KBaseRNASeqException("Error Running Tophatcall {0}".format("".join(traceback.format_exc())))
+	finally:
+		handler_util.cleanup(self.__LOGGER,tophat_dir)
+#	
 	     
         #END TophatCall
 
