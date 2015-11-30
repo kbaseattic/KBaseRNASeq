@@ -512,7 +512,7 @@ async funcdef BuildBowtie2Index(Bowtie2IndexParams params)
 	}Bowtie2Params;
 
 async funcdef Bowtie2Call(Bowtie2Params params) 
-     returns(string job_id) authentication required;
+     returns(UnspecifiedObject) authentication required;
 
 typedef structure{
      string read-mismatches;
