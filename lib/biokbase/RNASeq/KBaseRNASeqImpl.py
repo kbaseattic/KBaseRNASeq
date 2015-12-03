@@ -10,6 +10,7 @@ import logging
 import time
 import subprocess
 import threading, traceback
+from collections import OrderedDict
 from pprint import pprint
 import script_util
 from biokbase.workspace.client import Workspace
@@ -153,7 +154,6 @@ class KBaseRNASeq:
                                         [{'name' : params['singleend_sample'],
                                           'workspace' : params['ws_id']}])
                	out['singleend_sample'] = s_res[0]['data']
-		print out['singleend_sample']
             except Exception,e:
                 raise KBaseRNASeqException("Error Downloading SingleEndlibrary object from the workspace {0},{1}".format(params['singleend_sample'],e))
 
@@ -198,7 +198,7 @@ class KBaseRNASeq:
 	user_token=ctx['token']
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
         out_obj = { k:v for k,v in params.iteritems() if not k in ('ws_id','genome_id','annotation_id') and v}
-        pprint(out_obj)
+        #pprint(out_obj)
         if "num_samples" in out_obj : out_obj["num_samples"] = int(out_obj["num_samples"])
         if "num_replicates" in out_obj : out_obj["num_replicates"] = int(out_obj["num_replicates"])
 	if "genome_id" in params and params['genome_id'] is not None: out_obj["genome_id"] = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params["genome_id"]],params["ws_id"],user_token)[0]
@@ -234,8 +234,6 @@ class KBaseRNASeq:
         # return variables are: returnVal
         #BEGIN BuildBowtie2Index
 	user_token=ctx['token']
-	print "start"
-        print user_token
     
         #svc_token = Token(user_id=self.__SVC_USER, password=self.__SVC_PASS).token
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
@@ -253,7 +251,6 @@ class KBaseRNASeq:
 	   ## dump fasta object to a file in bowtie_dir
 		try:
 	   		dumpfasta= "--workspace_service_url {0} --workspace_name {1} --working_directory {2} --output_file_name {3} --object_name {4} --shock_service_url {5} --token \'{6}\'".format(self.__WS_URL , params['ws_id'],bowtie_dir,params['reference'],params['reference'],self.__SHOCK_URL,user_token)
-			print dumpfasta
 
             		script_util.runProgram(self.__LOGGER,self.__SCRIPT_TYPE['ContigSet_to_fasta'],dumpfasta,self.__SCRIPTS_DIR,os.getcwd())
 		except Exception,e:
@@ -303,17 +300,15 @@ class KBaseRNASeq:
 
     def Bowtie2Call(self, ctx, params):
         # ctx is the context object
-        # return variables are: job_id
+        # return variables are: returnVal
         #BEGIN Bowtie2Call
 	user_token=ctx['token']
-        print "starting Bowtie2Call"
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
         hs = HandleService(url=self.__HS_URL, token=user_token)
         try:
-            print " entering the  try"
             bowtie2_dir = self.__BOWTIE2_DIR
             if os.path.exists(bowtie2_dir):
-            #   files=glob.glob("%s/*" % tophat_dir)
+            #   files=glob.glob("%s/*" % bowtie2_dir)
             #    for f in files: os.remove(f)
                 handler_util.cleanup(self.__LOGGER,bowtie2_dir)
             if not os.path.exists(bowtie2_dir): os.makedirs(bowtie2_dir)
@@ -323,7 +318,7 @@ class KBaseRNASeq:
                 sample ,reference,bowtie_index = ws_client.get_objects(
                                         [{'name' : params['sample_id'],'workspace' : params['ws_id']},
                                         { 'name' : params['reference'], 'workspace' : params['ws_id']},
-                                        { 'name' : params['bowtie_index'], 'workspace' : params['ws_id']}])
+                                        { 'name' : params['bowtie2_index'], 'workspace' : params['ws_id']}])
             except Exception,e:
                  self.__LOGGER.exception("".join(traceback.format_exc()))
                  raise KBaseRNASeqException("Error Downloading objects from the workspace ")
@@ -340,7 +335,7 @@ class KBaseRNASeq:
                 sample_shock_id = singleend_sample['handle']['id']
                 sample_filename = singleend_sample['handle']['file_name']
                 try:
-                     script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=sample_shock_id,filename=singleend_sample['handle']['file_name'], directory=tophat_dir,token=user_token)
+                     script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=sample_shock_id,filename=singleend_sample['handle']['file_name'], directory=bowtie2_dir,token=user_token)
                 except Exception,e:
                         raise Exception( "Unable to download shock file , {0}".format(e))
             if 'pairedend_sample' in sample['data'] and sample['data']['pairedend_sample'] is not None:
@@ -361,8 +356,8 @@ class KBaseRNASeq:
                 if sample_shock_id2 is None:
                         raise Exception("Handle2 there was not shock id found.")
                 try:
-                        script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=sample_shock_id1,filename=filename1,directory=tophat_dir, token=user_token)
-                        script_util.download_file_from_shock(self.__LOGGER,shock_service_url=self.__SHOCK_URL, shock_id=sample_shock_id2,filename=filename2,directory=tophat_dir, token=user_token)
+                        script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=sample_shock_id1,filename=filename1,directory=bowtie2_dir, token=user_token)
+                        script_util.download_file_from_shock(self.__LOGGER,shock_service_url=self.__SHOCK_URL, shock_id=sample_shock_id2,filename=filename2,directory=bowtie2_dir, token=user_token)
                 except Exception,e:
                         raise Exception( "Unable to download shock file , {0}".format(e))
 
@@ -374,20 +369,71 @@ class KBaseRNASeq:
                 b_shock_id = bowtie_index['data']['handle']['id']
                 b_filename = bowtie_index['data']['handle']['file_name']
                 b_filesize = bowtie_index['data']['size']
-                print b_shock_id
-                print b_filename
             try:
-                script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=b_shock_id,filename=b_filename,directory=tophat_dir,filesize=b_filesize,token=user_token)
+                script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=b_shock_id,filename=b_filename,directory=bowtie2_dir,filesize=b_filesize,token=user_token)
             except Exception,e :
                 self.__LOGGER.exception("".join(traceback.format_exc()))
                 raise Exception( "Unable to download shock file , {0}".format(e))
 	    try:
-                script_util.unzip_files(self.__LOGGER,os.path.join(tophat_dir,b_filename),tophat_dir)
+                script_util.unzip_files(self.__LOGGER,os.path.join(bowtie2_dir,b_filename),bowtie2_dir)
+		script_util.move_files(self.__LOGGER,handler_util.get_dir(bowtie2_dir),bowtie2_dir)
             except Exception, e:
                    self.__LOGGER.error("Unzip indexfile error: Please contact help@kbase.us")
                    raise Exception("Unzip indexfile error: Please contact help@kbase.us")
             # Define the bowtie2 options
+	    os.makedirs(os.path.join(bowtie2_dir,params['output_obj_name']))
+	    output_dir = os.path.join(bowtie2_dir,params['output_obj_name'])
+	    out_file = output_dir +"accepted_hits.sam"
+	    bowtie2_base =os.path.join(bowtie2_dir,handler_util.get_file_with_suffix(bowtie2_dir,".1.bt2"))
+	    if(lib_type == "SingleEnd"):
+                sample_file = os.path.join(bowtie2_dir,sample_filename)
+                bowtie2_cmd = "-U {0} -x {1} -S {2}".format(sample_file,bowtie2_base,out_file)
+            elif(lib_type == "PairedEnd"):
+                sample_file1 = os.path.join(bowtie2_dir,filename1)
+                sample_file2 = os.path.join(bowtie2_dir,filename2)
+                bowtie2_cmd = "-1 {0} -2 {1} -x {2} -S {3}".format(sample_file1,sample_file2,bowtie2_base,out_file)	
+	    
+            try:
 		
+                script_util.runProgram(self.__LOGGER,"bowtie2",bowtie2_cmd,None,os.getcwd())
+		bam_file = os.path.join(output_dir,"accepted_hits.bam")
+		sam_to_bam = "view -bS -o {0} {1}".format(bam_file,out_file)
+		script_util.runProgram(self.__LOGGER,"samtools",sam_to_bam,None,os.getcwd())
+                #script_util.runProgram(self.__LOGGER,self.__SCRIPT_TYPE['tophat_script'],tophat_cmd,self.__SCRIPTS_DIR,os.getcwd())
+            except Exception,e:
+                raise KBaseRNASeqException("Error Running the bowtie2 command {0},{1},{2}".format(bowtie2_cmd,bowtie2_dir,e))
+
+
+
+        # Zip tophat folder
+            try:
+                script_util.zip_files(self.__LOGGER, output_dir, "%s.zip" % params['output_obj_name'])
+                out_file_path = os.path.join("%s.zip" % params['output_obj_name'])
+                #handler_util.cleanup(self.__LOGGER,tophat_dir)
+            except Exception, e:
+                raise KBaseRNASeqException("Failed to compress the index: {0}".format(e))
+            ## Upload the file using handle service
+            try:
+                bowtie2_handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
+            except Exception, e:
+                raise KBaseRNASeqException("Failed to upload the index: {0}".format(e))
+            bowtie2_out = { "file" : bowtie2_handle ,"size" : os.path.getsize(out_file_path), "aligned_using" : "bowtie2" , "aligner_version" : "2.2.6","metadata" :  sample['data']['metadata']}
+            #tophat_out = { "file" : tophat_handle ,"size" : os.path.getsize(out_file_path), "aligned_using" : "tophat" , "aligner_version" : "3.1.0", "aligner_opts" : [ (k,v) for k,v in opts_dict.items()],"metadata" :  sample['data']['metadata']}
+            returnVal = bowtie2_out
+
+            ## Save object to workspace
+            self.__LOGGER.info( "Saving bowtie2 object to  workspace")
+            try:
+                res= ws_client.save_objects(
+                                        {"workspace":params['ws_id'],
+                                         "objects": [{
+                                         "type":"KBaseRNASeq.RNASeqSampleAlignment",
+                                         "data":bowtie2_out,
+                                         "name":params['output_obj_name']}
+                                        ]})
+
+            except Exception, e:
+                raise KBaseRNASeqException("Failed to upload  the alignment: {0}".format(e))
 
 	except Exception,e:
                  self.__LOGGER.exception("".join(traceback.format_exc()))
@@ -396,27 +442,23 @@ class KBaseRNASeq:
         #END Bowtie2Call
 
         # At some point might do deeper type checking...
-        if not isinstance(job_id, basestring):
+        if not isinstance(returnVal, object):
             raise ValueError('Method Bowtie2Call return value ' +
-                             'job_id is not type basestring as required.')
+                             'returnVal is not type object as required.')
         # return the results
-        return [job_id]
+        return [returnVal]
 
     def TophatCall(self, ctx, params):
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN TophatCall
 	user_token=ctx['token']
-	print "starting Tophat"
 	ws_client=Workspace(url=self.__WS_URL, token=user_token)
         hs = HandleService(url=self.__HS_URL, token=user_token)
 	try:
 	    ### Make a function to download the workspace object  and prepare dict of genome ,lib_type 
-	    print " entering the  try"
 	    tophat_dir = self.__TOPHAT_DIR
             if os.path.exists(tophat_dir):
-            #	files=glob.glob("%s/*" % tophat_dir)
-            #    for f in files: os.remove(f)
 	    	handler_util.cleanup(self.__LOGGER,tophat_dir)
             if not os.path.exists(tophat_dir): os.makedirs(tophat_dir)
 
@@ -451,11 +493,8 @@ class KBaseRNASeq:
 		 self.__LOGGER.exception("".join(traceback.format_exc()))
 		 raise KBaseRNASeqException("Error Downloading objects from the workspace ") 
                      
-            returnVal = bowtie_index
-	    #return [returnVal]
 	    opts_dict = { k:v for k,v in params.iteritems() if not k in ('ws_id','sample_id','reference','bowtie_index','annotation_gtf','analysis_id','output_obj_name') and v is not None }
 	    
-	    #returnVal = opts_dict
  
             if 'data' in sample and sample['data'] is not None:
 		self.__LOGGER.info("getting here")
@@ -499,15 +538,12 @@ class KBaseRNASeq:
 		analysis_id = sample['data']['analysis_id']
 	   	self.__LOGGER.info("RNASeq Sample belongs to the {0}".format(analysis_id)) 
 
-	    #returnVal = opts_dict
             #self.__LOGGER.info("Tophat ran with the following options {0} ",format(str(opts_dict))) 
 	    # Download bowtie_Indexes
 	    if 'handle' in bowtie_index['data'] and bowtie_index['data']['handle'] is not None:
 		b_shock_id = bowtie_index['data']['handle']['id']
 		b_filename = bowtie_index['data']['handle']['file_name']
 		b_filesize = bowtie_index['data']['size']
-		print b_shock_id 
-		print b_filename
 	    try:
 		script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=b_shock_id,filename=b_filename,directory=tophat_dir,filesize=b_filesize,token=user_token)
 	    except Exception,e :
@@ -517,7 +553,8 @@ class KBaseRNASeq:
 	    try:
 		index_path = os.path.join(tophat_dir,b_filename)
                 script_util.unzip_files(self.__LOGGER,index_path,tophat_dir)
-		script_util.move_files(self.__LOGGER,os.path.join(tophat_dir,"kb_g.166828"),tophat_dir)
+		script_util.move_files(self.__LOGGER,handler_util.get_dir(tophat_dir),tophat_dir)
+		#script_util.move_files(self.__LOGGER,os.path.join(tophat_dir,"kb_g.166828"),tophat_dir)
             except Exception, e:
                    self.__LOGGER.exception("".join(traceback.format_exc()))
                    raise Exception("Unzip indexfile error: Please contact help@kbase.us")
@@ -526,9 +563,6 @@ class KBaseRNASeq:
                 a_shock_id = annotation['data']['handle']['id']
                 a_filename = annotation['data']['handle']['file_name']
 		a_filesize = annotation['data']['size']
-                print a_shock_id
-                print a_filename
-		print a_filesize
             try:
                 script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=a_shock_id,filename=a_filename,directory=tophat_dir,filesize=a_filesize,token=user_token)
             except Exception,e :
@@ -536,15 +570,12 @@ class KBaseRNASeq:
                 raise Exception( "Unable to download shock file , {0}".format(e))
 	    output_dir = os.path.join(tophat_dir,params['output_obj_name'])
 	    gtf_file = os.path.join(tophat_dir,a_filename)
-            bowtie_base = os.path.join(tophat_dir,"kb_g.166828.fa")
-	    print output_dir
-	    print gtf_file
-	    print bowtie_base
+            #bowtie_base = os.path.join(tophat_dir,"kb_g.166828.fa")
+	    bowtie_base =os.path.join(tophat_dir,handler_util.get_file_with_suffix(tophat_dir,".1.bt2"))
 	    #topts_dict = { k:int(v) for (k,v) in opts_dict.items() if k in ('num_threads','read_mismatches','read_gap_length','read_edit_dist','min_intron_length','max_intron_length')}
 	    #topts_dict['no_coverage_search'] = true
             #topts_dict['report_secondary_alignments'] = false
-	    #print topts_dict
-	    print opts_dict
+	    #print opts_dict
 	    ### Build command line 
 	    #tophat_cmd = "-input {0} -output {1} -reference {2} -opts_dict {3}  -gtf {4} -prog tophat -base_dir {5} -library_type {6} -mode dry_run".format(sample_file,output_dir,bowtie_base,ast.literal_eval(opts_dict),gtf_file,tophat_dir,lib_type)
 
@@ -555,7 +586,6 @@ class KBaseRNASeq:
 		sample_file1 = os.path.join(tophat_dir,filename1)
 		sample_file2 = os.path.join(tophat_dir,filename2) 
 		tophat_cmd = "-o {0} -G {1} {2} {3} {4}".format(output_dir,gtf_file,bowtie_base,sample_file1,sample_file2)
-	    #print tophat_cmd  
 	    #if('num_threads' in opts_dict ) : tophat_cmd = (' -p '+opts_dict['num_threads'])
 	    #if('max_intron_length' in opts_dict ) : tophat_cmd += (' -I '+opts_dict['max_intron_length'])
 	    #if('min_intron_length' in opts_dict ) : tophat_cmd += (' -i '+opts_dict['min_intron_length'])
@@ -586,6 +616,7 @@ class KBaseRNASeq:
             try:
                 script_util.zip_files(self.__LOGGER, output_dir, "%s.zip" % params['output_obj_name'])
                 out_file_path = os.path.join("%s.zip" % params['output_obj_name'])
+		#handler_util.cleanup(self.__LOGGER,tophat_dir)
             except Exception, e:
                 raise KBaseRNASeqException("Failed to compress the index: {0}".format(e))
             ## Upload the file using handle service
@@ -596,6 +627,7 @@ class KBaseRNASeq:
             tophat_out = { "file" : tophat_handle ,"size" : os.path.getsize(out_file_path), "aligned_using" : "tophat" , "aligner_version" : "3.1.0","metadata" :  sample['data']['metadata']}
             #tophat_out = { "file" : tophat_handle ,"size" : os.path.getsize(out_file_path), "aligned_using" : "tophat" , "aligner_version" : "3.1.0", "aligner_opts" : [ (k,v) for k,v in opts_dict.items()],"metadata" :  sample['data']['metadata']}
             returnVal = tophat_out
+	     
 	    ## Save object to workspace
             self.__LOGGER.info( "Saving Tophat object to  workspace")
 	    try:
@@ -606,12 +638,15 @@ class KBaseRNASeq:
                                          "data":tophat_out,
                                          "name":params['output_obj_name']}
                                         ]})
+	       
 	    except Exception, e:
                 raise KBaseRNASeqException("Failed to upload  the alignment: {0}".format(e))
 
 	except Exception,e:
-            KBaseRNASeqException("Error Running TophatCall ")
-	
+            raise KBaseRNASeqException("Error Running Tophatcall {0}".format("".join(traceback.format_exc())))
+	finally:
+		handler_util.cleanup(self.__LOGGER,tophat_dir)
+#	
 	     
         #END TophatCall
 
@@ -829,12 +864,46 @@ class KBaseRNASeq:
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN createExpressionHistogram
+	user_token=ctx['token']
+        ws_client=Workspace(url=self.__WS_URL, token=user_token)
+	
+	try:
+        	obj = ws_client.get_objects([{'name' : params['expression_sample'],'workspace' : params['ws_id'] }])[0]
+        #return {"output" : str(status), "error": json_error}
+    	except Exception as e:
+        	raise FileNotFound("File Not Found: {}".format(e))
+    	if 'expression_levels' in obj['data']:
+        	hdict = obj['data']['expression_levels']
+        	tot_genes =  len(hdict)
+        	lmin = round(min([v for k,v in hdict.items()]))
+        	lmax = round(max([v for k,v in hdict.items()]))
+        	hist_dt = script_util.histogram(hdict.values(),lmin,lmax,int(params['number_of_bins']))
+        	title = "Histogram  - " + params['expression_sample']
+        	hist_json = {"title" :  title , "x_label" : "Gene Expression Level (FPKM)", "y_label" : "Number of Genes", "data" : hist_dt}
+        	sorted_dt = OrderedDict({ "id" : "", "name" : "","row_ids" : [] ,"column_ids" : [] ,"row_labels" : [] ,"column_labels" : [] , "data" : [] })
+        	sorted_dt["row_ids"] = [hist_json["x_label"]]
+        	sorted_dt["column_ids"] = [hist_json["y_label"]]
+        	sorted_dt['row_labels'] = [hist_json["x_label"]]
+        	sorted_dt["column_labels"] =  [hist_json["y_label"]]
+        	sorted_dt["data"] = [[float(i) for i in hist_json["data"]["x_axis"]],[float(j) for j in hist_json["data"]["y_axis"]]]
+    		#sorted_dt["id"] = "kb|histogramdatatable."+str(idc.allocate_id_range("kb|histogramdatatable",1))
+        	sorted_dt["id"] = params['output_obj_name']
+        	sorted_dt["name"] = hist_json["title"]
+        	res = ws_client.save_objects({"workspace": params['ws_id'],
+                                  "objects": [{
+                                                "type":"MAK.FloatDataTable",
+                                                "data": sorted_dt,
+                                                "name" : params['output_obj_name']}
+                                            ]
+
+                                 })
+	returnVal = { "workspace" : params['ws_id']  , "output" :  params['output_obj_name'] }
         #END createExpressionHistogram
 
         # At some point might do deeper type checking...
-        if not isinstance(returnVal, object):
+        if not isinstance(returnVal, dict):
             raise ValueError('Method createExpressionHistogram return value ' +
-                             'returnVal is not type object as required.')
+                             'returnVal is not type dict as required.')
         # return the results
         return [returnVal]
 

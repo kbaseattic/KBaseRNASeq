@@ -32,3 +32,24 @@ def gen_recursive_filelist(d):
     for root, directories, files in os.walk(d):
         for file in files:
             yield os.path.join(root, file)
+
+def get_dir(d):
+    """
+    Generate a list of all files present below a given directory.
+    """
+    
+    dirs = [os.path.join(d,o) for o in os.listdir(d) if os.path.isdir(os.path.join(d,o))]
+    return dirs[0]
+    #for directories, files in os.walk(d):
+    #    return os.path(directories)
+
+def get_file_with_suffix(d,suffix):
+    """
+    Generate a list of all files present below a given directory.
+    """
+
+    items = os.listdir(d)
+    for file in items:
+            if file.endswith(suffix):
+		return file.split(suffix)[0]
+    return None
