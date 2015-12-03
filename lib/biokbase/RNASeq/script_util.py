@@ -12,6 +12,7 @@ import time
 import traceback
 from requests_toolbelt import MultipartEncoder
 from multiprocessing import Pool
+from collections import Counter
 #from functools import partial
 import subprocess
 from zipfile import ZipFile
@@ -427,4 +428,18 @@ def parallel_function(f):
     from functools import partial
     # this assumes f has one argument, fairly easy with Python's global scope
     return partial(easy_parallize, f)
+
+
+def histogram(iterable, low, high, bins):
+    '''Count elements from the iterable into evenly spaced bins
+        >>> scores = [82, 85, 90, 91, 70, 87, 45]
+        >>> histogram(scores, 0, 100, 10)
+        [0, 0, 0, 0, 1, 0, 0, 1, 3, 2]
+    '''
+    step = (high - low + 0.0) / bins
+    ranges = range(int(round(low)),int(round(high)),int(round(step)))
+    dist = Counter((float(x) - low) // step for x in iterable)
+    return { "x_axis" : ranges , "y_axis" : [dist[b] for b in range(bins)] }
+
+
      
