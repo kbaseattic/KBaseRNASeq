@@ -10,6 +10,7 @@ import logging
 import time
 import subprocess
 import threading, traceback
+from collections import OrderedDict
 from pprint import pprint
 import script_util
 from biokbase.workspace.client import Workspace
@@ -732,12 +733,46 @@ class KBaseRNASeq:
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN createExpressionHistogram
+	user_token=ctx['token']
+        ws_client=Workspace(url=self.__WS_URL, token=user_token)
+	
+	try:
+        	obj = ws_client.get_objects([{'name' : params['expression_sample'],'workspace' : params['ws_id'] }])[0]
+        #return {"output" : str(status), "error": json_error}
+    	except Exception as e:
+        	raise FileNotFound("File Not Found: {}".format(e))
+    	if 'expression_levels' in obj['data']:
+        	hdict = obj['data']['expression_levels']
+        	tot_genes =  len(hdict)
+        	lmin = round(min([v for k,v in hdict.items()]))
+        	lmax = round(max([v for k,v in hdict.items()]))
+        	hist_dt = script_util.histogram(hdict.values(),lmin,lmax,int(params['number_of_bins']))
+        	title = "Histogram  - " + params['expression_sample']
+        	hist_json = {"title" :  title , "x_label" : "Gene Expression Level (FPKM)", "y_label" : "Number of Genes", "data" : hist_dt}
+        	sorted_dt = OrderedDict({ "id" : "", "name" : "","row_ids" : [] ,"column_ids" : [] ,"row_labels" : [] ,"column_labels" : [] , "data" : [] })
+        	sorted_dt["row_ids"] = [hist_json["x_label"]]
+        	sorted_dt["column_ids"] = [hist_json["y_label"]]
+        	sorted_dt['row_labels'] = [hist_json["x_label"]]
+        	sorted_dt["column_labels"] =  [hist_json["y_label"]]
+        	sorted_dt["data"] = [[float(i) for i in hist_json["data"]["x_axis"]],[float(j) for j in hist_json["data"]["y_axis"]]]
+    		#sorted_dt["id"] = "kb|histogramdatatable."+str(idc.allocate_id_range("kb|histogramdatatable",1))
+        	sorted_dt["id"] = params['output_obj_name']
+        	sorted_dt["name"] = hist_json["title"]
+        	res = ws_client.save_objects({"workspace": params['ws_id'],
+                                  "objects": [{
+                                                "type":"MAK.FloatDataTable",
+                                                "data": sorted_dt,
+                                                "name" : params['output_obj_name']}
+                                            ]
+
+                                 })
+	returnVal = { "workspace" : params['ws_id']  , "output" :  params['output_obj_name'] }
         #END createExpressionHistogram
 
         # At some point might do deeper type checking...
-        if not isinstance(returnVal, object):
+        if not isinstance(returnVal, dict):
             raise ValueError('Method createExpressionHistogram return value ' +
-                             'returnVal is not type object as required.')
+                             'returnVal is not type dict as required.')
         # return the results
         return [returnVal]
 
