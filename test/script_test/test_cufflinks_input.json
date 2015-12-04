@@ -5,8 +5,8 @@
 	"params":[ 	
 	{
   	"ws_id": "RNASeqTestData",
-	"alignment_sample_id" : "Ptrichocarpa_sample_alignment",
-	"annotation_gtf" : "kb_g.166828_reference_annotation",
-	"output_obj_name" : "test_Sample_cufflink"
+	"alignment_sample_id" : "Ecoli_SRR228085_tophat_output",
+	"annotation_gtf" : "Ecoli_K12_MG1655_NC_000913.3.gtf",
+	"output_obj_name" : "Ecoli_cufflinks"
 	}]	
 }

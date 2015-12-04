@@ -193,6 +193,10 @@
           "input_parameter" : "bowtie_index",
           "target_property" : "bowtie_index"
         },
+	{
+	  "input_parameter" : "output_obj_name",
+          "target_property" : "output_obj_name"
+	},
         {
           "input_parameter" : "read_mismatches",
           "target_property" : "read_mismatches"

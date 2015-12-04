@@ -693,18 +693,11 @@ class KBaseRNASeq:
                         raise Exception( "Unable to download shock file, {0}".format(e))
 	        try:
                     script_util.unzip_files(self.__LOGGER,os.path.join(cufflinks_dir,sample['data']['file']['file_name']),cufflinks_dir)
+		    #script_util.move_files(self.__LOGGER,handler_util.get_dir(cufflinks_dir),cufflinks_dir)
                 except Exception, e:
-                       self.__LOGGER.error("Unzip indexfile error: Please contact help@kbase.us")
                        raise Exception("Unzip indexfile error: Please contact help@kbase.us")
             else:
                 raise KBaseRNASeqException("No data was included in the referenced sample id");
-#        typedef structure {
-#                Handle handle;
-#                int size;       
-#                ws_genome_id genome_id;
-#                string genome_scientific_name;
-#        } ReferenceAnnotation;
-
 	    if 'data' in annotation_gtf and annotation_gtf['data'] is not None:
                 self.__LOGGER.info("Downloading ReferenceAnnotation")
                 try:
@@ -716,47 +709,55 @@ class KBaseRNASeq:
                 raise KBaseRNASeqException("No data was included in the referenced ReferenceAnnotation");
 
             ##  now ready to call
+	    output_dir = os.path.join(cufflinks_dir, params['output_obj_name'])
+	    input_file = os.path.join(cufflinks_dir,"accepted_hits.bam")
+	    print os.listdir(cufflinks_dir)
             try:
-                command_list= ['cufflinks', '-G', cufflinks_dir, agtf_fn, "{0}/accepted_hits.bam".format(cufflinks_dir)]
-                if 'num_threads' in params and params['num_threads'] is not None:
-                     command_list.append('-p')
-                     command_list.append(params['num_threads'])
-                for arg in ['min-intron-length','max-intron-length','overhang-tolerance']:
-                    if arg in params and params[arg] is not None:
-                         command_list.append('--{0}'.format(arg))
-                         command_list.append(params[arg])
+		cufflinks_command = "-o {0} -G {1} {2}".format(output_dir,agtf_fn,input_file)
+                #command_list= ['cufflinks', '-o', output_dir, '-G', agtf_fn, "{0}/accepted_hits.bam".format(cufflinks_dir)]
+                #if 'num_threads' in params and params['num_threads'] is not None:
+                #     command_list.append('-p')
+                #     command_list.append(params['num_threads'])
+                #for arg in ['min-intron-length','max-intron-length','overhang-tolerance']:
+                #    if arg in params and params[arg] is not None:
+                #         command_list.append('--{0}'.format(arg))
+                #         command_list.append(params[arg])
 
-                self.__LOGGER.info("Executing {0}".format(" ".join(command_list)))
-            
-                task = subprocess.Popen(command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                self.__LOGGER.info("Executing {0}".format(cufflinks_command))
+		script_util.runProgram(self.__LOGGER,"cufflinks",cufflinks_command,None,os.getcwd())
+                #task = subprocess.Popen(command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 
-                lines_iterator = iter(task.stdout.readline, b"")
-                for line in lines_iterator:
-                    self.callback(line)
+                #lines_iterator = iter(task.stdout.readline, b"")
+                #for line in lines_iterator:
+                #    self.callback(line)
   
-                sub_stdout, sub_stderr = task.communicate()
+                #sub_stdout, sub_stderr = task.communicate()
   
-                task_output = dict()
-                task_output["stdout"] = sub_stdout
-                task_output["stderr"] = sub_stderr
+                #task_output = dict()
+                #task_output["stdout"] = sub_stdout
+                #task_output["stderr"] = sub_stderr
                 
-                if task.returncode != 0:
-                    self.__LOGGER.info(sub_stdout)
-                    self.__LOGGER.info(sub_stderr)
-                    raise Exception(task_output["stdout"], task_output["stderr"])
+                #if task.returncode != 0:
+                #    self.__LOGGER.info(sub_stdout)
+                #    self.__LOGGER.info(sub_stderr)
+                #    raise Exception(task_output["stdout"], task_output["stderr"])
 
             except Exception,e:
-                raise KBaseRNASeqException("Error executing cufflinks {0},{1},{2}".format(" ".join(command_list),os.getcwd(),e))
+                raise KBaseRNASeqException("Error executing cufflinks {0},{1},{2}".format(" ".join(cufflinks_command),os.getcwd(),e))
             
             ##  compress and upload to shock
             try:
                 self.__LOGGER.info("Ziping output")
 
-                script_util.zip_files(self.__LOGGER,cufflinks_dir, "{0}.zip".format(params['output_obj_name']))
-                handle = hs.upload("{0}.zip".format(params['output_obj_name']))
+                script_util.zip_files(self.__LOGGER,output_dir, "{0}.zip".format(params['output_obj_name']))
+                #handle = hs.upload("{0}.zip".format(params['output_obj_name']))
             except Exception,e:
-                raise KBaseRNASeqException("Error executing cufflinks {0},{1},{2}".format(cl_args,os.getcwd(),e))
-		
+                raise KBaseRNASeqException("Error executing cufflinks {0},{1}".format(os.getcwd(),e))
+	    try:
+                handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
+            except Exception, e:
+                raise KBaseRNASeqException("Failed to upload the index: {0}".format(e))
+	
 
 	    ## Save object to workspace
 	    try:
@@ -787,9 +788,6 @@ class KBaseRNASeq:
 	except KBaseRNASeqException,e:
                  self.__LOGGER.exception("".join(traceback.format_exc()))
                  raise
-	except Exception,e:
-                 self.__LOGGER.exception("".join(traceback.format_exc()))
-                 raise KBaseRNASeqException("Error Running Bowtie2Call")
 
         #END CufflinksCall
 
