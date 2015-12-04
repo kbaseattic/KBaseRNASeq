@@ -57,6 +57,7 @@ class KBaseRNASeq:
     __BOWTIE2_DIR = 'bowtie2'
     __TOPHAT_DIR = 'tophat'
     __CUFFLINKS_DIR = 'cufflinks'
+    __PUBLIC_SHOCK_NODE = 'true'
     #END_CLASS_HEADER
 
     # config contains contents of config file in a hash or None if it couldn't
@@ -83,6 +84,8 @@ class KBaseRNASeq:
               self.__SVC_PASS = config['svc_pass']
 	if 'scripts_dir' in config:
 	      self.__SCRIPTS_DIR = config['scripts_dir']
+	if 'force_shock_node_2b_public' in config: # expect 'true' or 'false' string
+	      self.__PUBLIC_SHOCK_NODE = config['force_shock_node_2b_public']
 	
 	self.__SCRIPT_TYPE = { 'ContigSet_to_fasta' : 'ContigSet_to_fasta.py',
 			  	'RNASeqSample_to_fastq' : 'RNASeqSample_to_fastq',
@@ -755,6 +758,8 @@ class KBaseRNASeq:
                 raise KBaseRNASeqException("Error executing cufflinks {0},{1}".format(os.getcwd(),e))
 	    try:
                 handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
+                if self.__PUBLIC_SHOCK_NODE is 'true': 
+                    script_util.shock_node_2b_public(self.__LOGGER,node_id=handle['id'],shock_service_url=handle['url'],token=user_token)
             except Exception, e:
                 raise KBaseRNASeqException("Failed to upload the index: {0}".format(e))
 	
