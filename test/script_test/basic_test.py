@@ -40,6 +40,22 @@ class TestRNASeqMethods(TestRNASeqMethodsSetup):
         with open('test/script_test/bowtie_output.json') as o:
                 output =json.load(o)
         pprint(output)
+
+ def test_CufflinksCall(self):
+        print("\n\n----------- test CufflinksCall ----------")
+
+        out =call(["run_KBaseRNASeq.sh",
+        "test/script_test/test_cufflinks_input.json",
+        "test/script_test/test_cufflinks_output.json",
+        "test/script_test/token.txt"])
+
+        # print error code of Implementation
+        print(out);
+
+        with open('test/script_test/test_cufflinks_output.json') as o:
+                output =json.load(o)
+        pprint(output)
+  
   
  def test_associateReads(self):
        print("\n\n----------- test associateReads ----------")

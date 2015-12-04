@@ -86,6 +86,7 @@ class KBaseRNASeq:
 	
 	self.__SCRIPT_TYPE = { 'ContigSet_to_fasta' : 'ContigSet_to_fasta.py',
 			  	'RNASeqSample_to_fastq' : 'RNASeqSample_to_fastq',
+			  	'cufflinks' : 'cufflinks',
 				'tophat_script' : 'Tophat_pipeline.py'
 			     } 
 
@@ -660,6 +661,134 @@ class KBaseRNASeq:
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN CufflinksCall
+	user_token=ctx['token']
+        self.__LOGGER.info("Started CufflinksCall")
+        
+        ws_client=Workspace(url=self.__WS_URL, token=user_token)
+        hs = HandleService(url=self.__HS_URL, token=user_token)
+        try:
+            cufflinks_dir = self.__CUFFLINKS_DIR
+            if os.path.exists(cufflinks_dir):
+            #   files=glob.glob("%s/*" % tophat_dir)
+            #    for f in files: os.remove(f)
+                handler_util.cleanup(self.__LOGGER,cufflinks_dir)
+            if not os.path.exists(cufflinks_dir): os.makedirs(cufflinks_dir)
+
+            self.__LOGGER.info("Downloading Alignment Sample file")
+	    try:
+                sample,annotation_gtf = ws_client.get_objects(
+                                        [{'name' : params['alignment_sample_id'],'workspace' : params['ws_id']},
+                                         {'name' : params['annotation_gtf'], 'workspace' : params['ws_id']}])
+            except Exception,e:
+                 self.__LOGGER.exception("".join(traceback.format_exc()))
+                 raise KBaseRNASeqException("Error Downloading objects from the workspace ")
+	    opts_dict = { k:v for k,v in params.iteritems() if not k in ('ws_id','alignment_sample_id','annotation_gtf','num_threads','min-intron-length','max-intron-length','overhang-tolerance','output_obj_name') and v is not None }
+
+            ## Downloading data from shock
+	    if 'data' in sample and sample['data'] is not None:
+                self.__LOGGER.info("Downloading alignment sample")
+                try:
+                     script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=sample['data']['file']['id'],filename=sample['data']['file']['file_name'], directory=cufflinks_dir,token=user_token)
+                except Exception,e:
+                        raise Exception( "Unable to download shock file, {0}".format(e))
+	        try:
+                    script_util.unzip_files(self.__LOGGER,os.path.join(cufflinks_dir,sample['data']['file']['file_name']),cufflinks_dir)
+		    #script_util.move_files(self.__LOGGER,handler_util.get_dir(cufflinks_dir),cufflinks_dir)
+                except Exception, e:
+                       raise Exception("Unzip indexfile error: Please contact help@kbase.us")
+            else:
+                raise KBaseRNASeqException("No data was included in the referenced sample id");
+	    if 'data' in annotation_gtf and annotation_gtf['data'] is not None:
+                self.__LOGGER.info("Downloading ReferenceAnnotation")
+                try:
+                     agtf_fn = annotation_gtf['data']['handle']['file_name']
+                     script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=annotation_gtf['data']['handle']['id'],filename=agtf_fn, directory=".",token=user_token)
+                except Exception,e:
+                        raise Exception( "Unable to download shock file, {0}".format(e))
+            else:
+                raise KBaseRNASeqException("No data was included in the referenced ReferenceAnnotation");
+
+            ##  now ready to call
+	    output_dir = os.path.join(cufflinks_dir, params['output_obj_name'])
+	    input_file = os.path.join(cufflinks_dir,"accepted_hits.bam")
+	    print os.listdir(cufflinks_dir)
+            try:
+		cufflinks_command = "-o {0} -G {1} {2}".format(output_dir,agtf_fn,input_file)
+                #command_list= ['cufflinks', '-o', output_dir, '-G', agtf_fn, "{0}/accepted_hits.bam".format(cufflinks_dir)]
+                #if 'num_threads' in params and params['num_threads'] is not None:
+                #     command_list.append('-p')
+                #     command_list.append(params['num_threads'])
+                #for arg in ['min-intron-length','max-intron-length','overhang-tolerance']:
+                #    if arg in params and params[arg] is not None:
+                #         command_list.append('--{0}'.format(arg))
+                #         command_list.append(params[arg])
+
+                self.__LOGGER.info("Executing {0}".format(cufflinks_command))
+		script_util.runProgram(self.__LOGGER,"cufflinks",cufflinks_command,None,os.getcwd())
+                #task = subprocess.Popen(command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                
+                #lines_iterator = iter(task.stdout.readline, b"")
+                #for line in lines_iterator:
+                #    self.callback(line)
+  
+                #sub_stdout, sub_stderr = task.communicate()
+  
+                #task_output = dict()
+                #task_output["stdout"] = sub_stdout
+                #task_output["stderr"] = sub_stderr
+                
+                #if task.returncode != 0:
+                #    self.__LOGGER.info(sub_stdout)
+                #    self.__LOGGER.info(sub_stderr)
+                #    raise Exception(task_output["stdout"], task_output["stderr"])
+
+            except Exception,e:
+                raise KBaseRNASeqException("Error executing cufflinks {0},{1},{2}".format(" ".join(cufflinks_command),os.getcwd(),e))
+            
+            ##  compress and upload to shock
+            try:
+                self.__LOGGER.info("Ziping output")
+
+                script_util.zip_files(self.__LOGGER,output_dir, "{0}.zip".format(params['output_obj_name']))
+                #handle = hs.upload("{0}.zip".format(params['output_obj_name']))
+            except Exception,e:
+                raise KBaseRNASeqException("Error executing cufflinks {0},{1}".format(os.getcwd(),e))
+	    try:
+                handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
+            except Exception, e:
+                raise KBaseRNASeqException("Failed to upload the index: {0}".format(e))
+	
+
+	    ## Save object to workspace
+	    try:
+                self.__LOGGER.info("Saving Cufflinks object to workspace")
+                print annotation_gtf['data']['genome_id']
+                es_obj = { 'id' : '1234',
+                           'source_id' : 'source_id',
+                           'type' : 'RNA-Seq',
+                           'numerical_interpretation' : 'do_not_know',
+                           'external_source_date' : 'external_source_date',
+                           'expression_levels' : {},
+                           #'genome_id' : 'kb.g.3472',
+                           'genome_id' : annotation_gtf['data']['genome_id'],
+                           'data_source' : 'data_source',
+                           'shock_url' : "{0}/node/{1}".format(handle['url'],handle['id'])
+                }
+
+            	res= ws_client.save_objects(
+                                        {"workspace":params['ws_id'],
+                                         "objects": [{
+                                         "type":"KBaseExpression.ExpressionSample",
+                                         "data":es_obj,
+                                         "name":params['output_obj_name']}
+                                        ]})
+	    except Exception, e:
+                raise KBaseRNASeqException("Failed to upload the ExpressionSample: {0}".format(e))
+            returnVal = es_obj
+	except KBaseRNASeqException,e:
+                 self.__LOGGER.exception("".join(traceback.format_exc()))
+                 raise
+
         #END CufflinksCall
 
         # At some point might do deeper type checking...

@@ -149,6 +149,10 @@
           "input_parameter" : "bowtie2_index",
           "target_property" : "bowtie2_index"
         },
+	{
+	  "input_parameter" : "output_obj_name",
+          "target_property" : "output_obj_name"
+	},	
         {
           "input_parameter" : "quality_score",
           "target_property" : "quality_score"
