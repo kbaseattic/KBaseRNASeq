@@ -695,7 +695,7 @@ typedef structure{
 	string ws_id;
         RNASeqAnalysis analysis;
         string output_obj_name;
-        /*mapping <string Cuffmerge_opts, int num_threads> opts_dict; *
+        /*mapping <string Cuffmerge_opts, int num_threads> opts_dict; */
         }CuffmergeParams;
 
  
