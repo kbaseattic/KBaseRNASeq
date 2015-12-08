@@ -221,6 +221,45 @@ def upload_file_to_shock(logger,
     else:
         return result["data"]    
 
+def shock_node_2b_public(logger,
+                         node_id = None,
+                         shock_service_url = None,
+                         ssl_verify = True,
+                         token = None):
+    """
+    Ensure a node to be public
+    """
+
+    if token is None:
+        raise Exception("Authentication token required!")
+
+    if shock_service_url is None:
+        raise Exception("Shock URL is required!")
+    
+    if node_id is None:
+        raise Exception("Node ID is required!")
+
+    #build the header
+    header = dict()
+    header["Authorization"] = "Oauth {0}".format(token)
+
+
+    logger.info("-X PUT {0}/node/{1}/acl/public_read".format(shock_service_url, node_id))
+    try:
+        response = requests.put("{0}/node/{1}/acl/public_read".format(shock_service_url, node_id), headers=header, allow_redirects=True, verify=ssl_verify)
+    except:
+        raise    
+
+    if not response.ok:
+        response.raise_for_status()
+
+    result = response.json()
+
+    if result['error']:            
+        raise Exception(result['error'][0])
+    else:
+        return result["data"]    
+
 
 def getHandles(logger = None,
                shock_service_url = None,

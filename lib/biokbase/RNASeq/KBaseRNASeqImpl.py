@@ -18,6 +18,7 @@ import handler_utils as handler_util
 from biokbase.auth import Token
 from mpipe import OrderedStage , Pipeline
 import  multiprocessing as mp
+import re
 
 try:
     from biokbase.HandleService.Client import HandleService
@@ -57,6 +58,9 @@ class KBaseRNASeq:
     __BOWTIE2_DIR = 'bowtie2'
     __TOPHAT_DIR = 'tophat'
     __CUFFLINKS_DIR = 'cufflinks'
+    __CUFFMERGE_DIR = 'cuffmerge'
+    __PUBLIC_SHOCK_NODE = 'true'
+    __ASSEMBLY_GTF_FN = 'assembly_GTF_list.txt'
     #END_CLASS_HEADER
 
     # config contains contents of config file in a hash or None if it couldn't
@@ -83,6 +87,8 @@ class KBaseRNASeq:
               self.__SVC_PASS = config['svc_pass']
 	if 'scripts_dir' in config:
 	      self.__SCRIPTS_DIR = config['scripts_dir']
+	if 'force_shock_node_2b_public' in config: # expect 'true' or 'false' string
+	      self.__PUBLIC_SHOCK_NODE = config['force_shock_node_2b_public']
 	
 	self.__SCRIPT_TYPE = { 'ContigSet_to_fasta' : 'ContigSet_to_fasta.py',
 			  	'RNASeqSample_to_fastq' : 'RNASeqSample_to_fastq',
@@ -755,6 +761,8 @@ class KBaseRNASeq:
                 raise KBaseRNASeqException("Error executing cufflinks {0},{1}".format(os.getcwd(),e))
 	    try:
                 handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
+                if self.__PUBLIC_SHOCK_NODE is 'true': 
+                    script_util.shock_node_2b_public(self.__LOGGER,node_id=handle['id'],shock_service_url=handle['url'],token=user_token)
             except Exception, e:
                 raise KBaseRNASeqException("Failed to upload the index: {0}".format(e))
 	
@@ -794,6 +802,152 @@ class KBaseRNASeq:
         # At some point might do deeper type checking...
         if not isinstance(returnVal, object):
             raise ValueError('Method CufflinksCall return value ' +
+                             'returnVal is not type object as required.')
+        # return the results
+        return [returnVal]
+
+    def CuffmergeCall(self, ctx, params):
+        # ctx is the context object
+        # return variables are: returnVal
+        #BEGIN CuffmergeCall
+	user_token=ctx['token']
+        self.__LOGGER.info("Started CuffmergeCall")
+        
+        ws_client=Workspace(url=self.__WS_URL, token=user_token)
+        hs = HandleService(url=self.__HS_URL, token=user_token)
+        try:
+            cuffmerge_dir = self.__CUFFMERGE_DIR
+            if os.path.exists(cuffmerge_dir):
+            #   files=glob.glob("%s/*" % tophat_dir)
+            #    for f in files: os.remove(f)
+                handler_util.cleanup(self.__LOGGER,cuffmerge_dir)
+            if not os.path.exists(cuffmerge_dir): os.makedirs(cuffmerge_dir)
+
+            self.__LOGGER.info("Downloading Analysis file")
+	    try:
+                analysis = ws_client.get_objects(
+                                        [{'name' : params['analysis'],'workspace' : params['ws_id']}])[0]
+            except Exception,e:
+                 self.__LOGGER.exception("".join(traceback.format_exc()))
+                 raise KBaseRNASeqException("Error Downloading objects from the workspace ")
+
+            ## Downloading data from shock
+            list_file = open(self.__ASSEMBLY_GTF_FN,'w')
+	    if 'data' in analysis : #and analysis['data'] is not None:
+                self.__LOGGER.info("Downloading each expression")
+
+                shock_re =  re.compile(r'^(.*)/node/([^?]*)\??')
+                # TODO: Change expression_values object design
+                for le in analysis['data']['expression_values']:
+                  for k,v in le.items():
+                    ko,vo=ws_client.get_objects([{'ref' : k}, {'ref' : v} ])
+                    sp = os.path.join(cuffmerge_dir, ko['info'][2]) 
+                    if not os.path.exists(sp): os.makedirs(sp)
+                   
+                    if 'shock_url' is not in vo['data']:
+                        self.__LOGGER.info("{0} does not contain shock_url and we skip {1}".format(vo['info'][2], v))
+                        next 
+
+                    se = shock_re.search(vo['data']['shock_url'])
+                    if se is None: 
+                        self.__LOGGER.info("{0} does not contain shock_url and we skip {1}".format(vo['info'][2], v))
+                        next 
+
+                    efn = "{0}.zip".format(vo['info'][2])
+                    try:
+                         script_util.download_file_from_shock(self.__LOGGER, shock_service_url=se.group(1), shock_id=se.group(2),filename=efn, directory=cuffmerge_dir,token=user_token)
+                    except Exception,e:
+                            raise Exception( "Unable to download shock file, {0}".format(e))
+	            try:
+                        script_util.unzip_files(self.__LOGGER,os.path.join(cuffmerge_dir,efn),sp)
+                    except Exception, e:
+                           raise Exception("Unzip indexfile error: Please contact help@kbase.us")
+                    if not os.path.exists("{0}/transcripts.gtf\n".format(sp)):
+                       # Would it be better to be skipping this? if so, replace Exception to be next
+                       raise Exception("{0} does not contain transcripts.gtf:  {1}".format(vo['info'][2], v))
+                    list_file.write("{0}/transcripts.gtf\n".format(sp))
+            else:
+                raise KBaseRNASeqException("No data was included in the referenced analysis");
+            list_file.close()
+
+            ##  now ready to call
+	    output_dir = os.path.join(cuffmerge_dir, params['output_obj_name'])
+            try:
+                # TODO: add reference GTF later, seems googledoc command looks wrong
+		cuffmerge_command = "-o {0} {1}".format(output_dir,self.__ASSEMBLY_GTF_FN)
+                #command_list= ['cuffmerge', '-o', output_dir, '-G', agtf_fn, "{0}/accepted_hits.bam".format(cuffmerge_dir)]
+                #if 'num_threads' in params and params['num_threads'] is not None:
+                #     command_list.append('-p')
+                #     command_list.append(params['num_threads'])
+                #for arg in ['min-intron-length','max-intron-length','overhang-tolerance']:
+                #    if arg in params and params[arg] is not None:
+                #         command_list.append('--{0}'.format(arg))
+                #         command_list.append(params[arg])
+
+                self.__LOGGER.info("Executing {0}".format(cuffmerge_command))
+		script_util.runProgram(self.__LOGGER,"cuffmerge",cuffmerge_command,None,os.getcwd())
+                #task = subprocess.Popen(command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                
+                #lines_iterator = iter(task.stdout.readline, b"")
+                #for line in lines_iterator:
+                #    self.callback(line)
+  
+                #sub_stdout, sub_stderr = task.communicate()
+  
+                #task_output = dict()
+                #task_output["stdout"] = sub_stdout
+                #task_output["stderr"] = sub_stderr
+                
+                #if task.returncode != 0:
+                #    self.__LOGGER.info(sub_stdout)
+                #    self.__LOGGER.info(sub_stderr)
+                #    raise Exception(task_output["stdout"], task_output["stderr"])
+
+            except Exception,e:
+                raise KBaseRNASeqException("Error executing cuffmerge {0},{1},{2}".format(" ".join(cuffmerge_command),os.getcwd(),e))
+            
+            ##  compress and upload to shock
+            try:
+                self.__LOGGER.info("Ziping output")
+
+                script_util.zip_files(self.__LOGGER,output_dir, "{0}.zip".format(params['output_obj_name']))
+                #handle = hs.upload("{0}.zip".format(params['output_obj_name']))
+            except Exception,e:
+                raise KBaseRNASeqException("Error executing cuffmerge {0},{1}".format(os.getcwd(),e))
+	    try:
+                handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
+                if self.__PUBLIC_SHOCK_NODE is 'true': 
+                    script_util.shock_node_2b_public(self.__LOGGER,node_id=handle['id'],shock_service_url=handle['url'],token=user_token)
+            except Exception, e:
+                raise KBaseRNASeqException("Failed to upload the index: {0}".format(e))
+	
+
+	    ## Save object to workspace
+	    try:
+                self.__LOGGER.info("Saving Cuffmerge object to workspace")
+                cm_obj = { 'handle' : handle,
+                           'analysis' : analysis['data']
+                }
+
+            	res= ws_client.save_objects(
+                                        {"workspace":params['ws_id'],
+                                         "objects": [{
+                                         "type":"KBaseRNASeq.RNASeqCuffmergetranscriptome",
+                                         "data":cm_obj,
+                                         "name":params['output_obj_name']}
+                                        ]})
+	    except Exception, e:
+                raise KBaseRNASeqException("Failed to upload the KBaseRNASeq.RNASeqCuffmergetranscriptome: {0}".format(e))
+            returnVal = cm_obj
+	except KBaseRNASeqException,e:
+                 self.__LOGGER.exception("".join(traceback.format_exc()))
+                 raise
+
+        #END CuffmergeCall
+
+        # At some point might do deeper type checking...
+        if not isinstance(returnVal, object):
+            raise ValueError('Method CuffmergeCall return value ' +
                              'returnVal is not type object as required.')
         # return the results
         return [returnVal]
