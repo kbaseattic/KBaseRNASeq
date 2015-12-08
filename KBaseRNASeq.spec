@@ -290,7 +290,7 @@
 
 /*
       Id for expression sample
-      @id ws KBaseRNASeq.RNASeqSampleExpression
+      @id ws KBaseExpression.ExpressionSample
 
    */  
         typedef string ws_expression_sample_id;
@@ -440,7 +440,7 @@
 	@metadata ws length(analysis.sample_ids)
 	@metadata ws length(analysis.tissue)
 	@metadata ws length(analysis.condition)
-/*
+*/
 
    typedef structure{
 	Handle file;
