@@ -840,13 +840,19 @@ class KBaseRNASeq:
                 # TODO: Change expression_values object design
                 for le in analysis['data']['expression_values']:
                   for k,v in le.items():
-                    #v = analysis['data']['expression_values'][k]
                     ko,vo=ws_client.get_objects([{'ref' : k}, {'ref' : v} ])
-                    sp = os.path.join(cuffmerge_dir, ko['info'][2]) # TODO: double check name
+                    sp = os.path.join(cuffmerge_dir, ko['info'][2]) 
                     if not os.path.exists(sp): os.makedirs(sp)
                    
+                    if 'shock_url' is not in vo['data']:
+                        self.__LOGGER.info("{0} does not contain shock_url and we skip {1}".format(vo['info'][2], v))
+                        next 
+
                     se = shock_re.search(vo['data']['shock_url'])
-                    if se is None: next # TODO: add warning later
+                    if se is None: 
+                        self.__LOGGER.info("{0} does not contain shock_url and we skip {1}".format(vo['info'][2], v))
+                        next 
+
                     efn = "{0}.zip".format(vo['info'][2])
                     try:
                          script_util.download_file_from_shock(self.__LOGGER, shock_service_url=se.group(1), shock_id=se.group(2),filename=efn, directory=cuffmerge_dir,token=user_token)
@@ -854,11 +860,12 @@ class KBaseRNASeq:
                             raise Exception( "Unable to download shock file, {0}".format(e))
 	            try:
                         script_util.unzip_files(self.__LOGGER,os.path.join(cuffmerge_dir,efn),sp)
-                        # TODO: add sanity check for transcripts.gtf
-                        list_file.write("{0}/transcripts.gtf\n".format(sp))
-	                #script_util.move_files(self.__LOGGER,handler_util.get_dir(cuffmerge_dir),cuffmerge_dir)
                     except Exception, e:
                            raise Exception("Unzip indexfile error: Please contact help@kbase.us")
+                    if not os.path.exists("{0}/transcripts.gtf\n".format(sp)):
+                       # Would it be better to be skipping this? if so, replace Exception to be next
+                       raise Exception("{0} does not contain transcripts.gtf:  {1}".format(vo['info'][2], v))
+                    list_file.write("{0}/transcripts.gtf\n".format(sp))
             else:
                 raise KBaseRNASeqException("No data was included in the referenced analysis");
             list_file.close()
