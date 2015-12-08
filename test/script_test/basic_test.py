@@ -26,35 +26,35 @@ class TestRNASeqMethodsSetup(unittest.TestCase):
 # Define all our other test cases here
 class TestRNASeqMethods(TestRNASeqMethodsSetup): 
 
-# def test_SetupRNASeqAnalysis(self):
-#        print("\n\n----------- test SetupRNASeqAnalysis ----------")
-#
-#        out =call(["run_KBaseRNASeq.sh",
-#        "test/script_test/m_setupRNASeq.json",
-#        "test/script_test/bowtie_output.json",
-#        "test/script_test/token.txt"])
-#
-#        # print error code of Implementation
-#        print(out);
-#
-#        with open('test/script_test/bowtie_output.json') as o:
-#                output =json.load(o)
-#        pprint(output)
-#
-# def test_CufflinksCall(self):
-#        print("\n\n----------- test CufflinksCall ----------")
-#
-#        out =call(["run_KBaseRNASeq.sh",
-#        "test/script_test/test_cufflinks_input.json",
-#        "test/script_test/test_cufflinks_output.json",
-#        "test/script_test/token.txt"])
-#
-#        # print error code of Implementation
-#        print(out);
-#
-#        with open('test/script_test/test_cufflinks_output.json') as o:
-#                output =json.load(o)
-#        pprint(output)
+ def test_SetupRNASeqAnalysis(self):
+        print("\n\n----------- test SetupRNASeqAnalysis ----------")
+
+        out =call(["run_KBaseRNASeq.sh",
+        "test/script_test/m_setupRNASeq.json",
+        "test/script_test/bowtie_output.json",
+        "test/script_test/token.txt"])
+
+        # print error code of Implementation
+        print(out);
+
+        with open('test/script_test/bowtie_output.json') as o:
+                output =json.load(o)
+        pprint(output)
+
+ def test_CufflinksCall(self):
+        print("\n\n----------- test CufflinksCall ----------")
+
+        out =call(["run_KBaseRNASeq.sh",
+        "test/script_test/test_cufflinks_input.json",
+        "test/script_test/test_cufflinks_output.json",
+        "test/script_test/token.txt"])
+
+        # print error code of Implementation
+        print(out);
+
+        with open('test/script_test/test_cufflinks_output.json') as o:
+                output =json.load(o)
+        pprint(output)
   
  def test_CuffmergeCall(self):
         print("\n\n----------- test CuffmergeCall ----------")
@@ -72,80 +72,80 @@ class TestRNASeqMethods(TestRNASeqMethodsSetup):
         pprint(output)
   
   
-# def test_associateReads(self):
-#       print("\n\n----------- test associateReads ----------")
-#
-#       out =call(["run_KBaseRNASeq.sh",
-#       "test/script_test/test_associateReads_input.json",
-#       "test/script_test/test_associateReads_output.json",
-#       "test/script_test/token.txt"])
-#
-#       # print error code of Implementation
-#       print(out);
-#
-#       with open('test/script_test/test_associateReads_output.json') as o:
-#               output =json.load(o)
-#       pprint(output)
-#
-# def test_BuildBowtie2Index(self):
-#       print("\n\n----------- test BuildBowtie2index ----------")
-#
-#       out =call(["run_KBaseRNASeq.sh",
-#       "test/script_test/test_bowtie2index_input.json",
-#       "test/script_test/test_bowtie2index_output.json",
-#       "test/script_test/token.txt"])
-#
-#       # print error code of Implementation
-#       print(out);
-#
-#       with open('test/script_test/test_bowtie2index_output.json') as o:
-#               output =json.load(o)
-#       pprint(output)
-#
-# def test_Bowtie2Call(self):
-#        print("\n\n----------- test Bowtie2Call ----------")
-#
-#        out =call(["run_KBaseRNASeq.sh",
-#        "test/script_test/bowtie2_input_ecoli.json",
-#        "test/script_test/bowtie2_output.json",
-#        "test/script_test/token.txt"])
-#
-#        # print error code of Implementation
-#        print(out);
-#
-#        with open('test/script_test/bowtie2_output.json') as o:
-#                output =json.load(o)
-#        pprint(output)
-#
-# def test_TophatCall(self):
-#        print("\n\n----------- test TophatCall ----------")
-#
-#        out =call(["run_KBaseRNASeq.sh",
-#        "test/script_test/tophat_input_ecoli.json",
-#        "test/script_test/tophat_output.json",
-#        "test/script_test/token.txt"])
-#
-#        # print error code of Implementation
-#        print(out);
-#
-#        with open('test/script_test/tophat_output.json') as o:
-#                output =json.load(o)
-#        pprint(output)
-#
-# def test_getAlignmentStats(self):
-#       print("\n\n----------- test Get Alignment Statistics ----------")
-#
-#       out =call(["run_KBaseRNASeq.sh",
-#       "test/script_test/test_getAlignmentStats_input.json",
-#       "test/script_test/test_getAlignmentStats_output.json",
-#       "test/script_test/token.txt"])
-#
-#       # print error code of Implementation
-#       print(out);
-#
-#       with open('test/script_test/test_getAlignmentStats_output.json') as o:
-#               output =json.load(o)
-#       pprint(output)
+ def test_associateReads(self):
+       print("\n\n----------- test associateReads ----------")
+
+       out =call(["run_KBaseRNASeq.sh",
+       "test/script_test/test_associateReads_input.json",
+       "test/script_test/test_associateReads_output.json",
+       "test/script_test/token.txt"])
+
+       # print error code of Implementation
+       print(out);
+
+       with open('test/script_test/test_associateReads_output.json') as o:
+               output =json.load(o)
+       pprint(output)
+
+ def test_BuildBowtie2Index(self):
+       print("\n\n----------- test BuildBowtie2index ----------")
+
+       out =call(["run_KBaseRNASeq.sh",
+       "test/script_test/test_bowtie2index_input.json",
+       "test/script_test/test_bowtie2index_output.json",
+       "test/script_test/token.txt"])
+
+       # print error code of Implementation
+       print(out);
+
+       with open('test/script_test/test_bowtie2index_output.json') as o:
+               output =json.load(o)
+       pprint(output)
+
+ def test_Bowtie2Call(self):
+        print("\n\n----------- test Bowtie2Call ----------")
+
+        out =call(["run_KBaseRNASeq.sh",
+        "test/script_test/bowtie2_input_ecoli.json",
+        "test/script_test/bowtie2_output.json",
+        "test/script_test/token.txt"])
+
+        # print error code of Implementation
+        print(out);
+
+        with open('test/script_test/bowtie2_output.json') as o:
+                output =json.load(o)
+        pprint(output)
+
+ def test_TophatCall(self):
+        print("\n\n----------- test TophatCall ----------")
+
+        out =call(["run_KBaseRNASeq.sh",
+        "test/script_test/tophat_input_ecoli.json",
+        "test/script_test/tophat_output.json",
+        "test/script_test/token.txt"])
+
+        # print error code of Implementation
+        print(out);
+
+        with open('test/script_test/tophat_output.json') as o:
+                output =json.load(o)
+        pprint(output)
+
+ def test_getAlignmentStats(self):
+       print("\n\n----------- test Get Alignment Statistics ----------")
+
+       out =call(["run_KBaseRNASeq.sh",
+       "test/script_test/test_getAlignmentStats_input.json",
+       "test/script_test/test_getAlignmentStats_output.json",
+       "test/script_test/token.txt"])
+
+       # print error code of Implementation
+       print(out);
+
+       with open('test/script_test/test_getAlignmentStats_output.json') as o:
+               output =json.load(o)
+       pprint(output)
 
 #start the tests if run as a script
 if __name__ == '__main__':
