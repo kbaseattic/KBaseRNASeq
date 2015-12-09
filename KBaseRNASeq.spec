@@ -42,6 +42,7 @@
    
    /* 
      Id for the handle object
+     @id handle
    */
 	typedef string HandleId;
  
