@@ -7,7 +7,7 @@
   "categories" : ["active"],
   "widgets" : {
     "input" : null,
-    "output" : "kbaseRNASeqHistogram"
+    "output" : null
   },
   "parameters" : [ {
     "id" : "rnaseq_exp_details",
