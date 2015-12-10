@@ -48,6 +48,14 @@
     ],
     "output_mapping": [
 	{
+         "input_parameter": "output_obj_name",
+         "target_property": "output"
+        },
+        {
+          "narrative_system_variable": "workspace",
+          "target_property": "workspace"
+        },
+	{
 	 "service_method_output_path": [0],
          "target_property": "createExpressionMatrix"
 	}

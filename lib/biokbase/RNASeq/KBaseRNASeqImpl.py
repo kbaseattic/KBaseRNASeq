@@ -840,25 +840,38 @@ class KBaseRNASeq:
                 # TODO: Change expression_values object design
                 for le in analysis['data']['expression_values']:
                   for k,v in le.items():
-                    #v = analysis['data']['expression_values'][k]
                     ko,vo=ws_client.get_objects([{'ref' : k}, {'ref' : v} ])
-                    sp = os.path.join(cuffmerge_dir, ko['info'][2]) # TODO: double check name
-                    if not os.path.exists(sp): os.makedirs(sp)
+		    print ko['info']
+                    sp = os.path.join(cuffmerge_dir, ko['info'][1]) 
+                    print sp
+		    if not os.path.exists(sp): os.makedirs(sp)
                    
+                    if 'shock_url' not in vo['data']:
+                        self.__LOGGER.info("{0} does not contain shock_url and we skip {1}".format(vo['info'][1], v))
+                        next 
+
                     se = shock_re.search(vo['data']['shock_url'])
-                    if se is None: next # TODO: add warning later
-                    efn = "{0}.zip".format(vo['info'][2])
+                    if se is None: 
+                        self.__LOGGER.info("{0} does not contain shock_url and we skip {1}".format(vo['info'][1], v))
+                        next 
+
+                    efn = "{0}.zip".format(vo['info'][1])
+		    print efn
                     try:
                          script_util.download_file_from_shock(self.__LOGGER, shock_service_url=se.group(1), shock_id=se.group(2),filename=efn, directory=cuffmerge_dir,token=user_token)
                     except Exception,e:
                             raise Exception( "Unable to download shock file, {0}".format(e))
 	            try:
                         script_util.unzip_files(self.__LOGGER,os.path.join(cuffmerge_dir,efn),sp)
-                        # TODO: add sanity check for transcripts.gtf
-                        list_file.write("{0}/transcripts.gtf\n".format(sp))
-	                #script_util.move_files(self.__LOGGER,handler_util.get_dir(cuffmerge_dir),cuffmerge_dir)
+			print os.listdir(sp)
                     except Exception, e:
                            raise Exception("Unzip indexfile error: Please contact help@kbase.us")
+                    if not os.path.exists("{0}/transcripts.gtf\n".format(sp)):
+		       print "{0}/transcripts.gtf\n".format(sp)
+                       # Would it be better to be skipping this? if so, replace Exception to be next
+		       next		   
+                       #raise Exception("{0} does not contain transcripts.gtf:  {1}".format(vo['info'][1], v))
+                    list_file.write("{0}/transcripts.gtf\n".format(sp))
             else:
                 raise KBaseRNASeqException("No data was included in the referenced analysis");
             list_file.close()
@@ -913,12 +926,14 @@ class KBaseRNASeq:
                     script_util.shock_node_2b_public(self.__LOGGER,node_id=handle['id'],shock_service_url=handle['url'],token=user_token)
             except Exception, e:
                 raise KBaseRNASeqException("Failed to upload the index: {0}".format(e))
-	
+	   
+            analysis['data']['transcriptome_id'] = params['output_obj_name']	
+                # raise Exception(task_output["stdout"], task_output["stderr"])
 
 	    ## Save object to workspace
 	    try:
                 self.__LOGGER.info("Saving Cuffmerge object to workspace")
-                cm_obj = { 'handle' : handle,
+                cm_obj = { 'file' : handle,
                            'analysis' : analysis['data']
                 }
 
