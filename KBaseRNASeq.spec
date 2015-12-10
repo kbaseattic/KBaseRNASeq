@@ -1,6 +1,5 @@
 #include <KBaseAssembly.spec>
 #include <KBaseExpression.spec>
-#include <MAK.spec>
 
  module KBaseRNASeq{
 
@@ -20,6 +19,20 @@
       
 	typedef string ws_genome_id;
  
+   /*
+      Id for expression sample
+      @id ws KBaseExpression.ExpressionSample
+
+   */
+        typedef string ws_expression_sample_id;
+
+   /* 
+    	List of Expression sample ids
+
+   */
+	
+   	typedef list<ws_expression_sample_id> ws_expression_sample_ids;
+  
    /* 
       Id for KBaseAssembly.SingleEndLibrary
       @id ws KBaseAssembly.SingleEndLibrary
@@ -249,60 +262,6 @@
 
  typedef string ws_samplealignment_id;
 
-/*
-  The workspace object for a RNASeqSampleExpression
-  @optional description sample_annotations title data_quality_level original_median external_source_date default_control_sample averaged_from_samples strain source file processing_comments characteristics
-  @metadata ws id
-  @metadata ws type
-  @metadata ws numerical_interpretation
-  @metadata ws description
-  @metadata ws title
-  @metadata ws external_source_date
-  @metadata ws genome_id
-  @metadata ws platform
-  @metadata ws strain
-  @metadata ws source
-  @metadata ws characteristics
-  @metadata ws processing_comments
-*/
-  	
-   typedef structure {
-        string id;
-        string type;
-        string numerical_interpretation;
-        string description;
-        string title;
-        int data_quality_level;
-        float original_median;
-        string external_source_date;
-        list<mapping<string feature_id,float feature_value>> expression_levels; 
-        ws_genome_id genome_id; 
-        sample_annotations sample_annotations;
-        string  platform; 
-        string default_control_sample; 
-        string averaged_from_samples; 
-        string strain; 
-        string source; 
-        Handle file;
-        string processing_comments;
-        string characteristics;
-    }RNASeqSampleExpression;
-
-/*
-      Id for expression sample
-      @id ws KBaseRNASeq.RNASeqSampleExpression
-
-   */  
-        typedef string ws_expression_sample_id;
-
-   /*  
-        List of Expression sample ids
-
-   */  
-
-        typedef list<ws_expression_sample_id> ws_expression_sample_ids;
-
-
 /* Structure Read_mapping_sections
    @optional introns exons splice_junctions intergenic_regions
 */
@@ -330,31 +289,7 @@
         int mapped_reads;
         int total_reads;
         }AlignmentStatsResults;
-/* 
-    Object for the cummerbund plot
-    @optional png_json_handle plot_title plot_description
-*/
-    typedef structure {    
-       Handle png_handle;
-       Handle png_json_handle;
-       string plot_title;
-       string plot_description;
-       }cummerbundplot;
-/*
-  List of cummerbundplot
-*/
 
-    
-    typedef list<cummerbundplot> cummerbundplotSet;
-
-/*
-   Object type for the cummerbund_output   
-*/
-    typedef structure {
-       cummerbundplotSet cummerbundplotSet;
-       string rnaseq_experiment_id;
-       string cuffdiff_input_id;
-       }cummerbund_output;
 /*
   Object type to define replicate group
 /*
@@ -577,7 +512,7 @@ async funcdef BuildBowtie2Index(Bowtie2IndexParams params)
 	}Bowtie2Params;
 
 async funcdef Bowtie2Call(Bowtie2Params params) 
-     returns(UnspecifiedObject) authentication required;
+     returns(string job_id) authentication required;
 
 typedef structure{
      string read-mismatches;
@@ -695,7 +630,7 @@ typedef structure{
 	string ws_id;
         RNASeqAnalysis analysis;
         string output_obj_name;
-        /*mapping <string Cuffmerge_opts, int num_threads> opts_dict; */
+        /*mapping <string Cuffmerge_opts, int num_threads> opts_dict; *
         }CuffmergeParams;
 
  
@@ -758,7 +693,7 @@ typedef structure{
         }ExpressionHistogramParams;
         
 async funcdef createExpressionHistogram(ExpressionHistogramParams params)
-   returns (MAK.FloatDataTable) authentication required;
+   returns (UnspecifiedObject) authentication required;
 
 typedef structure{
 	string ws_id;
