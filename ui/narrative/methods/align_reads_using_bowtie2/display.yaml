@@ -71,3 +71,12 @@ description : |
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
     Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Fei He, Vivek Kumar</p>
     
+publications :
+    -
+        display-text: |
+            Langmead B, Salzberg SL (2012) Fast gapped-read alignment with Bowtie 2. Nature Methods. 9 (4):357–359.
+        link: http://www.ncbi.nlm.nih.gov/pubmed/22388286
+    -    
+        display-text: |
+            Langmead B, Trapnell C, Pop M, Salzberg SL (2009) Ultrafast and memory-efficient alignment of short DNA sequences to the human genome. Genome Biology. 10:R25.
+        link: http://www.ncbi.nlm.nih.gov/pmc/articles/PMC2690996/
