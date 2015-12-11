@@ -278,8 +278,8 @@ class KBaseRNASeq:
 			raise KBaseRNASeqException("Failed to compress the index: {0}".format(e))
 	    ## Upload the file using handle service
 		try:
-			#bowtie_handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)	
-			 bowtie_handle = hs.upload(out_file_path)
+			 bowtie_handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)	
+			#bowtie_handle = hs.upload(out_file_path)
 			 if self.__PUBLIC_SHOCK_NODE is 'true': 
                 	 	script_util.shock_node_2b_public(self.__LOGGER,node_id=bowtie_handle['id'],shock_service_url=bowtie_handle['url'],token=user_token)
 			 
@@ -424,10 +424,11 @@ class KBaseRNASeq:
                 raise KBaseRNASeqException("Failed to compress the index: {0}".format(e))
             ## Upload the file using handle service
             try:
-		bowtie2_handle = hs.upload(out_file_path)
+		
+                bowtie2_handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
+		#bowtie2_handle = hs.upload(out_file_path)
 		if self.__PUBLIC_SHOCK_NODE is 'true':
                       script_util.shock_node_2b_public(self.__LOGGER,node_id=bowtie2_handle['id'],shock_service_url=bowtie2_handle['url'],token=user_token)
-                #bowtie2_handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
             except Exception, e:
                 raise KBaseRNASeqException("Failed to upload the index: {0}".format(e))
             bowtie2_out = { "file" : bowtie2_handle ,"size" : os.path.getsize(out_file_path), "aligned_using" : "bowtie2" , "aligner_version" : "2.2.6","metadata" :  sample['data']['metadata']}
@@ -654,7 +655,8 @@ class KBaseRNASeq:
                 raise KBaseRNASeqException("Failed to compress the index: {0}".format(e))
             ## Upload the file using handle service
             try:
-		 tophat_handle = hs.upload(out_file_path)
+		# tophat_handle = hs.upload(out_file_path)
+                 tophat_handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
 		 if self.__PUBLIC_SHOCK_NODE is 'true':
                         script_util.shock_node_2b_public(self.__LOGGER,node_id=tophat_handle['id'],shock_service_url=tophat_handle['url'],token=user_token)	
                 #tophat_handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
@@ -809,8 +811,8 @@ class KBaseRNASeq:
             except Exception,e:
                 raise KBaseRNASeqException("Error executing cufflinks {0},{1}".format(os.getcwd(),e))
 	    try:
-		handle = hs.upload("{0}.zip".format(params['output_obj_name']))
-                #handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
+		#handle = hs.upload("{0}.zip".format(params['output_obj_name']))
+                handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
                 if self.__PUBLIC_SHOCK_NODE is 'true': 
                     script_util.shock_node_2b_public(self.__LOGGER,node_id=handle['id'],shock_service_url=handle['url'],token=user_token)
             except Exception, e:
@@ -993,7 +995,7 @@ class KBaseRNASeq:
             except Exception,e:
                 raise KBaseRNASeqException("Error executing cuffmerge {0},{1}".format(os.getcwd(),e))
 	    try:
-		handle = hs.upload("{0}.zip".format(params['output_obj_name']))
+		#handle = hs.upload("{0}.zip".format(params['output_obj_name']))
                 #handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
                 if self.__PUBLIC_SHOCK_NODE is 'true': 
                     script_util.shock_node_2b_public(self.__LOGGER,node_id=handle['id'],shock_service_url=handle['url'],token=user_token)
