@@ -1,0 +1,12 @@
+{	
+	"version":"1.1",
+	"method":"KBaseRNASeq.CufflinksCall",
+	"context": null,
+	"params":[ 	
+	{
+  	"ws_id": "RNASeqTestData",
+	"alignment_sample_id" : "Ecoli_SRR228085_tophat_output",
+	"annotation_gtf" : "Ecoli_K12_MG1655_NC_000913.3.gtf",
+	"output_obj_name" : "Ecoli_cufflinks"
+	}]	
+}
