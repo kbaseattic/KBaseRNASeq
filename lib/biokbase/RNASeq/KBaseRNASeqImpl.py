@@ -243,7 +243,7 @@ class KBaseRNASeq:
     
         #svc_token = Token(user_id=self.__SVC_USER, password=self.__SVC_PASS).token
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
-	#hs = HandleService(url=self.__HS_URL, token=user_token)
+	hs = HandleService(url=self.__HS_URL, token=user_token)
 	try:
 	        self.__LOGGER.info( "Downloading KBaseGenome.ContigSet object from workspace")
 	    ## Check if the bowtie_dir is present; remove files in bowtie_dir if exists ; create a new dir if doesnt exists	
@@ -278,7 +278,11 @@ class KBaseRNASeq:
 			raise KBaseRNASeqException("Failed to compress the index: {0}".format(e))
 	    ## Upload the file using handle service
 		try:
-			bowtie_handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
+			#bowtie_handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)	
+			 bowtie_handle = hs.upload(out_file_path)
+			 if self.__PUBLIC_SHOCK_NODE is 'true': 
+                	 	script_util.shock_node_2b_public(self.__LOGGER,node_id=bowtie_handle['id'],shock_service_url=bowtie_handle['url'],token=user_token)
+			 
 		except Exception, e:
 			raise KBaseRNASeqException("Failed to upload the index: {0}".format(e))
 	    	bowtie2index = { "handle" : bowtie_handle ,"size" : os.path.getsize(out_file_path)}	
@@ -420,7 +424,10 @@ class KBaseRNASeq:
                 raise KBaseRNASeqException("Failed to compress the index: {0}".format(e))
             ## Upload the file using handle service
             try:
-                bowtie2_handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
+		bowtie2_handle = hs.upload(out_file_path)
+		if self.__PUBLIC_SHOCK_NODE is 'true':
+                      script_util.shock_node_2b_public(self.__LOGGER,node_id=bowtie2_handle['id'],shock_service_url=bowtie2_handle['url'],token=user_token)
+                #bowtie2_handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
             except Exception, e:
                 raise KBaseRNASeqException("Failed to upload the index: {0}".format(e))
             bowtie2_out = { "file" : bowtie2_handle ,"size" : os.path.getsize(out_file_path), "aligned_using" : "bowtie2" , "aligner_version" : "2.2.6","metadata" :  sample['data']['metadata']}
@@ -436,6 +443,26 @@ class KBaseRNASeq:
                                          "type":"KBaseRNASeq.RNASeqSampleAlignment",
                                          "data":bowtie2_out,
                                          "name":params['output_obj_name']}
+                                        ]})
+		map_key = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params['sample_id']],params["ws_id"],user_token)
+                map_value = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params['output_obj_name']],params["ws_id"],user_token)[0]
+                self.__LOGGER.info( "Updating the Analysis object")
+
+                if 'analysis_id' in sample['data'] and sample['data']['analysis_id'] is not None:
+                # updata the analysis object with the alignment id
+                        analysis_id = sample['data']['analysis_id']
+                        self.__LOGGER.info("RNASeq Sample belongs to the {0}".format(analysis_id))
+                        analysis = ws_client.get_objects([{'name' : params['analysis_id'],'workspace' : params['ws_id']}])
+                        if 'alignments' in analysis['data'] and analysis['data']['alignments'] is not None:
+                                analysis['data']['alignments'] = analysis['data']['alignments'].append({map_key : map_value})
+                        else:
+                                analysis['data']['alignments'] = [{map_key : map_value}]
+                        res1= ws_client.save_objects(
+                                        {"workspace":params['ws_id'],
+                                         "objects": [{
+                                         "type":"KBaseRNASeq.RNASeqAnalysis",
+                                         "data":analysis['data'],
+                                         "name":params['analysis_id']}
                                         ]})
 
             except Exception, e:
@@ -539,10 +566,10 @@ class KBaseRNASeq:
                 except Exception,e:
                         raise Exception( "Unable to download shock file , {0}".format(e))
 
-	    if 'analysis_id' in sample['data'] and sample['data']['analysis_id'] is not None:
-		# updata the analysis object with the alignment id
-		analysis_id = sample['data']['analysis_id']
-	   	self.__LOGGER.info("RNASeq Sample belongs to the {0}".format(analysis_id)) 
+	    #if 'analysis_id' in sample['data'] and sample['data']['analysis_id'] is not None:
+      	    #	# updata the analysis object with the alignment id
+	    #	analysis_id = sample['data']['analysis_id']
+	    # 	self.__LOGGER.info("RNASeq Sample belongs to the {0}".format(analysis_id)) 
 
             #self.__LOGGER.info("Tophat ran with the following options {0} ",format(str(opts_dict))) 
 	    # Download bowtie_Indexes
@@ -627,7 +654,10 @@ class KBaseRNASeq:
                 raise KBaseRNASeqException("Failed to compress the index: {0}".format(e))
             ## Upload the file using handle service
             try:
-                tophat_handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
+		 tophat_handle = hs.upload(out_file_path)
+		 if self.__PUBLIC_SHOCK_NODE is 'true':
+                        script_util.shock_node_2b_public(self.__LOGGER,node_id=tophat_handle['id'],shock_service_url=tophat_handle['url'],token=user_token)	
+                #tophat_handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
             except Exception, e:
                 raise KBaseRNASeqException("Failed to upload the index: {0}".format(e))
             tophat_out = { "file" : tophat_handle ,"size" : os.path.getsize(out_file_path), "aligned_using" : "tophat" , "aligner_version" : "3.1.0","metadata" :  sample['data']['metadata']}
@@ -644,7 +674,26 @@ class KBaseRNASeq:
                                          "data":tophat_out,
                                          "name":params['output_obj_name']}
                                         ]})
-	       
+		map_key = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params['sample_id']],params["ws_id"],user_token)
+	        map_value = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params['output_obj_name']],params["ws_id"],user_token)[0] 
+	        self.__LOGGER.info( "Updating the Analysis object")
+		
+                if 'analysis_id' in sample['data'] and sample['data']['analysis_id'] is not None:
+                # updata the analysis object with the alignment id
+                	analysis_id = sample['data']['analysis_id']
+                	self.__LOGGER.info("RNASeq Sample belongs to the {0}".format(analysis_id))
+	   		analysis = ws_client.get_objects([{'name' : params['analysis_id'],'workspace' : params['ws_id']}])
+			if 'alignments' in analysis['data'] and analysis['data']['alignments'] is not None:
+				analysis['data']['alignments'] = analysis['data']['alignments'].append({map_key : map_value}) 
+			else:
+				analysis['data']['alignments'] = [{map_key : map_value}]
+			res1= ws_client.save_objects(
+                                        {"workspace":params['ws_id'],
+                                         "objects": [{
+                                         "type":"KBaseRNASeq.RNASeqAnalysis",
+                                         "data":analysis['data'],
+                                         "name":params['analysis_id']}
+                                        ]})
 	    except Exception, e:
                 raise KBaseRNASeqException("Failed to upload  the alignment: {0}".format(e))
 
@@ -760,7 +809,8 @@ class KBaseRNASeq:
             except Exception,e:
                 raise KBaseRNASeqException("Error executing cufflinks {0},{1}".format(os.getcwd(),e))
 	    try:
-                handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
+		handle = hs.upload("{0}.zip".format(params['output_obj_name']))
+                #handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
                 if self.__PUBLIC_SHOCK_NODE is 'true': 
                     script_util.shock_node_2b_public(self.__LOGGER,node_id=handle['id'],shock_service_url=handle['url'],token=user_token)
             except Exception, e:
@@ -789,6 +839,28 @@ class KBaseRNASeq:
                                          "type":"KBaseExpression.ExpressionSample",
                                          "data":es_obj,
                                          "name":params['output_obj_name']}
+                                        ]})
+
+
+		map_key = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[sample['data']['metadata']['sample_id']],params["ws_id"],user_token)
+                map_value = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params['output_obj_name']],params["ws_id"],user_token)[0]
+                self.__LOGGER.info( "Updating the Analysis object")
+
+                if 'analysis_id' in sample['data']['metadata']  and sample['data']['metadata']['analysis_id'] is not None:
+                # updata the analysis object with the alignment id
+                        analysis_id = sample['data']['analysis_id']
+                        self.__LOGGER.info("RNASeq Sample belongs to the {0}".format(analysis_id))
+                        analysis = ws_client.get_objects([{'name' : sample['data']['metadata'],'workspace' : params['ws_id']}])
+                        if 'expression_values' in analysis['data'] and analysis['data']['expression_values'] is not None:
+                                analysis['data']['expression_values'] = analysis['data']['expression_values'].append({map_key : map_value})
+                        else:
+                                analysis['data']['expression_values'] = [{map_key : map_value}]
+                        res1= ws_client.save_objects(
+                                        {"workspace":params['ws_id'],
+                                         "objects": [{
+                                         "type":"KBaseRNASeq.RNASeqAnalysis",
+                                         "data":analysis['data'],
+                                         "name":sample['data']['metadata']['analysis_id']}
                                         ]})
 	    except Exception, e:
                 raise KBaseRNASeqException("Failed to upload the ExpressionSample: {0}".format(e))
@@ -921,7 +993,8 @@ class KBaseRNASeq:
             except Exception,e:
                 raise KBaseRNASeqException("Error executing cuffmerge {0},{1}".format(os.getcwd(),e))
 	    try:
-                handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
+		handle = hs.upload("{0}.zip".format(params['output_obj_name']))
+                #handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
                 if self.__PUBLIC_SHOCK_NODE is 'true': 
                     script_util.shock_node_2b_public(self.__LOGGER,node_id=handle['id'],shock_service_url=handle['url'],token=user_token)
             except Exception, e:
@@ -964,6 +1037,7 @@ class KBaseRNASeq:
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN CuffdiffCall
+	
         #END CuffdiffCall
 
         # At some point might do deeper type checking...
