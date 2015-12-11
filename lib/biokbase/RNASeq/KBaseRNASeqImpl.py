@@ -388,7 +388,7 @@ class KBaseRNASeq:
                 script_util.unzip_files(self.__LOGGER,os.path.join(bowtie2_dir,b_filename),bowtie2_dir)
 		script_util.move_files(self.__LOGGER,handler_util.get_dir(bowtie2_dir),bowtie2_dir)
             except Exception, e:
-                   self.__LOGGER.error("Unzip indexfile error: Please contact help@kbase.us")
+                   self.__LOGGER.error("".join(traceback.format_exc()))
                    raise Exception("Unzip indexfile error: Please contact help@kbase.us")
             # Define the bowtie2 options
 	    os.makedirs(os.path.join(bowtie2_dir,params['output_obj_name']))
@@ -752,6 +752,7 @@ class KBaseRNASeq:
                     script_util.unzip_files(self.__LOGGER,os.path.join(cufflinks_dir,sample['data']['file']['file_name']),cufflinks_dir)
 		    #script_util.move_files(self.__LOGGER,handler_util.get_dir(cufflinks_dir),cufflinks_dir)
                 except Exception, e:
+		       self.__LOGGER.error("".join(traceback.format_exc()))
                        raise Exception("Unzip indexfile error: Please contact help@kbase.us")
             else:
                 raise KBaseRNASeqException("No data was included in the referenced sample id");
@@ -809,6 +810,7 @@ class KBaseRNASeq:
                 script_util.zip_files(self.__LOGGER,output_dir, "{0}.zip".format(params['output_obj_name']))
                 #handle = hs.upload("{0}.zip".format(params['output_obj_name']))
             except Exception,e:
+		self.__LOGGER.exception("".join(traceback.format_exc()))
                 raise KBaseRNASeqException("Error executing cufflinks {0},{1}".format(os.getcwd(),e))
 	    try:
 		#handle = hs.upload("{0}.zip".format(params['output_obj_name']))
@@ -816,7 +818,8 @@ class KBaseRNASeq:
                 if self.__PUBLIC_SHOCK_NODE is 'true': 
                     script_util.shock_node_2b_public(self.__LOGGER,node_id=handle['id'],shock_service_url=handle['url'],token=user_token)
             except Exception, e:
-                raise KBaseRNASeqException("Failed to upload the index: {0}".format(e))
+	        self.__LOGGER.exception("".join(traceback.format_exc()))	
+                raise KBaseRNASeqException("Error while zipping the output objects: {0}".format(e))
 	
 
 	    ## Save object to workspace
@@ -865,11 +868,12 @@ class KBaseRNASeq:
                                          "name":sample['data']['metadata']['analysis_id']}
                                         ]})
 	    except Exception, e:
+		self.__LOGGER.exception("".join(traceback.format_exc()))
                 raise KBaseRNASeqException("Failed to upload the ExpressionSample: {0}".format(e))
             returnVal = es_obj
 	except KBaseRNASeqException,e:
                  self.__LOGGER.exception("".join(traceback.format_exc()))
-                 raise
+                 raise KBaseRNASeqException("Error Running Cufflinks : {0}".format(e))
 
         #END CufflinksCall
 
