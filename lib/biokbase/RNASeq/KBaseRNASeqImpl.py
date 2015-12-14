@@ -1297,38 +1297,49 @@ class KBaseRNASeq:
         # patterns
         two_nums  = re.compile(r'^(\d+) \+ (\d+)')
         two_pcts  = re.compile(r'\(([0-9.na\-]+)%:([0-9.na\-]+)%\)')
-        ## parse results with the patterns
         # alignment rate
-        print lines[2]
-        alignment_rate = 0.0
-        m = two_pcts.search(lines[2])
-        if m is not None:
-            alignment_rate = (m.group(1))
-            if alignment_rate == "-nan":
-                alignment_rate = 0.0
-            else:
-                alignment_rate = float(alignment_rate)
-        else:
-            print "Something wrong"
-        m = two_nums.match(lines[6])
-        properly_paired = int(m.group(1))
+        m = two_nums.match(lines[0])
+        total_qcpr = int(m.group(1))
+        total_qcfr = int(m.group(2))
+        total_read =  total_qcpr + total_qcfr
+    
+        m = two_nums.match(lines[2])
+        mapped_r = int(m.group(1))
+        umapped_r = int(m.group(2))
+
+        alignment_rate = mapped_r / total_read  * 100.0
+        if alignment_rate > 100: alignment_rate = 100.0
+
+        print total_qcpr, total_qcfr, total_read, mapped_r, umapped_r, alignment_rate
+
+        # singletons
         m = two_nums.match(lines[7])
         singletons = int(m.group(1))
+
+        # multiple alignment : skip now
+
+
+
+        #m = two_pcts.search(lines[2])
+        #if m is not None:
+        #    alignment_rate = (m.group(1))
+        #    if alignment_rate == "-nan":
+        #        alignment_rate = 0.0
+        #    else:
+        #        alignment_rate = float(alignment_rate)
+
+        #               "properly_paired": properly_paired, 
+        m = two_nums.match(lines[6])
+        properly_paired = int(m.group(1))
 	# Create Workspace object
 	stats_data =  { 
                        "alignment_id": params['alignment_sample_id'], 
                        "alignment_rate": alignment_rate, 
-                       "mapped_sections": {
-                           "exons": 50, 
-                           "intergenic_regions": 50, 
-                           "introns": 50, 
-                           "splice_junctions": 50
-                       }, 
-                       "multiple_alignments": 50, 
+                       #"multiple_alignments": 50, 
                        "properly_paired": properly_paired, 
                        "singletons": singletons, 
-                       "total_reads": 250, 
-                       "unmapped_reads": 50
+                       "total_reads": total_read, 
+                       "unmapped_reads": umapped_r
                        }
 	
 	## Save object to workspace
