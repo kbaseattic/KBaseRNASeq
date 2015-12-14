@@ -1,0 +1,11 @@
+{	
+	"version":"1.1",
+	"method":"KBaseRNASeq.CuffmergeCall",
+	"context": null,
+	"params":[ 	
+	{
+  	"ws_id": "RNASeqTestData",
+	"analysis" : "Ecoli_exp_test_analysis",
+	"output_obj_name" : "Ecoli_cuffmerge"
+	}]	
+}

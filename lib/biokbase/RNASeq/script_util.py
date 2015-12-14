@@ -247,8 +247,8 @@ def shock_node_2b_public(logger,
     logger.info("-X PUT {0}/node/{1}/acl/public_read".format(shock_service_url, node_id))
     try:
         response = requests.put("{0}/node/{1}/acl/public_read".format(shock_service_url, node_id), headers=header, allow_redirects=True, verify=ssl_verify)
-    except:
-        raise    
+    except Exception,e:
+        raise Exception("Error making Shock ids Public{0}".format(e))   
 
     if not response.ok:
         response.raise_for_status()
