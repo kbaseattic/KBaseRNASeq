@@ -39,7 +39,10 @@ def get_dir(d):
     """
     
     dirs = [os.path.join(d,o) for o in os.listdir(d) if os.path.isdir(os.path.join(d,o))]
-    return dirs[0]
+    if len(dirs) > 1:
+    	return dirs[0]
+    else:
+	return None
     #for directories, files in os.walk(d):
     #    return os.path(directories)
 
