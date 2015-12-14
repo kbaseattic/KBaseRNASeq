@@ -27,6 +27,11 @@ parameters :
             Differentailly expressed data from cuffdiff
         short-hint : |
             Cuffdiff output is used as input
+    replicate_id :
+        ui-name : |
+            Replicates
+        short-hint : |
+            Selection of replicates
     output_obj_name :
         ui-name : |
             Expression Matrix
