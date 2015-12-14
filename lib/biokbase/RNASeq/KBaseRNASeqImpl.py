@@ -612,7 +612,7 @@ class KBaseRNASeq:
 	    output_dir = os.path.join(tophat_dir,params['output_obj_name'])
 	    gtf_file = os.path.join(tophat_dir,a_filename)
             #bowtie_base = os.path.join(tophat_dir,"kb_g.166828.fa")
-	    bowtie_base =os.path.join(tophat_dir,handler_util.get_file_with_suffix(tophat_dir,".1.bt2"))
+	    bowtie_base =os.path.join(tophat_dir,handler_util.get_file_with_suffix(tophat_dir,".rev.1.bt2"))
 	    #topts_dict = { k:int(v) for (k,v) in opts_dict.items() if k in ('num_threads','read_mismatches','read_gap_length','read_edit_dist','min_intron_length','max_intron_length')}
 	    #topts_dict['no_coverage_search'] = true
             #topts_dict['report_secondary_alignments'] = false

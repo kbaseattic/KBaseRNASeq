@@ -286,6 +286,7 @@ class MethodContext(dict):
         self['method'] = None
         self['call_id'] = None
         self['rpc_context'] = None
+        self['provenance'] = None
         self._debug_levels = set([7, 8, 9, 'DEBUG', 'DEBUG2', 'DEBUG3'])
         self._logger = logger
 
@@ -450,6 +451,9 @@ class Application(object):
                 ctx['module'], ctx['method'] = req['method'].split('.')
                 ctx['call_id'] = req['id']
                 ctx['rpc_context'] = {'call_stack': [{'time':self.now_in_utc(), 'method': req['method']}]}
+                prov_action = {'service': ctx['module'], 'method': ctx['method'], 
+                               'method_params': req['params']}
+                ctx['provenance'] = [prov_action]
                 try:
                     token = environ.get('HTTP_AUTHORIZATION')
                     # parse out the method being requested and check if it
@@ -673,6 +677,10 @@ def process_async_cli(input_file_path, output_file_path, token):
     if 'context' in req:
         ctx['rpc_context'] = req['context']
     ctx['CLI'] = 1
+    ctx['module'], ctx['method'] = req['method'].split('.')
+    prov_action = {'service': ctx['module'], 'method': ctx['method'], 
+                   'method_params': req['params']}
+    ctx['provenance'] = [prov_action]
     resp = None
     try:
         resp = application.rpc_service.call_py(ctx, req)
