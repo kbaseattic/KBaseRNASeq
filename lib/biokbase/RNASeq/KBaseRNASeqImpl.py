@@ -256,8 +256,11 @@ class KBaseRNASeq:
 	   
 	   ## dump fasta object to a file in bowtie_dir
 		try:
-	   		dumpfasta= "--workspace_service_url {0} --workspace_name {1} --working_directory {2} --output_file_name {3} --object_name {4} --shock_service_url {5} --token \'{6}\'".format(self.__WS_URL , params['ws_id'],bowtie_dir,params['reference'],params['reference'],self.__SHOCK_URL,user_token)
-
+			if params['reference'].split('.')[-1] not in ['fa','fasta','fna']:
+				outfile_ref_name = params['reference']+".fa"
+	   			dumpfasta= "--workspace_service_url {0} --workspace_name {1} --working_directory {2} --output_file_name {3} --object_name {4} --shock_service_url {5} --token \'{6}\'".format(self.__WS_URL , params['ws_id'],bowtie_dir,outfile_ref_name,params['reference'],self.__SHOCK_URL,user_token)
+			else:
+			       dumpfasta= "--workspace_service_url {0} --workspace_name {1} --working_directory {2} --output_file_name {3} --object_name {4} --shock_service_url {5} --token \'{6}\'".format(self.__WS_URL , params['ws_id'],bowtie_dir,params['reference'],params['reference'],self.__SHOCK_URL,user_token)
             		script_util.runProgram(self.__LOGGER,self.__SCRIPT_TYPE['ContigSet_to_fasta'],dumpfasta,self.__SCRIPTS_DIR,os.getcwd())
 		except Exception,e:
 			raise KBaseRNASeqException("Error Creating  FASTA object from the workspace {0},{1},{2}".format(params['reference'],os.getcwd(),e))
@@ -265,7 +268,10 @@ class KBaseRNASeq:
 	   
 	    ## Run the bowtie_indexing on the  command line
 		try:
-	    		bowtie_index_cmd = "{0} {1}".format(params['reference'],params['reference']) 
+	    		if outfile_ref_name is not None:
+				bowtie_index_cmd = "{0} {1}".format(outfile_ref_name,params['reference'])
+			else:
+				bowtie_index_cmd = "{0} {1}".format(params['reference'],params['reference']) 
 	    		script_util.runProgram(self.__LOGGER,"bowtie2-build",bowtie_index_cmd,None,bowtie_dir)
 		except Exception,e:
 			raise KBaseRNASeqException("Error while running BowtieIndex {0},{1}".format(params['reference'],e))
@@ -587,8 +593,9 @@ class KBaseRNASeq:
 	    try:
 		index_path = os.path.join(tophat_dir,b_filename)
                 script_util.unzip_files(self.__LOGGER,index_path,tophat_dir)
-		script_util.move_files(self.__LOGGER,handler_util.get_dir(tophat_dir),tophat_dir)
-		#script_util.move_files(self.__LOGGER,os.path.join(tophat_dir,"kb_g.166828"),tophat_dir)
+		mv_dir= handler_util.get_dir(tophat_dir)
+		if mv_dir is not None:
+			script_util.move_files(self.__LOGGER,mv_dir,tophat_dir)
             except Exception, e:
                    self.__LOGGER.exception("".join(traceback.format_exc()))
                    raise Exception("Unzip indexfile error: Please contact help@kbase.us")
@@ -676,33 +683,38 @@ class KBaseRNASeq:
                                          "data":tophat_out,
                                          "name":params['output_obj_name']}
                                         ]})
-		map_key = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params['sample_id']],params["ws_id"],user_token)
+		map_key = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params['sample_id']],params["ws_id"],user_token)[0]
 	        map_value = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params['output_obj_name']],params["ws_id"],user_token)[0] 
 	        self.__LOGGER.info( "Updating the Analysis object")
+		print map_key
+		print map_value
 		
                 if 'analysis_id' in sample['data'] and sample['data']['analysis_id'] is not None:
                 # updata the analysis object with the alignment id
+			print sample['data']['analysis_id'] 
                 	analysis_id = sample['data']['analysis_id']
                 	self.__LOGGER.info("RNASeq Sample belongs to the {0}".format(analysis_id))
 	   		analysis = ws_client.get_objects([{'name' : params['analysis_id'],'workspace' : params['ws_id']}])
 			if 'alignments' in analysis['data'] and analysis['data']['alignments'] is not None:
 				analysis['data']['alignments'] = analysis['data']['alignments'].append({map_key : map_value}) 
+				pprint(analysis)
 			else:
 				analysis['data']['alignments'] = [{map_key : map_value}]
-			res1= ws_client.save_objects(
-                                        {"workspace":params['ws_id'],
-                                         "objects": [{
-                                         "type":"KBaseRNASeq.RNASeqAnalysis",
-                                         "data":analysis['data'],
-                                         "name":params['analysis_id']}
-                                        ]})
+				pprint(analysis)
+			#res1= ws_client.save_objects(
+                        #                {"workspace":params['ws_id'],
+                        #                 "objects": [{
+                        #                 "type":"KBaseRNASeq.RNASeqAnalysis",
+                        #                 "data":analysis['data'],
+                        #                 "ref":""}
+                        #                ]})
 	    except Exception, e:
                 raise KBaseRNASeqException("Failed to upload  the alignment: {0}".format(e))
 
 	except Exception,e:
             raise KBaseRNASeqException("Error Running Tophatcall {0}".format("".join(traceback.format_exc())))
-	finally:
-		handler_util.cleanup(self.__LOGGER,tophat_dir)
+	#finally:
+	#	handler_util.cleanup(self.__LOGGER,tophat_dir)
 #	
 	     
         #END TophatCall
@@ -1000,7 +1012,7 @@ class KBaseRNASeq:
                 raise KBaseRNASeqException("Error executing cuffmerge {0},{1}".format(os.getcwd(),e))
 	    try:
 		#handle = hs.upload("{0}.zip".format(params['output_obj_name']))
-                #handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
+                handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
                 if self.__PUBLIC_SHOCK_NODE is 'true': 
                     script_util.shock_node_2b_public(self.__LOGGER,node_id=handle['id'],shock_service_url=handle['url'],token=user_token)
             except Exception, e:
@@ -1043,6 +1055,143 @@ class KBaseRNASeq:
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN CuffdiffCall
+	user_token=ctx['token']
+        self.__LOGGER.info("Started CuffmergeCall")
+
+        ws_client=Workspace(url=self.__WS_URL, token=user_token)
+        hs = HandleService(url=self.__HS_URL, token=user_token)
+        try:
+            cuffdiff_dir = self.__CUFFDIFF_DIR
+            if os.path.exists(cuffdiff_dir):
+            #   files=glob.glob("%s/*" % tophat_dir)
+            #    for f in files: os.remove(f)
+                handler_util.cleanup(self.__LOGGER,cuffmerge_dir)
+            if not os.path.exists(cuffdiff_dir): os.makedirs(cuffdiff_dir)
+
+            self.__LOGGER.info("Downloading Analysis file")
+            try:
+                analysis = ws_client.get_objects(
+                                        [{'name' : params['analysis'],'workspace' : params['ws_id']}])[0]
+            except Exception,e:
+                 self.__LOGGER.exception("".join(traceback.format_exc()))
+                 raise KBaseRNASeqException("Error Downloading objects from the workspace ")
+
+            ## Downloading data from shock
+            #list_file = open(self.__ASSEMBLY_GTF_FN,'w')
+	    alignment_list  = []
+            if 'data' in analysis : #and analysis['data'] is not None:
+                self.__LOGGER.info("Downloading each expression")
+
+                shock_re =  re.compile(r'^(.*)/node/([^?]*)\??')
+                # TODO: Change expression_values object design
+                for le in analysis['data']['alignments']:
+                  for k,v in le.items():
+                    ko,vo=ws_client.get_objects([{'ref' : k}, {'ref' : v} ])
+                    print ko['info']
+                    sp = os.path.join(cuffdiff_dir, ko['info'][1])
+                    print sp
+                    if not os.path.exists(sp): os.makedirs(sp)
+
+                    if 'shock_url' not in vo['data']:
+                        self.__LOGGER.info("{0} does not contain shock_url and we skip {1}".format(vo['info'][1], v))
+                        next
+
+                    se = shock_re.search(vo['data']['shock_url'])
+                    if se is None:
+                        self.__LOGGER.info("{0} does not contain shock_url and we skip {1}".format(vo['info'][1], v))
+                        next
+
+                    efn = "{0}.zip".format(vo['info'][1])
+                    print efn
+	 	    try:
+                         script_util.download_file_from_shock(self.__LOGGER, shock_service_url=se.group(1), shock_id=se.group(2),filename=efn, directory=cuffdiff_dir,token=user_token)
+                    except Exception,e:
+                            raise Exception( "Unable to download shock file, {0}".format(e))
+                    try:
+                        script_util.unzip_files(self.__LOGGER,os.path.join(cuffdiff_dir,efn),sp)
+                        print os.listdir(sp)
+                    except Exception, e:
+                           raise Exception("Unzip indexfile error: Please contact help@kbase.us")
+                    if not os.path.exists("{0}/accepted_hits..bam\n".format(sp)):
+                       print "{0}/accepted_hits.bam\n".format(sp)
+                       # Would it be better to be skipping this? if so, replace Exception to be next
+                       next
+		       alignments.add("{0}/accepted_hits.bam ".format(sp))
+                       #raise Exception("{0} does not contain transcripts.gtf:  {1}".format(vo['info'][1], v))
+                    #list_file.write("{0}/transcripts.gtf\n".format(sp))
+            else:
+                raise KBaseRNASeqException("No data was included in the referenced analysis");
+            	#list_file.close()
+
+            ##  now ready to call
+            output_dir = os.path.join(cuffdiff_dir, params['output_obj_name'])
+	    bam_files = " ".join([i for i in alignments])
+	    labels = ",".join([i in labels])
+	    merged_gtf = ""
+            try:
+                # TODO: add reference GTF later, seems googledoc command looks wrong
+                cuffdiff_command = "-o {0} -L {1} -u {2} {3}".format(output_dir,labels,merged_gtf,bam_files)
+		self.__LOGGER.info("Executing {0}".format(cuffdiff_command))
+                script_util.runProgram(self.__LOGGER,"cuffdiff",cuffdiff_command,None,os.getcwd())
+                #task = subprocess.Popen(command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+                #lines_iterator = iter(task.stdout.readline, b"")
+                #for line in lines_iterator:
+                #    self.callback(line)
+
+                #sub_stdout, sub_stderr = task.communicate()
+
+                #task_output = dict()
+                #task_output["stdout"] = sub_stdout
+                #task_output["stderr"] = sub_stderr
+
+                #if task.returncode != 0:
+                #    self.__LOGGER.info(sub_stdout)
+                #    self.__LOGGER.info(sub_stderr)
+                #    raise Exception(task_output["stdout"], task_output["stderr"])
+
+            except Exception,e:
+                raise KBaseRNASeqException("Error executing cuffmerge {0},{1},{2}".format(" ".join(cuffmerge_command),os.getcwd(),e))
+
+            ##  compress and upload to shock
+            try:
+                self.__LOGGER.info("Ziping output")
+
+                script_util.zip_files(self.__LOGGER,output_dir, "{0}.zip".format(params['output_obj_name']))
+                #handle = hs.upload("{0}.zip".format(params['output_obj_name']))
+            except Exception,e:
+                raise KBaseRNASeqException("Error executing cuffmerge {0},{1}".format(os.getcwd(),e))
+            try:
+                #handle = hs.upload("{0}.zip".format(params['output_obj_name']))
+                #handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
+                if self.__PUBLIC_SHOCK_NODE is 'true':
+                    script_util.shock_node_2b_public(self.__LOGGER,node_id=handle['id'],shock_service_url=handle['url'],token=user_token)
+            except Exception, e:
+                raise KBaseRNASeqException("Failed to upload the index: {0}".format(e))
+
+            analysis['data']['transcriptome_id'] = params['output_obj_name']
+                # raise Exception(task_output["stdout"], task_output["stderr"])
+
+            ## Save object to workspace
+            try:
+		self.__LOGGER.info("Saving Cuffmerge object to workspace")
+                cm_obj = { 'file' : handle,
+                           'analysis' : analysis['data']
+                	  }
+
+                res= ws_client.save_objects(
+                                        {"workspace":params['ws_id'],
+                                         "objects": [{
+                                         "type":"KBaseRNASeq.RNASeqCuffdiffdifferentialExpression",
+                                         "data":cm_obj,
+                                         "name":params['output_obj_name']}
+                                        ]})
+            except Exception, e:
+                raise KBaseRNASeqException("Failed to upload the KBaseRNASeq.RNASeqCuffmergetranscriptome: {0}".format(e))
+            returnVal = cm_obj
+        except KBaseRNASeqException,e:
+                 self.__LOGGER.exception("".join(traceback.format_exc()))
+                 raise
 	
         #END CuffdiffCall
 
@@ -1060,6 +1209,70 @@ class KBaseRNASeq:
 
 	user_token=ctx['token']
         ws_client=Workspace(url=self.__WS_URL, token=user_token)        
+	stats_dir = self.__STATS_DIR
+	try:
+                obj  = ws_client.get_objects([{'name' : params['alignment_sample_id'],'workspace' : params['ws_id'] }])[0]
+        #return {"output" : str(status), "error": json_error}
+        except Exception as e:
+                raise FileNotFound("File Not Found: {}".format(e))
+	#download Shock Node
+	if 'data' in obj and obj['data'] is not None:
+                self.__LOGGER.info("Downloading alignment sample")
+                try:
+                     script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=obj['data']['file']['id'],
+			 				filename=obj['data']['file']['file_name'], directory=stats_dir,token=user_token)
+                except Exception,e:
+                        raise Exception( "Unable to download shock file, {0}".format(e))
+                try:
+                    script_util.unzip_files(self.__LOGGER,os.path.join(stats_dir,obj['data']['file']['file_name']),stats_dir)
+                    #script_util.move_files(self.__LOGGER,handler_util.get_dir(cufflinks_dir),cufflinks_dir)
+                except Exception, e:
+                       self.__LOGGER.error("".join(traceback.format_exc()))
+                       raise Exception("Unzip file  error: Please contact help@kbase.us")
+		#Create Command
+ 	        bam_file = stats_dir+"/accepted_hits.bam"
+        	align_stats_cmd = "flagstat {0}".format(bam_file)
+        else:
+                raise KBaseRNASeqException("No data was included in the referenced sample id");
+	
+	# If Annotation is provided then run bedtools 
+		
+	if params['annotation_id']  is not None:
+		try:
+                	annotation  = ws_client.get_objects([{'name' : params['annotation_id'],'workspace' : params['ws_id'] }])[0]
+        	#return {"output" : str(status), "error": json_error}
+        	except Exception as e:
+                	raise FileNotFound("File Not Found: {}".format(e))
+		if 'data' in annotation and annotation['data'] is not None:
+               		self.__LOGGER.info("Downloading annotation")
+                	try:
+                     		script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=annotation['data']['file']['id'],
+                                                        filename=annotation['data']['file']['file_name'], directory=stats_dir,token=user_token)
+                	except Exception,e:
+                        	raise Exception( "Unable to download shock file, {0}".format(e))
+                	try:
+                    		script_util.unzip_files(self.__LOGGER,os.path.join(stats_dir,obj['data']['file']['file_name']),stats_dir)
+                    #script_util.move_files(self.__LOGGER,handler_util.get_dir(cufflinks_dir),cufflinks_dir)
+                	except Exception, e:
+                       		self.__LOGGER.error("".join(traceback.format_exc()))
+                       		raise Exception("Unzip file error: Please contact help@kbase.us")
+            	else:
+                	raise KBaseRNASeqException("No data was included in the annotation id");
+		#Create Command
+		bam_file = stats_dir+"/accepted_hits.bam"
+		align_stats_cmd = "flagstat {0}".format(bam_file)
+	
+	#Run Command
+        try:
+		result = script_util.runProgram(self.__LOGGER,"samtools",align_stats_cmd,None,stats_dir)
+        except Exception,e:
+                raise KBaseRNASeqException("Error running samtools flagstat {0},{1}".format(bam_file,e))
+	print result
+		
+	#Parse output
+	
+	# Create Workspace object
+	
 	stats_data =  { 
     			"alignment_id": params['alignment_sample_id'], 
     			"alignment_rate": 80, 
