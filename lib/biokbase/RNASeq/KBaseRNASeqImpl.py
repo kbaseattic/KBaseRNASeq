@@ -260,7 +260,8 @@ class KBaseRNASeq:
 				outfile_ref_name = params['reference']+".fa"
 	   			dumpfasta= "--workspace_service_url {0} --workspace_name {1} --working_directory {2} --output_file_name {3} --object_name {4} --shock_service_url {5} --token \'{6}\'".format(self.__WS_URL , params['ws_id'],bowtie_dir,outfile_ref_name,params['reference'],self.__SHOCK_URL,user_token)
 			else:
-			       dumpfasta= "--workspace_service_url {0} --workspace_name {1} --working_directory {2} --output_file_name {3} --object_name {4} --shock_service_url {5} --token \'{6}\'".format(self.__WS_URL , params['ws_id'],bowtie_dir,params['reference'],params['reference'],self.__SHOCK_URL,user_token)
+			      	outfile_ref_name = params['reference']
+			  	dumpfasta= "--workspace_service_url {0} --workspace_name {1} --working_directory {2} --output_file_name {3} --object_name {4} --shock_service_url {5} --token \'{6}\'".format(self.__WS_URL , params['ws_id'],bowtie_dir,params['reference'],params['reference'],self.__SHOCK_URL,user_token)
             		script_util.runProgram(self.__LOGGER,self.__SCRIPT_TYPE['ContigSet_to_fasta'],dumpfasta,self.__SCRIPTS_DIR,os.getcwd())
 		except Exception,e:
 			raise KBaseRNASeqException("Error Creating  FASTA object from the workspace {0},{1},{2}".format(params['reference'],os.getcwd(),e))
@@ -268,7 +269,8 @@ class KBaseRNASeq:
 	   
 	    ## Run the bowtie_indexing on the  command line
 		try:
-	    		if outfile_ref_name is not None:
+			print outfile_ref_name
+	    		if outfile_ref_name:
 				bowtie_index_cmd = "{0} {1}".format(outfile_ref_name,params['reference'])
 			else:
 				bowtie_index_cmd = "{0} {1}".format(params['reference'],params['reference']) 
