@@ -61,6 +61,7 @@ class KBaseRNASeq:
     __CUFFMERGE_DIR = 'cuffmerge'
     __PUBLIC_SHOCK_NODE = 'true'
     __ASSEMBLY_GTF_FN = 'assembly_GTF_list.txt'
+    __STATS_DIR = 'stats'
     #END_CLASS_HEADER
 
     # config contains contents of config file in a hash or None if it couldn't
@@ -1067,7 +1068,7 @@ class KBaseRNASeq:
             if os.path.exists(cuffdiff_dir):
             #   files=glob.glob("%s/*" % tophat_dir)
             #    for f in files: os.remove(f)
-                handler_util.cleanup(self.__LOGGER,cuffmerge_dir)
+                handler_util.cleanup(self.__LOGGER,cuffdiff_dir)
             if not os.path.exists(cuffdiff_dir): os.makedirs(cuffdiff_dir)
 
             self.__LOGGER.info("Downloading Analysis file")
@@ -1212,11 +1213,19 @@ class KBaseRNASeq:
 	user_token=ctx['token']
         ws_client=Workspace(url=self.__WS_URL, token=user_token)        
 	stats_dir = self.__STATS_DIR
+        try:
+            if os.path.exists(stats_dir):
+            #   files=glob.glob("%s/*" % tophat_dir)
+            #    for f in files: os.remove(f)
+                handler_util.cleanup(self.__LOGGER,stats_dir)
+            if not os.path.exists(stats_dir): os.makedirs(stats_dir)
+        except Exception as e:
+                raise KBaseRNASeqException("Couldn't prepare a folder, {0}, {1}".format(stats_dir, e))
 	try:
                 obj  = ws_client.get_objects([{'name' : params['alignment_sample_id'],'workspace' : params['ws_id'] }])[0]
         #return {"output" : str(status), "error": json_error}
         except Exception as e:
-                raise FileNotFound("File Not Found: {}".format(e))
+                raise KBaseRNASeqException("File Not Found: {}".format(e))
 	#download Shock Node
 	if 'data' in obj and obj['data'] is not None:
                 self.__LOGGER.info("Downloading alignment sample")
@@ -1239,7 +1248,7 @@ class KBaseRNASeq:
 	
 	# If Annotation is provided then run bedtools 
 		
-	if params['annotation_id']  is not None:
+	if 'annotation_id' in params and params['annotation_id'] is not None:
 		try:
                 	annotation  = ws_client.get_objects([{'name' : params['annotation_id'],'workspace' : params['ws_id'] }])[0]
         	#return {"output" : str(status), "error": json_error}
@@ -1266,30 +1275,61 @@ class KBaseRNASeq:
 	
 	#Run Command
         try:
-		result = script_util.runProgram(self.__LOGGER,"samtools",align_stats_cmd,None,stats_dir)
+                self.__LOGGER.info("Executing: {0} {1}".format("samtools", align_stats_cmd))
+		result = script_util.runProgram(self.__LOGGER,"samtools", align_stats_cmd,None,None)
         except Exception,e:
                 raise KBaseRNASeqException("Error running samtools flagstat {0},{1}".format(bam_file,e))
-	print result
 		
 	#Parse output
-	
+        # example output
+            #55053 + 0 in total (QC-passed reads + QC-failed reads)
+            #0 + 0 duplicates
+            #55053 + 0 mapped (100.00%:-nan%)
+            #0 + 0 paired in sequencing
+            #0 + 0 read1
+            #0 + 0 read2
+            #0 + 0 properly paired (-nan%:-nan%)
+            #0 + 0 with itself and mate mapped
+            #0 + 0 singletons (-nan%:-nan%)
+            #0 + 0 with mate mapped to a different chr
+            #0 + 0 with mate mapped to a different chr (mapQ>=5)
+        lines = result.splitlines()
+        # patterns
+        two_nums  = re.compile(r'^(\d+) \+ (\d+)')
+        two_pcts  = re.compile(r'\(([0-9.na\-]+)%:([0-9.na\-]+)%\)')
+        ## parse results with the patterns
+        # alignment rate
+        print lines[2]
+        alignment_rate = 0.0
+        m = two_pcts.search(lines[2])
+        if m is not None:
+            alignment_rate = (m.group(1))
+            if alignment_rate == "-nan":
+                alignment_rate = 0.0
+            else:
+                alignment_rate = float(alignment_rate)
+        else:
+            print "Something wrong"
+        m = two_nums.match(lines[6])
+        properly_paired = int(m.group(1))
+        m = two_nums.match(lines[7])
+        singletons = int(m.group(1))
 	# Create Workspace object
-	
 	stats_data =  { 
-    			"alignment_id": params['alignment_sample_id'], 
-    			"alignment_rate": 80, 
-    			"mapped_sections": {
-        		"exons": 50, 
-        		"intergenic_regions": 50, 
-        		"introns": 50, 
-        		"splice_junctions": 50
-    			}, 
-    			"multiple_alignments": 50, 
-    			"properly_paired": 100, 
-    			"singletons": 50, 
-    			"total_reads": 250, 
-    			"unmapped_reads": 50
-			}
+                       "alignment_id": params['alignment_sample_id'], 
+                       "alignment_rate": alignment_rate, 
+                       "mapped_sections": {
+                           "exons": 50, 
+                           "intergenic_regions": 50, 
+                           "introns": 50, 
+                           "splice_junctions": 50
+                       }, 
+                       "multiple_alignments": 50, 
+                       "properly_paired": properly_paired, 
+                       "singletons": singletons, 
+                       "total_reads": 250, 
+                       "unmapped_reads": 50
+                       }
 	
 	## Save object to workspace
         self.__LOGGER.info( "Saving Alignment Statistics to the Workspace")
