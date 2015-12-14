@@ -5,7 +5,7 @@
 	"params":[ 	
 	{
   	"ws_id": "RNASeqTestData",
-	"alignment_sample_id" : "Ptrichocarpa_Root_Sample_Alignment",
+	"alignment_sample_id" : "Ecoli_SRR228087_tophat_output",
 	"output_obj_name" : "test_Sample_Statistics"
 	}]	
 }
