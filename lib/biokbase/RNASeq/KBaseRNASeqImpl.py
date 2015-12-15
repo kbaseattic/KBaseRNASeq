@@ -221,8 +221,8 @@ class KBaseRNASeq:
                                                 "data":out_obj,
                                                 "name":out_obj['experiment_id']}]
                                 })
-		returnVal = {"workspace": params['ws_id'],"output" : out_obj['experiment_id'] }
-
+		#returnVal = {"workspace": params['ws_id'],"output" : out_obj['experiment_id'] }
+ 		returnVal = out_obj
 	except Exception,e:
 		raise KBaseRNASeqException("Error Saving the object to workspace {0},{1}".format(out_obj['experiment_id'],e))
 
@@ -820,7 +820,9 @@ class KBaseRNASeq:
 
             except Exception,e:
                 raise KBaseRNASeqException("Error executing cufflinks {0},{1},{2}".format(" ".join(cufflinks_command),os.getcwd(),e))
-            
+            ##Parse output files
+	    exp_dict = script_util.parse_FPKMtracking(os.path.join(output_dir,"genes.fpkm_tracking")) 
+	    print exp_dict
             ##  compress and upload to shock
             try:
                 self.__LOGGER.info("Ziping output")
@@ -849,7 +851,7 @@ class KBaseRNASeq:
                            'type' : 'RNA-Seq',
                            'numerical_interpretation' : 'do_not_know',
                            'external_source_date' : 'external_source_date',
-                           'expression_levels' : {},
+                           'expression_levels' : exp_dict,
                            #'genome_id' : 'kb.g.3472',
                            'genome_id' : annotation_gtf['data']['genome_id'],
                            'data_source' : 'data_source',
@@ -865,26 +867,26 @@ class KBaseRNASeq:
                                         ]})
 
 
-		map_key = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[sample['data']['metadata']['sample_id']],params["ws_id"],user_token)
-                map_value = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params['output_obj_name']],params["ws_id"],user_token)[0]
-                self.__LOGGER.info( "Updating the Analysis object")
+		#map_key = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[sample['data']['metadata']['sample_id']],params["ws_id"],user_token)
+                #map_value = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params['output_obj_name']],params["ws_id"],user_token)[0]
+                #self.__LOGGER.info( "Updating the Analysis object")
 
-                if 'analysis_id' in sample['data']['metadata']  and sample['data']['metadata']['analysis_id'] is not None:
+                #if 'analysis_id' in sample['data']['metadata']  and sample['data']['metadata']['analysis_id'] is not None:
                 # updata the analysis object with the alignment id
-                        analysis_id = sample['data']['analysis_id']
-                        self.__LOGGER.info("RNASeq Sample belongs to the {0}".format(analysis_id))
-                        analysis = ws_client.get_objects([{'name' : sample['data']['metadata'],'workspace' : params['ws_id']}])
-                        if 'expression_values' in analysis['data'] and analysis['data']['expression_values'] is not None:
-                                analysis['data']['expression_values'] = analysis['data']['expression_values'].append({map_key : map_value})
-                        else:
-                                analysis['data']['expression_values'] = [{map_key : map_value}]
-                        res1= ws_client.save_objects(
-                                        {"workspace":params['ws_id'],
-                                         "objects": [{
-                                         "type":"KBaseRNASeq.RNASeqAnalysis",
-                                         "data":analysis['data'],
-                                         "name":sample['data']['metadata']['analysis_id']}
-                                        ]})
+                #        analysis_id = sample['data']['analysis_id']
+                #        self.__LOGGER.info("RNASeq Sample belongs to the {0}".format(analysis_id))
+                #        analysis = ws_client.get_objects([{'name' : sample['data']['metadata'],'workspace' : params['ws_id']}])
+                #        if 'expression_values' in analysis['data'] and analysis['data']['expression_values'] is not None:
+                #                analysis['data']['expression_values'] = analysis['data']['expression_values'].append({map_key : map_value})
+                #        else:
+                #                analysis['data']['expression_values'] = [{map_key : map_value}]
+                #        res1= ws_client.save_objects(
+                #                        {"workspace":params['ws_id'],
+                #                         "objects": [{
+                #                         "type":"KBaseRNASeq.RNASeqAnalysis",
+                #                         "data":analysis['data'],
+                #                        "name":sample['data']['metadata']['analysis_id']}
+                #                        ]})
 	    except Exception, e:
 		self.__LOGGER.exception("".join(traceback.format_exc()))
                 raise KBaseRNASeqException("Failed to upload the ExpressionSample: {0}".format(e))

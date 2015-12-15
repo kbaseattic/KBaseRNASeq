@@ -4,8 +4,8 @@
 	"context": null,
 	"params":[ 	
 	{
-  	"ws_id": "RNASeqTestData",
-	"alignment_sample_id" : "Ecoli_SRR228087_tophat_output",
-	"output_obj_name" : "test_Sample_Statistics"
+  	"ws_id": "srividya22:1450134109054",
+	"alignment_sample_id" : "ecoli_SRR228085_tophat",
+	"output_obj_name" : "local_test_ecoli_SRR228085_Sample_Statistics"
 	}]	
 }
