@@ -1,0 +1,7 @@
+{
+    "ver":"0.1.0",
+    "view_method_ids":[
+        "associate_Reads_to_RNASeqSample"
+    ],
+    "import_method_ids":[]
+}

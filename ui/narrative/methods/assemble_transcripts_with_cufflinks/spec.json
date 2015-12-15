@@ -80,7 +80,7 @@
     "service-mapping" : {
       "url" : "",
       "name" : "KBaseRNASeq",
-      "method" : "assemble_transcripts_with_cufflinks",
+      "method" : "CufflinksCall",
       "input_mapping" : [
         {
           "narrative_system_variable": "workspace",

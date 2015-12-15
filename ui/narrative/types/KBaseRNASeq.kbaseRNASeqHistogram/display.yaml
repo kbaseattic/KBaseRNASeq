@@ -1,0 +1,11 @@
+#
+# Define basic display information
+#
+name     : View Expression Histogram
+subtitle : Displays single RNASeqSample expression values in a Histogram
+tooltip  : Displays single RNASeqSample expression values in a Histogram
+
+icon : none
+
+description : |
+    <p>Displays single RNASeqSample expression values in a Histogram</p>
