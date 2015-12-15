@@ -399,6 +399,10 @@ def runProgram(logger=None,
 
         # Construct shell command
         cmdStr = "%s %s" % (progPath,argStr)
+        if working_dir is None:
+            logger.info("Executing: " + cmdStr + " on cwd")
+        else:
+            logger.info("Executing: " + cmdStr + " on " + working_dir)
 
         # Set up process obj
         process = subprocess.Popen(cmdStr,

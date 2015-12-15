@@ -1,1 +1,1 @@
-{"version": "1.1", "result": [{"dataset": {"unmapped_reads": 50, "properly_paired": 100, "mapped_reads": {"introns": 50, "intergenic_regions": 55, "splice_junctions": 100, "exons": 75}, "singletons": 50, "multiple_alignments": 50, "total_reads": 250, "alignment_rate": 80}}], "id": "887144633351"}
+{"version": "1.1", "result": [{"unmapped_reads": 0, "alignment_rate": 100.0, "properly_paired": 0, "singletons": 0, "total_reads": 55053, "alignment_id": "Ecoli_SRR228087_tophat_output"}], "id": "694361451841"}
