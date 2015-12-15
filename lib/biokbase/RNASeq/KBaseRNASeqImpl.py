@@ -405,8 +405,8 @@ class KBaseRNASeq:
             # Define the bowtie2 options
 	    os.makedirs(os.path.join(bowtie2_dir,params['output_obj_name']))
 	    output_dir = os.path.join(bowtie2_dir,params['output_obj_name'])
-	    out_file = output_dir +"accepted_hits.sam"
-	    bowtie2_base =os.path.join(bowtie2_dir,handler_util.get_file_with_suffix(bowtie2_dir,".1.bt2"))
+	    out_file = output_dir +"/accepted_hits.sam"
+	    bowtie2_base =os.path.join(bowtie2_dir,handler_util.get_file_with_suffix(bowtie2_dir,".rev.1.bt2"))
 	    if(lib_type == "SingleEnd"):
                 sample_file = os.path.join(bowtie2_dir,sample_filename)
                 bowtie2_cmd = "-U {0} -x {1} -S {2}".format(sample_file,bowtie2_base,out_file)
