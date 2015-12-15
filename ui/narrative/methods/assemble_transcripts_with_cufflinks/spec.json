@@ -37,7 +37,7 @@
     "field_type" : "text"
   }, {
    "id" : "num-threads",
-    "optional" : false,
+    "optional" : true,
     "advanced" : false,
     "allow_multiple" : false,
     "default_values" : [ "" ],    
@@ -47,8 +47,8 @@
     }
   }, {
    "id" : "min-intron-length",
-    "optional" : false,
-    "advanced" : false,
+    "optional" : true,
+    "advanced" : true,
     "allow_multiple" : false,
     "default_values" : [ "" ],    
     "field_type" : "text",
@@ -57,8 +57,8 @@
     }
   }, {
     "id" : "max-intron-length",
-    "optional" : false,
-    "advanced" : false,
+    "optional" : true,
+    "advanced" : true,
     "allow_multiple" : false,
     "default_values" : [ "" ],    
     "field_type" : "text",
@@ -67,8 +67,8 @@
     }
   }, {
     "id" : "overhang-tolerance",
-    "optional" : false,
-    "advanced" : false,
+    "optional" : true,
+    "advanced" : true,
     "allow_multiple" : false,
     "default_values" : [ "" ],    
     "field_type" : "text",

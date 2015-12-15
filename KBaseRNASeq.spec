@@ -489,7 +489,7 @@ async funcdef fastqcCall(fastqcParams params)
    }associateReadsParams;
 	
 async funcdef associateReads(associateReadsParams params)
-     returns(UnspecifiedObject) authentication required;
+     returns(RNASeqSample) authentication required;
  	
    typedef structure{
 	string ws_id;
@@ -513,7 +513,7 @@ async funcdef associateReads(associateReadsParams params)
    	}SetupRNASeqAnalysisParams;
    	
 async funcdef SetupRNASeqAnalysis(SetupRNASeqAnalysisParams params)
-	returns(UnspecifiedObject) authentication required;
+	returns(RNASeqAnalysis) authentication required;
 	
    typedef structure{
 	string ws_id;
@@ -743,8 +743,8 @@ async funcdef CuffdiffCall(CuffdiffParams params)
 
 typedef structure{
 	string ws_id;
-        /*ws_samplealignment_id alignment_sample_id;*/
-	string alignment_sample_id;
+        ws_samplealignment_id alignment_sample_id;
+	/*string alignment_sample_id;*/
 	string output_obj_name;
         }AlignmentStatsParams;
 
