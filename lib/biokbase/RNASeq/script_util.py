@@ -9,6 +9,7 @@ import requests
 import logging
 import shutil
 import time
+import math
 import traceback
 from requests_toolbelt import MultipartEncoder
 from multiprocessing import Pool
@@ -485,4 +486,12 @@ def histogram(iterable, low, high, bins):
     return { "x_axis" : ranges , "y_axis" : [dist[b] for b in range(bins)] }
 
 
-     
+
+def parse_FPKMtracking(filename):
+    result={}
+    with open(filename) as f:
+	next(f)
+    	for line in f:
+		larr = line.split("\t")
+		result[larr[0]] = math.log(float(larr[9])+1,2)
+    return result
