@@ -395,7 +395,10 @@ class KBaseRNASeq:
                 raise Exception( "Unable to download shock file , {0}".format(e))
 	    try:
                 script_util.unzip_files(self.__LOGGER,os.path.join(bowtie2_dir,b_filename),bowtie2_dir)
-		script_util.move_files(self.__LOGGER,handler_util.get_dir(bowtie2_dir),bowtie2_dir)
+		mv_dir= handler_util.get_dir(bowtie2_dir)
+                if mv_dir is not None:
+                        script_util.move_files(self.__LOGGER,mv_dir,bowtie2_dir)
+		#script_util.move_files(self.__LOGGER,handler_util.get_dir(bowtie2_dir),bowtie2_dir)
             except Exception, e:
                    self.__LOGGER.error("".join(traceback.format_exc()))
                    raise Exception("Unzip indexfile error: Please contact help@kbase.us")
@@ -458,22 +461,22 @@ class KBaseRNASeq:
                 map_value = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params['output_obj_name']],params["ws_id"],user_token)[0]
                 self.__LOGGER.info( "Updating the Analysis object")
 
-                if 'analysis_id' in sample['data'] and sample['data']['analysis_id'] is not None:
-                # updata the analysis object with the alignment id
-                        analysis_id = sample['data']['analysis_id']
-                        self.__LOGGER.info("RNASeq Sample belongs to the {0}".format(analysis_id))
-                        analysis = ws_client.get_objects([{'name' : params['analysis_id'],'workspace' : params['ws_id']}])
-                        if 'alignments' in analysis['data'] and analysis['data']['alignments'] is not None:
-                                analysis['data']['alignments'] = analysis['data']['alignments'].append({map_key : map_value})
-                        else:
-                                analysis['data']['alignments'] = [{map_key : map_value}]
-                        res1= ws_client.save_objects(
-                                        {"workspace":params['ws_id'],
-                                         "objects": [{
-                                         "type":"KBaseRNASeq.RNASeqAnalysis",
-                                         "data":analysis['data'],
-                                         "name":params['analysis_id']}
-                                        ]})
+#                if 'analysis_id' in sample['data'] and sample['data']['analysis_id'] is not None:
+#                # updata the analysis object with the alignment id
+#                        analysis_id = sample['data']['analysis_id']
+#                        self.__LOGGER.info("RNASeq Sample belongs to the {0}".format(analysis_id))
+#                        analysis = ws_client.get_objects([{'name' : params['analysis_id'],'workspace' : params['ws_id']}])
+#                        if 'alignments' in analysis['data'] and analysis['data']['alignments'] is not None:
+#                                analysis['data']['alignments'] = analysis['data']['alignments'].append({map_key : map_value})
+#                        else:
+#                                analysis['data']['alignments'] = [{map_key : map_value}]
+#                        res1= ws_client.save_objects(
+#                                        {"workspace":params['ws_id'],
+#                                         "objects": [{
+#                                         "type":"KBaseRNASeq.RNASeqAnalysis",
+#                                         "data":analysis['data'],
+#                                         "name":params['analysis_id']}
+#                                        ]})
 
             except Exception, e:
                 raise KBaseRNASeqException("Failed to upload  the alignment: {0}".format(e))
@@ -692,18 +695,18 @@ class KBaseRNASeq:
 		print map_key
 		print map_value
 		
-                if 'analysis_id' in sample['data'] and sample['data']['analysis_id'] is not None:
-                # updata the analysis object with the alignment id
-			print sample['data']['analysis_id'] 
-                	analysis_id = sample['data']['analysis_id']
-                	self.__LOGGER.info("RNASeq Sample belongs to the {0}".format(analysis_id))
-	   		analysis = ws_client.get_objects([{'name' : params['analysis_id'],'workspace' : params['ws_id']}])
-			if 'alignments' in analysis['data'] and analysis['data']['alignments'] is not None:
-				analysis['data']['alignments'] = analysis['data']['alignments'].append({map_key : map_value}) 
-				pprint(analysis)
-			else:
-				analysis['data']['alignments'] = [{map_key : map_value}]
-				pprint(analysis)
+#                if 'analysis_id' in sample['data'] and sample['data']['analysis_id'] is not None:
+#                # updata the analysis object with the alignment id
+#			print sample['data']['analysis_id'] 
+#                	analysis_id = sample['data']['analysis_id']
+#                	self.__LOGGER.info("RNASeq Sample belongs to the {0}".format(analysis_id))
+#	   		analysis = ws_client.get_objects([{'name' : params['analysis_id'],'workspace' : params['ws_id']}])
+#			if 'alignments' in analysis['data'] and analysis['data']['alignments'] is not None:
+#				analysis['data']['alignments'] = analysis['data']['alignments'].append({map_key : map_value}) 
+#				pprint(analysis)
+#			else:
+#				analysis['data']['alignments'] = [{map_key : map_value}]
+#				pprint(analysis)
 			#res1= ws_client.save_objects(
                         #                {"workspace":params['ws_id'],
                         #                 "objects": [{
