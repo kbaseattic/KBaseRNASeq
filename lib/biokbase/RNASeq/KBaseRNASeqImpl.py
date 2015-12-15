@@ -17,7 +17,7 @@ from biokbase.workspace.client import Workspace
 import handler_utils as handler_util
 from biokbase.auth import Token
 from mpipe import OrderedStage , Pipeline
-import  multiprocessing as mp
+import multiprocessing as mp
 import re
 
 try:
@@ -1299,6 +1299,8 @@ class KBaseRNASeq:
             #0 + 0 with mate mapped to a different chr
             #0 + 0 with mate mapped to a different chr (mapQ>=5)
         lines = result.splitlines()
+        if  len(lines) != 11:
+            raise KBaseRNASeqException("Error not getting enough samtool flagstat information: {0}".format(result))
         # patterns
         two_nums  = re.compile(r'^(\d+) \+ (\d+)')
         two_pcts  = re.compile(r'\(([0-9.na\-]+)%:([0-9.na\-]+)%\)')
@@ -1408,7 +1410,8 @@ class KBaseRNASeq:
                                             ]
 
                                  })
-	returnVal = { "workspace" : params['ws_id']  , "output" :  params['output_obj_name'] }
+	#returnVal = { "workspace" : params['ws_id']  , "output" :  params['output_obj_name'] }
+	returnVal = sorted_dt
         #END createExpressionHistogram
 
         # At some point might do deeper type checking...
