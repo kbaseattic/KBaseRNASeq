@@ -1346,7 +1346,8 @@ class KBaseRNASeq:
                        "properly_paired": properly_paired, 
                        "singletons": singletons, 
                        "total_reads": total_read, 
-                       "unmapped_reads": umapped_r
+                       "unmapped_reads": umapped_r,
+                       "mapped_reads": mapped_r
                        }
 	
 	## Save object to workspace
