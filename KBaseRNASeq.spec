@@ -414,13 +414,13 @@
         int num_replicates;
         list<ws_rnaseqSample_id> sample_ids;
 	list<ws_RNASeqSampleReplicateGroup_id>  sample_rep_groups;
-	list<mapped_sample_alignment> alignments;
-	list<mapped_sample_expression> expression_values;
+	mapped_sample_alignment alignments;
+	mapped_sample_expression expression_values;
 	string transcriptome_id;
 	string cuffdiff_diff_exp_id;
         list<string> tissue;
         list<string> condition;
-	list<mapping<string sample_name,sample_annotations>> sample_annotations_map;
+	mapping<string sample_name,sample_annotations> sample_annotations_map;
         ws_referenceAnnotation_id annotation_id;
         string source;
         string Library_type;

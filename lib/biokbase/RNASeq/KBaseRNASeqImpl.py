@@ -192,9 +192,9 @@ class KBaseRNASeq:
         #END associateReads
 
         # At some point might do deeper type checking...
-        if not isinstance(returnVal, object):
+        if not isinstance(returnVal, dict):
             raise ValueError('Method associateReads return value ' +
-                             'returnVal is not type object as required.')
+                             'returnVal is not type dict as required.')
         # return the results
         return [returnVal]
 
@@ -230,9 +230,9 @@ class KBaseRNASeq:
         #END SetupRNASeqAnalysis
 
         # At some point might do deeper type checking...
-        if not isinstance(returnVal, object):
+        if not isinstance(returnVal, dict):
             raise ValueError('Method SetupRNASeqAnalysis return value ' +
-                             'returnVal is not type object as required.')
+                             'returnVal is not type dict as required.')
         # return the results
         return [returnVal]
 
