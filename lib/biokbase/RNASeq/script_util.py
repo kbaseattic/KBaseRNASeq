@@ -27,6 +27,26 @@ except:
 
 from biokbase.workspace.client import Workspace
 
+
+
+def updateAlignmentOnAnalysisTO(logger, ws_client, map_key, map_value, anal_ref, ws_id, objid):
+    
+        analysis = ws_client.get_objects([{'ref' : anal_ref}])[0]
+        
+        if 'alignments' in analysis['data'] and analysis['data']['alignments'] is not None:
+                analysis['data']['alignments'][map_key] = map_value
+        else:
+            analysis['data']['alignments'] = {map_key : map_value}
+
+        res1= ws_client.save_objects(
+                            {"workspace":ws_id,
+                             "objects": [{
+                             "type":"KBaseRNASeq.RNASeqAnalysis",
+                             "data":analysis['data'],
+                             "objid":objid}
+                            ]})
+
+
 def stderrlogger(name, level=logging.INFO):
     """
     Return a standard python logger with a stderr handler attached and using a prefix

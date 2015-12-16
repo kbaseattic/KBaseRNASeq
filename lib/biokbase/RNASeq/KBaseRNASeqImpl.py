@@ -457,9 +457,13 @@ class KBaseRNASeq:
                                          "data":bowtie2_out,
                                          "name":params['output_obj_name']}
                                         ]})
-		map_key = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params['sample_id']],params["ws_id"],user_token)
-                map_value = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params['output_obj_name']],params["ws_id"],user_token)[0]
+		#map_key = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params['sample_id']],params["ws_id"],user_token)
+                #map_value = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params['output_obj_name']],params["ws_id"],user_token)[0]
                 self.__LOGGER.info( "Updating the Analysis object")
+                map_key = "{0}/{1}".format(params["ws_id"], params['sample_id']) # it will be the same one
+                map_value = "{0}/{1}".format(params["ws_id"], params['output_obj_name']) # need to use the latest one
+                if 'analysis_id' in sample['data']  and sample['data']['analysis_id'] is not None:
+		    script_util.updateAlignmentOnAnalysisTO(self.__LOGGER, ws_client, map_key, map_value, sample['data']['analysis_id'],  params['ws_id'], int(sample['data']['analysis_id'].split('/')[1]))
 
 #                if 'analysis_id' in sample['data'] and sample['data']['analysis_id'] is not None:
 #                # updata the analysis object with the alignment id
@@ -498,6 +502,10 @@ class KBaseRNASeq:
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN TophatCall
+       
+
+        ## TODO: Need to take Analysis TO as input object instead of sample id
+
 	user_token=ctx['token']
 	ws_client=Workspace(url=self.__WS_URL, token=user_token)
         hs = HandleService(url=self.__HS_URL, token=user_token)
@@ -689,33 +697,35 @@ class KBaseRNASeq:
                                          "data":tophat_out,
                                          "name":params['output_obj_name']}
                                         ]})
-		map_key = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params['sample_id']],params["ws_id"],user_token)[0]
-	        map_value = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params['output_obj_name']],params["ws_id"],user_token)[0] 
 	        self.__LOGGER.info( "Updating the Analysis object")
-		print map_key
-		print map_value
-		
+                map_key = "{0}/{1}".format(params["ws_id"], params['sample_id']) # it will be the same one
+                map_value = "{0}/{1}".format(params["ws_id"], params['output_obj_name']) # need to use the latest one
+                if 'analysis_id' in sample['data']  and sample['data']['analysis_id'] is not None:
+		    script_util.updateAlignmentOnAnalysisTO(self.__LOGGER, ws_client, map_key, map_value, sample['data']['analysis_id'],  params['ws_id'], int(sample['data']['analysis_id'].split('/')[1]))
 #                if 'analysis_id' in sample['data'] and sample['data']['analysis_id'] is not None:
-#                # updata the analysis object with the alignment id
-#			print sample['data']['analysis_id'] 
-#                	analysis_id = sample['data']['analysis_id']
-#                	self.__LOGGER.info("RNASeq Sample belongs to the {0}".format(analysis_id))
-#	   		analysis = ws_client.get_objects([{'name' : params['analysis_id'],'workspace' : params['ws_id']}])
-#			if 'alignments' in analysis['data'] and analysis['data']['alignments'] is not None:
-#				analysis['data']['alignments'] = analysis['data']['alignments'].append({map_key : map_value}) 
-#				pprint(analysis)
-#			else:
-#				analysis['data']['alignments'] = [{map_key : map_value}]
-#				pprint(analysis)
-			#res1= ws_client.save_objects(
-                        #                {"workspace":params['ws_id'],
-                        #                 "objects": [{
-                        #                 "type":"KBaseRNASeq.RNASeqAnalysis",
-                        #                 "data":analysis['data'],
-                        #                 "ref":""}
-                        #                ]})
-	    except Exception, e:
-                raise KBaseRNASeqException("Failed to upload  the alignment: {0}".format(e))
+#                    # updata the analysis object with the alignment id
+#                    analysis_id = sample['data']['analysis_id']
+#                    self.__LOGGER.info("RNASeq Sample belongs to the {0}".format(analysis_id))
+#                    analysis = ws_client.get_objects([{'ref' : sample['data']['analysis_id']}])[0]
+#                    
+#                    pprint(analysis)
+#                    if 'alignments' in analysis['data'] and analysis['data']['alignments'] is not None:
+#                            analysis['data']['alignments'][map_key] = map_value
+#                    else:
+#                        analysis['data']['alignments'] = {map_key : map_value}
+#
+#                    pprint(analysis)
+#         
+#                    res1= ws_client.save_objects(
+#                                        {"workspace":params['ws_id'],
+#                                         "objects": [{
+#                                         "type":"KBaseRNASeq.RNASeqAnalysis",
+#                                         "data":analysis['data'],
+#                                         "objid":int(sample['data']['analysis_id'].split('/')[1])}
+#                                        ]})
+            except Exception, e:
+                    self.__LOGGER.exception("Failed to upload the alignment: {0}".format(e))
+                    raise KBaseRNASeqException("Failed to upload  the alignment: {0}".format(e))
 
 	except Exception,e:
             raise KBaseRNASeqException("Error Running Tophatcall {0}".format("".join(traceback.format_exc())))
@@ -869,7 +879,11 @@ class KBaseRNASeq:
 
 		#map_key = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[sample['data']['metadata']['sample_id']],params["ws_id"],user_token)
                 #map_value = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params['output_obj_name']],params["ws_id"],user_token)[0]
-                #self.__LOGGER.info( "Updating the Analysis object")
+                self.__LOGGER.info( "Updating the Analysis object")
+                map_key = "{0}/{1}".format(params["ws_id"], params['sample_id']) # it will be the same one
+                map_value = "{0}/{1}".format(params["ws_id"], params['output_obj_name']) # need to use the latest one
+                if 'analysis_id' in sample['data']  and sample['data']['analysis_id'] is not None:
+		    script_util.updateAlignmentOnAnalysisTO(self.__LOGGER, ws_client, map_key, map_value, sample['data']['analysis_id'],  params['ws_id'], int(sample['data']['analysis_id'].split('/')[1]))
 
                 #if 'analysis_id' in sample['data']['metadata']  and sample['data']['metadata']['analysis_id'] is not None:
                 # updata the analysis object with the alignment id
