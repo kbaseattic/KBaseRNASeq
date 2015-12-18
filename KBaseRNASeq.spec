@@ -704,7 +704,7 @@ typedef structure{
         }CufflinksParams;
 
 async funcdef CufflinksCall(CufflinksParams params)
-    returns (UnspecifiedObject) authentication required;
+    returns (ws_expression_sample_id) authentication required;
 
 typedef structure{
 	string ws_id;

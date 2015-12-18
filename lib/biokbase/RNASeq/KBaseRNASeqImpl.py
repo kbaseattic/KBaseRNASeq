@@ -308,7 +308,8 @@ class KBaseRNASeq:
 	    	returnVal = { "output" : params['output_obj_name'],"workspace" : params['ws_id'] }	
 	except Exception, e:
 		raise KBaseRNASeqException("Build Bowtie2Index failed: {0}".format(e))
-
+	finally:
+                handler_util.cleanup(self.__LOGGER,bowtie_dir)
         #END BuildBowtie2Index
 
         # At some point might do deeper type checking...
@@ -506,11 +507,12 @@ class KBaseRNASeq:
 
             except Exception, e:
                 raise KBaseRNASeqException("Failed to upload  the alignment: {0}".format(e))
-
+	    
 	except Exception,e:
                  self.__LOGGER.exception("".join(traceback.format_exc()))
                  raise KBaseRNASeqException("Error Running Bowtie2Call")
-
+	finally:
+                 handler_util.cleanup(self.__LOGGER,bowtie2_dir)
         #END Bowtie2Call
 
         # At some point might do deeper type checking...
@@ -767,8 +769,8 @@ class KBaseRNASeq:
 
 	except Exception,e:
             raise KBaseRNASeqException("Error Running Tophatcall {0}".format("".join(traceback.format_exc())))
-	#finally:
-	#	handler_util.cleanup(self.__LOGGER,tophat_dir)
+	finally:
+	    handler_util.cleanup(self.__LOGGER,tophat_dir)
 #	
 	     
         #END TophatCall
@@ -961,17 +963,19 @@ class KBaseRNASeq:
 	    except Exception, e:
 		self.__LOGGER.exception("".join(traceback.format_exc()))
                 raise KBaseRNASeqException("Failed to upload the ExpressionSample: {0}".format(e))
-            returnVal = { 'workspace' : params['ws_id'] , 'output' : params['output_obj_name'] }
+            #returnVal = { 'workspace' : params['ws_id'] , 'output' : params['output_obj_name'] }
+	    returnVal = params['output_obj_name']
 	except KBaseRNASeqException,e:
                  self.__LOGGER.exception("".join(traceback.format_exc()))
                  raise KBaseRNASeqException("Error Running Cufflinks : {0}".format(e))
-
+        finally:
+                 handler_util.cleanup(self.__LOGGER,cufflinks_dir)	
         #END CufflinksCall
 
         # At some point might do deeper type checking...
-        if not isinstance(returnVal, object):
+        if not isinstance(returnVal, basestring):
             raise ValueError('Method CufflinksCall return value ' +
-                             'returnVal is not type object as required.')
+                             'returnVal is not type basestring as required.')
         # return the results
         return [returnVal]
 
@@ -1128,11 +1132,13 @@ class KBaseRNASeq:
 		
 	    except Exception, e:
                 raise KBaseRNASeqException("Failed to upload the objects for Cuffmerge KBaseRNASeq.RNASeqAnalysis and KBaseRNASeq.RNASeqCuffmergetranscriptome: {0}".format(e))
-            returnVal = cm_obj
+            #returnVal = cm_obj
+	    returnVal = { 'workspace' : params['ws_id'] , 'output' : params['output_obj_name'] }
 	except KBaseRNASeqException,e:
                  self.__LOGGER.exception("".join(traceback.format_exc()))
                  raise
-
+	finally:
+                 handler_util.cleanup(self.__LOGGER,cuffmerge_dir)
         #END CuffmergeCall
 
         # At some point might do deeper type checking...
@@ -1311,10 +1317,12 @@ class KBaseRNASeq:
                                         ]})
             except Exception, e:
                 raise KBaseRNASeqException("Failed to upload the KBaseRNASeq.RNASeqCuffdiffdifferentialExpression and KBaseRNASeq.RNASeqAnalysis : {0}".format(e))
-            returnVal = cm_obj
+            returnVal = { 'workspace' : params['ws_id'] , 'output' : params['output_obj_name'] }
         except KBaseRNASeqException,e:
                  self.__LOGGER.exception("".join(traceback.format_exc()))
                  raise
+	finally:
+                 handler_util.cleanup(self.__LOGGER,cuffdiff_dir)
 	
         #END CuffdiffCall
 
