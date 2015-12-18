@@ -4,8 +4,8 @@
 	"context": null,
 	"params":[ 	
 	{
-  	"ws_id": "RNASeqTestData",
-	"analysis" : "Ecoli_sample_exp",
-	"output_obj_name" : "Ecoli_cuffmerge"
+  	"ws_id": "srividya22:1450203576610",
+	"analysis" : "t3_Ecoli_RNASeq_Test_Exp",
+	"output_obj_name" : "t2_Ecoli_cuffmerge"
 	}]	
 }
