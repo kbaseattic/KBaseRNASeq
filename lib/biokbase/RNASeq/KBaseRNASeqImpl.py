@@ -770,7 +770,7 @@ class KBaseRNASeq:
 	except Exception,e:
             raise KBaseRNASeqException("Error Running Tophatcall {0}".format("".join(traceback.format_exc())))
 	finally:
-		handler_util.cleanup(self.__LOGGER,tophat_dir)
+	    handler_util.cleanup(self.__LOGGER,tophat_dir)
 #	
 	     
         #END TophatCall
@@ -969,7 +969,7 @@ class KBaseRNASeq:
                  self.__LOGGER.exception("".join(traceback.format_exc()))
                  raise KBaseRNASeqException("Error Running Cufflinks : {0}".format(e))
         finally:
-                handler_util.cleanup(self.__LOGGER,cufflinks_dir)	
+                 handler_util.cleanup(self.__LOGGER,cufflinks_dir)	
         #END CufflinksCall
 
         # At some point might do deeper type checking...
@@ -1138,7 +1138,7 @@ class KBaseRNASeq:
                  self.__LOGGER.exception("".join(traceback.format_exc()))
                  raise
 	finally:
-                handler_util.cleanup(self.__LOGGER,cuffmerge_dir)
+                 handler_util.cleanup(self.__LOGGER,cuffmerge_dir)
         #END CuffmergeCall
 
         # At some point might do deeper type checking...
@@ -1322,7 +1322,7 @@ class KBaseRNASeq:
                  self.__LOGGER.exception("".join(traceback.format_exc()))
                  raise
 	finally:
-                handler_util.cleanup(self.__LOGGER,cuffdiff_dir)
+                 handler_util.cleanup(self.__LOGGER,cuffdiff_dir)
 	
         #END CuffdiffCall
 
