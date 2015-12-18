@@ -449,6 +449,12 @@
 	}RNASeqCuffmergetranscriptome;
 
 /*
+      Id for KBaseRNASeq.RNASeqCuffmergetranscriptome
+      @id ws KBaseRNASeq.RNASeqCuffmergetranscriptome
+*/
+
+        typedef string ws_transcriptome_id;
+/*
    Object RNASeqDifferentialExpression file structure
 */
    typedef structure {
@@ -456,6 +462,14 @@
 	RNASeqAnalysis analysis;
       	}RNASeqCuffdiffdifferentialExpression;
 	
+
+/*
+      Id for KBaseRNASeq.RNASeqCuffdiffdifferentialExpression
+      @id ws KBaseRNASeq.RNASeqCuffdiffdifferentialExpression
+*/
+
+        typedef string ws_cuffdiff_diff_exp_id;
+
 /* FUNCTIONS used in the service */
 
 /* Function parameters to call fastqc */

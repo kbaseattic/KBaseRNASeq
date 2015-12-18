@@ -28,6 +28,23 @@ except:
 from biokbase.workspace.client import Workspace
 
 
+def updateAnalysisTO(logger, ws_client, field, map_key, map_value, anal_ref, ws_id, objid):
+    
+        analysis = ws_client.get_objects([{'ref' : anal_ref}])[0]
+        
+        if field in analysis['data'] and analysis['data'][field] is not None:
+                analysis['data'][field][map_key] = map_value
+        else:
+            analysis['data'][field] = {map_key : map_value}
+	logger.info("Analysis object updated {0}".format(json.dumps(analysis['data'])))
+        res1= ws_client.save_objects(
+                            {"workspace":ws_id,
+                             "objects": [{
+                             "type":"KBaseRNASeq.RNASeqAnalysis",
+                             "data":analysis['data'],
+                             "objid":objid}
+                            ]})
+
 
 def updateAlignmentOnAnalysisTO(logger, ws_client, map_key, map_value, anal_ref, ws_id, objid):
     
@@ -37,7 +54,7 @@ def updateAlignmentOnAnalysisTO(logger, ws_client, map_key, map_value, anal_ref,
                 analysis['data']['alignments'][map_key] = map_value
         else:
             analysis['data']['alignments'] = {map_key : map_value}
-
+	
         res1= ws_client.save_objects(
                             {"workspace":ws_id,
                              "objects": [{
@@ -45,6 +62,29 @@ def updateAlignmentOnAnalysisTO(logger, ws_client, map_key, map_value, anal_ref,
                              "data":analysis['data'],
                              "objid":objid}
                             ]})
+
+
+def updateExpressionOnAnalysisTO(logger, ws_client, map_key, map_value, sample_name, ws_id):
+	##### Need to handle if analysis id is not present
+        sample = ws_client.get_objects([{'name' : sample_name , 'workspace' : ws_id }])[0]
+	if 'analysis_id' in sample['data']  and sample['data']['analysis_id'] is not None:
+		analysis_obid = int(sample['data']['analysis_id'].split('/')[1])
+		analysis_wsid = int(sample['data']['analysis_id'].split('/')[0])
+		analysis = ws_client.get_objects([{'ref' : "{0}/{1}".format(analysis_wsid, analysis_obid)}])[0]
+
+        	if 'expression_values' in analysis['data'] and analysis['data']['expression_values'] is not None:
+                	analysis['data']['expression_values'][map_key] = map_value
+        	else:
+            		analysis['data']['expression_values'] = {map_key : map_value}
+
+        	res1= ws_client.save_objects(
+                            	{"workspace":ws_id,
+                             	"objects": [{
+                             	"type":"KBaseRNASeq.RNASeqAnalysis",
+                             	"data":analysis['data'],
+                             	"objid":analysis_id}
+                            	]})
+
 
 
 def stderrlogger(name, level=logging.INFO):

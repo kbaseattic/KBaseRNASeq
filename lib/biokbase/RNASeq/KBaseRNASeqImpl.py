@@ -59,6 +59,7 @@ class KBaseRNASeq:
     __TOPHAT_DIR = 'tophat'
     __CUFFLINKS_DIR = 'cufflinks'
     __CUFFMERGE_DIR = 'cuffmerge'
+    __CUFFDIFF_DIR = 'cuffdiff'
     __PUBLIC_SHOCK_NODE = 'true'
     __ASSEMBLY_GTF_FN = 'assembly_GTF_list.txt'
     __STATS_DIR = 'stats'
@@ -418,9 +419,12 @@ class KBaseRNASeq:
             try:
 		
                 script_util.runProgram(self.__LOGGER,"bowtie2",bowtie2_cmd,None,os.getcwd())
-		bam_file = os.path.join(output_dir,"accepted_hits.bam")
+		bam_file = os.path.join(output_dir,"accepted_hits_unsorted.bam")
 		sam_to_bam = "view -bS -o {0} {1}".format(bam_file,out_file)
 		script_util.runProgram(self.__LOGGER,"samtools",sam_to_bam,None,os.getcwd())
+		final_bam_prefix = os.path.join(output_dir,"accepted_hits")
+		sort_bam_cmd  = "sort {0} {1}".format(bam_file,final_bam_prefix)
+		script_util.runProgram(self.__LOGGER,"samtools",sort_bam_cmd,None,os.getcwd())
                 #script_util.runProgram(self.__LOGGER,self.__SCRIPT_TYPE['tophat_script'],tophat_cmd,self.__SCRIPTS_DIR,os.getcwd())
             except Exception,e:
                 raise KBaseRNASeqException("Error Running the bowtie2 command {0},{1},{2}".format(bowtie2_cmd,bowtie2_dir,e))
@@ -457,13 +461,31 @@ class KBaseRNASeq:
                                          "data":bowtie2_out,
                                          "name":params['output_obj_name']}
                                         ]})
-		#map_key = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params['sample_id']],params["ws_id"],user_token)
-                #map_value = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params['output_obj_name']],params["ws_id"],user_token)[0]
+		map_key = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params['sample_id']],params["ws_id"],user_token)[0]
+                map_value = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params['output_obj_name']],params["ws_id"],user_token)[0]
                 self.__LOGGER.info( "Updating the Analysis object")
-                map_key = "{0}/{1}".format(params["ws_id"], params['sample_id']) # it will be the same one
-                map_value = "{0}/{1}".format(params["ws_id"], params['output_obj_name']) # need to use the latest one
+                #map_key = "{0}/{1}".format(params["ws_id"], params['sample_id']) # it will be the same one
+                #map_value = "{0}/{1}".format(params["ws_id"], params['output_obj_name']) # need to use the latest one
                 if 'analysis_id' in sample['data']  and sample['data']['analysis_id'] is not None:
-		    script_util.updateAlignmentOnAnalysisTO(self.__LOGGER, ws_client, map_key, map_value, sample['data']['analysis_id'],  params['ws_id'], int(sample['data']['analysis_id'].split('/')[1]))
+                    #script_util.updateAlignmentOnAnalysisTO(self.__LOGGER, ws_client, map_key, map_value, sample['data']['analysis_id'],  params['ws_id'], int(sample['data']['analysis_id'].split('/')[1]))
+                    pprint(sample)
+                    analysis_obj = "/".join(sample['data']['analysis_id'].split('/')[0:2])
+                    print analysis_obj
+                    script_util.updateAnalysisTO(self.__LOGGER, ws_client, 'alignments', map_key, map_value,analysis_obj,  params['ws_id'], int(analysis_obj.split('/')[1]))
+
+                #map_key = "{0}/{1}".format(params["ws_id"], params['sample_id']) # it will be the same one
+                #map_value = "{0}/{1}".format(params["ws_id"], params['output_obj_name']) # need to use the latest one
+                #if 'analysis_id' in sample['data']  and sample['data']['analysis_id'] is not None:
+		#    script_util.updateAnalysisTO(self.__LOGGER, ws_client, 'alignments', map_key, map_value, sample['data']['analysis_id'],  params['ws_id'], int(sample['data']['analysis_id'].split('/')[1]))
+                    
+                #    sample['data']['analysis_id'] = "/".join(sample['data']['analysis_id'].split('/')[0:1])
+                #    ws_client.save_objects(
+                #                        {"workspace":params['ws_id'],
+                #                         "objects": [{
+                #                         "type":"KBaseRNASeq.RNASeqSample",
+                #                         "data":sample['data'],
+                #                         "name":params['sample_id']}
+                #                        ]})
 
 #                if 'analysis_id' in sample['data'] and sample['data']['analysis_id'] is not None:
 #                # updata the analysis object with the alignment id
@@ -698,10 +720,26 @@ class KBaseRNASeq:
                                          "name":params['output_obj_name']}
                                         ]})
 	        self.__LOGGER.info( "Updating the Analysis object")
-                map_key = "{0}/{1}".format(params["ws_id"], params['sample_id']) # it will be the same one
-                map_value = "{0}/{1}".format(params["ws_id"], params['output_obj_name']) # need to use the latest one
+		map_key = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params['sample_id']],params["ws_id"],user_token)[0]
+                map_value = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params['output_obj_name']],params["ws_id"],user_token)[0]	
+                #map_key = "{0}/{1}".format(params["ws_id"], params['sample_id']) # it will be the same one
+                #map_value = "{0}/{1}".format(params["ws_id"], params['output_obj_name']) # need to use the latest one
                 if 'analysis_id' in sample['data']  and sample['data']['analysis_id'] is not None:
-		    script_util.updateAlignmentOnAnalysisTO(self.__LOGGER, ws_client, map_key, map_value, sample['data']['analysis_id'],  params['ws_id'], int(sample['data']['analysis_id'].split('/')[1]))
+		    #script_util.updateAlignmentOnAnalysisTO(self.__LOGGER, ws_client, map_key, map_value, sample['data']['analysis_id'],  params['ws_id'], int(sample['data']['analysis_id'].split('/')[1]))
+		    pprint(sample)
+		    analysis_obj = "/".join(sample['data']['analysis_id'].split('/')[0:2])
+		    print analysis_obj
+		    script_util.updateAnalysisTO(self.__LOGGER, ws_client, 'alignments', map_key, map_value,analysis_obj,  params['ws_id'], int(analysis_obj.split('/')[1]))
+		    #script_util.updateAnalysisTO(self.__LOGGER, ws_client, 'alignments', map_key, map_value,sample['data']['analysis_id'],  params['ws_id'], int(sample['data']['analysis_id'].split('/')[1]))
+                    
+                    #sample['data']['analysis_id'] = analysis_obj
+                    #ws_client.save_objects(
+                    #                    {"workspace":params['ws_id'],
+                    #                     "objects": [{
+                    #                     "type":"KBaseRNASeq.RNASeqSample",
+                    #                     "data":sample['data'],
+                    #                     "name":params['sample_id']}
+                    #                    ]})
 #                if 'analysis_id' in sample['data'] and sample['data']['analysis_id'] is not None:
 #                    # updata the analysis object with the alignment id
 #                    analysis_id = sample['data']['analysis_id']
@@ -788,7 +826,7 @@ class KBaseRNASeq:
                 self.__LOGGER.info("Downloading ReferenceAnnotation")
                 try:
                      agtf_fn = annotation_gtf['data']['handle']['file_name']
-                     script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=annotation_gtf['data']['handle']['id'],filename=agtf_fn, directory=".",token=user_token)
+                     script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=annotation_gtf['data']['handle']['id'],filename=agtf_fn, directory=cufflinks_dir,token=user_token)
                 except Exception,e:
                         raise Exception( "Unable to download shock file, {0}".format(e))
             else:
@@ -797,9 +835,10 @@ class KBaseRNASeq:
             ##  now ready to call
 	    output_dir = os.path.join(cufflinks_dir, params['output_obj_name'])
 	    input_file = os.path.join(cufflinks_dir,"accepted_hits.bam")
+	    gtf_file = os.path.join(cufflinks_dir,agtf_fn)
 	    print os.listdir(cufflinks_dir)
             try:
-		cufflinks_command = "-o {0} -G {1} {2}".format(output_dir,agtf_fn,input_file)
+		cufflinks_command = "-o {0} -G {1} {2}".format(output_dir,gtf_file,input_file)
                 #command_list= ['cufflinks', '-o', output_dir, '-G', agtf_fn, "{0}/accepted_hits.bam".format(cufflinks_dir)]
                 #if 'num_threads' in params and params['num_threads'] is not None:
                 #     command_list.append('-p')
@@ -832,7 +871,7 @@ class KBaseRNASeq:
                 raise KBaseRNASeqException("Error executing cufflinks {0},{1},{2}".format(" ".join(cufflinks_command),os.getcwd(),e))
             ##Parse output files
 	    exp_dict = script_util.parse_FPKMtracking(os.path.join(output_dir,"genes.fpkm_tracking")) 
-	    print exp_dict
+	    #print exp_dict
             ##  compress and upload to shock
             try:
                 self.__LOGGER.info("Ziping output")
@@ -859,7 +898,7 @@ class KBaseRNASeq:
                 es_obj = { 'id' : '1234',
                            'source_id' : 'source_id',
                            'type' : 'RNA-Seq',
-                           'numerical_interpretation' : 'do_not_know',
+                           'numerical_interpretation' : 'FPKM',
                            'external_source_date' : 'external_source_date',
                            'expression_levels' : exp_dict,
                            #'genome_id' : 'kb.g.3472',
@@ -880,10 +919,28 @@ class KBaseRNASeq:
 		#map_key = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[sample['data']['metadata']['sample_id']],params["ws_id"],user_token)
                 #map_value = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params['output_obj_name']],params["ws_id"],user_token)[0]
                 self.__LOGGER.info( "Updating the Analysis object")
-                map_key = "{0}/{1}".format(params["ws_id"], params['sample_id']) # it will be the same one
-                map_value = "{0}/{1}".format(params["ws_id"], params['output_obj_name']) # need to use the latest one
-                if 'analysis_id' in sample['data']  and sample['data']['analysis_id'] is not None:
-		    script_util.updateAlignmentOnAnalysisTO(self.__LOGGER, ws_client, map_key, map_value, sample['data']['analysis_id'],  params['ws_id'], int(sample['data']['analysis_id'].split('/')[1]))
+                map_key = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[sample['data']['metadata']['sample_id']],params["ws_id"],user_token) # it will be the same one
+                map_value = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params['output_obj_name']],params["ws_id"],user_token)
+		rna_sample = ws_client.get_objects([{'ref' : map_key[0] }])[0]
+	        pprint(rna_sample)	
+		
+                #if 'analysis_id' in sample['data']  and sample['data']['analysis_id'] is not None:
+		#script_util.updateExpressionOnAnalysisTO(self.__LOGGER, ws_client, map_key[0], map_value[0], sample['data']['metadata']['sample_id'],  params['ws_id'])
+                if 'analysis_id' in rna_sample['data']  and rna_sample['data']['analysis_id'] is not None:
+		    #script_util.updateAlignmentOnAnalysisTO(self.__LOGGER, ws_client, map_key, map_value, sample['data']['analysis_id'],  params['ws_id'], int(sample['data']['analysis_id'].split('/')[1]))
+		    analysis_obj = "/".join(rna_sample['data']['analysis_id'].split('/')[0:2])
+		    print analysis_obj
+		    print int(analysis_obj.split('/')[1])
+		    script_util.updateAnalysisTO(self.__LOGGER, ws_client, 'expression_values', map_key[0], map_value[0], analysis_obj,  params['ws_id'], int(analysis_obj.split('/')[1]))
+                    
+                    #sample['data']['analysis_id'] = "/".join(sample['data']['analysis_id'].split('/')[0:1])
+                    #ws_client.save_objects(
+                    #                    {"workspace":params['ws_id'],
+                    #                     "objects": [{
+                    #                     "type":"KBaseRNASeq.RNASeqSample",
+                    #                     "data":sample['data'],
+                    #                     "name":params['sample_id']}
+                    #                    ]})
 
                 #if 'analysis_id' in sample['data']['metadata']  and sample['data']['metadata']['analysis_id'] is not None:
                 # updata the analysis object with the alignment id
@@ -904,7 +961,7 @@ class KBaseRNASeq:
 	    except Exception, e:
 		self.__LOGGER.exception("".join(traceback.format_exc()))
                 raise KBaseRNASeqException("Failed to upload the ExpressionSample: {0}".format(e))
-            returnVal = es_obj
+            returnVal = { 'workspace' : params['ws_id'] , 'output' : params['output_obj_name'] }
 	except KBaseRNASeqException,e:
                  self.__LOGGER.exception("".join(traceback.format_exc()))
                  raise KBaseRNASeqException("Error Running Cufflinks : {0}".format(e))
@@ -950,8 +1007,9 @@ class KBaseRNASeq:
 
                 shock_re =  re.compile(r'^(.*)/node/([^?]*)\??')
                 # TODO: Change expression_values object design
-                for le in analysis['data']['expression_values']:
-                  for k,v in le.items():
+		le = analysis['data']['expression_values']
+                #for le in analysis['data']['expression_values']:
+                for k,v in le.items():
                     ko,vo=ws_client.get_objects([{'ref' : k}, {'ref' : v} ])
 		    print ko['info']
                     sp = os.path.join(cuffmerge_dir, ko['info'][1]) 
@@ -1040,7 +1098,7 @@ class KBaseRNASeq:
             except Exception, e:
                 raise KBaseRNASeqException("Failed to upload the index: {0}".format(e))
 	   
-            analysis['data']['transcriptome_id'] = params['output_obj_name']	
+            analysis['data']['transcriptome_id'] = "{0}/{1}".format(params["ws_id"], params['output_obj_name'])	
                 # raise Exception(task_output["stdout"], task_output["stderr"])
 
 	    ## Save object to workspace
@@ -1048,17 +1106,28 @@ class KBaseRNASeq:
                 self.__LOGGER.info("Saving Cuffmerge object to workspace")
                 cm_obj = { 'file' : handle,
                            'analysis' : analysis['data']
-                }
-
-            	res= ws_client.save_objects(
+                	 }
+		pprint(cm_obj)
+		
+                res= ws_client.save_objects(
+                                        {"workspace":params['ws_id'],
+                                         "objects": [{
+                                         "type":"KBaseRNASeq.RNASeqAnalysis",
+                                         "data":analysis['data'],
+                                         "name":params['analysis']}
+                                        ]})
+		
+            	res1= ws_client.save_objects(
                                         {"workspace":params['ws_id'],
                                          "objects": [{
                                          "type":"KBaseRNASeq.RNASeqCuffmergetranscriptome",
                                          "data":cm_obj,
                                          "name":params['output_obj_name']}
                                         ]})
+
+		
 	    except Exception, e:
-                raise KBaseRNASeqException("Failed to upload the KBaseRNASeq.RNASeqCuffmergetranscriptome: {0}".format(e))
+                raise KBaseRNASeqException("Failed to upload the objects for Cuffmerge KBaseRNASeq.RNASeqAnalysis and KBaseRNASeq.RNASeqCuffmergetranscriptome: {0}".format(e))
             returnVal = cm_obj
 	except KBaseRNASeqException,e:
                  self.__LOGGER.exception("".join(traceback.format_exc()))
@@ -1078,7 +1147,7 @@ class KBaseRNASeq:
         # return variables are: returnVal
         #BEGIN CuffdiffCall
 	user_token=ctx['token']
-        self.__LOGGER.info("Started CuffmergeCall")
+        self.__LOGGER.info("Started CuffdiffCall")
 
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
         hs = HandleService(url=self.__HS_URL, token=user_token)
@@ -1093,40 +1162,44 @@ class KBaseRNASeq:
             self.__LOGGER.info("Downloading Analysis file")
             try:
                 analysis = ws_client.get_objects(
-                                        [{'name' : params['analysis'],'workspace' : params['ws_id']}])[0]
+                                        [{'name' : params['rnaseq_exp_details'],'workspace' : params['ws_id']}])[0]
             except Exception,e:
                  self.__LOGGER.exception("".join(traceback.format_exc()))
                  raise KBaseRNASeqException("Error Downloading objects from the workspace ")
 
             ## Downloading data from shock
             #list_file = open(self.__ASSEMBLY_GTF_FN,'w')
-	    alignment_list  = []
+	    alignments  = []
             if 'data' in analysis : #and analysis['data'] is not None:
                 self.__LOGGER.info("Downloading each expression")
 
                 shock_re =  re.compile(r'^(.*)/node/([^?]*)\??')
                 # TODO: Change expression_values object design
-                for le in analysis['data']['alignments']:
-                  for k,v in le.items():
+		le  = analysis['data']['alignments']
+                #for le in analysis['data']['alignments']:
+                for k,v in le.items():
                     ko,vo=ws_client.get_objects([{'ref' : k}, {'ref' : v} ])
                     print ko['info']
                     sp = os.path.join(cuffdiff_dir, ko['info'][1])
                     print sp
                     if not os.path.exists(sp): os.makedirs(sp)
 
-                    if 'shock_url' not in vo['data']:
-                        self.__LOGGER.info("{0} does not contain shock_url and we skip {1}".format(vo['info'][1], v))
+                    if 'file' not in vo['data']:
+                        self.__LOGGER.info("{0} does not contain file and we skip {1}".format(vo['info'][1], v))
                         next
+		    se = vo['data']['file']['id']
+		    se_url = vo['data']['file']['url']
+		    efn = vo['data']['file']['file_name']
+                    #se = shock_re.search(vo['data']['file'])
+                    #if se is None:
+                    #    self.__LOGGER.info("{0} does not contain shock_url and we skip {1}".format(vo['info'][1], v))
+                    #    next
 
-                    se = shock_re.search(vo['data']['shock_url'])
-                    if se is None:
-                        self.__LOGGER.info("{0} does not contain shock_url and we skip {1}".format(vo['info'][1], v))
-                        next
-
-                    efn = "{0}.zip".format(vo['info'][1])
-                    print efn
+                    #efn = "{0}.zip".format(vo['info'][1])
+                    #print efn
 	 	    try:
-                         script_util.download_file_from_shock(self.__LOGGER, shock_service_url=se.group(1), shock_id=se.group(2),filename=efn, directory=cuffdiff_dir,token=user_token)
+                         script_util.download_file_from_shock(self.__LOGGER, shock_service_url=se_url, shock_id=se,filename=efn, directory=cuffdiff_dir,token=user_token)
+			 
                     except Exception,e:
                             raise Exception( "Unable to download shock file, {0}".format(e))
                     try:
@@ -1138,7 +1211,7 @@ class KBaseRNASeq:
                        print "{0}/accepted_hits.bam\n".format(sp)
                        # Would it be better to be skipping this? if so, replace Exception to be next
                        next
-		       alignments.add("{0}/accepted_hits.bam ".format(sp))
+		       alignments.append("{0}/accepted_hits.bam ".format(sp))
                        #raise Exception("{0} does not contain transcripts.gtf:  {1}".format(vo['info'][1], v))
                     #list_file.write("{0}/transcripts.gtf\n".format(sp))
             else:
@@ -1148,11 +1221,32 @@ class KBaseRNASeq:
             ##  now ready to call
             output_dir = os.path.join(cuffdiff_dir, params['output_obj_name'])
 	    bam_files = " ".join([i for i in alignments])
-	    labels = ",".join([i in labels])
-	    merged_gtf = ""
+	    print bam_files
+	    labels = ",".join(params['labels'])
+	    merged_gtf = analysis['data']['transcriptome_id']
+	    try:
+                transcriptome = ws_client.get_objects(
+                                        [{ 'ref' : merged_gtf }])[0]
+            except Exception,e:
+                 self.__LOGGER.exception("".join(traceback.format_exc()))
+                 raise KBaseRNASeqException("Error Downloading merged transcriptome ") 
+	    t_url = transcriptome['data']['file']['url']
+	    t_id = transcriptome['data']['file']['id']
+	    t_name = transcriptome['data']['file']['file_name']
+	    try:
+                 script_util.download_file_from_shock(self.__LOGGER, shock_service_url=t_url, shock_id=t_id,filename=t_name, directory=cuffdiff_dir,token=user_token)
+
+            except Exception,e:
+                 raise Exception( "Unable to download transcriptome shock file, {0}".format(e))
             try:
+                 script_util.unzip_files(self.__LOGGER,os.path.join(cuffdiff_dir,t_name),cuffdiff_dir)
+                 print os.listdir(cuffdiff_dir)
+            except Exception, e:
+                 raise Exception("Unzip transcriptome zip file  error: Please contact help@kbase.us")
+            gtf_file = os.path.join(cuffdiff_dir,"merged.gtf")
+	    try:
                 # TODO: add reference GTF later, seems googledoc command looks wrong
-                cuffdiff_command = "-o {0} -L {1} -u {2} {3}".format(output_dir,labels,merged_gtf,bam_files)
+                cuffdiff_command = "-o {0} -L {1} -u {2} {3}".format(output_dir,labels,gtf_file,bam_files)
 		self.__LOGGER.info("Executing {0}".format(cuffdiff_command))
                 script_util.runProgram(self.__LOGGER,"cuffdiff",cuffdiff_command,None,os.getcwd())
                 #task = subprocess.Popen(command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -1185,21 +1279,28 @@ class KBaseRNASeq:
                 raise KBaseRNASeqException("Error executing cuffmerge {0},{1}".format(os.getcwd(),e))
             try:
                 #handle = hs.upload("{0}.zip".format(params['output_obj_name']))
-                #handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
+                handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
                 if self.__PUBLIC_SHOCK_NODE is 'true':
                     script_util.shock_node_2b_public(self.__LOGGER,node_id=handle['id'],shock_service_url=handle['url'],token=user_token)
             except Exception, e:
-                raise KBaseRNASeqException("Failed to upload the index: {0}".format(e))
+                raise KBaseRNASeqException("Failed to upload the Cuffdiff output files: {0}".format(e))
 
-            analysis['data']['transcriptome_id'] = params['output_obj_name']
+            analysis['data']['cuffdiff_diff_exp_id'] = "{0}/{1}".format(params['ws_id'],params['output_obj_name'])
                 # raise Exception(task_output["stdout"], task_output["stderr"])
 
             ## Save object to workspace
             try:
-		self.__LOGGER.info("Saving Cuffmerge object to workspace")
+		self.__LOGGER.info("Saving Cuffdiff object to workspace")
                 cm_obj = { 'file' : handle,
                            'analysis' : analysis['data']
                 	  }
+		res= ws_client.save_objects(
+                                        {"workspace":params['ws_id'],
+                                         "objects": [{
+                                         "type":"KBaseRNASeq.RNASeqAnalysis",
+                                         "data":analysis['data'],
+                                         "name":params['rnaseq_exp_details']}
+                                        ]})
 
                 res= ws_client.save_objects(
                                         {"workspace":params['ws_id'],
@@ -1209,7 +1310,7 @@ class KBaseRNASeq:
                                          "name":params['output_obj_name']}
                                         ]})
             except Exception, e:
-                raise KBaseRNASeqException("Failed to upload the KBaseRNASeq.RNASeqCuffmergetranscriptome: {0}".format(e))
+                raise KBaseRNASeqException("Failed to upload the KBaseRNASeq.RNASeqCuffdiffdifferentialExpression and KBaseRNASeq.RNASeqAnalysis : {0}".format(e))
             returnVal = cm_obj
         except KBaseRNASeqException,e:
                  self.__LOGGER.exception("".join(traceback.format_exc()))

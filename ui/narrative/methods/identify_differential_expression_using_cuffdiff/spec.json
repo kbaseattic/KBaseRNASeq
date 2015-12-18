@@ -12,7 +12,7 @@
     "id" : "rnaseq_exp_details",
     "optional" : false,
     "advanced" : false,
-    "allow_multiple" : true,
+    "allow_multiple" : false,
     "default_values" : [ "" ],
     "field_type" : "text",
     "text_options" : {
@@ -20,7 +20,7 @@
     }
   }, {
     "id" : "annotation_gtf",
-    "optional" : false,
+    "optional" : true,
     "advanced" : false,
     "allow_multiple" : false,
     "default_values" : [ "" ],
@@ -79,7 +79,7 @@
     }
  }, {
     "id" : "labels",
-    "optional" : true,
+    "optional" : false,
     "advanced" : false,
     "allow_multiple" : true,
     "default_values" : [ "" ],
@@ -183,6 +183,14 @@
           
       }],
       "output_mapping" : [
+	{
+          "narrative_system_variable": "workspace",
+          "target_property" : "workspace"
+        },
+	{
+          "input_parameter" : "output_obj_name",
+          "target_property" : "output"
+        },
         {
           "service_method_output_path": [0],
           "target_property": "CuffdiffCall"
