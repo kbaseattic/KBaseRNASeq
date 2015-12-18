@@ -47,7 +47,7 @@
     }
   }, {
     "id" : "min-alignment-count",
-    "optional" : false,
+    "optional" : true,
     "advanced" : false,
     "allow_multiple" : false,
     "default_values" : [ "" ],    
@@ -190,10 +190,6 @@
 	{
           "input_parameter" : "output_obj_name",
           "target_property" : "output"
-        },
-        {
-          "service_method_output_path": [0],
-          "target_property": "CuffdiffCall"
         }
       ]
     }
