@@ -24,14 +24,9 @@ method-suggestions :
 parameters :
   rnaseq_exp_details :
     ui-name : |
-      Aligned RNAseq reads
+      RNASeq Experiment Name
     short-hint : |
-      Aligned RNAseq reads
-  annotation_gtf :
-    ui-name : |
-      Cuffmerge GTF Annotation
-    short-hint : |
-      Transcript annotation file produced by cuffmerge
+      Specify the RNASeq Experiment Name
   output_obj_name :
     ui-name : |
       Cuffdiff output
