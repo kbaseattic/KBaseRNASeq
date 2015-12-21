@@ -18,17 +18,7 @@
     "text_options" : {
       "valid_ws_types" : ["KBaseRNASeq.RNASeqAnalysis" ]
     }
-  }, {
-    "id" : "annotation_gtf",
-    "optional" : true,
-    "advanced" : false,
-    "allow_multiple" : false,
-    "default_values" : [ "" ],
-    "field_type" : "text",
-    "text_options" : {
-      "valid_ws_types" : ["KBaseRNASeq.ReferenceAnnotation" ]
-    }
-  }, {
+  },{
     "id" : "output_obj_name",
     "optional" : false,
     "advanced" : false,
@@ -144,10 +134,6 @@
         {
           "input_parameter" : "rnaseq_exp_details",
           "target_property" : "rnaseq_exp_details"
-        },
-        {
-          "input_parameter" : "annotation_gtf",
-          "target_property" : "annotation_gtf"
         },
         {
           "input_parameter" : "output_obj_name",
