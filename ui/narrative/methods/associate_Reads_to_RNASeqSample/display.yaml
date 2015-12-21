@@ -34,7 +34,7 @@ parameters :
             Select the paired-end read file for a RNASeq sample.
     analysis_id :
         ui-name : |
-            RNASeq experiment name
+            RNASeq Experiment Name
         short-hint : |
             Select the RNASeq experiment object obtained from SetUp RNASeq Analysis method.
     domain:
@@ -44,17 +44,17 @@ parameters :
             Enter the domain of the RNASeq sample (prokaryotic or eukaryotic)
     genome_id :
         ui-name : |
-            Reference genome
+            Reference Genome
         short-hint : |
             Select the reference genome of the RNASeq Experiment
     sample_id :
         ui-name : |
-            RNASeq sample label
+            RNASeq Sample Label
         short-hint : |
             Enter the RNASeq sample label
     replicate_id:
         ui-name : |
-            RNASeq sample replicate id
+            RNASeq Sample Replicate Id
         short-hint : |
             Specify the replicate ID for the sample replicates
     tissue: 
@@ -69,12 +69,12 @@ parameters :
             Enter the specific condition/treatment of the RNASeq sample
     platform:
         ui-name : |
-            Platform type
+            Platform
         short-hint : |
             Enter the sequencing platform used
     sample_desc :
         ui-name : |
-            Sample description
+            Sample Description
         short-hint : |
             Select the description of the RNASeq sample
     title :
@@ -89,7 +89,7 @@ parameters :
             Enter the source for the RNASeq sample
     ext_source_date:
         ui-name : |
-            Publication date
+            Publication Date
         short-hint : |
             Enter the publication date
 
