@@ -126,13 +126,6 @@
         }
       ]
     }
-  },{
-    "id" : "ext_source_date",
-    "optional" : true,
-    "advanced" : true,
-    "allow_multiple" : false,
-    "default_values" : [ "" ],
-    "field_type" : "text"
   }],
   "behavior" : {
     "service-mapping" : {
@@ -180,9 +173,6 @@
         }, {
           "input_parameter": "domain",
           "target_property": "domain"
-        },{
-          "input_parameter": "ext_source_date",
-          "target_property": "ext_source_date"
 	},{
 	  "input_parameter": "genome_id",
           "target_property": "genome_id"
