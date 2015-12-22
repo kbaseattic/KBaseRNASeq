@@ -27,8 +27,8 @@
     "field_type" : "text"
   }, {
     "id" : "num-threads",
-    "optional" : false,
-    "advanced" : false,
+    "optional" : true,
+    "advanced" : true,
     "allow_multiple" : false,
     "default_values" : [ "" ],    
     "field_type" : "text",
@@ -38,7 +38,7 @@
   }, {
     "id" : "min-alignment-count",
     "optional" : true,
-    "advanced" : false,
+    "advanced" : true,
     "allow_multiple" : false,
     "default_values" : [ "" ],    
     "field_type" : "text",
@@ -76,8 +76,8 @@
     "field_type" : "text"
     }, {
     "id" : "library-type",
-    "optional" : false,
-    "advanced" : false,
+    "optional" : true,
+    "advanced" : true,
     "allow_multiple" : false,
     "default_values" : [ "" ],
     "field_type" : "dropdown",
@@ -99,8 +99,8 @@
     }
     }, {
    "id" : "library-norm-method",
-    "optional" : false,
-    "advanced" : false,
+    "optional" : true,
+    "advanced" : true,
     "allow_multiple" : false,
     "default_values" : [ "" ],
     "field_type" : "dropdown",
