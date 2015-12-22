@@ -114,20 +114,6 @@
       "min_int" : 1
     }
   },{
-    "id" : "tissue",
-    "optional" : true,
-    "advanced" : false,
-    "allow_multiple" : true,
-    "default_values" : [ "" ],
-    "field_type" : "text"
-  },{
-    "id" : "condition",
-    "optional" : true,
-    "advanced" : false,
-    "allow_multiple" : true,
-    "default_values" : [ "" ],
-    "field_type" : "text"
-  },{
      "id" : "domain",
     "optional" : true,
     "advanced" : false,
@@ -149,19 +135,12 @@
   },{
     "id" : "source",
     "optional" : true,
-    "advanced" : false,
-    "allow_multiple" : false,
-    "default_values" : [ "" ],
-    "field_type" : "text"
-  },{
-    "id" : "publication_id",
-    "optional" : true,
     "advanced" : true,
     "allow_multiple" : false,
     "default_values" : [ "" ],
     "field_type" : "text"
   },{
-    "id" : "external_source_date",
+    "id" : "publication_id",
     "optional" : true,
     "advanced" : true,
     "allow_multiple" : false,
@@ -208,12 +187,6 @@
         },{
           "input_parameter": "num_replicates",
           "target_property": "num_replicates"
-        },{
-          "input_parameter": "tissue",
-          "target_property": "tissue"
-        }, {
-          "input_parameter": "condition",
-          "target_property": "condition"
         }, {
           "input_parameter": "domain",
           "target_property": "domain"
@@ -223,9 +196,6 @@
         },{
           "input_parameter": "publication_id",
           "target_property": "publication_id"
-        },{
-          "input_parameter": "external_source_date",
-          "target_property": "external_source_date"
         }
       ],
       "output_mapping" : [

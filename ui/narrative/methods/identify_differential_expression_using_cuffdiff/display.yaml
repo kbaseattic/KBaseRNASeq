@@ -54,7 +54,7 @@ parameters :
       To provide more accurately weight reads mapping to multiple locations in the genome. 
   labels  :
     ui-name : |
-      Labels
+      Condition Labels
     short-hint : |
       Specify a label for each sample which will be included in various cuffdiff output files.
   library-type  :
