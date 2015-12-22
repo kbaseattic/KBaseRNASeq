@@ -37,21 +37,21 @@ parameters :
             RNASeq Experiment Name
         short-hint : |
             Select the RNASeq experiment object obtained from SetUp RNASeq Analysis method.
+    sample_id :
+        ui-name : |
+            Associated Reads
+        short-hint : |
+            Specify the name to associated reads output object
     domain:
         ui-name : |
             Domain 
         short-hint : |
-            Enter the domain of the RNASeq sample (prokaryotic or eukaryotic)
+            Enter the domain of the RNASeq sample
     genome_id :
         ui-name : |
             Reference Genome
         short-hint : |
             Select the reference genome of the RNASeq Experiment
-    sample_id :
-        ui-name : |
-            RNASeq Sample Label
-        short-hint : |
-            Enter the RNASeq sample label
     replicate_id:
         ui-name : |
             RNASeq Sample Replicate Id
@@ -87,11 +87,7 @@ parameters :
             Source 
         short-hint : |
             Enter the source for the RNASeq sample
-    ext_source_date:
-        ui-name : |
-            Publication Date
-        short-hint : |
-            Enter the publication date
+
 
 description : |
     <p>This method allows users to associate single-end or paired-end reads to individual RNASeq sample of a given RNASeq experiment.</p>
