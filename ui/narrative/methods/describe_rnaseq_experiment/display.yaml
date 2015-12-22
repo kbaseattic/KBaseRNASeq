@@ -72,16 +72,6 @@ parameters :
             Number of replicates
         short-hint : |
             Enter the total number of replicates in the RNASeq experiment
-    tissue :
-        ui-name : |
-            Tissue
-        short-hint : |
-            Enter the tissue type used in RNASeq experiment
-    condition :
-        ui-name : |
-            Condition
-        short-hint : |
-            Enter the conditions/treatments used in RNASeq experiment
     domain :
         ui-name : |
             Domain 
@@ -97,16 +87,11 @@ parameters :
             Publication details 
         short-hint : |
             Enter the publication details of the data for RNASeq experiment (if available)
-    external_source_date:
-        ui-name : |
-            Publication date
-        short-hint : |
-            Enter the publication date (if available) 
 
 description : |
     <p>This method allows the users to provide the metadata details to set up an RNAseq experiment.</p>
     <p>Users need to fill in the metadata requirements to set up the RNAseq experiment. The mandatory requirements are: name of experiment, title of the experiment, library type (single end or paired end), genome name, total number of samples, total number of replicates and domain (prokaryotes or eukaryotes).</p>
-    <p>In addition, there are optional parameters that users can fill in if desired. These optional parameters are: experiment description, experiment design, reference genome annotation, platform type, tissue type, conditions/treatments type and publication details.</p>
+    <p>In addition, there are optional parameters that users can fill in if desired. These optional parameters are: experiment description, experiment design, reference genome annotation, platform type and publication details.</p>
     
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
     Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Fei He, Vivek Kumar.</p>
