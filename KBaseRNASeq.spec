@@ -470,6 +470,14 @@
 
         typedef string ws_cuffdiff_diff_exp_id;
 
+/*
+     Object for Report type
+*/
+    typedef structure {
+		string report_name;
+		string report_ref;
+    }ResultsToReport;
+
 /* FUNCTIONS used in the service */
 
 /* Function parameters to call fastqc */
@@ -536,7 +544,7 @@ async funcdef SetupRNASeqAnalysis(SetupRNASeqAnalysisParams params)
 	}Bowtie2IndexParams;
 
 async funcdef BuildBowtie2Index(Bowtie2IndexParams params)
-     returns(UnspecifiedObject) authentication required;
+     returns(ResultsToReport) authentication required;
    
    typedef structure{
 	int skip;

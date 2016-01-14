@@ -313,7 +313,7 @@ class KBaseRNASeq:
 					 "data":bowtie2index,
 					 "name":params['output_obj_name']}
 					]})
-	    	returnVal = { "output" : params['output_obj_name'],"workspace" : params['ws_id'] }
+	    	#returnVal = { "output" : params['output_obj_name'],"workspace" : params['ws_id'] }
 		info = res[0]
 	     ## Create report object:
                 reportObj = {
@@ -341,7 +341,8 @@ class KBaseRNASeq:
                                                 })[0]
 
        	 	print('saved Report: '+pformat(report_info))
-	
+			
+	    	returnVal = { "report_name" : reportName,"report_ref" : str(report_info[6]) + '/' + str(report_info[0]) + '/' + str(report_info[4]) }
 	except Exception, e:
 		raise KBaseRNASeqException("Build Bowtie2Index failed: {0}".format(e))
 	finally:
@@ -349,9 +350,9 @@ class KBaseRNASeq:
         #END BuildBowtie2Index
 
         # At some point might do deeper type checking...
-        if not isinstance(returnVal, object):
+        if not isinstance(returnVal, dict):
             raise ValueError('Method BuildBowtie2Index return value ' +
-                             'returnVal is not type object as required.')
+                             'returnVal is not type dict as required.')
         # return the results
         return [returnVal]
 
