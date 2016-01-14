@@ -485,7 +485,7 @@ def runProgram(logger=None,
                 raise RuntimeError('Return Code : {0} , result {1} , progName {2}'.format(process.returncode,result[1],progName))
 
         # Return result
-        return result
+        return { "result" : result , "stderr" :stderr }
 
 def hashfile(filepath):
        sha1 = hashlib.sha1()
