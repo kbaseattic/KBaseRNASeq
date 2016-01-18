@@ -114,6 +114,40 @@
       "min_int" : 1
     }
   },{
+    "id" : "singleEnd_reads",
+    "optional" : true,
+    "advanced" : false,
+    "allow_multiple" : true,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : [ "KBaseAssembly.SingleEndLibrary" ]
+    }
+  },{
+    "id" : "pairedEnd_reads",
+    "optional" : true,
+    "advanced" : false,
+    "allow_multiple" : true,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : [ "KBaseAssembly.PairedEndLibrary" ] 
+    }
+  },{
+    "id" : "condn_labels",
+    "optional" : true,
+    "advanced" : false,
+    "allow_multiple" : true,
+    "default_values" : [ "" ],
+    "field_type" : "text"
+  },{
+    "id" : "tissue",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : true,
+    "default_values" : [ "" ],
+    "field_type" : "text"
+  },{
      "id" : "domain",
     "optional" : true,
     "advanced" : false,
@@ -187,7 +221,19 @@
         },{
           "input_parameter": "num_replicates",
           "target_property": "num_replicates"
-        }, {
+        },{
+          "input_parameter": "singleEnd_reads",
+          "target_property": "singleEnd_reads"
+	},{
+          "input_parameter": "pairedEnd_reads",
+          "target_property": "pairedEnd_reads"
+	},{
+          "input_parameter": "condn_labels",
+          "target_property": "condn_labels"
+	},{
+          "input_parameter": "tissue",
+          "target_property": "tissue"
+	}, {
           "input_parameter": "domain",
           "target_property": "domain"
         }, {

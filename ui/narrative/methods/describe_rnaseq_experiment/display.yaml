@@ -72,6 +72,26 @@ parameters :
             Number of replicates
         short-hint : |
             Enter the total number of replicates in the RNASeq experiment
+    singleEnd_reads:
+	ui-name : |
+	    SingleEnd Reads
+	short-hint : |
+            Select the SingleEnd Reads  in the RNASeq experiment
+    pairedEnd_reads:
+        ui-name : |
+            PairedEnd Reads
+        short-hint : |
+            Select the PairedEnd Reads  in the RNASeq experiment
+    condn_labels:
+	ui-name : |
+            Condition Labels
+        short-hint : |
+            Specify short name for the condition labels for each sample condition in the experiment
+    tissue:
+	ui-name : |
+            Tissue type
+        short-hint : |
+            Specify the tissue types used in the Sample preparation of each sample
     domain :
         ui-name : |
             Domain 

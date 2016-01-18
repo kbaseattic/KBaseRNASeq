@@ -12,6 +12,20 @@
    */
       
       typedef string ws_rnaseq_analysis_id;
+   
+   /*
+      Id for KBaseRNASeq.RNASeqCuffmergetranscriptome
+      @id ws KBaseRNASeq.RNASeqCuffmergetranscriptome
+   */
+
+        typedef string ws_transcriptome_id;
+   
+   /*
+      Id for KBaseRNASeq.RNASeqCuffdiffdifferentialExpression
+      @id ws KBaseRNASeq.RNASeqCuffdiffdifferentialExpression
+   */
+
+        typedef string ws_cuffdiff_diff_exp_id;
 
    /*
       reference genome id for mapping the RNA-Seq fastq file
@@ -449,12 +463,6 @@
 	}RNASeqCuffmergetranscriptome;
 
 /*
-      Id for KBaseRNASeq.RNASeqCuffmergetranscriptome
-      @id ws KBaseRNASeq.RNASeqCuffmergetranscriptome
-*/
-
-        typedef string ws_transcriptome_id;
-/*
    Object RNASeqDifferentialExpression file structure
 */
    typedef structure {
@@ -462,13 +470,6 @@
 	RNASeqAnalysis analysis;
       	}RNASeqCuffdiffdifferentialExpression;
 	
-
-/*
-      Id for KBaseRNASeq.RNASeqCuffdiffdifferentialExpression
-      @id ws KBaseRNASeq.RNASeqCuffdiffdifferentialExpression
-*/
-
-        typedef string ws_cuffdiff_diff_exp_id;
 
 /*
      Object for Report type

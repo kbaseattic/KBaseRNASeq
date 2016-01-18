@@ -206,7 +206,7 @@ class KBaseRNASeq:
         #BEGIN SetupRNASeqAnalysis
 	user_token=ctx['token']
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
-        out_obj = { k:v for k,v in params.iteritems() if not k in ('ws_id','genome_id','annotation_id') and v}
+        out_obj = { k:v for k,v in params.iteritems() if not k in ('ws_id','genome_id','annotation_id', 'tissue', 'condn_labels' , 'singleEnd_reads' , 'pairedEnd_reads') and v}
         #pprint(out_obj)
         if "num_samples" in out_obj : out_obj["num_samples"] = int(out_obj["num_samples"])
         if "num_replicates" in out_obj : out_obj["num_replicates"] = int(out_obj["num_replicates"])
@@ -214,6 +214,11 @@ class KBaseRNASeq:
 	if "annotation_id" in params and params['annotation_id'] is not None: 
 	    g_ref = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params['annotation_id']],params['ws_id'],user_token)[0]
 	    out_obj['annotation_id'] = g_ref
+	if "tissue" in params and params['tissue'] is not None:
+	    out_obj['tissue'] = params['tissue'] 
+	if "condn_labels" in params and params['condn_labels'] is not None:
+            out_obj['condition'] = params['condn_labels']
+
         self.__LOGGER.info( "Uploading RNASeq Analysis object to workspace {0}".format(out_obj['experiment_id']))
 	try:
         	res= ws_client.save_objects(
@@ -227,7 +232,54 @@ class KBaseRNASeq:
  		returnVal = out_obj
 	except Exception,e:
 		raise KBaseRNASeqException("Error Saving the object to workspace {0},{1}".format(out_obj['experiment_id'],e))
+	self.__LOGGER.info( "Updating  RNASeqSamples associated with the analysis")
+	out_obj['sample_ids']= [] 
+	exp_id = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[out_obj['experiment_id']],params['ws_id'],user_token)[0]
+	r_obj = { "analysis_id" : exp_id, "metadata" : { "domain" : params['domain'] , "platform" : params['platform'] , "genome_id" : out_obj['genome_id'] } } 
+	if "singleEnd_reads" in params and params['singleEnd_reads'] is not None:
+		sample_type =  "singleend_sample"
+		exp_reads = params['singleEnd_reads']
+		pprint(exp_reads) 
+	elif "pairedEnd_reads" in params and params['pairedEnd_reads'] is not None:
+		sample_type =  "pairedend_sample"
+		exp_reads = params['pairedEnd_reads']	
+            #out_obj['sample_ids']
+	    # Create RNASeqSample obj
+	rep_id  =  0
+	for reads in exp_reads:
+		if int(params['num_replicates']) != 0 and rep_id < int(params['num_replicates']):
+	 		rep_id = rep_id + 1	 
+		s_res = ws_client.get_objects([{'name' : reads,
+                                        	'workspace' : params['ws_id']}])
+		r_obj['metadata']['sample_id'] = reads+"_RNASeqSample"
+		r_obj['metadata']['replicate_id'] = str(rep_id)
+                r_obj[sample_type] = s_res[0]['data']
+		pprint(r_obj)
+		samp_obj = ws_client.save_objects( {
+                                 "workspace":params['ws_id'],
+                                 "objects": [{
+                                                "type":"KBaseRNASeq.RNASeqSample",
+                                                "data":r_obj,
+                                                "name":r_obj['metadata']['sample_id']}]
+                                })
+		r_sample = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[r_obj['metadata']['sample_id']],params['ws_id'],user_token)[0]
+		out_obj['sample_ids'].append(r_sample)
 
+	pprint(out_obj)
+	self.__LOGGER.info( "Updating  RNASeq Analysis object to workspace {0}".format(out_obj['experiment_id']))
+        try:
+                res= ws_client.save_objects(
+                                {"workspace":params['ws_id'],
+                                 "objects": [{
+                                                "type":"KBaseRNASeq.RNASeqAnalysis",
+                                                "data":out_obj,
+                                                "name":out_obj['experiment_id']}]
+                                })
+	except Exception,e:
+                raise KBaseRNASeqException("Error Updating the object to workspace {0},{1}".format(out_obj['experiment_id'],e))
+                #returnVal = {"workspace": params['ws_id'],"output" : out_obj['experiment_id'] }
+        returnVal = out_obj
+	pprint(returnVal)
 
         #END SetupRNASeqAnalysis
 
@@ -946,12 +998,19 @@ class KBaseRNASeq:
             except Exception,e:
                  self.__LOGGER.exception("".join(traceback.format_exc()))
                  raise KBaseRNASeqException("Error Downloading objects from the workspace ")
-
+	    
             ## Downloading data from shock
             list_file = open(self.__ASSEMBLY_GTF_FN,'w')
 	    if 'data' in analysis : #and analysis['data'] is not None:
+		if 'annotation_id' in analysis['data']:
+			annotation=ws_client.get_objects([{'ref' : analysis['data']['annotation_id']} ])[0]
+			annotation_name = annotation['data']['handle']['file_name']
+			try:
+                         script_util.download_file_from_shock(self.__LOGGER, shock_service_url=annotation['data']['handle']['url'], shock_id=annotation['data']['handle']['id'],filename=annotation_name, directory=cuffmerge_dir,token=user_token)
+                    	except Exception,e:
+                            raise Exception( "Unable to download shock file, {0}".format(e))
                 self.__LOGGER.info("Downloading each expression")
-
+			
                 shock_re =  re.compile(r'^(.*)/node/([^?]*)\??')
                 # TODO: Change expression_values object design
 		le = analysis['data']['expression_values']
@@ -992,7 +1051,7 @@ class KBaseRNASeq:
 	    output_dir = os.path.join(cuffmerge_dir, params['output_obj_name'])
             try:
                 # TODO: add reference GTF later, seems googledoc command looks wrong
-		cuffmerge_command = "-o {0} {1}".format(output_dir,self.__ASSEMBLY_GTF_FN)
+		cuffmerge_command = "-o {0} -g {1}/{2} {3}".format(output_dir,cuffmerge_dir,annotation_name,self.__ASSEMBLY_GTF_FN)
                 #command_list= ['cuffmerge', '-o', output_dir, '-G', agtf_fn, "{0}/accepted_hits.bam".format(cuffmerge_dir)]
                 #if 'num_threads' in params and params['num_threads'] is not None:
                 #     command_list.append('-p')
@@ -1006,7 +1065,7 @@ class KBaseRNASeq:
 		script_util.runProgram(self.__LOGGER,"cuffmerge",cuffmerge_command,None,os.getcwd())
 
             except Exception,e:
-                raise KBaseRNASeqException("Error executing cuffmerge {0},{1},{2}".format(" ".join(cuffmerge_command),os.getcwd(),e))
+                raise KBaseRNASeqException("Error executing cuffmerge {0},{1},{2}".format(cuffmerge_command,os.getcwd(),e))
             
             ##  compress and upload to shock
             try:
@@ -1172,7 +1231,7 @@ class KBaseRNASeq:
                 script_util.runProgram(self.__LOGGER,"cuffdiff",cuffdiff_command,None,os.getcwd())
 
             except Exception,e:
-                raise KBaseRNASeqException("Error executing cuffmerge {0},{1},{2}".format(" ".join(cuffmerge_command),os.getcwd(),e))
+                raise KBaseRNASeqException("Error executing cuffdiff {0},{1},{2}".format(cuffdiff_command,os.getcwd(),e))
 
             ##  compress and upload to shock
             try:
@@ -1181,7 +1240,7 @@ class KBaseRNASeq:
                 script_util.zip_files(self.__LOGGER,output_dir, "{0}.zip".format(params['output_obj_name']))
                 #handle = hs.upload("{0}.zip".format(params['output_obj_name']))
             except Exception,e:
-                raise KBaseRNASeqException("Error executing cuffmerge {0},{1}".format(os.getcwd(),e))
+                raise KBaseRNASeqException("Error executing cuffdiff {0},{1}".format(os.getcwd(),e))
             try:
                 #handle = hs.upload("{0}.zip".format(params['output_obj_name']))
                 handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
