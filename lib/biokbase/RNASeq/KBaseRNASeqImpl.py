@@ -1362,7 +1362,7 @@ class KBaseRNASeq:
 	#Run Command
         try:
                 self.__LOGGER.info("Executing: {0} {1}".format("samtools", align_stats_cmd))
-		result = script_util.runProgram(self.__LOGGER,"samtools", align_stats_cmd,None,None)
+		res = script_util.runProgram(self.__LOGGER,"samtools", align_stats_cmd,None,None)
         except Exception,e:
                 raise KBaseRNASeqException("Error running samtools flagstat {0},{1}".format(bam_file,e))
 		
@@ -1379,6 +1379,7 @@ class KBaseRNASeq:
             #0 + 0 singletons (-nan%:-nan%)
             #0 + 0 with mate mapped to a different chr
             #0 + 0 with mate mapped to a different chr (mapQ>=5)
+	result = res['result']
         lines = result.splitlines()
         if  len(lines) != 11:
             raise KBaseRNASeqException("Error not getting enough samtool flagstat information: {0}".format(result))
