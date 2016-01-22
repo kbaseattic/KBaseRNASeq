@@ -667,7 +667,7 @@ typedef mapping<string Tophat_opts,t_opts opts_tophat> t_opts_str;
      }TophatParams;
 
 async funcdef TophatCall(TophatParams params)
-     returns (UnspecifiedObject) authentication required;
+     returns (AlignmentStatsResults) authentication required;
 
  typedef structure{
         int num_threads;

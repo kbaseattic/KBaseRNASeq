@@ -85,6 +85,56 @@ def updateExpressionOnAnalysisTO(logger, ws_client, map_key, map_value, sample_n
                              	"objid":analysis_id}
                             	]})
 
+def extractStatsInfo(logger,ws_client,ws_id,sample_id,result,stats_obj_name):
+	lines = result.splitlines()
+        if  len(lines) != 11:
+            raise Exception("Error not getting enough samtool flagstat information: {0}".format(result))
+        # patterns
+        two_nums  = re.compile(r'^(\d+) \+ (\d+)')
+        two_pcts  = re.compile(r'\(([0-9.na\-]+)%:([0-9.na\-]+)%\)')
+        # alignment rate
+        m = two_nums.match(lines[0])
+        total_qcpr = int(m.group(1))
+        total_qcfr = int(m.group(2))
+        total_read =  total_qcpr + total_qcfr
+
+        m = two_nums.match(lines[2])
+        mapped_r = int(m.group(1))
+        umapped_r = int(m.group(2))
+	alignment_rate = mapped_r / total_read  * 100.0
+        if alignment_rate > 100: alignment_rate = 100.0
+
+        # singletons
+        m = two_nums.match(lines[7])
+        singletons = int(m.group(1))
+	m = two_nums.match(lines[6])
+        properly_paired = int(m.group(1))
+        # Create Workspace object
+        stats_data =  {
+                       "alignment_id": sample_id,
+                       "alignment_rate": alignment_rate,
+                       #"multiple_alignments": 50, 
+                       "properly_paired": properly_paired,
+                       "singletons": singletons,
+                       "total_reads": total_read,
+                       "unmapped_reads": umapped_r,
+                       "mapped_reads": mapped_r
+                       }
+
+        ## Save object to workspace
+        logger.info( "Saving Alignment Statistics to the Workspace")
+        try:
+                res= ws_client.save_objects(
+                                        {"workspace":ws_id,
+                                         "objects": [{
+                                         "type":"KBaseRNASeq.AlignmentStatsResults",
+                                         "data": stats_data,
+				         "hidden" : 1,
+                                         "name":stats_obj_name}
+                                        ]})
+                res = stats_data
+        except Exception, e:
+                raise Exception("get Alignment Statistics failed: {0}".format(e))
 
 
 def stderrlogger(name, level=logging.INFO):

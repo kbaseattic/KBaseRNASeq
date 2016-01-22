@@ -744,8 +744,18 @@ class KBaseRNASeq:
             	script_util.runProgram(self.__LOGGER,"tophat",tophat_cmd,None,os.getcwd())
             	#script_util.runProgram(self.__LOGGER,self.__SCRIPT_TYPE['tophat_script'],tophat_cmd,self.__SCRIPTS_DIR,os.getcwd())
             except Exception,e:
-                raise KBaseRNASeqException("Error Running the tophat command {0},{1},{2}".format(tophat_cmd,tophat_dir,e))
+                raise KBaseRNASeqException("Error Running the tophat command and the samtools flagstat {0},{1},{2}".format(tophat_cmd,tophat_dir,e))
 
+	    try:
+                bam_file = output_dir+"/accepted_hits.bam"
+                align_stats_cmd="flagstat {0}".format(bam_file)
+                stats = script_util.runProgram(self.__LOGGER,"samtools",align_stats_cmd)
+                # Pass it to the stats['result']
+		stats_obj_name = params['output_obj_name']+"_"+str(hex(uuid.getnode()))+"_AlignmentStats"
+                script_util.extractStatsInfo(self.__LOGGER,ws_client,params['ws_id'],params['output_obj_name'],stats['result'],stats_obj_name)
+            except Exception , e :
+                self.__LOGGER.exception("Failed to create RNASeqAlignmentStats: {0}".format(e))
+                raise KBaseRNASeqException("Failed to create RNASeqAlignmentStats: {0}".format(e))
 
 
 	# Zip tophat folder
@@ -766,7 +776,7 @@ class KBaseRNASeq:
                 raise KBaseRNASeqException("Failed to upload the index: {0}".format(e))
             tophat_out = { "file" : tophat_handle ,"size" : os.path.getsize(out_file_path), "aligned_using" : "tophat" , "aligner_version" : "3.1.0","metadata" :  sample['data']['metadata']}
             #tophat_out = { "file" : tophat_handle ,"size" : os.path.getsize(out_file_path), "aligned_using" : "tophat" , "aligner_version" : "3.1.0", "aligner_opts" : [ (k,v) for k,v in opts_dict.items()],"metadata" :  sample['data']['metadata']}
-            returnVal = tophat_out
+            #returnVal = tophat_out
 	     
 	    ## Save object to workspace
             self.__LOGGER.info( "Saving Tophat object to  workspace")
@@ -791,7 +801,7 @@ class KBaseRNASeq:
             except Exception, e:
                     self.__LOGGER.exception("Failed to upload the alignment: {0}".format(e))
                     raise KBaseRNASeqException("Failed to upload  the alignment: {0}".format(e))
-
+	    returnVal = { "stats_obj" : stats_obj_name , "alignment_id" : params['output_obj_name'] , "analysis_id" : analysis_obj }	
 	except Exception,e:
             raise KBaseRNASeqException("Error Running Tophatcall {0}".format("".join(traceback.format_exc())))
 	finally:
@@ -801,9 +811,9 @@ class KBaseRNASeq:
         #END TophatCall
 
         # At some point might do deeper type checking...
-        if not isinstance(returnVal, object):
+        if not isinstance(returnVal, dict):
             raise ValueError('Method TophatCall return value ' +
-                             'returnVal is not type object as required.')
+                             'returnVal is not type dict as required.')
         # return the results
         return [returnVal]
 
