@@ -6,7 +6,7 @@
   "categories" : ["active"],
   "widgets" : {
     "input" : null,
-    "output" : kbaseRNASeqPie
+    "output" : "kbaseRNASeqPie"
   },
    "parameters" : [ {
     "id" : "sample_id",
