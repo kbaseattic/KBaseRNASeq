@@ -24,9 +24,9 @@ method-suggestions :
 parameters :
     sample_id :
         ui-name : |
-            Reads Associated with RNASeq Sample
+            Reads Associated with RNA-seq Sample
         short-hint : |
-            Select the reads associated with RNASeq sample
+            Select the reads associated with RNA-seq sample
     bowtie2_index :
         ui-name : |
             Indexed Genome
