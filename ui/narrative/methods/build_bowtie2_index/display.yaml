@@ -3,7 +3,7 @@
 #
 name     : Build Bowtie2 Index 
 tooltip  : |
-    Build bowtie2 index for a given genome
+    This method builds bowtie2 index for a given genome.
 
 screenshots :
     []
@@ -34,13 +34,13 @@ parameters :
         ui-name : |
             Genome
         short-hint : |
-            Select genome that needs to be indexed 
+            Genome that needs to be indexed 
 
     out_index_name:
         ui-name : |
             Output
         short-hint : |
-            Enter the name of the indexed genome
+            Name of the indexed genome
 
 description : |
    <p>This method allows to build the Bowtie2 Indexes for a given reference genome object.</p> 
