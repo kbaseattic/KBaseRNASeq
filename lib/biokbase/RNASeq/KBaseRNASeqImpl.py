@@ -207,7 +207,6 @@ class KBaseRNASeq:
 	user_token=ctx['token']
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
         out_obj = { k:v for k,v in params.iteritems() if not k in ('ws_id','genome_id','annotation_id', 'tissue', 'condn_labels' , 'singleEnd_reads' , 'pairedEnd_reads') and v}
-        #pprint(out_obj)
         if "num_samples" in out_obj : out_obj["num_samples"] = int(out_obj["num_samples"])
         if "num_replicates" in out_obj : out_obj["num_replicates"] = int(out_obj["num_replicates"])
 	if "genome_id" in params and params['genome_id'] is not None: out_obj["genome_id"] = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params["genome_id"]],params["ws_id"],user_token)[0]
@@ -239,7 +238,6 @@ class KBaseRNASeq:
 	if "singleEnd_reads" in params and params['singleEnd_reads'] is not None:
 		sample_type =  "singleend_sample"
 		exp_reads = params['singleEnd_reads']
-		pprint(exp_reads) 
 	elif "pairedEnd_reads" in params and params['pairedEnd_reads'] is not None:
 		sample_type =  "pairedend_sample"
 		exp_reads = params['pairedEnd_reads']	
@@ -254,7 +252,6 @@ class KBaseRNASeq:
 		r_obj['metadata']['sample_id'] = reads+"_RNASeqSample"
 		r_obj['metadata']['replicate_id'] = str(rep_id)
                 r_obj[sample_type] = s_res[0]['data']
-		pprint(r_obj)
 		samp_obj = ws_client.save_objects( {
                                  "workspace":params['ws_id'],
                                  "objects": [{
@@ -265,7 +262,6 @@ class KBaseRNASeq:
 		r_sample = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[r_obj['metadata']['sample_id']],params['ws_id'],user_token)[0]
 		out_obj['sample_ids'].append(r_sample)
 
-	pprint(out_obj)
 	self.__LOGGER.info( "Updating  RNASeq Analysis object to workspace {0}".format(out_obj['experiment_id']))
         try:
                 res= ws_client.save_objects(
@@ -279,7 +275,6 @@ class KBaseRNASeq:
                 raise KBaseRNASeqException("Error Updating the object to workspace {0},{1}".format(out_obj['experiment_id'],e))
                 #returnVal = {"workspace": params['ws_id'],"output" : out_obj['experiment_id'] }
         returnVal = out_obj
-	pprint(returnVal)
 
         #END SetupRNASeqAnalysis
 
@@ -295,7 +290,7 @@ class KBaseRNASeq:
         # return variables are: returnVal
         #BEGIN BuildBowtie2Index
 	user_token=ctx['token']
-    
+   	pprint(params) 
         #svc_token = Token(user_id=self.__SVC_USER, password=self.__SVC_PASS).token
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
 	hs = HandleService(url=self.__HS_URL, token=user_token)
@@ -413,6 +408,7 @@ class KBaseRNASeq:
         # return variables are: returnVal
         #BEGIN Bowtie2Call
 	user_token=ctx['token']
+	pprint(params)
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
         hs = HandleService(url=self.__HS_URL, token=user_token)
         try:
@@ -435,7 +431,7 @@ class KBaseRNASeq:
 	    opts_dict = { k:v for k,v in params.iteritems() if not k in ('ws_id','sample_id','reference','bowtie_index','analysis_id','output_obj_name') and v is not None }
 
 	    if 'data' in sample and sample['data'] is not None:
-                self.__LOGGER.info("getting here")
+                #self.__LOGGER.info("getting here")
                 if 'metadata' in sample['data'] and sample['data']['metadata'] is not None:
                         genome = sample['data']['metadata']['genome_id']
                         self.__LOGGER.info(genome)
@@ -451,17 +447,16 @@ class KBaseRNASeq:
             if 'pairedend_sample' in sample['data'] and sample['data']['pairedend_sample'] is not None:
                 lib_type = "PairedEnd"
                 pairedend_sample = sample['data']['pairedend_sample']
-                self.__LOGGER.info(lib_type)
                 if "handle_1" in pairedend_sample and "id" in pairedend_sample['handle_1']:
                         sample_shock_id1  = pairedend_sample['handle_1']['id']
                 if "handle_1" in pairedend_sample and "file_name" in pairedend_sample['handle_1']:
-                        filename1 = pairedend_sample['handle']['file_name']
+                        filename1 = pairedend_sample['handle_1']['file_name']
                 if sample_shock_id1 is None:
                         raise Exception("Handle1 there was not shock id found.")
                 if "handle_2" in pairedend_sample  and "id" in pairedend_sample['handle_2']:
                         sample_shock_id2  = pairedend_sample['handle_2']['id']
                 if "handle_2" in pairedend_sample and "file_name" in pairedend_sample['handle_2']:
-                        filename2 = pairedend_sample['handle']['file_name']
+                        filename2 = pairedend_sample['handle_2']['file_name']
 
                 if sample_shock_id2 is None:
                         raise Exception("Handle2 there was not shock id found.")
@@ -566,7 +561,6 @@ class KBaseRNASeq:
                 #map_value = "{0}/{1}".format(params["ws_id"], params['output_obj_name']) # need to use the latest one
                 if 'analysis_id' in sample['data']  and sample['data']['analysis_id'] is not None:
                     #script_util.updateAlignmentOnAnalysisTO(self.__LOGGER, ws_client, map_key, map_value, sample['data']['analysis_id'],  params['ws_id'], int(sample['data']['analysis_id'].split('/')[1]))
-                    pprint(sample)
                     analysis_obj = "/".join(sample['data']['analysis_id'].split('/')[0:2])
                     script_util.updateAnalysisTO(self.__LOGGER, ws_client, 'alignments', map_key, map_value,analysis_obj,  params['ws_id'], int(analysis_obj.split('/')[1]))
 
@@ -597,6 +591,8 @@ class KBaseRNASeq:
         ## TODO: Need to take Analysis TO as input object instead of sample id
 
 	user_token=ctx['token']
+	pprint(params)
+        ws_client=Workspace(url=self.__WS_URL, token=user_token)
 	ws_client=Workspace(url=self.__WS_URL, token=user_token)
         hs = HandleService(url=self.__HS_URL, token=user_token)
 	try:
@@ -641,10 +637,10 @@ class KBaseRNASeq:
 	    
  
             if 'data' in sample and sample['data'] is not None:
-		self.__LOGGER.info("getting here")
+		#self.__LOGGER.info("getting here")
 		if 'metadata' in sample['data'] and sample['data']['metadata'] is not None:
 			genome = sample['data']['metadata']['genome_id']
-			self.__LOGGER.info(genome)
+			#self.__LOGGER.info(genome)
 	    if 'singleend_sample' in sample['data'] and sample['data']['singleend_sample'] is not None:
 		lib_type = "SingleEnd"
 		singleend_sample = sample['data']['singleend_sample']
@@ -657,17 +653,17 @@ class KBaseRNASeq:
 	    if 'pairedend_sample' in sample['data'] and sample['data']['pairedend_sample'] is not None: 
 		lib_type = "PairedEnd"
 		pairedend_sample = sample['data']['pairedend_sample']
-		self.__LOGGER.info(lib_type)
+		#self.__LOGGER.info(lib_type)
 		if "handle_1" in pairedend_sample and "id" in pairedend_sample['handle_1']:
                 	sample_shock_id1  = pairedend_sample['handle_1']['id']
         	if "handle_1" in pairedend_sample and "file_name" in pairedend_sample['handle_1']:
-                	filename1 = pairedend_sample['handle']['file_name']
+                	filename1 = pairedend_sample['handle_1']['file_name']
         	if sample_shock_id1 is None:
                 	raise Exception("Handle1 there was not shock id found.")
         	if "handle_2" in pairedend_sample  and "id" in pairedend_sample['handle_2']:
                 	sample_shock_id2  = pairedend_sample['handle_2']['id']
         	if "handle_2" in pairedend_sample and "file_name" in pairedend_sample['handle_2']:
-                	filename2 = pairedend_sample['handle']['file_name']
+                	filename2 = pairedend_sample['handle_2']['file_name']
 
         	if sample_shock_id2 is None:
                 	raise Exception("Handle2 there was not shock id found.")
@@ -677,12 +673,6 @@ class KBaseRNASeq:
                 except Exception,e:
                         raise Exception( "Unable to download shock file , {0}".format(e))
 
-	    #if 'analysis_id' in sample['data'] and sample['data']['analysis_id'] is not None:
-      	    #	# updata the analysis object with the alignment id
-	    #	analysis_id = sample['data']['analysis_id']
-	    # 	self.__LOGGER.info("RNASeq Sample belongs to the {0}".format(analysis_id)) 
-
-            #self.__LOGGER.info("Tophat ran with the following options {0} ",format(str(opts_dict))) 
 	    # Download bowtie_Indexes
 	    if 'handle' in bowtie_index['data'] and bowtie_index['data']['handle'] is not None:
 		b_shock_id = bowtie_index['data']['handle']['id']
@@ -779,7 +769,6 @@ class KBaseRNASeq:
                  tophat_handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
 		 if self.__PUBLIC_SHOCK_NODE is 'true':
                         script_util.shock_node_2b_public(self.__LOGGER,node_id=tophat_handle['id'],shock_service_url=tophat_handle['url'],token=user_token)	
-                #tophat_handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
             except Exception, e:
                 raise KBaseRNASeqException("Failed to upload the index: {0}".format(e))
             tophat_out = { "file" : tophat_handle ,"size" : os.path.getsize(out_file_path), "aligned_using" : "tophat" , "aligner_version" : "3.1.0","metadata" :  sample['data']['metadata']}
@@ -803,7 +792,6 @@ class KBaseRNASeq:
                 #map_value = "{0}/{1}".format(params["ws_id"], params['output_obj_name']) # need to use the latest one
                 if 'analysis_id' in sample['data']  and sample['data']['analysis_id'] is not None:
 		    #script_util.updateAlignmentOnAnalysisTO(self.__LOGGER, ws_client, map_key, map_value, sample['data']['analysis_id'],  params['ws_id'], int(sample['data']['analysis_id'].split('/')[1]))
-		    pprint(sample)
 		    analysis_obj = "/".join(sample['data']['analysis_id'].split('/')[0:2])
 		    script_util.updateAnalysisTO(self.__LOGGER, ws_client, 'alignments', map_key, map_value,analysis_obj,  params['ws_id'], int(analysis_obj.split('/')[1]))
             except Exception, e:
@@ -830,6 +818,7 @@ class KBaseRNASeq:
         # return variables are: returnVal
         #BEGIN CufflinksCall
 	user_token=ctx['token']
+	pprint(params)
         self.__LOGGER.info("Started CufflinksCall")
         
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
@@ -964,7 +953,6 @@ class KBaseRNASeq:
                 map_key = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[sample['data']['metadata']['sample_id']],params["ws_id"],user_token) # it will be the same one
                 map_value = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params['output_obj_name']],params["ws_id"],user_token)
 		rna_sample = ws_client.get_objects([{'ref' : map_key[0] }])[0]
-	        pprint(rna_sample)	
 		
                 #if 'analysis_id' in sample['data']  and sample['data']['analysis_id'] is not None:
 		#script_util.updateExpressionOnAnalysisTO(self.__LOGGER, ws_client, map_key[0], map_value[0], sample['data']['metadata']['sample_id'],  params['ws_id'])
@@ -997,6 +985,7 @@ class KBaseRNASeq:
         # return variables are: returnVal
         #BEGIN CuffmergeCall
 	user_token=ctx['token']
+	pprint(params)
         self.__LOGGER.info("Started CuffmergeCall")
         
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
@@ -1110,7 +1099,7 @@ class KBaseRNASeq:
                 cm_obj = { 'file' : handle,
                            'analysis' : analysis['data']
                 	 }
-		pprint(cm_obj)
+		#pprint(cm_obj)
 		
                 res= ws_client.save_objects(
                                         {"workspace":params['ws_id'],
@@ -1152,6 +1141,7 @@ class KBaseRNASeq:
         # return variables are: returnVal
         #BEGIN CuffdiffCall
 	user_token=ctx['token']
+	pprint(params)
         self.__LOGGER.info("Started CuffdiffCall")
 
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
