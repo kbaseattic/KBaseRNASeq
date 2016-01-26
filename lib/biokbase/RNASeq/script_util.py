@@ -46,45 +46,6 @@ def updateAnalysisTO(logger, ws_client, field, map_key, map_value, anal_ref, ws_
                             ]})
 
 
-def updateAlignmentOnAnalysisTO(logger, ws_client, map_key, map_value, anal_ref, ws_id, objid):
-    
-        analysis = ws_client.get_objects([{'ref' : anal_ref}])[0]
-        
-        if 'alignments' in analysis['data'] and analysis['data']['alignments'] is not None:
-                analysis['data']['alignments'][map_key] = map_value
-        else:
-            analysis['data']['alignments'] = {map_key : map_value}
-	
-        res1= ws_client.save_objects(
-                            {"workspace":ws_id,
-                             "objects": [{
-                             "type":"KBaseRNASeq.RNASeqAnalysis",
-                             "data":analysis['data'],
-                             "objid":objid}
-                            ]})
-
-
-def updateExpressionOnAnalysisTO(logger, ws_client, map_key, map_value, sample_name, ws_id):
-	##### Need to handle if analysis id is not present
-        sample = ws_client.get_objects([{'name' : sample_name , 'workspace' : ws_id }])[0]
-	if 'analysis_id' in sample['data']  and sample['data']['analysis_id'] is not None:
-		analysis_obid = int(sample['data']['analysis_id'].split('/')[1])
-		analysis_wsid = int(sample['data']['analysis_id'].split('/')[0])
-		analysis = ws_client.get_objects([{'ref' : "{0}/{1}".format(analysis_wsid, analysis_obid)}])[0]
-
-        	if 'expression_values' in analysis['data'] and analysis['data']['expression_values'] is not None:
-                	analysis['data']['expression_values'][map_key] = map_value
-        	else:
-            		analysis['data']['expression_values'] = {map_key : map_value}
-
-        	res1= ws_client.save_objects(
-                            	{"workspace":ws_id,
-                             	"objects": [{
-                             	"type":"KBaseRNASeq.RNASeqAnalysis",
-                             	"data":analysis['data'],
-                             	"objid":analysis_id}
-                            	]})
-
 def extractStatsInfo(logger,ws_client,ws_id,sample_id,result,stats_obj_name):
 	lines = result.splitlines()
         if  len(lines) != 11:
@@ -223,13 +184,11 @@ def download_file_from_shock(logger,
 
     header = dict()
     header["Authorization"] = "Oauth {0}".format(token)
-    print header
-
     logger.info("Downloading shock node {0}/node/{1}".format(shock_service_url,shock_id))
 
     metadata_response = requests.get("{0}/node/{1}?verbosity=metadata".format(shock_service_url, shock_id), headers=header, stream=True, verify=True)
     shock_metadata = metadata_response.json()['data']
-    print "shock metadata is {0}".format(shock_metadata)
+    #print "shock metadata is {0}".format(shock_metadata)
     if shock_metadata is not None:
     	shockFileName = shock_metadata['file']['name']
     	shockFileSize = shock_metadata['file']['size']
@@ -280,7 +239,7 @@ def query_shock_node(logger,
     header["Authorization"] = "Oauth {0}".format(token)
 
     query_str = urllib.urlencode(condition)
-    print query_str
+    #print query_str
     
     logger.info("Querying shock node {0}/node/?query&{1}".format(shock_service_url,query_str))
 
@@ -469,9 +428,9 @@ def get_obj_info(logger,ws_url,objects,ws_id,token):
     for obj in  objects:
     	try:
             obj_infos = ws_client.get_object_info_new({"objects": [{'name': obj, 'workspace': ws_id}]})
-            print obj_infos
+            #print obj_infos
             ret.append("{0}/{1}/{2}".format(obj_infos[0][6],obj_infos[0][0],obj_infos[0][4]))
-            print ret
+            #print ret
         except Exception, e:
                      logger.error("Couldn't retrieve %s:%s from the workspace , %s " %(ws_id,obj,e))
     return ret
