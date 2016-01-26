@@ -705,7 +705,6 @@ class KBaseRNASeq:
                 raise Exception( "Unable to download shock file , {0}".format(e))
 	    output_dir = os.path.join(tophat_dir,params['output_obj_name'])
 	    gtf_file = os.path.join(tophat_dir,a_filename)
-            #bowtie_base = os.path.join(tophat_dir,"kb_g.166828.fa")
 	    bowtie_base =os.path.join(tophat_dir,handler_util.get_file_with_suffix(tophat_dir,".rev.1.bt2"))
 	    #topts_dict = { k:int(v) for (k,v) in opts_dict.items() if k in ('num_threads','read_mismatches','read_gap_length','read_edit_dist','min_intron_length','max_intron_length')}
 	    #topts_dict['no_coverage_search'] = true
@@ -714,22 +713,30 @@ class KBaseRNASeq:
 	    ### Build command line 
 	    #tophat_cmd = "-input {0} -output {1} -reference {2} -opts_dict {3}  -gtf {4} -prog tophat -base_dir {5} -library_type {6} -mode dry_run".format(sample_file,output_dir,bowtie_base,ast.literal_eval(opts_dict),gtf_file,tophat_dir,lib_type)
 
-	    if(lib_type == "SingleEnd"):
-       		sample_file = os.path.join(tophat_dir,sample_filename)
-            	tophat_cmd = "-o {0} -G {1} {2} {3}".format(output_dir,gtf_file,bowtie_base,sample_file)
-	    elif(lib_type == "PairedEnd"):
-		sample_file1 = os.path.join(tophat_dir,filename1)
-		sample_file2 = os.path.join(tophat_dir,filename2) 
-		tophat_cmd = "-o {0} -G {1} {2} {3} {4}".format(output_dir,gtf_file,bowtie_base,sample_file1,sample_file2)
-	    #if('num_threads' in opts_dict ) : tophat_cmd = (' -p '+opts_dict['num_threads'])
-	    #if('max_intron_length' in opts_dict ) : tophat_cmd += (' -I '+opts_dict['max_intron_length'])
-	    #if('min_intron_length' in opts_dict ) : tophat_cmd += (' -i '+opts_dict['min_intron_length'])
-	    #if('read_edit_dist' in opts_dict ) : tophat_cmd += (' --read-edit-dist '+opts_dict['read_edit_dist'])
-	    #if('read_gap_length' in opts_dict ) : tophat_cmd += (' --read-gap-length '+opts_dict['read_gap_length'])
-	    #if('read_mismatches' in opts_dict) : tophat_cmd += (' -N '+opts_dict['read_mismatches'])
-	    #if('library_type' in opts_dict) : tophat_cmd += (' --library-type ' + opts_dict['library_type'])
-	    #if('report_secondary_alignments' in opts_dict and int(opts_dict['report_secondary_alignments']) == 1) : tophat_cmd += ' --report-secondary-alignments'
+	    #if(lib_type == "SingleEnd"):
+       	    #	sample_file = os.path.join(tophat_dir,sample_filename)
+            #	tophat_cmd = "-o {0} -G {1} {2} {3}".format(output_dir,gtf_file,bowtie_base,sample_file)
+	    #elif(lib_type == "PairedEnd"):
+       		#sample_file1 = os.path.join(tophat_dir,filename1)
+		#sample_file2 = os.path.join(tophat_dir,filename2) 
+		#tophat_cmd = "-o {0} -G {1} {2} {3} {4}".format(output_dir,gtf_file,bowtie_base,sample_file1,sample_file2)
+	    tophat_cmd = ''
+	    if('num_threads' in opts_dict ) : tophat_cmd += (' -p '+str(opts_dict['num_threads']))
+	    if('max_intron_length' in opts_dict ) : tophat_cmd += (' -I '+str(opts_dict['max_intron_length']))
+	    if('min_intron_length' in opts_dict ) : tophat_cmd += (' -i '+str(opts_dict['min_intron_length']))
+	    if('read_edit_dist' in opts_dict ) : tophat_cmd += (' --read-edit-dist '+str(opts_dict['read_edit_dist']))
+	    if('read_gap_length' in opts_dict ) : tophat_cmd += (' --read-gap-length '+str(opts_dict['read_gap_length']))
+	    if('read_mismatches' in opts_dict) : tophat_cmd += (' -N '+str(opts_dict['read_mismatches']))
+	    if('library_type' in opts_dict) : tophat_cmd += (' --library-type ' + opts_dict['library_type'])
+	    if('report_secondary_alignments' in opts_dict and int(opts_dict['report_secondary_alignments']) == 1) : tophat_cmd += ' --report-secondary-alignments'
 	    if('no_coverage_search' in opts_dict and int(opts_dict['no_coverage_search']) == 1): tophat_cmd += ' --no-coverage-search'
+	    if(lib_type == "SingleEnd"):
+                sample_file = os.path.join(tophat_dir,sample_filename)
+                tophat_cmd += ' -o {0} -G {1} {2} {3}'.format(output_dir,gtf_file,bowtie_base,sample_file)
+            elif(lib_type == "PairedEnd"):
+                sample_file1 = os.path.join(tophat_dir,filename1)
+                sample_file2 = os.path.join(tophat_dir,filename2)
+                tophat_cmd += ' -o {0} -G {1} {2} {3} {4}'.format(output_dir,gtf_file,bowtie_base,sample_file1,sample_file2)
 #	    if(lib_type == "SingleEnd"):
 #                sample_file = os.path.join(tophat_dir,sample_filename)
 #                tophat_cmd += "-o {0} -G {1} {2} {3}".format(output_dir,gtf_file,bowtie_base,sample_file)
