@@ -74,14 +74,14 @@ parameters :
             The total number of replicates in the RNA-seq experiment
     singleEnd_reads:
         ui-name : |
-            SingleEnd Reads
+            Single-end Reads
         short-hint : |
-            The singleEnd Reads file in the RNA-seq experiment
+            The single-end reads file in the RNA-seq experiment
     pairedEnd_reads:
         ui-name : |
-            PairedEnd Reads
+            Paired-end Reads
         short-hint : |
-            The PairedEnd Reads file  in the RNA-seq experiment
+            The Paired-end reads file  in the RNA-seq experiment
     condn_labels:
         ui-name : |
             Condition Labels
@@ -110,6 +110,10 @@ parameters :
 
 description : |
     <p>This method allows the users to provide the metadata details to set up an RNA-seq experiment.</p>
-    <p>Users need to fill in the metadata requirements to set up an RNA-seq experiment. The mandatory requirements are: Experiment Name, Tile, Library Type (single end or paired end), Genome Name, Number of Samples, Number of Replicates.</p>
-    <p>In addition, there are optional parameters that users can fill in if desired. These optional parameters are: Experiment Description, Experiment Design, Platform, Reference Genome Annotation, Condition Labels, Domain, Tissue Type and Publication details.</p>
+    <p>Before users provide all the metadata details to set up experiment, users need to import single-end or paired-end read files and its corresponding genome and reference genome annotation files to the Data Pane.</p>
+    <p>This method will allow the users to provide "Experiment Name" (as an RNA-seq analysis output object name), select the "Genome", "Reference Genome Annotation", Single-end or Paired-end reads from drop down menu.</p>
+    <p>In addition, users need to fill in the total number of samples, number of replicates, condition labels and domain type.</p>
+    <p>Users can fill in other metadata informtion in adavnced option, those are optional.</p>
+    <p>This method uses "Experiment Name" as an RNA-seq analysis object that gets updated with newer version with each next method run in RNA-seq pipeline.</p>
+   
     
