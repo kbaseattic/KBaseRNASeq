@@ -97,6 +97,32 @@ def extractStatsInfo(logger,ws_client,ws_id,sample_id,result,stats_obj_name):
         except Exception, e:
                 raise Exception("get Alignment Statistics failed: {0}".format(e))
 
+def getExpressionHistogram(obj,obj_name,num_of_bins,ws_id,output_obj_name):
+    if 'expression_levels' in obj['data']:
+        hdict = obj['data']['expression_levels']
+        tot_genes =  len(hdict)
+        lmin = round(min([v for k,v in hdict.items()]))
+        lmax = round(max([v for k,v in hdict.items()]))
+        hist_dt = script_util.histogram(hdict.values(),lmin,lmax,int(num_of_bins))
+        title = "Histogram  - " + obj_name
+        hist_json = {"title" :  title , "x_label" : "Gene Expression Level (FPKM)", "y_label" : "Number of Genes", "data" : hist_dt}
+        sorted_dt = OrderedDict({ "id" : "", "name" : "","row_ids" : [] ,"column_ids" : [] ,"row_labels" : [] ,"column_labels" : [] , "data" : [] })
+        sorted_dt["row_ids"] = [hist_json["x_label"]]
+        sorted_dt["column_ids"] = [hist_json["y_label"]]
+        sorted_dt['row_labels'] = [hist_json["x_label"]]
+        sorted_dt["column_labels"] =  [hist_json["y_label"]]
+        sorted_dt["data"] = [[float(i) for i in hist_json["data"]["x_axis"]],[float(j) for j in hist_json["data"]["y_axis"]]]
+        #sorted_dt["id"] = "kb|histogramdatatable."+str(idc.allocate_id_range("kb|histogramdatatable",1))
+        sorted_dt["id"] = output_obj_name
+        sorted_dt["name"] = hist_json["title"]
+        res = ws_client.save_objects({"workspace": ws_id,
+                                     "objects": [{
+                                     "type":"MAK.FloatDataTable",
+                                     "data": sorted_dt,
+                                     "name" : output_obj_name}
+                                     ]
+                                     })
+		
 
 def stderrlogger(name, level=logging.INFO):
     """

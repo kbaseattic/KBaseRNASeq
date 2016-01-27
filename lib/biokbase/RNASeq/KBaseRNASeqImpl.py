@@ -244,13 +244,22 @@ class KBaseRNASeq:
             #out_obj['sample_ids']
 	    # Create RNASeqSample obj
 	rep_id  =  0
+	count = -1
+	l_labels = [ [x] * out_obj['num_replicates'] for x in out_obj['condition']]
+	print l_labels
+	rep_labels = reduce(lambda x,y: x+y, l_labels)
+	print rep_labels
 	for reads in exp_reads:
-		if int(params['num_replicates']) != 0 and rep_id < int(params['num_replicates']):
+		count = count + 1
+		if int(params['num_replicates']) >= 1: 
 	 		rep_id = rep_id + 1	 
+			if rep_id > int(params['num_replicates']):
+	 			rep_id = 1	 
 		s_res = ws_client.get_objects([{'name' : reads,
                                         	'workspace' : params['ws_id']}])
 		r_obj['metadata']['sample_id'] = reads+"_RNASeqSample"
 		r_obj['metadata']['replicate_id'] = str(rep_id)
+		r_obj['metadata']['condition'] = rep_labels[count]
                 r_obj[sample_type] = s_res[0]['data']
 		samp_obj = ws_client.save_objects( {
                                  "workspace":params['ws_id'],
@@ -878,39 +887,27 @@ class KBaseRNASeq:
 	    input_file = os.path.join(cufflinks_dir,"accepted_hits.bam")
 	    gtf_file = os.path.join(cufflinks_dir,agtf_fn)
             try:
-		cufflinks_command = "-o {0} -G {1} {2}".format(output_dir,gtf_file,input_file)
+		cufflinks_command = ''
+		#cufflinks_command = "-o {0} -G {1} {2}".format(output_dir,gtf_file,input_file)
                 #command_list= ['cufflinks', '-o', output_dir, '-G', agtf_fn, "{0}/accepted_hits.bam".format(cufflinks_dir)]
-                #if 'num_threads' in params and params['num_threads'] is not None:
-                #     command_list.append('-p')
-                #     command_list.append(params['num_threads'])
-                #for arg in ['min-intron-length','max-intron-length','overhang-tolerance']:
-                #    if arg in params and params[arg] is not None:
-                #         command_list.append('--{0}'.format(arg))
-                #         command_list.append(params[arg])
-
+                if 'num_threads' in params and params['num_threads'] is not None:
+                     cufflinks_command += (' -p '+str(params['num_threads']))
+		if 'max-intron-length' in params and params['max-intron-length'] is not None:
+		     cufflinks_command += (' --max-intron-length '+str(params['max-intron-length']))
+		if 'min-intron-length' in params and params['min-intron-length'] is not None:
+		     cufflinks_command += (' --min-intron-length '+str(params['min-intron-length']))
+		if 'overhang-tolerance' in params  and params['overhang-tolerance'] is not None:
+		     cufflinks_command += (' --overhang-tolerance '+str(params['overhang-tolerance']))
+		
+		cufflinks_command += " -o {0} -G {1} {2}".format(output_dir,gtf_file,input_file)
                 self.__LOGGER.info("Executing {0}".format(cufflinks_command))
 		script_util.runProgram(self.__LOGGER,"cufflinks",cufflinks_command,None,os.getcwd())
-                #task = subprocess.Popen(command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                
-                #lines_iterator = iter(task.stdout.readline, b"")
-                #for line in lines_iterator:
-                #    self.callback(line)
-  
-                #sub_stdout, sub_stderr = task.communicate()
-  
-                #task_output = dict()
-                #task_output["stdout"] = sub_stdout
-                #task_output["stderr"] = sub_stderr
-                
-                #if task.returncode != 0:
-                #    self.__LOGGER.info(sub_stdout)
-                #    self.__LOGGER.info(sub_stderr)
-                #    raise Exception(task_output["stdout"], task_output["stderr"])
 
             except Exception,e:
                 raise KBaseRNASeqException("Error executing cufflinks {0},{1},{2}".format(" ".join(cufflinks_command),os.getcwd(),e))
             ##Parse output files
-	    exp_dict = script_util.parse_FPKMtracking(os.path.join(output_dir,"genes.fpkm_tracking")) 
+	    exp_dict = script_util.parse_FPKMtracking(os.path.join(output_dir,"genes.fpkm_tracking"))
+            #print exp_dict 
             ##  compress and upload to shock
             try:
                 self.__LOGGER.info("Ziping output")
@@ -952,7 +949,8 @@ class KBaseRNASeq:
                                          "data":es_obj,
                                          "name":params['output_obj_name']}
                                         ]})
-
+		#hist_obj_name =  params['output_obj_name']+str(hex(uuid.getnode()))+"_histogram"
+		#getExpressionHistogram(es_obj,params['output_obj_name'],10,params['ws_id'],hist_obj_name)
 
 		#map_key = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[sample['data']['metadata']['sample_id']],params["ws_id"],user_token)
                 #map_value = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params['output_obj_name']],params["ws_id"],user_token)[0]
@@ -971,7 +969,7 @@ class KBaseRNASeq:
 	    except Exception, e:
 		self.__LOGGER.exception("".join(traceback.format_exc()))
                 raise KBaseRNASeqException("Failed to upload the ExpressionSample: {0}".format(e))
-            #returnVal = { 'workspace' : params['ws_id'] , 'output' : params['output_obj_name'] }
+            #returnVal = { 'workspace' : params['ws_id'] , 'output' : params['output_obj_name'] , 'expressionTable' : params['output_obj_name'] , 'histogram' : hist_obj_name }
 	    returnVal = params['output_obj_name']
 	except KBaseRNASeqException,e:
                  self.__LOGGER.exception("".join(traceback.format_exc()))
@@ -1515,44 +1513,5 @@ class KBaseRNASeq:
         if not isinstance(returnVal, dict):
             raise ValueError('Method createExpressionHistogram return value ' +
                              'returnVal is not type dict as required.')
-        # return the results
-        return [returnVal]
-
-    def cummeRbundCall(self, ctx, params):
-        # ctx is the context object
-        # return variables are: returnVal
-        #BEGIN cummeRbundCall
-        #END cummeRbundCall
-
-        # At some point might do deeper type checking...
-        if not isinstance(returnVal, object):
-            raise ValueError('Method cummeRbundCall return value ' +
-                             'returnVal is not type object as required.')
-        # return the results
-        return [returnVal]
-
-    def createExpressionSeries(self, ctx, params):
-        # ctx is the context object
-        # return variables are: returnVal
-        #BEGIN createExpressionSeries
-        #END createExpressionSeries
-
-        # At some point might do deeper type checking...
-        if not isinstance(returnVal, object):
-            raise ValueError('Method createExpressionSeries return value ' +
-                             'returnVal is not type object as required.')
-        # return the results
-        return [returnVal]
-
-    def createExpressionMatrix(self, ctx, params):
-        # ctx is the context object
-        # return variables are: returnVal
-        #BEGIN createExpressionMatrix
-        #END createExpressionMatrix
-
-        # At some point might do deeper type checking...
-        if not isinstance(returnVal, object):
-            raise ValueError('Method createExpressionMatrix return value ' +
-                             'returnVal is not type object as required.')
         # return the results
         return [returnVal]
