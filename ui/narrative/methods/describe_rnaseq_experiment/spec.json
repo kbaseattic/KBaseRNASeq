@@ -18,14 +18,14 @@
   },{
     "id" : "title",
     "optional" : false,
-    "advanced" : false,
+    "advanced" : true,
     "allow_multiple" : false,
     "default_values" : [ "" ],
     "field_type" : "text"
   },{
     "id" : "experiment_desc",
     "optional" : true,
-    "advanced" : false,
+    "advanced" : true,
     "allow_multiple" : false,
     "default_values" : [ "" ],
     "field_type" : "textarea",
@@ -35,14 +35,14 @@
   },{
     "id" : "experiment_design",
     "optional" : true,
-    "advanced" : false,
+    "advanced" : true,
     "allow_multiple" : false,
     "default_values" : [ "" ],
     "field_type" : "text"
   },{
     "id" : "platform",
     "optional" : true,
-    "advanced" : false,
+    "advanced" : true,
     "allow_multiple" : false,
     "default_values" : [ "" ],
     "field_type" : "text"
@@ -57,13 +57,13 @@
       "options": [
         {
           "value": "singleEnd",
-          "display": "Single-End",
+          "display": "Single-end",
           "id": "singleEnd",
           "ui_name": "singleEnd"
         },
         {
           "value": "pairedEnd",
-          "display": "Paired-End",
+          "display": "Paired-end",
           "id": "pairedEnd",
           "ui_name": "pairedEnd"
         }
