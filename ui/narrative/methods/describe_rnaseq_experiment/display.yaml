@@ -116,4 +116,5 @@ description : |
     <p>Users can fill in other metadata informtion in adavnced option, those are optional.</p>
     <p>This method uses "Experiment Name" as an RNA-seq analysis object that gets updated with newer version with each next method run in RNA-seq pipeline.</p>
    
-    
+    <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
+    Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Fei He, Vivek Kumar.</p>
