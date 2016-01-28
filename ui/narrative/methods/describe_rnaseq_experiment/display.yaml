@@ -1,10 +1,10 @@
 #
 # Define basic display information
 #
-name     : Setup RNASeq Analysis
+name     : Setup RNA-seq Analysis
 
 tooltip  : |
-    This method allows the users to provide the metadata details to set up an RNAseq experiment. 
+    This method allows the users to provide the metadata details to set up an RNA-seq experiment. 
 screenshots :
     []
 
@@ -24,89 +24,97 @@ method-suggestions :
 parameters :
     experiment_id :
         ui-name : |
-            Experiment name
+            Experiment Name
         short-hint : |
-            Specify output object name of the RNAseq experiment
+            Name to assign the output object of the RNA-seq experiment analysis
     title :
         ui-name : |
             Title
         short-hint : |
-            Specify title of the RNASeq experiment
+            Title of the RNA-seq experiment
     experiment_desc :
         ui-name : |
-            Experiment description
+            Experiment Description
         short-hint : |
-            Provide detailed description of the RNASeq Experiment
+            The detailed description of the RNA-seq experiment
     experiment_design :
         ui-name : |
-            Experiment design
+            Experiment Design
         short-hint : |
-            Specify name of experiment design (e.g time-series or wild versus mutant etc.)
+            Name of experimental design (e.g time-series or wild versus mutant etc.)
     platform :
         ui-name : |
             Platform
         short-hint : |
-            Specify platform type (e.g illumina)
+            Platform type (e.g illumina)
     Library_type :
         ui-name : |
-            Library type
+            Library Type
         short-hint : |
-            Choose the approriate library type from the dropdown 
+            The approriate library type from the dropdown 
     genome_id :
         ui-name : |
-            Genome name
+            Genome Name
         short-hint : |
-            Select the genome name used in the experiment
+            The genome name used in the experiment
     annotation_id :
         ui-name : |
-            Genome annotation
+            Reference Genome Annotation
         short-hint : |
-            Select the reference genome annoation used in the experiment
+            The reference genome annoation used in the experiment
     num_samples :
         ui-name : |
-            Number of samples
+            Number of Samples
         short-hint : |
-            Enter the total number of samples including replicates in the RNASeq experiment
+            The total number of samples including replicates in the RNA-seq experiment
     num_replicates :
         ui-name : |
-            Number of replicates
+            Number of Replicates
         short-hint : |
-            Enter the total number of replicates in the RNASeq experiment
-    tissue :
+            The total number of replicates in the RNA-seq experiment
+    singleEnd_reads:
         ui-name : |
-            Tissue
+            Single-end Reads
         short-hint : |
-            Enter the tissue type used in RNASeq experiment
-    condition :
+            The single-end reads file in the RNA-seq experiment
+    pairedEnd_reads:
         ui-name : |
-            Condition
+            Paired-end Reads
         short-hint : |
-            Enter the conditions/treatments used in RNASeq experiment
+            The Paired-end reads file  in the RNA-seq experiment
+    condn_labels:
+        ui-name : |
+            Condition Labels
+        short-hint : |
+            Short name for the condition labels for each sample condition in the experiment
+    tissue:
+        ui-name : |
+            Tissue type
+        short-hint : |
+            The tissue types used in the sample preparation of each sample
     domain :
         ui-name : |
             Domain 
         short-hint : |
-            Choose the approriate domain type from the dropdown
+            The approriate domain type from the dropdown
     source :
         ui-name : |
             Source
         short-hint : |
-            Enter the source of the data used for RNASeq experiment (published or unpublished)
+            The source of the data used for RNA-seq experiment (e.g NCBI)
     publication_id:
         ui-name : |
-            Publication details 
+            Publication Details 
         short-hint : |
-            Enter the publication details of the data for RNASeq experiment (if available)
-    external_source_date:
-        ui-name : |
-            Publication date
-        short-hint : |
-            Enter the publication date (if available) 
+            The publication details of the data for RNA-seq experiment (if available)
 
 description : |
-    <p>This method allows the users to provide the metadata details to set up an RNAseq experiment.</p>
-    <p>Users need to fill in the metadata requirements to set up the RNAseq experiment. The mandatory requirements are: name of experiment, title of the experiment, library type (single end or paired end), genome name, total number of samples, total number of replicates and domain (prokaryotes or eukaryotes).</p>
-    <p>In addition, there are optional parameters that users can fill in if desired. These optional parameters are: experiment description, experiment design, reference genome annotation, platform type, tissue type, conditions/treatments type and publication details.</p>
-    
+    <p>This method allows the users to provide the metadata details to set up an RNA-seq experiment.</p>
+    <p>Before users provide all the metadata details to set up experiment, users need to import single-end or paired-end read files and its corresponding genome and reference genome annotation files to the Data Pane.</p>
+    <p>This method will allow the users to provide "Experiment Name" (as an RNA-seq analysis output object name), select the "Genome", "Reference Genome Annotation", Single-end or Paired-end reads from drop down menu.</p>
+    <p>In addition, users need to fill in the total number of samples, number of replicates, condition labels and domain type.</p>
+    <p>Users can fill in other metadata informtion in adavnced option, those are optional.</p>
+    <p>This method uses "Experiment Name" as an RNA-seq analysis object that gets updated with newer version with each next method run in RNA-seq pipeline.</p>
+   
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
     Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Fei He, Vivek Kumar.</p>

@@ -12,23 +12,13 @@
     "id" : "rnaseq_exp_details",
     "optional" : false,
     "advanced" : false,
-    "allow_multiple" : true,
+    "allow_multiple" : false,
     "default_values" : [ "" ],
     "field_type" : "text",
     "text_options" : {
       "valid_ws_types" : ["KBaseRNASeq.RNASeqAnalysis" ]
     }
-  }, {
-    "id" : "annotation_gtf",
-    "optional" : false,
-    "advanced" : false,
-    "allow_multiple" : false,
-    "default_values" : [ "" ],
-    "field_type" : "text",
-    "text_options" : {
-      "valid_ws_types" : ["KBaseRNASeq.ReferenceAnnotation" ]
-    }
-  }, {
+  },{
     "id" : "output_obj_name",
     "optional" : false,
     "advanced" : false,
@@ -37,8 +27,8 @@
     "field_type" : "text"
   }, {
     "id" : "num-threads",
-    "optional" : false,
-    "advanced" : false,
+    "optional" : true,
+    "advanced" : true,
     "allow_multiple" : false,
     "default_values" : [ "" ],    
     "field_type" : "text",
@@ -47,8 +37,8 @@
     }
   }, {
     "id" : "min-alignment-count",
-    "optional" : false,
-    "advanced" : false,
+    "optional" : true,
+    "advanced" : true,
     "allow_multiple" : false,
     "default_values" : [ "" ],    
     "field_type" : "text",
@@ -79,15 +69,15 @@
     }
  }, {
     "id" : "labels",
-    "optional" : true,
+    "optional" : false,
     "advanced" : false,
     "allow_multiple" : true,
     "default_values" : [ "" ],
     "field_type" : "text"
     }, {
     "id" : "library-type",
-    "optional" : false,
-    "advanced" : false,
+    "optional" : true,
+    "advanced" : true,
     "allow_multiple" : false,
     "default_values" : [ "" ],
     "field_type" : "dropdown",
@@ -109,8 +99,8 @@
     }
     }, {
    "id" : "library-norm-method",
-    "optional" : false,
-    "advanced" : false,
+    "optional" : true,
+    "advanced" : true,
     "allow_multiple" : false,
     "default_values" : [ "" ],
     "field_type" : "dropdown",
@@ -146,10 +136,6 @@
           "target_property" : "rnaseq_exp_details"
         },
         {
-          "input_parameter" : "annotation_gtf",
-          "target_property" : "annotation_gtf"
-        },
-        {
           "input_parameter" : "output_obj_name",
           "target_property" : "output_obj_name"
         },
@@ -183,9 +169,13 @@
           
       }],
       "output_mapping" : [
-        {
-          "service_method_output_path": [0],
-          "target_property": "CuffdiffCall"
+	{
+          "narrative_system_variable": "workspace",
+          "target_property" : "workspace"
+        },
+	{
+          "input_parameter" : "output_obj_name",
+          "target_property" : "output"
         }
       ]
     }

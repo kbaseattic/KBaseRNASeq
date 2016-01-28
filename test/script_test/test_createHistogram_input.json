@@ -1,0 +1,12 @@
+{	
+	"version":"1.1",
+	"method":"KBaseRNASeq.createExpressionHistogram",
+	"context": null,
+	"params":[ 	
+	{
+  	"ws_id": "RNASeqTestData",
+	"expression_sample" : "test_cufflinks_output",
+	"number_of_bins" : "10",
+	"output_obj_name" : "test_Sample_Histogram1"
+	}]	
+}

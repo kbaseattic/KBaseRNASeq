@@ -1,0 +1,15 @@
+{	
+	"version":"1.1",
+	"method":"KBaseRNASeq.Bowtie2Call",
+	"context": null,
+	"params":[
+	{
+	 "ws_id" : "srividya22:1450203576610",
+	 "sample_id" : "Ecoli_SingleEnd_SRR228085_bowtie2" ,
+	 "output_obj_name" : "test_local_Ecoli_SRR228085_bowtie2" ,
+	 "reference" : "Escherichia_coli_str.K-12_substr._MG1655",
+	 "bowtie2_index" : "t2_Ecoli_bowtie2_Index",
+	 "alignment_type" : null,
+	 "quality_score" : null,
+         "preset_options" : null } ]
+}

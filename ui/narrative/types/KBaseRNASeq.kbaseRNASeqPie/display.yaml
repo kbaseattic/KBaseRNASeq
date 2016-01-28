@@ -1,0 +1,11 @@
+#
+# Define basic display information
+#
+name     : View Alignment Statistics
+subtitle : Displays the Alignment Statistics in a Pie chart
+tooltip  : Displays the Alignment Statistics in a Pie chart
+
+icon : none
+
+description : |
+    <p>Displays the Alignment Statistics in a Pie chart</p>

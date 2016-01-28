@@ -6,7 +6,7 @@
   "categories" : ["active"],
   "widgets" : {
     "input" : null,
-    "output" : null
+    "output" : "kbaseRNASeqAnalysis"
   },
   "parameters" : [ {
     "id" : "experiment_id",
@@ -18,14 +18,14 @@
   },{
     "id" : "title",
     "optional" : false,
-    "advanced" : false,
+    "advanced" : true,
     "allow_multiple" : false,
     "default_values" : [ "" ],
     "field_type" : "text"
   },{
     "id" : "experiment_desc",
     "optional" : true,
-    "advanced" : false,
+    "advanced" : true,
     "allow_multiple" : false,
     "default_values" : [ "" ],
     "field_type" : "textarea",
@@ -35,14 +35,14 @@
   },{
     "id" : "experiment_design",
     "optional" : true,
-    "advanced" : false,
+    "advanced" : true,
     "allow_multiple" : false,
     "default_values" : [ "" ],
     "field_type" : "text"
   },{
     "id" : "platform",
     "optional" : true,
-    "advanced" : false,
+    "advanced" : true,
     "allow_multiple" : false,
     "default_values" : [ "" ],
     "field_type" : "text"
@@ -57,13 +57,13 @@
       "options": [
         {
           "value": "singleEnd",
-          "display": "Single-End",
+          "display": "Single-end",
           "id": "singleEnd",
           "ui_name": "singleEnd"
         },
         {
           "value": "pairedEnd",
-          "display": "Paired-End",
+          "display": "Paired-end",
           "id": "pairedEnd",
           "ui_name": "pairedEnd"
         }
@@ -114,16 +114,36 @@
       "min_int" : 1
     }
   },{
-    "id" : "tissue",
+    "id" : "singleEnd_reads",
+    "optional" : true,
+    "advanced" : false,
+    "allow_multiple" : true,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : [ "KBaseAssembly.SingleEndLibrary" ]
+    }
+  },{
+    "id" : "pairedEnd_reads",
+    "optional" : true,
+    "advanced" : false,
+    "allow_multiple" : true,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : [ "KBaseAssembly.PairedEndLibrary" ] 
+    }
+  },{
+    "id" : "condn_labels",
     "optional" : true,
     "advanced" : false,
     "allow_multiple" : true,
     "default_values" : [ "" ],
     "field_type" : "text"
   },{
-    "id" : "condition",
+    "id" : "tissue",
     "optional" : true,
-    "advanced" : false,
+    "advanced" : true,
     "allow_multiple" : true,
     "default_values" : [ "" ],
     "field_type" : "text"
@@ -149,19 +169,12 @@
   },{
     "id" : "source",
     "optional" : true,
-    "advanced" : false,
-    "allow_multiple" : false,
-    "default_values" : [ "" ],
-    "field_type" : "text"
-  },{
-    "id" : "publication_id",
-    "optional" : true,
     "advanced" : true,
     "allow_multiple" : false,
     "default_values" : [ "" ],
     "field_type" : "text"
   },{
-    "id" : "external_source_date",
+    "id" : "publication_id",
     "optional" : true,
     "advanced" : true,
     "allow_multiple" : false,
@@ -209,12 +222,18 @@
           "input_parameter": "num_replicates",
           "target_property": "num_replicates"
         },{
+          "input_parameter": "singleEnd_reads",
+          "target_property": "singleEnd_reads"
+	},{
+          "input_parameter": "pairedEnd_reads",
+          "target_property": "pairedEnd_reads"
+	},{
+          "input_parameter": "condn_labels",
+          "target_property": "condn_labels"
+	},{
           "input_parameter": "tissue",
           "target_property": "tissue"
-        }, {
-          "input_parameter": "condition",
-          "target_property": "condition"
-        }, {
+	}, {
           "input_parameter": "domain",
           "target_property": "domain"
         }, {
@@ -223,13 +242,18 @@
         },{
           "input_parameter": "publication_id",
           "target_property": "publication_id"
-        },{
-          "input_parameter": "external_source_date",
-          "target_property": "external_source_date"
         }
       ],
       "output_mapping" : [
       	{
+         "input_parameter": "experiment_id",
+         "target_property": "output"
+        },
+        {
+          "narrative_system_variable": "workspace",
+          "target_property": "workspace"
+        },
+        {
       	 "service_method_output_path": [0],
 	 "target_property": "SetupRNASeqAnalysis"
 	}

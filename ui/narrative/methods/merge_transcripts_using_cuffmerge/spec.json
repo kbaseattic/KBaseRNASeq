@@ -48,9 +48,13 @@
     ],
     "output_mapping": [
 	{
-	 "service_method_output_path": [0],
-         "target_property": "CuffmergeCall"
-	}
+          "narrative_system_variable": "workspace",
+          "target_property": "workspace"
+        },
+	{
+          "input_parameter": "output_obj_name",
+          "target_property": "output"
+        }
       ]
     }
   },

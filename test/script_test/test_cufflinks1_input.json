@@ -1,0 +1,12 @@
+{	
+	"version":"1.1",
+	"method":"KBaseRNASeq.CufflinksCall",
+	"context": null,
+	"params":[ 	
+	{
+  	"ws_id": "srividya22:1450134109054",
+	"alignment_sample_id" : "ecoli_SRR228085_tophat",
+	"annotation_gtf" : "Ecoli_K12_MG1655_NC_000913.3.gtf",
+	"output_obj_name" : "local_ecoli_SRR228085_cufflinks"
+	}]	
+}

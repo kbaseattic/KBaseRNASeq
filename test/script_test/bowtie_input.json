@@ -3,7 +3,7 @@
 	"method":"KBaseRNASeq.BuildBowtie2Index",
 	"context": null,
 	"params":[
-	{"ws_id" : "srividya22:1443128557822",
-	 "output_obj_name" :  "output" ,
-	 "reference" : "Escherichia_coli_str_K-12_substr_MG1655_KBase.contigset" } ]
+	{"ws_id" : "srividya22:1450112964632",
+	 "output_obj_name" :  "test_ecoli_bw" ,
+	 "reference" : "t1_Ecoli_K12_MG1655_NC_000913.3.contigset" } ]
 }

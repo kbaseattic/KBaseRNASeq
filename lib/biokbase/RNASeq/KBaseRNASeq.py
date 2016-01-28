@@ -74,19 +74,14 @@ async_run_methods['KBaseRNASeq.TophatCall_async'] = ['KBaseRNASeq', 'TophatCall'
 async_check_methods['KBaseRNASeq.TophatCall_check'] = ['KBaseRNASeq', 'TophatCall']
 async_run_methods['KBaseRNASeq.CufflinksCall_async'] = ['KBaseRNASeq', 'CufflinksCall']
 async_check_methods['KBaseRNASeq.CufflinksCall_check'] = ['KBaseRNASeq', 'CufflinksCall']
+async_run_methods['KBaseRNASeq.CuffmergeCall_async'] = ['KBaseRNASeq', 'CuffmergeCall']
+async_check_methods['KBaseRNASeq.CuffmergeCall_check'] = ['KBaseRNASeq', 'CuffmergeCall']
 async_run_methods['KBaseRNASeq.CuffdiffCall_async'] = ['KBaseRNASeq', 'CuffdiffCall']
 async_check_methods['KBaseRNASeq.CuffdiffCall_check'] = ['KBaseRNASeq', 'CuffdiffCall']
 async_run_methods['KBaseRNASeq.getAlignmentStats_async'] = ['KBaseRNASeq', 'getAlignmentStats']
 async_check_methods['KBaseRNASeq.getAlignmentStats_check'] = ['KBaseRNASeq', 'getAlignmentStats']
 async_run_methods['KBaseRNASeq.createExpressionHistogram_async'] = ['KBaseRNASeq', 'createExpressionHistogram']
 async_check_methods['KBaseRNASeq.createExpressionHistogram_check'] = ['KBaseRNASeq', 'createExpressionHistogram']
-async_run_methods['KBaseRNASeq.cummeRbundCall_async'] = ['KBaseRNASeq', 'cummeRbundCall']
-async_check_methods['KBaseRNASeq.cummeRbundCall_check'] = ['KBaseRNASeq', 'cummeRbundCall']
-async_run_methods['KBaseRNASeq.createExpressionSeries_async'] = ['KBaseRNASeq', 'createExpressionSeries']
-async_check_methods['KBaseRNASeq.createExpressionSeries_check'] = ['KBaseRNASeq', 'createExpressionSeries']
-async_run_methods['KBaseRNASeq.createExpressionMatrix_async'] = ['KBaseRNASeq', 'createExpressionMatrix']
-async_check_methods['KBaseRNASeq.createExpressionMatrix_check'] = ['KBaseRNASeq', 'createExpressionMatrix']
-sync_methods['KBaseRNASeq.createExpressionMatrix'] = True
 
 class AsyncJobServiceClient(object):
 
@@ -284,6 +279,7 @@ class MethodContext(dict):
         self['method'] = None
         self['call_id'] = None
         self['rpc_context'] = None
+        self['provenance'] = None
         self._debug_levels = set([7, 8, 9, 'DEBUG', 'DEBUG2', 'DEBUG3'])
         self._logger = logger
 
@@ -385,6 +381,10 @@ class Application(object):
                              name='KBaseRNASeq.CufflinksCall',
                              types=[dict])
         self.method_authentication['KBaseRNASeq.CufflinksCall'] = 'required'
+        self.rpc_service.add(impl_KBaseRNASeq.CuffmergeCall,
+                             name='KBaseRNASeq.CuffmergeCall',
+                             types=[dict])
+        self.method_authentication['KBaseRNASeq.CuffmergeCall'] = 'required'
         self.rpc_service.add(impl_KBaseRNASeq.CuffdiffCall,
                              name='KBaseRNASeq.CuffdiffCall',
                              types=[dict])
@@ -397,18 +397,6 @@ class Application(object):
                              name='KBaseRNASeq.createExpressionHistogram',
                              types=[dict])
         self.method_authentication['KBaseRNASeq.createExpressionHistogram'] = 'required'
-        self.rpc_service.add(impl_KBaseRNASeq.cummeRbundCall,
-                             name='KBaseRNASeq.cummeRbundCall',
-                             types=[dict])
-        self.method_authentication['KBaseRNASeq.cummeRbundCall'] = 'required'
-        self.rpc_service.add(impl_KBaseRNASeq.createExpressionSeries,
-                             name='KBaseRNASeq.createExpressionSeries',
-                             types=[dict])
-        self.method_authentication['KBaseRNASeq.createExpressionSeries'] = 'required'
-        self.rpc_service.add(impl_KBaseRNASeq.createExpressionMatrix,
-                             name='KBaseRNASeq.createExpressionMatrix',
-                             types=[dict])
-        self.method_authentication['KBaseRNASeq.createExpressionMatrix'] = 'required'
         self.auth_client = biokbase.nexus.Client(
             config={'server': 'nexus.api.globusonline.org',
                     'verify_ssl': True,
@@ -444,6 +432,9 @@ class Application(object):
                 ctx['module'], ctx['method'] = req['method'].split('.')
                 ctx['call_id'] = req['id']
                 ctx['rpc_context'] = {'call_stack': [{'time':self.now_in_utc(), 'method': req['method']}]}
+                prov_action = {'service': ctx['module'], 'method': ctx['method'], 
+                               'method_params': req['params']}
+                ctx['provenance'] = [prov_action]
                 try:
                     token = environ.get('HTTP_AUTHORIZATION')
                     # parse out the method being requested and check if it
@@ -667,6 +658,10 @@ def process_async_cli(input_file_path, output_file_path, token):
     if 'context' in req:
         ctx['rpc_context'] = req['context']
     ctx['CLI'] = 1
+    ctx['module'], ctx['method'] = req['method'].split('.')
+    prov_action = {'service': ctx['module'], 'method': ctx['method'], 
+                   'method_params': req['params']}
+    ctx['provenance'] = [prov_action]
     resp = None
     try:
         resp = application.rpc_service.call_py(ctx, req)
