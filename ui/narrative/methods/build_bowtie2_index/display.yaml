@@ -8,7 +8,7 @@ tooltip  : |
 screenshots :
     []
 
-replacement-text : Created a new bowtie2 Index  for {{{input_genome}}}
+replacement-text : Creates a new bowtie2 Index  for {{{input_genome}}}
 
 #
 # Define the set of other narrative methods that should be suggested to the user.
