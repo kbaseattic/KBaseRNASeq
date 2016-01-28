@@ -17,7 +17,7 @@
     "field_type" : "text"
   },{
     "id" : "title",
-    "optional" : false,
+    "optional" : true,
     "advanced" : true,
     "allow_multiple" : false,
     "default_values" : [ "" ],
@@ -81,7 +81,7 @@
     }
   },{
     "id" : "annotation_id",
-    "optional" : true,
+    "optional" : false,
     "advanced" : false,
     "allow_multiple" : false,
     "default_values" : [ "" ],
@@ -135,7 +135,7 @@
     }
   },{
     "id" : "condn_labels",
-    "optional" : true,
+    "optional" : false,
     "advanced" : false,
     "allow_multiple" : true,
     "default_values" : [ "" ],
