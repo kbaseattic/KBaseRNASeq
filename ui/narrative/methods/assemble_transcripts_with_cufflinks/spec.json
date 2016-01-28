@@ -6,7 +6,7 @@
   "categories" : ["active"],
   "widgets" : {
     "input" : null,
-    "output" : null
+    "output" : "kbaseExpressionSampleTable"
   },
    "parameters" : [ {
     "id" : "alignment_sample_id",
@@ -38,7 +38,7 @@
   }, {
    "id" : "num-threads",
     "optional" : true,
-    "advanced" : false,
+    "advanced" : true,
     "allow_multiple" : false,
     "default_values" : [ "" ],    
     "field_type" : "text",
@@ -117,7 +117,7 @@
       "output_mapping" : [
 	{
           "narrative_system_variable": "workspace",
-          "target_property" : "ws_id"
+          "target_property" : "workspace"
         },
 	{
 	  "input_parameter" : "output_obj_name",

@@ -12,6 +12,20 @@
    */
       
       typedef string ws_rnaseq_analysis_id;
+   
+   /*
+      Id for KBaseRNASeq.RNASeqCuffmergetranscriptome
+      @id ws KBaseRNASeq.RNASeqCuffmergetranscriptome
+   */
+
+        typedef string ws_transcriptome_id;
+   
+   /*
+      Id for KBaseRNASeq.RNASeqCuffdiffdifferentialExpression
+      @id ws KBaseRNASeq.RNASeqCuffdiffdifferentialExpression
+   */
+
+        typedef string ws_cuffdiff_diff_exp_id;
 
    /*
       reference genome id for mapping the RNA-Seq fastq file
@@ -416,8 +430,8 @@
 	list<ws_RNASeqSampleReplicateGroup_id>  sample_rep_groups;
 	mapped_sample_alignment alignments;
 	mapped_sample_expression expression_values;
-	string transcriptome_id;
-	string cuffdiff_diff_exp_id;
+	ws_transcriptome_id transcriptome_id;
+	ws_cuffdiff_diff_exp_id cuffdiff_diff_exp_id;
         list<string> tissue;
         list<string> condition;
 	mapping<string sample_name,sample_annotations> sample_annotations_map;
@@ -456,6 +470,15 @@
 	RNASeqAnalysis analysis;
       	}RNASeqCuffdiffdifferentialExpression;
 	
+
+/*
+     Object for Report type
+*/
+    typedef structure {
+		string report_name;
+		string report_ref;
+    }ResultsToReport;
+
 /* FUNCTIONS used in the service */
 
 /* Function parameters to call fastqc */
@@ -522,7 +545,7 @@ async funcdef SetupRNASeqAnalysis(SetupRNASeqAnalysisParams params)
 	}Bowtie2IndexParams;
 
 async funcdef BuildBowtie2Index(Bowtie2IndexParams params)
-     returns(UnspecifiedObject) authentication required;
+     returns(ResultsToReport) authentication required;
    
    typedef structure{
 	int skip;
@@ -644,7 +667,7 @@ typedef mapping<string Tophat_opts,t_opts opts_tophat> t_opts_str;
      }TophatParams;
 
 async funcdef TophatCall(TophatParams params)
-     returns (UnspecifiedObject) authentication required;
+     returns (AlignmentStatsResults) authentication required;
 
  typedef structure{
         int num_threads;
@@ -690,7 +713,7 @@ typedef structure{
         }CufflinksParams;
 
 async funcdef CufflinksCall(CufflinksParams params)
-    returns (UnspecifiedObject) authentication required;
+    returns (ws_expression_sample_id) authentication required;
 
 typedef structure{
 	string ws_id;
@@ -760,32 +783,5 @@ typedef structure{
         
 async funcdef createExpressionHistogram(ExpressionHistogramParams params)
    returns (MAK.FloatDataTable) authentication required;
-
-typedef structure{
-	string ws_id;
-        RNASeqAnalysis analysis;
-	string out_obj_name;
-        }ExpressionSeriesParams;
-
-typedef structure{
-	string ws_id;
-	RNASeqAnalysis analysis;
-	string out_obj_name;
-	}CummeRbundParams;
-	
-async funcdef cummeRbundCall(CummeRbundParams params)
-   returns (UnspecifiedObject) authentication required;
-
-async funcdef createExpressionSeries(ExpressionSeriesParams params)
-   returns (UnspecifiedObject) authentication required;
-
-typedef structure{
-	string ws_id;
-        RNASeqAnalysis rnaseq_exp_details;
-	string out_obj_name; /* final expression matrix name */
-        }ExpressionMatrixParams;
-
-funcdef createExpressionMatrix(ExpressionMatrixParams params)
-   returns (UnspecifiedObject) authentication required;
 
 };

@@ -28,16 +28,15 @@ except:
 from biokbase.workspace.client import Workspace
 
 
-
-def updateAlignmentOnAnalysisTO(logger, ws_client, map_key, map_value, anal_ref, ws_id, objid):
+def updateAnalysisTO(logger, ws_client, field, map_key, map_value, anal_ref, ws_id, objid):
     
         analysis = ws_client.get_objects([{'ref' : anal_ref}])[0]
         
-        if 'alignments' in analysis['data'] and analysis['data']['alignments'] is not None:
-                analysis['data']['alignments'][map_key] = map_value
+        if field in analysis['data'] and analysis['data'][field] is not None:
+                analysis['data'][field][map_key] = map_value
         else:
-            analysis['data']['alignments'] = {map_key : map_value}
-
+            analysis['data'][field] = {map_key : map_value}
+	logger.info("Analysis object updated {0}".format(json.dumps(analysis['data'])))
         res1= ws_client.save_objects(
                             {"workspace":ws_id,
                              "objects": [{
@@ -46,6 +45,84 @@ def updateAlignmentOnAnalysisTO(logger, ws_client, map_key, map_value, anal_ref,
                              "objid":objid}
                             ]})
 
+
+def extractStatsInfo(logger,ws_client,ws_id,sample_id,result,stats_obj_name):
+	lines = result.splitlines()
+        if  len(lines) != 11:
+            raise Exception("Error not getting enough samtool flagstat information: {0}".format(result))
+        # patterns
+        two_nums  = re.compile(r'^(\d+) \+ (\d+)')
+        two_pcts  = re.compile(r'\(([0-9.na\-]+)%:([0-9.na\-]+)%\)')
+        # alignment rate
+        m = two_nums.match(lines[0])
+        total_qcpr = int(m.group(1))
+        total_qcfr = int(m.group(2))
+        total_read =  total_qcpr + total_qcfr
+
+        m = two_nums.match(lines[2])
+        mapped_r = int(m.group(1))
+        umapped_r = int(m.group(2))
+	alignment_rate = mapped_r / total_read  * 100.0
+        if alignment_rate > 100: alignment_rate = 100.0
+
+        # singletons
+        m = two_nums.match(lines[7])
+        singletons = int(m.group(1))
+	m = two_nums.match(lines[6])
+        properly_paired = int(m.group(1))
+        # Create Workspace object
+        stats_data =  {
+                       "alignment_id": sample_id,
+                       "alignment_rate": alignment_rate,
+                       #"multiple_alignments": 50, 
+                       "properly_paired": properly_paired,
+                       "singletons": singletons,
+                       "total_reads": total_read,
+                       "unmapped_reads": umapped_r,
+                       "mapped_reads": mapped_r
+                       }
+
+        ## Save object to workspace
+        logger.info( "Saving Alignment Statistics to the Workspace")
+        try:
+                res= ws_client.save_objects(
+                                        {"workspace":ws_id,
+                                         "objects": [{
+                                         "type":"KBaseRNASeq.AlignmentStatsResults",
+                                         "data": stats_data,
+				         "hidden" : 1,
+                                         "name":stats_obj_name}
+                                        ]})
+                res = stats_data
+        except Exception, e:
+                raise Exception("get Alignment Statistics failed: {0}".format(e))
+
+def getExpressionHistogram(obj,obj_name,num_of_bins,ws_id,output_obj_name):
+    if 'expression_levels' in obj['data']:
+        hdict = obj['data']['expression_levels']
+        tot_genes =  len(hdict)
+        lmin = round(min([v for k,v in hdict.items()]))
+        lmax = round(max([v for k,v in hdict.items()]))
+        hist_dt = script_util.histogram(hdict.values(),lmin,lmax,int(num_of_bins))
+        title = "Histogram  - " + obj_name
+        hist_json = {"title" :  title , "x_label" : "Gene Expression Level (FPKM)", "y_label" : "Number of Genes", "data" : hist_dt}
+        sorted_dt = OrderedDict({ "id" : "", "name" : "","row_ids" : [] ,"column_ids" : [] ,"row_labels" : [] ,"column_labels" : [] , "data" : [] })
+        sorted_dt["row_ids"] = [hist_json["x_label"]]
+        sorted_dt["column_ids"] = [hist_json["y_label"]]
+        sorted_dt['row_labels'] = [hist_json["x_label"]]
+        sorted_dt["column_labels"] =  [hist_json["y_label"]]
+        sorted_dt["data"] = [[float(i) for i in hist_json["data"]["x_axis"]],[float(j) for j in hist_json["data"]["y_axis"]]]
+        #sorted_dt["id"] = "kb|histogramdatatable."+str(idc.allocate_id_range("kb|histogramdatatable",1))
+        sorted_dt["id"] = output_obj_name
+        sorted_dt["name"] = hist_json["title"]
+        res = ws_client.save_objects({"workspace": ws_id,
+                                     "objects": [{
+                                     "type":"MAK.FloatDataTable",
+                                     "data": sorted_dt,
+                                     "name" : output_obj_name}
+                                     ]
+                                     })
+		
 
 def stderrlogger(name, level=logging.INFO):
     """
@@ -133,13 +210,11 @@ def download_file_from_shock(logger,
 
     header = dict()
     header["Authorization"] = "Oauth {0}".format(token)
-    print header
-
     logger.info("Downloading shock node {0}/node/{1}".format(shock_service_url,shock_id))
 
     metadata_response = requests.get("{0}/node/{1}?verbosity=metadata".format(shock_service_url, shock_id), headers=header, stream=True, verify=True)
     shock_metadata = metadata_response.json()['data']
-    print "shock metadata is {0}".format(shock_metadata)
+    #print "shock metadata is {0}".format(shock_metadata)
     if shock_metadata is not None:
     	shockFileName = shock_metadata['file']['name']
     	shockFileSize = shock_metadata['file']['size']
@@ -190,7 +265,7 @@ def query_shock_node(logger,
     header["Authorization"] = "Oauth {0}".format(token)
 
     query_str = urllib.urlencode(condition)
-    print query_str
+    #print query_str
     
     logger.info("Querying shock node {0}/node/?query&{1}".format(shock_service_url,query_str))
 
@@ -379,9 +454,9 @@ def get_obj_info(logger,ws_url,objects,ws_id,token):
     for obj in  objects:
     	try:
             obj_infos = ws_client.get_object_info_new({"objects": [{'name': obj, 'workspace': ws_id}]})
-            print obj_infos
+            #print obj_infos
             ret.append("{0}/{1}/{2}".format(obj_infos[0][6],obj_infos[0][0],obj_infos[0][4]))
-            print ret
+            #print ret
         except Exception, e:
                      logger.error("Couldn't retrieve %s:%s from the workspace , %s " %(ws_id,obj,e))
     return ret
@@ -445,7 +520,7 @@ def runProgram(logger=None,
                 raise RuntimeError('Return Code : {0} , result {1} , progName {2}'.format(process.returncode,result[1],progName))
 
         # Return result
-        return result
+        return { "result" : result , "stderr" :stderr }
 
 def hashfile(filepath):
        sha1 = hashlib.sha1()

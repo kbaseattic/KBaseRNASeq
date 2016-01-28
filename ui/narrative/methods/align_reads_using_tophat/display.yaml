@@ -3,7 +3,7 @@
 #
 name     : Align Reads using Tophat
 tooltip  : |
-    This method allows aligning RNASeq reads to a genome using Tophat in order to identify exon-exon splice junctions using bowtie mapping program. 
+    This method allows aligning RNA-seq reads to a genome using Tophat in order to identify exon-exon splice junctions using bowtie mapping program. 
 
 screenshots :
     []
@@ -24,9 +24,9 @@ method-suggestions :
 parameters :
     sample_id :
         ui-name : |
-            Reads Associated with RNASeq Sample
+            Reads Associated with RNA-seq Sample
         short-hint : |
-            Select the reads associated with RNASeq sample
+            Select the reads associated with RNA-seq sample
     annotation_gtf :
         ui-name : |
             Reference Annotation
@@ -94,7 +94,7 @@ parameters :
             Select the library type
 
 description : |
-    <p>This method allows aligning RNASeq reads to a genome using Tophat in order to identify exon-exon splice junctions using bowtie mapping program.</p>
+    <p>This method allows aligning RNA-seq reads to a genome using Tophat in order to identify exon-exon splice junctions using bowtie mapping program.</p>
     <p>This method takes a bowtie2 index object and sequencing read file and outputs a set of read alignments in SAM format.</p>
     
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>

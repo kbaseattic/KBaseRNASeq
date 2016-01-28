@@ -82,13 +82,6 @@ async_run_methods['KBaseRNASeq.getAlignmentStats_async'] = ['KBaseRNASeq', 'getA
 async_check_methods['KBaseRNASeq.getAlignmentStats_check'] = ['KBaseRNASeq', 'getAlignmentStats']
 async_run_methods['KBaseRNASeq.createExpressionHistogram_async'] = ['KBaseRNASeq', 'createExpressionHistogram']
 async_check_methods['KBaseRNASeq.createExpressionHistogram_check'] = ['KBaseRNASeq', 'createExpressionHistogram']
-async_run_methods['KBaseRNASeq.cummeRbundCall_async'] = ['KBaseRNASeq', 'cummeRbundCall']
-async_check_methods['KBaseRNASeq.cummeRbundCall_check'] = ['KBaseRNASeq', 'cummeRbundCall']
-async_run_methods['KBaseRNASeq.createExpressionSeries_async'] = ['KBaseRNASeq', 'createExpressionSeries']
-async_check_methods['KBaseRNASeq.createExpressionSeries_check'] = ['KBaseRNASeq', 'createExpressionSeries']
-async_run_methods['KBaseRNASeq.createExpressionMatrix_async'] = ['KBaseRNASeq', 'createExpressionMatrix']
-async_check_methods['KBaseRNASeq.createExpressionMatrix_check'] = ['KBaseRNASeq', 'createExpressionMatrix']
-sync_methods['KBaseRNASeq.createExpressionMatrix'] = True
 
 class AsyncJobServiceClient(object):
 
@@ -404,18 +397,6 @@ class Application(object):
                              name='KBaseRNASeq.createExpressionHistogram',
                              types=[dict])
         self.method_authentication['KBaseRNASeq.createExpressionHistogram'] = 'required'
-        self.rpc_service.add(impl_KBaseRNASeq.cummeRbundCall,
-                             name='KBaseRNASeq.cummeRbundCall',
-                             types=[dict])
-        self.method_authentication['KBaseRNASeq.cummeRbundCall'] = 'required'
-        self.rpc_service.add(impl_KBaseRNASeq.createExpressionSeries,
-                             name='KBaseRNASeq.createExpressionSeries',
-                             types=[dict])
-        self.method_authentication['KBaseRNASeq.createExpressionSeries'] = 'required'
-        self.rpc_service.add(impl_KBaseRNASeq.createExpressionMatrix,
-                             name='KBaseRNASeq.createExpressionMatrix',
-                             types=[dict])
-        self.method_authentication['KBaseRNASeq.createExpressionMatrix'] = 'required'
         self.auth_client = biokbase.nexus.Client(
             config={'server': 'nexus.api.globusonline.org',
                     'verify_ssl': True,

@@ -24,9 +24,9 @@ method-suggestions :
 parameters :
     analysis :
         ui-name : |
-            Cufflinks assemblies
+            RNASeq Experiment Name
         short-hint : |
-            Specify cufflinks multiple transcripts assembled 
+            Specify the RNASeq Experiment Name
     output_obj_name :
         ui-name : |
             Cuffmerge Output
