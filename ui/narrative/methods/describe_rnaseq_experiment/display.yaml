@@ -81,12 +81,12 @@ parameters :
         ui-name : |
             Paired-end Reads
         short-hint : |
-            The Paired-end reads file  in the RNA-seq experiment
+            The Paired-end reads file in the RNA-seq experiment
     condn_labels:
         ui-name : |
-            Condition Labels
+            Treatment Labels
         short-hint : |
-            Short name for the condition labels for each sample condition in the experiment
+            Short name for each sample treatment in the experiment
     tissue:
         ui-name : |
             Tissue type
@@ -111,8 +111,8 @@ parameters :
 description : |
     <p>This method allows the users to provide the metadata details to set up an RNA-seq experiment.</p>
     <p>Before users provide all the metadata details to set up experiment, users need to import single-end or paired-end read files and its corresponding genome and reference genome annotation files to the Data Pane.</p>
-    <p>This method will allow the users to provide "Experiment Name" (as an RNA-seq analysis output object name), select the "Genome", "Reference Genome Annotation", Single-end or Paired-end reads from drop down menu.</p>
-    <p>In addition, users need to fill in the total number of samples, number of replicates, condition labels and domain type.</p>
+    <p>Users need to provide "Experiment Name" (as an RNA-seq analysis output object name), select the "Genome", "Reference Genome Annotation", Single-end or Paired-end reads and domain type from drop down menu.</p>
+    <p>In addition, users need to fill in the total number of samples, number of replicates and treatment labels of sample conditions/treatment.</p>
     <p>Users can fill in other metadata informtion in adavnced option, those are optional.</p>
     <p>This method uses "Experiment Name" as an RNA-seq analysis object that gets updated with newer version with each next method run in RNA-seq pipeline.</p>
    
