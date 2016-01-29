@@ -4,7 +4,7 @@
 name     : Identify Differential Expression using Cuffdiff
 
 tooltip  : |
-    This method is allowed to identify differential expression using cuffdiff.
+    This method allows to identify differential expression using cuffdiff.
 screenshots :
     []
 
@@ -24,17 +24,17 @@ method-suggestions :
 parameters :
   rnaseq_exp_details :
     ui-name : |
-      RNASeq Experiment Name
+      RNA-seq Experiment Name
     short-hint : |
-      Specify the RNASeq Experiment Name
+      Specify the RNA-seq experiment name
   output_obj_name :
     ui-name : |
-      Cuffdiff output
+      Cuffdiff Output
     short-hint : |
       Provide the name of cuffdiff output
   num-threads :
     ui-name : |
-      Number of  threads
+      Number of Threads
     short-hint : |
       Number of  threads to align reads. The default is 1.
   min-alignment-count :
@@ -54,7 +54,7 @@ parameters :
       To provide more accurately weight reads mapping to multiple locations in the genome. 
   labels  :
     ui-name : |
-      Condition Labels
+      Treatment Labels
     short-hint : |
       Specify a label for each sample which will be included in various cuffdiff output files.
   library-type  :
@@ -69,8 +69,8 @@ parameters :
       Select the library normalization method.
 
 description : |
-    <p>This method is used to find significant changes in transcript expression using cuffdiff.</p>
-    <p>It accepts GTF annotation file produced by cuffmerge and SAM files of aligned RNAseq reads as input. If more than two SAM files are provided, cuffdiff tests for differential expression between all pairs of samples.</p>
+    <p>This method is used to find significant changes in the transcript expression using cuffdiff.</p>
+    <p>It accepts GTF annotation file produced by cuffmerge and SAM files of aligned RNA-seq reads as input. If more than two SAM files are provided, cuffdiff tests for differential expression between all pairs of samples.</p>
     <p>Cuffdiff calculates the FPKM of each transcript, primary transcript and gene in each sample and produces differentially expressed files.</p>
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
     Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Fei He, Vivek Kumar</p>
