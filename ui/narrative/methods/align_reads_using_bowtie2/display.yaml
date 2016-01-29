@@ -65,8 +65,11 @@ parameters :
             The presets ending in fast generally being faster but less sensitive and less accurate, and the presets ending in sensitive generally being slower but more sensitive and more accurate.
 
 description : |
-    <p>This method allows to align the sequencing reads to long reference sequences using bowtie2. It takes a bowtie2 index object and sequencing read file and outputs a set of alignments in SAM format.</p> 
+    <p>This method allows to align the sequencing reads to long reference sequences using bowtie2.</p>
     <p>Bowtie2 supports gapped, local and paired-end alignment modes. By default, Bowtie 2 performs end-to-end read alignment. That is, it searches for alignments involving all of the read characters. This is also called an "untrimmed" or "unclipped" alignment. It also supports a "local" alignment mode, which does not require that reads align end-to-end.This produces alignments that might be "trimmed" (or "soft clipped") at one or both extremes in a way that optimizes alignment score.</p>
+    <p>This method takes a bowtie2 index object and sequencing read file and outputs a set of alignments in SAM format.</p> 
+    <p> In addition, it provides the alignment statistics (total reads, mapped and unmapped reads, singletons, multiple alignments, and alignment rate in table format.</p>
+    
     
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
     Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Fei He, Vivek Kumar</p>

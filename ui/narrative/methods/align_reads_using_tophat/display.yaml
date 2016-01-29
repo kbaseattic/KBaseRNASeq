@@ -94,8 +94,9 @@ parameters :
             Select the library type
 
 description : |
-    <p>This method allows aligning RNA-seq reads to a genome using Tophat in order to identify exon-exon splice junctions using bowtie mapping program.</p>
+    <p>This method allows aligning RNA-seq reads to an eukaryotic genome using Tophat in order to identify exon-exon splice junctions using bowtie mapping program.</p>
     <p>This method takes a bowtie2 index object and sequencing read file and outputs a set of read alignments in SAM format.</p>
+    <p> In addition, it provides the alignment statistics (total reads, mapped and unmapped reads, singletons, multiple alignments, and alignment rate in table format.</p>
     
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
     Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Fei He, Vivek Kumar</p>
