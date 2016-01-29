@@ -937,7 +937,8 @@ class KBaseRNASeq:
                            'external_source_date' : 'external_source_date',
                            'expression_levels' : exp_dict,
                            #'genome_id' : 'kb.g.3472',
-                           'genome_id' : annotation_gtf['data']['genome_id'],
+			   'genome_id' : sample['data']['metadata']['genome_id'],
+                           #'genome_id' : annotation_gtf['data']['genome_id'],
                            'data_source' : 'data_source',
                            'shock_url' : "{0}/node/{1}".format(handle['url'],handle['id'])
                 }
