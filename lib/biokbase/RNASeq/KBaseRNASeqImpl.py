@@ -1003,7 +1003,11 @@ class KBaseRNASeq:
             #    for f in files: os.remove(f)
                 handler_util.cleanup(self.__LOGGER,cuffmerge_dir)
             if not os.path.exists(cuffmerge_dir): os.makedirs(cuffmerge_dir)
-
+	    provenance = [{}]
+            if 'provenance' in ctx:
+                provenance = ctx['provenance']
+                # add additional info to provenance here, in this case the input data object reference
+            provenance[0]['input_ws_objects']=[params['ws_id']+'/'+params['analysis']] 
             self.__LOGGER.info("Downloading Analysis file")
 	    try:
                 analysis = ws_client.get_objects(
@@ -1013,7 +1017,7 @@ class KBaseRNASeq:
                  raise KBaseRNASeqException("Error Downloading objects from the workspace ")
 	    
             ## Downloading data from shock
-            list_file = open(self.__ASSEMBLY_GTF_FN,'w')
+            list_file = open(cuffmerge_dir+"/"+self.__ASSEMBLY_GTF_FN,'w')
 	    if 'data' in analysis : #and analysis['data'] is not None:
 		if 'annotation_id' in analysis['data']:
 			annotation=ws_client.get_objects([{'ref' : analysis['data']['annotation_id']} ])[0]
@@ -1064,7 +1068,7 @@ class KBaseRNASeq:
 	    output_dir = os.path.join(cuffmerge_dir, params['output_obj_name'])
             try:
                 # TODO: add reference GTF later, seems googledoc command looks wrong
-		cuffmerge_command = "-o {0} -g {1}/{2} {3}".format(output_dir,cuffmerge_dir,annotation_name,self.__ASSEMBLY_GTF_FN)
+		cuffmerge_command = "-o {0} -g {1}/{2} {3}/{4}".format(output_dir,cuffmerge_dir,annotation_name,cuffmerge_dir,self.__ASSEMBLY_GTF_FN)
                 #command_list= ['cuffmerge', '-o', output_dir, '-G', agtf_fn, "{0}/accepted_hits.bam".format(cuffmerge_dir)]
                 #if 'num_threads' in params and params['num_threads'] is not None:
                 #     command_list.append('-p')
@@ -1075,8 +1079,9 @@ class KBaseRNASeq:
                 #         command_list.append(params[arg])
 
                 self.__LOGGER.info("Executing {0}".format(cuffmerge_command))
-		script_util.runProgram(self.__LOGGER,"cuffmerge",cuffmerge_command,None,os.getcwd())
-
+	        cmdline_output = script_util.runProgram(self.__LOGGER,"cuffmerge",cuffmerge_command,None,os.getcwd())
+		if 'result' in cmdline_output:
+			report = cmdline_output['result']	
             except Exception,e:
                 raise KBaseRNASeqException("Error executing cuffmerge {0},{1},{2}".format(cuffmerge_command,os.getcwd(),e))
             
@@ -1096,7 +1101,7 @@ class KBaseRNASeq:
             except Exception, e:
                 raise KBaseRNASeqException("Failed to upload the index: {0}".format(e))
 	   
-            analysis['data']['transcriptome_id'] = "{0}/{1}".format(params["ws_id"], params['output_obj_name'])	
+            #analysis['data']['transcriptome_id'] = "{0}/{1}".format(params["ws_id"], params['output_obj_name'])	
                 # raise Exception(task_output["stdout"], task_output["stderr"])
 
 	    ## Save object to workspace
@@ -1106,15 +1111,6 @@ class KBaseRNASeq:
                            'analysis' : analysis['data']
                 	 }
 		#pprint(cm_obj)
-		
-                res= ws_client.save_objects(
-                                        {"workspace":params['ws_id'],
-                                         "objects": [{
-                                         "type":"KBaseRNASeq.RNASeqAnalysis",
-                                         "data":analysis['data'],
-                                         "name":params['analysis']}
-                                        ]})
-		
             	res1= ws_client.save_objects(
                                         {"workspace":params['ws_id'],
                                          "objects": [{
@@ -1123,11 +1119,50 @@ class KBaseRNASeq:
                                          "name":params['output_obj_name']}
                                         ]})
 
-		
+                analysis['data']['transcriptome_id'] = "{0}/{1}".format(params["ws_id"], params['output_obj_name'])	
+	        res= ws_client.save_objects(
+                                        {"workspace":params['ws_id'],
+                                         "objects": [{
+                                         "type":"KBaseRNASeq.RNASeqAnalysis",
+                                         "data":analysis['data'],
+                                         "name":params['analysis']}
+                                        ]})
+			
 	    except Exception, e:
                 raise KBaseRNASeqException("Failed to upload the objects for Cuffmerge KBaseRNASeq.RNASeqAnalysis and KBaseRNASeq.RNASeqCuffmergetranscriptome: {0}".format(e))
-            #returnVal = cm_obj
-	    returnVal = { 'workspace' : params['ws_id'] , 'output' : params['output_obj_name'] }
+	    
+            # Creating the Report object
+	    info = res[0]
+             ## Create report object:
+            reportObj = {
+                                'objects_created':[{
+                                'ref':str(info[6]) + '/'+str(info[0])+'/'+str(info[4]),
+                                'description':'Merge Transcripts using Cuffmerge'
+                                }],
+                                'text_message':report
+                            }
+
+            # generate a unique name for the Method report
+            reportName = 'Merge_Transcripts_using_Cuffmerge_'+str(hex(uuid.getnode()))
+            report_info = ws_client.save_objects({
+                                                'id':info[6],
+                                                'objects':[
+                                                {
+                                                'type':'KBaseReport.Report',
+                                                'data':reportObj,
+                                                'name':reportName,
+                                                'meta':{},
+                                                'hidden':1 # important!  make sure the report is hidden
+                                                #'provenance':provenance
+                                                }
+                                                ]
+                                                })[0]
+
+            print('saved Report: '+pformat(report_info))
+
+            returnVal = { "report_name" : reportName,"report_ref" : str(report_info[6]) + '/' + str(report_info[0]) + '/' + str(report_info[4]) }
+
+	    #returnVal = { 'workspace' : params['ws_id'] , 'output' : params['output_obj_name'] }
 	except KBaseRNASeqException,e:
                  self.__LOGGER.exception("".join(traceback.format_exc()))
                  raise
@@ -1136,9 +1171,9 @@ class KBaseRNASeq:
         #END CuffmergeCall
 
         # At some point might do deeper type checking...
-        if not isinstance(returnVal, object):
+        if not isinstance(returnVal, dict):
             raise ValueError('Method CuffmergeCall return value ' +
-                             'returnVal is not type object as required.')
+                             'returnVal is not type dict as required.')
         # return the results
         return [returnVal]
 

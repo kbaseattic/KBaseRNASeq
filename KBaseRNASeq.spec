@@ -724,7 +724,7 @@ typedef structure{
 
  
 async funcdef CuffmergeCall(CuffmergeParams params)
-    returns (UnspecifiedObject) authentication required;
+    returns (ResultsToReport) authentication required;
 
 typedef structure{
         int num-threads;
