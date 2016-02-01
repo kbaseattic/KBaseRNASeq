@@ -1130,39 +1130,8 @@ class KBaseRNASeq:
 			
 	    except Exception, e:
                 raise KBaseRNASeqException("Failed to upload the objects for Cuffmerge KBaseRNASeq.RNASeqAnalysis and KBaseRNASeq.RNASeqCuffmergetranscriptome: {0}".format(e))
-	    
-            # Creating the Report object
-	    info = res[0]
-             ## Create report object:
-            reportObj = {
-                                'objects_created':[{
-                                'ref':str(info[6]) + '/'+str(info[0])+'/'+str(info[4]),
-                                'description':'Merge Transcripts using Cuffmerge'
-                                }],
-                                'text_message':report
-                            }
-
-            # generate a unique name for the Method report
-            reportName = 'Merge_Transcripts_using_Cuffmerge_'+str(hex(uuid.getnode()))
-            report_info = ws_client.save_objects({
-                                                'id':info[6],
-                                                'objects':[
-                                                {
-                                                'type':'KBaseReport.Report',
-                                                'data':reportObj,
-                                                'name':reportName,
-                                                'meta':{},
-                                                'hidden':1 # important!  make sure the report is hidden
-                                                #'provenance':provenance
-                                                }
-                                                ]
-                                                })[0]
-
-            print('saved Report: '+pformat(report_info))
-
-            returnVal = { "report_name" : reportName,"report_ref" : str(report_info[6]) + '/' + str(report_info[0]) + '/' + str(report_info[4]) }
-
-	    #returnVal = { 'workspace' : params['ws_id'] , 'output' : params['output_obj_name'] }
+	    returnVal = analysis['data'] 
+	    #returnVal = { 'workspace' : params['ws_id'] , 'output' : params['analysis'] }
 	except KBaseRNASeqException,e:
                  self.__LOGGER.exception("".join(traceback.format_exc()))
                  raise
@@ -1206,6 +1175,7 @@ class KBaseRNASeq:
             ## Downloading data from shock
             #list_file = open(self.__ASSEMBLY_GTF_FN,'w')
 	    alignments  = []
+	    sample_labels = []
             if 'data' in analysis : #and analysis['data'] is not None:
                 self.__LOGGER.info("Downloading each expression")
 
@@ -1215,9 +1185,13 @@ class KBaseRNASeq:
                 #for le in analysis['data']['alignments']:
                 for k,v in le.items():
                     ko,vo=ws_client.get_objects([{'ref' : k}, {'ref' : v} ])
-                    sp = os.path.join(cuffdiff_dir, ko['info'][1])
+                    #sp = os.path.join(cuffdiff_dir, ko['info'][1])
+                    sp = os.path.join(cuffdiff_dir, ko['data']['metadata']['condition']+"/"+ko['data']['metadata']['replicate_id'])
+		    print sp 
                     if not os.path.exists(sp): os.makedirs(sp)
-
+		    condition_id = ko['data']['metadata']['condition']
+		    if not condition_id in sample_labels:
+			sample_labels.append(condition_id)
                     if 'file' not in vo['data']:
                         self.__LOGGER.info("{0} does not contain file and we skip {1}".format(vo['info'][1], v))
                         next
@@ -1239,10 +1213,10 @@ class KBaseRNASeq:
                         script_util.unzip_files(self.__LOGGER,os.path.join(cuffdiff_dir,efn),sp)
                     except Exception, e:
                            raise Exception("Unzip indexfile error: Please contact help@kbase.us")
-                    if not os.path.exists("{0}/accepted_hits..bam\n".format(sp)):
+                    if not os.path.exists("{0}/accepted_hits.bam\n".format(sp)):
                        # Would it be better to be skipping this? if so, replace Exception to be next
                        next
-		       alignments.append("{0}/accepted_hits.bam ".format(sp))
+		       #alignments.append("{0}/accepted_hits.bam ".format(sp))
                        #raise Exception("{0} does not contain transcripts.gtf:  {1}".format(vo['info'][1], v))
                     #list_file.write("{0}/transcripts.gtf\n".format(sp))
             else:
@@ -1251,8 +1225,22 @@ class KBaseRNASeq:
 
             ##  now ready to call
             output_dir = os.path.join(cuffdiff_dir, params['output_obj_name'])
+	    #bam_files = " ".join([i for i in alignments])
+	    for l in sample_labels:
+		#for path, subdirs, files in os.walk(root):
+       		#		os.path.join(path,"accepted_hits.bam")
+		rep_files=",".join([ os.path.join(cuffdiff_dir+'/'+l,sub+'/accepted_hits.bam') for sub in os.listdir(os.path.join(cuffdiff_dir,l)) if os.path.isdir(os.path.join(cuffdiff_dir,l+'/'+sub))])
+		#bam_files_pattern = Match(filetype='f', name='accepted_hits.bam')
+		#rep_files=",".join([f for f in find_files(path=os.path.join(cuffdiff_dir,l), match=bam_files_pattern) ])
+		#rep_files = ",".join([p for p in pathlib.Path(os.path.join(cuffdiff_dir,l)).iterdir() if p.is_file() and p.endswith(('accepted_hits.bam'))])
+		#rep_files = ",".join([ path for path, subdirs,files in os.walk(os.path.join(cuffdiff_dir,l)) if path.endswith('accepted_hits.bam')])
+		print rep_files
+		alignments.append(rep_files) 
+            
 	    bam_files = " ".join([i for i in alignments])
-	    labels = ",".join(params['labels'])
+	    print bam_files
+	    labels = ",".join(sample_labels)		
+	    #labels = ",".join(params['labels'])
 	    merged_gtf = analysis['data']['transcriptome_id']
 	    try:
                 transcriptome = ws_client.get_objects(
@@ -1298,7 +1286,7 @@ class KBaseRNASeq:
             except Exception, e:
                 raise KBaseRNASeqException("Failed to upload the Cuffdiff output files: {0}".format(e))
 
-            analysis['data']['cuffdiff_diff_exp_id'] = "{0}/{1}".format(params['ws_id'],params['output_obj_name'])
+            #analysis['data']['cuffdiff_diff_exp_id'] = "{0}/{1}".format(params['ws_id'],params['output_obj_name'])
                 # raise Exception(task_output["stdout"], task_output["stderr"])
 
             ## Save object to workspace
@@ -1307,6 +1295,15 @@ class KBaseRNASeq:
                 cm_obj = { 'file' : handle,
                            'analysis' : analysis['data']
                 	  }
+                res1= ws_client.save_objects(
+                                        {"workspace":params['ws_id'],
+                                         "objects": [{
+                                         "type":"KBaseRNASeq.RNASeqCuffdiffdifferentialExpression",
+                                         "data":cm_obj,
+                                         "name":params['output_obj_name']}
+                                        ]})	
+		
+                analysis['data']['cuffdiff_diff_exp_id'] = "{0}/{1}".format(params['ws_id'],params['output_obj_name'])
 		res= ws_client.save_objects(
                                         {"workspace":params['ws_id'],
                                          "objects": [{
@@ -1314,17 +1311,11 @@ class KBaseRNASeq:
                                          "data":analysis['data'],
                                          "name":params['rnaseq_exp_details']}
                                         ]})
-
-                res= ws_client.save_objects(
-                                        {"workspace":params['ws_id'],
-                                         "objects": [{
-                                         "type":"KBaseRNASeq.RNASeqCuffdiffdifferentialExpression",
-                                         "data":cm_obj,
-                                         "name":params['output_obj_name']}
-                                        ]})
             except Exception, e:
                 raise KBaseRNASeqException("Failed to upload the KBaseRNASeq.RNASeqCuffdiffdifferentialExpression and KBaseRNASeq.RNASeqAnalysis : {0}".format(e))
-            returnVal = { 'workspace' : params['ws_id'] , 'output' : params['output_obj_name'] }
+
+	    returnVal = analysis['data']
+	    #returnVal = { 'workspace' : params['ws_id'] , 'output' : params['rnaseq_exp_details'] }
         except KBaseRNASeqException,e:
                  self.__LOGGER.exception("".join(traceback.format_exc()))
                  raise
@@ -1334,9 +1325,9 @@ class KBaseRNASeq:
         #END CuffdiffCall
 
         # At some point might do deeper type checking...
-        if not isinstance(returnVal, object):
+        if not isinstance(returnVal, dict):
             raise ValueError('Method CuffdiffCall return value ' +
-                             'returnVal is not type object as required.')
+                             'returnVal is not type dict as required.')
         # return the results
         return [returnVal]
 

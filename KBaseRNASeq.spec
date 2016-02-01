@@ -724,7 +724,7 @@ typedef structure{
 
  
 async funcdef CuffmergeCall(CuffmergeParams params)
-    returns (ResultsToReport) authentication required;
+    returns (RNASeqAnalysis) authentication required;
 
 typedef structure{
         int num-threads;
@@ -761,7 +761,7 @@ typedef mapping <string diff_opts,opts_cuffdiff> cuffdiff_opts;
         }CuffdiffParams;
 
 async funcdef CuffdiffCall(CuffdiffParams params)
-   returns (UnspecifiedObject) authentication required;
+   returns (RNASeqAnalysis) authentication required;
 
 
 typedef structure{
