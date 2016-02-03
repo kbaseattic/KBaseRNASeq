@@ -176,7 +176,11 @@
 	{
           "input_parameter" : "rnaseq_exp_details",
           "target_property" : "output"
-        }
+        },
+	{
+      	 "service_method_output_path": [0],
+	 "target_property": "CuffdiffCall"
+	}
       ]
     }
   },
