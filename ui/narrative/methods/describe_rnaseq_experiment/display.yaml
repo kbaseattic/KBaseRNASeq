@@ -4,7 +4,7 @@
 name     : Setup RNA-seq Analysis
 
 tooltip  : |
-    This method allows the users to provide the metadata details to set up an RNA-seq experiment. 
+    Provide the metadata to set up the RNA-seq experiment 
 screenshots :
     []
 
@@ -24,9 +24,9 @@ method-suggestions :
 parameters :
     experiment_id :
         ui-name : |
-            Experiment Name
+            Experiment Analysis
         short-hint : |
-            Name to assign the output object of the RNA-seq experiment analysis
+            The name of the output object used by the RNA-seq experiment analysis.
     title :
         ui-name : |
             Title
@@ -41,27 +41,27 @@ parameters :
         ui-name : |
             Experiment Design
         short-hint : |
-            Name of experimental design (e.g time-series or wild versus mutant etc.)
+            The nature of the experimental design (e.g time-series or wild vs. mutant)
     platform :
         ui-name : |
             Platform
         short-hint : |
-            Platform type (e.g illumina)
+            The platform used for sequencing (e.g Illumina)
     Library_type :
         ui-name : |
             Library Type
         short-hint : |
-            The approriate library type from the dropdown 
+            The type of sequencing reads - Single-end vs. Paired-end 
     genome_id :
         ui-name : |
-            Genome Name
+            Genome
         short-hint : |
-            The genome name used in the experiment
+            The genome used in the RNA-seq experiment
     annotation_id :
         ui-name : |
             Reference Genome Annotation
         short-hint : |
-            The reference genome annoation used in the experiment
+            The annoations for the reference sequences in the GTF (Gene Transfer Format) file format
     num_samples :
         ui-name : |
             Number of Samples
@@ -76,27 +76,27 @@ parameters :
         ui-name : |
             Single-end Reads
         short-hint : |
-            The single-end reads file in the RNA-seq experiment
+            The single-end reads files based on sequencing from one end of the fragment
     pairedEnd_reads:
         ui-name : |
             Paired-end Reads
         short-hint : |
-            The Paired-end reads file in the RNA-seq experiment
+            The paired-end reads files based on sequencing from both the ends of the fragment
     condn_labels:
         ui-name : |
             Treatment Labels
         short-hint : |
-            Short name for each sample treatment in the experiment
+            Short name for each sample treatment in the RNA-seq experiment
     tissue:
         ui-name : |
             Tissue type
         short-hint : |
-            The tissue types used in the sample preparation of each sample
+            The tissue types used in the sample preparation
     domain :
         ui-name : |
             Domain 
         short-hint : |
-            The approriate domain type from the dropdown
+            The domain of the genome - Prokaryotes vs. Eukaryotes
     source :
         ui-name : |
             Source
@@ -106,15 +106,20 @@ parameters :
         ui-name : |
             Publication Details 
         short-hint : |
-            The publication details of the data for RNA-seq experiment (if available)
+            The publication details of the data used for RNA-seq experiment
 
 description : |
-    <p>This method allows the users to provide the metadata details to set up an RNA-seq experiment.</p>
-    <p>Before users provide all the metadata details to set up experiment, users need to import single-end or paired-end read files and its corresponding genome and reference genome annotation files to the Data Pane.</p>
-    <p>Users need to provide "Experiment Name" (as an RNA-seq analysis output object name), select the "Genome", "Reference Genome Annotation", Single-end or Paired-end reads and domain type from drop down menu.</p>
-    <p>In addition, users need to fill in the total number of samples, number of replicates and treatment labels of sample conditions/treatment.</p>
-    <p>Users can fill in other metadata informtion in adavnced option, those are optional.</p>
-    <p>This method uses "Experiment Name" as an RNA-seq analysis object that gets updated with newer version with each next method run in RNA-seq pipeline.</p>
+    <p>This method allows the users to provide the metadata to set up an RNA-seq experiment.</p>
+    
+    <p>Before users provide all the metadata details to set up experiment, users need to import single-end or paired-end read files and the corresponding genome and reference genome annotation files to the Data Pane.</p>
+    
+    <p>Users need to provide "Experiment Analysis" (RNA-seq analysis output object), select the "Genome", "Reference Genome Annotation", "Library Type", and "Domain" from the drop down menu.</p>
+    
+    <p>In addition, the users need to fill in the total number of samples, number of replicates and labels of the sample conditions/treatments.</p>
+    
+    <p>Users can fill in other metadata information in the advanced option, those are optional.</p>
+    
+    <p>This method uses "Experiment Analysis" as an analysis object that gets updated by the successive methods in the RNA-seq pipeline.</p>
    
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
     Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Fei He, Vivek Kumar.</p>
