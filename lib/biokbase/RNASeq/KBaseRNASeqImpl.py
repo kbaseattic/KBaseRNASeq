@@ -456,8 +456,7 @@ class KBaseRNASeq:
                                 #f_end = l[1] + l[3]
                                 #f_strand = l[2]
                                 #positions[contig_id+":"+f_id]=f_strand+":"+str(f_start)+":"+str(f_end)+":"+str(f_len)
-
-                                output.write(contig_id + "\tKBase\t" + f_type + "\t" + str(f_start) + "\t" + str(f_end) + "\t.\t" + f_strand + "\t"+ str(0) + "\tID " + f_id + ";\n")
+			        output.write(contig_id + "\tKBase\t" + f_type + "\t" + str(f_start) + "\t" + str(f_end) + "\t.\t" + f_strand + "\t"+ str(0) + "\ttranscript_id " + f_id + "; gene_id " + f_id + ";\n")	
                 try:
                          gtf_handle = script_util.create_shock_handle(self.__LOGGER,params['output_obj_name']+'.gtf',self.__SHOCK_URL,self.__HS_URL,"GTF",user_token)
                         #bowtie_handle = hs.upload(out_file_path)
@@ -1012,7 +1011,7 @@ class KBaseRNASeq:
 		script_util.runProgram(self.__LOGGER,"cufflinks",cufflinks_command,None,os.getcwd())
 
             except Exception,e:
-                raise KBaseRNASeqException("Error executing cufflinks {0},{1},{2}".format(" ".join(cufflinks_command),os.getcwd(),e))
+                raise KBaseRNASeqException("Error executing cufflinks {0},{1},{2}".format(cufflinks_command,os.getcwd(),e))
             ##Parse output files
 	    exp_dict = script_util.parse_FPKMtracking(os.path.join(output_dir,"genes.fpkm_tracking"))
             #print exp_dict 
@@ -1083,8 +1082,8 @@ class KBaseRNASeq:
 	except KBaseRNASeqException,e:
                  self.__LOGGER.exception("".join(traceback.format_exc()))
                  raise KBaseRNASeqException("Error Running Cufflinks : {0}".format(e))
-        finally:
-                 handler_util.cleanup(self.__LOGGER,cufflinks_dir)	
+        #finally:
+        #         handler_util.cleanup(self.__LOGGER,cufflinks_dir)	
         #END CufflinksCall
 
         # At some point might do deeper type checking...

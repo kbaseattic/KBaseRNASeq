@@ -1,9 +1,9 @@
 #
 # Define basic display information
 #
-name     : Create Reference Annotation for Prokaryote 
+name     : Create Reference Annotation for Prokaryotes
 tooltip  : |
-    creates a Reference Annotation for any Prokaryotic Genome
+    creates a reference annotation in GTF format for any Prokaryotic Genome
 
 screenshots :
     []
@@ -38,7 +38,7 @@ parameters :
 
     out_gtf_name:
         ui-name : |
-            Output Reference Annotaion Name
+            Output Reference Annotation Name
         short-hint : |
             Name for the created Reference Annotation
 
