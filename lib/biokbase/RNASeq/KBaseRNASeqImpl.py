@@ -1082,8 +1082,8 @@ class KBaseRNASeq:
 	except KBaseRNASeqException,e:
                  self.__LOGGER.exception("".join(traceback.format_exc()))
                  raise KBaseRNASeqException("Error Running Cufflinks : {0}".format(e))
-        #finally:
-        #         handler_util.cleanup(self.__LOGGER,cufflinks_dir)	
+        finally:
+                 handler_util.cleanup(self.__LOGGER,cufflinks_dir)	
         #END CufflinksCall
 
         # At some point might do deeper type checking...
