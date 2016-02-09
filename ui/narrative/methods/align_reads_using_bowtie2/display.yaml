@@ -3,7 +3,7 @@
 #
 name     : Align Reads using Bowtie2
 tooltip  : |
-    This method allows aligning sequencing reads to long reference sequences using Bowtie2.
+    Align the sequencing reads to long reference sequences using Bowtie2
 
 screenshots :
     []
@@ -15,7 +15,7 @@ method-suggestions :
     related :
         []
     next :
-        []
+        [assemble_transcripts_with_cufflinks]
 
 
 #
@@ -24,52 +24,56 @@ method-suggestions :
 parameters :
     sample_id :
         ui-name : |
-            Reads Associated with RNA-seq Sample
+            RNA-seq Sample  
         short-hint : |
-            Select the reads associated with RNA-seq sample
+            Select the RNA-seq sample associated with the reads
     bowtie2_index :
         ui-name : |
             Indexed Genome
         short-hint : |
-            Specify the indexed genome built using bowtie2
+            Specify the indexed genome built using Bowtie2
     reference :
         ui-name : |
             Genome
         short-hint : |
-            Specify the name of genome
+            Genome
     output_obj_name :
         ui-name : |
             Alignment Output
         short-hint : |
-            Provide the name of bowtie2 read alignment output
+            Provide the name of Bowtie2 read alignment output
     alignment_type :
         ui-name : |
             Alignment Type
         short-hint : |
             Select the alignment type
         long-hint : |
-            By default, bowtie2 performs end-to-end read alignment. It searches for alignments involving all of read characters. For local option, it can clip some read characters from one or both ends of the alignment to maximize the alignment score.
+            By default, Bowtie2 performs end-to-end read alignment. It searches for alignments involving all of read characters. For local option, it can clip some read characters from one or both ends of the alignment to maximize the alignment score.
     quality_score :
         ui-name : |
             Alignment Quality Score Type
         short-hint : |
-            Select the quality score type
+            Select the quality score type depending on the sequencing platform
         long-hint : |
-            phred+33 used by the latest illumina
+            phred33 is used by Illumina starting with v1.8
     preset_options :
         ui-name : |
             Alignment Type Preset Options
         short-hint : |
             Select the preset options based on alignment type
         long-hint : |
-            The presets ending in fast generally being faster but less sensitive and less accurate, and the presets ending in sensitive generally being slower but more sensitive and more accurate.
+            Faster option is generally less sensitive and vice versa.
 
 description : |
-    <p>This method allows to align the sequencing reads to long reference sequences using bowtie2.</p>
-    <p>Bowtie2 supports gapped, local and paired-end alignment modes. By default, Bowtie 2 performs end-to-end read alignment. That is, it searches for alignments involving all of the read characters. This is also called an "untrimmed" or "unclipped" alignment. It also supports a "local" alignment mode, which does not require that reads align end-to-end.This produces alignments that might be "trimmed" (or "soft clipped") at one or both extremes in a way that optimizes alignment score.</p>
-    <p>This method takes a bowtie2 index object and sequencing read file and outputs a set of alignments in SAM format.</p> 
-    <p> In addition, it provides the alignment statistics (total reads, mapped and unmapped reads, singletons, multiple alignments, and alignment rate in table format.</p>
+    <p>This method aligns the sequencing reads to long reference sequences using Bowtie2. </p>
     
+    <p>This method takes a bowtie2 index object and sequencing read file and outputs a set of alignments in SAM format.</p> 
+    
+    <p>In addition, it outputs the alignment statistics such as total reads, mapped and unmapped reads, singletons, multiple alignments, and alignment rate in the table format.</p>
+    
+    <p>Bowtie2 supports end-to-end read alignment mode by default. In this mode, it searches for alignments involving all of the read characters. This is also called an "untrimmed" or "unclipped" alignment. The method also supports "local" alignment mode, which does not require that reads align end-to-end. This produces alignments that might be "trimmed" (or "soft clipped") at one or both extremes in a way that optimizes the alignment score.</p>
+    
+    <p><strong>NOTE:</strong>This method does not support batch processing of all the read samples. Therefore, this method must be run individually for each of the RNA-seq samples.</p>
     
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
     Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Fei He, Vivek Kumar</p>
