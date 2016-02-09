@@ -76,7 +76,7 @@ parameters :
         ui-name : |
             Number of Threads
         short-hint : |
-            Number of computational threads in parallel to align reads. The default is 1.
+            Number of computational threads to align reads. The default is 1.
     report_secondary_alignments :
         ui-name : |
             Report Secondary Alignments
