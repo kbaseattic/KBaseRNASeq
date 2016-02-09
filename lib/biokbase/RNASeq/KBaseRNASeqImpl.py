@@ -57,6 +57,7 @@ class KBaseRNASeq:
     __TEMP_DIR = 'temp'
     __BOWTIE_DIR = 'bowtie'
     __BOWTIE2_DIR = 'bowtie2'
+    __GTF_DIR = 'gtfdir'
     __TOPHAT_DIR = 'tophat'
     __CUFFLINKS_DIR = 'cufflinks'
     __CUFFMERGE_DIR = 'cuffmerge'
@@ -408,6 +409,113 @@ class KBaseRNASeq:
         # At some point might do deeper type checking...
         if not isinstance(returnVal, dict):
             raise ValueError('Method BuildBowtie2Index return value ' +
+                             'returnVal is not type dict as required.')
+        # return the results
+        return [returnVal]
+
+    def GetFeaturesToGTF(self, ctx, params):
+        # ctx is the context object
+        # return variables are: returnVal
+        #BEGIN GetFeaturesToGTF
+        user_token=ctx['token']
+        pprint(params)
+        ws_client=Workspace(url=self.__WS_URL, token=user_token)
+        hs = HandleService(url=self.__HS_URL, token=user_token)
+        try:
+                self.__LOGGER.info( "Downloading KBaseGenomes.Genome object from workspace")
+            ## Check if the gtf_dir is present; remove files in gtf_dir if exists ; create a new dir if doesnt exists     
+                gtf_dir = self.__GTF_DIR
+                if os.path.exists(gtf_dir):
+                        #files=glob.glob("%s/*" % bowtie_dir)
+                        #for f in files: os.remove(f)
+                        handler_util.cleanup(self.__LOGGER,gtf_dir)
+                if not os.path.exists(gtf_dir): os.makedirs(gtf_dir)
+                provenance = [{}]
+                if 'provenance' in ctx:
+                        provenance = ctx['provenance']
+                # add additional info to provenance here, in this case the input data object reference
+                provenance[0]['input_ws_objects']=[params['ws_id']+'/'+params['reference']]
+	    ## Upload the file using handle service
+		
+                reference = ws_client.get_objects(
+                                        [{ 'name' : params['reference'], 'workspace' : params['ws_id']}])
+		ref =reference[0]['data']
+		output = open(params['output_obj_name']+'.gtf','w')
+        	if "features" in ref:
+                  for f in ref['features']:
+                     if "type" in f and  f['type'] == 'CDS':
+                        f_type = f['type']
+                     if "id" in f:
+                        f_id =  f['id']
+                     if "location" in f:
+                        #print f['location']
+                        for contig_id,f_start,f_strand,f_len  in f['location']:
+                                f_end = script_util.get_end(int(f_start),int(f_len),f_strand)
+                                #contig_id = l[0]
+                                #f_start = l[1]
+                                #f_end = l[1] + l[3]
+                                #f_strand = l[2]
+                                #positions[contig_id+":"+f_id]=f_strand+":"+str(f_start)+":"+str(f_end)+":"+str(f_len)
+
+                                output.write(contig_id + "\tKBase\t" + f_type + "\t" + str(f_start) + "\t" + str(f_end) + "\t.\t" + f_strand + "\t"+ str(0) + "\tID " + f_id + ";\n")
+                try:
+                         gtf_handle = script_util.create_shock_handle(self.__LOGGER,params['output_obj_name']+'.gtf',self.__SHOCK_URL,self.__HS_URL,"GTF",user_token)
+                        #bowtie_handle = hs.upload(out_file_path)
+                         if self.__PUBLIC_SHOCK_NODE is 'true':
+                                script_util.shock_node_2b_public(self.__LOGGER,node_id=gtf_handle['id'],shock_service_url=gtf_handle['url'],token=user_token)
+
+                except Exception, e:
+                        raise KBaseRNASeqException("Failed to create Reference Annotation: {0}".format(e))
+                gtfhandle = { "handle" : gtf_handle ,"size" : os.path.getsize(params['output_obj_name']+'.gtf')}
+
+             ## Save object to workspace
+                self.__LOGGER.info( "Saving Reference Annotation object to  workspace")
+                res= ws_client.save_objects(
+                                        {"workspace":params['ws_id'],
+                                         "objects": [{
+                                         "type":"KBaseRNASeq.ReferenceAnnotation",
+                                         "data":gtfhandle,
+                                         "name":params['output_obj_name']}
+                                        ]})
+                #returnVal = { "output" : params['output_obj_name'],"workspace" : params['ws_id'] }
+                info = res[0]
+		report = "Extracting Features from {0}".format(params['reference'])
+             ## Create report object:
+                reportObj = {
+                                'objects_created':[{
+                                'ref':str(info[6]) + '/'+str(info[0])+'/'+str(info[4]),
+                                'description':'Create Reference Annotation'
+                                }],
+                                'text_message':report
+                            }
+                reportName = 'Create_Reference_Annotation_'+str(hex(uuid.getnode()))
+                report_info = ws_client.save_objects({
+                                                'id':info[6],
+                                                'objects':[
+                                                {
+                                                'type':'KBaseReport.Report',
+                                                'data':reportObj,
+                                                'name':reportName,
+                                                'meta':{},
+                                                'hidden':1, # important!  make sure the report is hidden
+                                                'provenance':provenance
+                                                }
+                                                ]
+                                                })[0]
+
+                print('saved Report: '+pformat(report_info))
+
+		returnVal = { "report_name" : reportName,"report_ref" : str(report_info[6]) + '/' + str(report_info[0]) + '/' + str(report_info[4]) }
+        except Exception, e:
+                raise KBaseRNASeqException("Create Reference Annotation Failed: {0}".format(e))
+        finally:
+                handler_util.cleanup(self.__LOGGER,gtf_dir)
+	
+	#END GetFeaturesToGTF
+
+        # At some point might do deeper type checking...
+        if not isinstance(returnVal, dict):
+            raise ValueError('Method GetFeaturesToGTF return value ' +
                              'returnVal is not type dict as required.')
         # return the results
         return [returnVal]

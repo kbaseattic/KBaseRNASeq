@@ -590,3 +590,12 @@ def parse_FPKMtracking(filename):
 		larr = line.split("\t")
 		result[larr[0]] = math.log(float(larr[9])+1,2)
     return result
+
+def get_end(start,leng,strand):
+    stop = 0
+    if strand == '+': 
+	stop = start + ( leng - 1 )
+    if strand == '-':
+	stop = start - ( leng + 1)
+    return stop
+    

@@ -68,6 +68,8 @@ async_run_methods['KBaseRNASeq.SetupRNASeqAnalysis_async'] = ['KBaseRNASeq', 'Se
 async_check_methods['KBaseRNASeq.SetupRNASeqAnalysis_check'] = ['KBaseRNASeq', 'SetupRNASeqAnalysis']
 async_run_methods['KBaseRNASeq.BuildBowtie2Index_async'] = ['KBaseRNASeq', 'BuildBowtie2Index']
 async_check_methods['KBaseRNASeq.BuildBowtie2Index_check'] = ['KBaseRNASeq', 'BuildBowtie2Index']
+async_run_methods['KBaseRNASeq.GetFeaturesToGTF_async'] = ['KBaseRNASeq', 'GetFeaturesToGTF']
+async_check_methods['KBaseRNASeq.GetFeaturesToGTF_check'] = ['KBaseRNASeq', 'GetFeaturesToGTF']
 async_run_methods['KBaseRNASeq.Bowtie2Call_async'] = ['KBaseRNASeq', 'Bowtie2Call']
 async_check_methods['KBaseRNASeq.Bowtie2Call_check'] = ['KBaseRNASeq', 'Bowtie2Call']
 async_run_methods['KBaseRNASeq.TophatCall_async'] = ['KBaseRNASeq', 'TophatCall']
@@ -369,6 +371,10 @@ class Application(object):
                              name='KBaseRNASeq.BuildBowtie2Index',
                              types=[dict])
         self.method_authentication['KBaseRNASeq.BuildBowtie2Index'] = 'required'
+        self.rpc_service.add(impl_KBaseRNASeq.GetFeaturesToGTF,
+                             name='KBaseRNASeq.GetFeaturesToGTF',
+                             types=[dict])
+        self.method_authentication['KBaseRNASeq.GetFeaturesToGTF'] = 'required'
         self.rpc_service.add(impl_KBaseRNASeq.Bowtie2Call,
                              name='KBaseRNASeq.Bowtie2Call',
                              types=[dict])
