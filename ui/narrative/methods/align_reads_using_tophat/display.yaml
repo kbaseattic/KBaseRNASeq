@@ -3,7 +3,7 @@
 #
 name     : Align Reads using Tophat
 tooltip  : |
-    This method allows aligning RNA-seq reads to a genome using Tophat in order to identify exon-exon splice junctions using bowtie mapping program. 
+    Align the sequencing reads to a genome using Tophat in order to identify exon-exon splice junctions using Bowtie2 mapping program. 
 
 screenshots :
     []
@@ -15,7 +15,7 @@ method-suggestions :
     related :
         []
     next :
-        []
+        [assemble_transcripts_with_cufflinks]
 
 
 #
@@ -24,19 +24,19 @@ method-suggestions :
 parameters :
     sample_id :
         ui-name : |
-            Reads Associated with RNA-seq Sample
+            RNA-seq Sample
         short-hint : |
-            Select the reads associated with RNA-seq sample
+            Select the RNA-seq sample associated with the reads
     annotation_gtf :
         ui-name : |
             Reference Annotation
         short-hint : |
-            Select the reference annotation
+            Select the reference annotation of the associated genome
     output_obj_name :
         ui-name : |
             Alignment Output
         short-hint : |
-            Provide the name of tophat read alignment output
+            Provide the name of Tophat read alignment output
     reference :
         ui-name : |
             Genome
@@ -46,22 +46,22 @@ parameters :
         ui-name : |
             Indexed Genome
         short-hint : |
-            Select the indexed genome built using bowtie2
+            Select the indexed genome built using Bowtie2
     read_mismatches :
         ui-name : |
-            Mismatches in Reads
+            Read Mismatch Cutoff
         short-hint : |
-            Final read alignments having more than these mismatches are discarded.The default is 2.
+            Final read alignments with more than this many mismatches are discarded. The default is 2.
     read_gap_length :
         ui-name : |
-            Gap Length in Reads
+            Read Gap Cutoff
         short-hint : |
-            Final read alignments having more than these many total length of gaps are discarded.The default is 2.
+            Final read alignments with more than this many gaps are discarded. The default is 2.
     read_edit_dist :
         ui-name : |
-            Read Distance
+            Read Edit Cutoff
         short-hint : |
-            Final read alignments having more than these many edit distance are discarded.The default is 2.
+            Final read alignments with more than this many edits are discarded. The default is 2.
     min_intron_length :
         ui-name : |
             Minimum Intron Length
@@ -76,27 +76,27 @@ parameters :
         ui-name : |
             Number of Threads
         short-hint : |
-            Number of threads to align reads. The default is 1.
+            Number of computational threads in parallel to align reads. The default is 1.
     report_secondary_alignments :
         ui-name : |
             Report Secondary Alignments
         short-hint : |
-            Use this option if you want to output secondary alignments.
+            Use this option to output secondary alignments.
     no_coverage_search :
         ui-name : |
             No Coverage Search
         short-hint : |
-            Disables the coverage based search for junctions.
+            Use this option to disable the coverage-based search for junctions.
     library_type :
         ui-name : |
             Library Type
         short-hint : |
-            Select the library type
+            Select the direction of the reads with respect to the original mRNA when the library was prepared. The default is fr-unstranded.
 
 description : |
-    <p>This method allows aligning RNA-seq reads to an eukaryotic genome using Tophat in order to identify exon-exon splice junctions using bowtie mapping program.</p>
-    <p>This method takes a bowtie2 index object and sequencing read file and outputs a set of read alignments in SAM format.</p>
-    <p> In addition, it provides the alignment statistics (total reads, mapped and unmapped reads, singletons, multiple alignments, and alignment rate in table format.</p>
+    <p>This method aligns the RNA-seq reads to an eukaryotic genome using Tophat in order to identify exon-exon splice junctions using Bowtie2 mapping program.</p>
+    <p>This method takes a Bowtie2 index object and sequencing read file and outputs a set of read alignments in SAM format.</p>
+    <p>In addition, it provides the alignment statistics such as total reads, mapped and unmapped reads, singletons, multiple alignments, and alignment rate in a table format.</p>
     
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
     Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Fei He, Vivek Kumar</p>
