@@ -4,7 +4,7 @@
 name     : Merge Transcripts using Cuffmerge
 
 tooltip  : |
-    This method allows to merge multiple transcripts of several cufflinks assemblies using cuffmerge.
+    Merge multiple transcripts of several Cufflinks assemblies using Cuffmerge.
 screenshots :
     []
 
@@ -15,7 +15,7 @@ method-suggestions :
     related :
         []
     next :
-        []
+        [identify_differential_expression_using_cuffdiff]
 
 
 #
@@ -24,16 +24,16 @@ method-suggestions :
 parameters :
     analysis :
         ui-name : |
-            RNASeq Experiment Name
+            Experiment Analysis
         short-hint : |
-            Specify the RNASeq Experiment Name
+            Specify the RNA-seq Experiment Analysis
     output_obj_name :
         ui-name : |
             Cuffmerge Output
         short-hint : |
-            Provide the name of cuffmerged output
+            Provide the name of Cuffmerge output
 description : |
-    <p>This method allows to take several assembly GTF files from Cufflinks' as input. It merges together the input assemblies using cuffmerge. </p>
+    <p>This method is essentially a meta-assembler. It merges together several input assembly GTF files from Cufflinks.</p>
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
     Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Fei He, Vivek Kumar</p>
     
