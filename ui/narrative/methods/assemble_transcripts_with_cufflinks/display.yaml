@@ -1,10 +1,10 @@
 #
 # Define basic display information
 #
-name     : Assemble Transcripts with Cufflinks
+name     : Assemble Transcripts using Cufflinks
 
 tooltip  : |
-    This method allows to assemble transcriptomes from RNA-seq data using cufflinks. 
+    Assemble the transcriptomes from RNA-seq reads using Cufflinks. 
 screenshots :
     []
 
@@ -15,7 +15,7 @@ method-suggestions :
     related :
         []
     next :
-        []
+        [merge_transcripts_using_cuffmerge]
 
 
 #
@@ -26,41 +26,41 @@ parameters :
     ui-name : |
         Read Alignments 
     short-hint : |
-        Select the file of RNA-seq read alignments in the SAM format from bowtie2 or tophat.
+        Select the RNA-seq read alignments in SAM format from Bowtie2 or Tophat.
   annotation_gtf :
     ui-name : |
       Reference Annotation
     short-hint : |
-      Select the reference annotation
+      Select the reference annotation of the associated genome.
   output_obj_name :
     ui-name : |
       Cufflinks Output
     short-hint : |
-      Provide the name of cufflinks output
+      Provide the name of Cufflinks output
   num-threads :
     ui-name : |
       Number of  threads
     short-hint : |
-      Number of threads used during analysis. The default is 1.
+      Number of computational threads to assemble transcriptomes. The default is 1.
   min-intron-length :
     ui-name : |
       Minimum Intron Length
     short-hint : |
-      Minimum intron size allowed in a genome. The default is 50bp.
+      Minimum size of intron allowed in a genome. The default is 50bp.
   max-intron-length :
     ui-name : |
       Maximum lntron Length
     short-hint : |
-      Cufflinks will not report transcripts with introns longer than this. The default is 300,000. 
+      Cufflinks will not report transcripts with introns longer than this. The default is 300,000bp. 
   overhang-tolerance :
     ui-name : |
       Overhang Tolerance
     short-hint : |
-      The number of terminal exon base pair to tolerate in introns.The deafult is 8bp.
+      The number of terminal exon base pairs allowed in a transript intron. The deafult is 8bp.
 
 description : |
-    <p>This method allows to assemble transcripts using cufflinks and then users can view the relative abundances of the assembled transcripts in histogram, obtained as output from cufflinks.</p>
-    <p>It accepts aligned RNA-seq reads from bowtie2 or tophat and assembles the alignments into a parsimonious set of transcripts. It then estimates the relative abundances of these transcripts based on how many reads support each one, taking into account biases in library preparation protocols.</p>
+    <p>This method assembles transcripts using Cufflinks so that you can view the relative abundances of the assembled transcripts in histogram, obtained as output from Cufflinks.</p>
+    <p>It accepts aligned RNA-seq reads from Bowtie2 or Tophat and assembles the alignments into a parsimonious set of transcripts. It then estimates the relative abundances of these transcripts based on how many reads support each one, taking into account biases in library preparation protocols.</p>
     
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
     Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Fei He, Vivek Kumar</p>
