@@ -6,7 +6,7 @@
   "categories" : ["active"],
   "widgets" : {
     "input" : null,
-    "output" : null
+    "output" : "kbaseRNASeqPie"
   },
    "parameters" : [ {
     "id" : "sample_id",
@@ -193,6 +193,10 @@
           "input_parameter" : "bowtie_index",
           "target_property" : "bowtie_index"
         },
+	{
+	  "input_parameter" : "output_obj_name",
+          "target_property" : "output_obj_name"
+	},
         {
           "input_parameter" : "read_mismatches",
           "target_property" : "read_mismatches"
@@ -232,9 +236,13 @@
       ],
       "output_mapping" : [
        {
-          "service_method_output_path": [0],
-          "target_property": "TophatCall"
-        }
+          "service_method_output_path" : [0,"stats_obj"],
+          "target_property" : "output"
+       },
+       {
+	  "narrative_system_variable": "workspace",
+          "target_property" : "workspace"
+       }
       ]
     }
   },

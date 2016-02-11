@@ -1,0 +1,18 @@
+{	
+	"version":"1.1",
+	"method":"KBaseRNASeq.TophatCall",
+	"context": null,
+	"params":[
+	{
+	 "ws_id" : "srividya22:1449838655115",
+	 "sample_id" : "SRR228086" ,
+	 "output_obj_name" : "test_local_ecoli_SRR228086" ,
+	 "reference" : "Escherichia_coli_str.K-12_substr._MG1655",
+	 "bowtie_index" : "ecoli_bw_index1",
+	 "annotation_gtf" : "Ecoli_K12_MG1655_NC_000913.3.gtf",
+	 "read_mismatches" : "2",
+	 "read_gap_length" : "2",
+         "min_intron_length" : "5",
+	 "num_threads" : "2",
+	 "no_coverage_search" : "0" } ]
+}

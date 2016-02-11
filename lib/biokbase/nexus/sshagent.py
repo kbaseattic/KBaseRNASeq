@@ -16,8 +16,8 @@ import os
 import socket 
 import struct 
 import sys 
-from paramiko.agent import SSH2_AGENTC_REQUEST_IDENTITIES, SSH2_AGENT_IDENTITIES_ANSWER, \
-    SSH2_AGENTC_SIGN_REQUEST, SSH2_AGENT_SIGN_RESPONSE, Agent, AgentKey
+from paramiko.agent import cSSH2_AGENTC_REQUEST_IDENTITIES, SSH2_AGENT_IDENTITIES_ANSWER, \
+    cSSH2_AGENTC_SIGN_REQUEST, SSH2_AGENT_SIGN_RESPONSE, Agent, AgentKey
 
 from paramiko.ssh_exception import SSHException 
 from paramiko.message import Message 
@@ -66,7 +66,7 @@ class Agent2( Agent ):
             # no agent support
             return
             
-        ptype, result = self._send_message(chr(SSH2_AGENTC_REQUEST_IDENTITIES))
+        ptype, result = self._send_message((SSH2_AGENTC_REQUEST_CIDENTITIES))
         if ptype != SSH2_AGENT_IDENTITIES_ANSWER:
             raise SSHException('could not get keys from ssh-agent')
         for i in range(result.get_int()):

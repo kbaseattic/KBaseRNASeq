@@ -1,0 +1,63 @@
+#
+# Define basic display information
+#
+name     : Create Reference Annotation for Prokaryotes
+tooltip  : |
+    creates a reference annotation in GTF format for any Prokaryotic Genome
+
+screenshots :
+    []
+
+replacement-text : Creates a Reference Annotation for any Prokaryotic Genome  for {{{input_genome}}}
+
+#
+# Define the set of other narrative methods that should be suggested to the user.
+#
+suggestions :
+    apps:
+        related :
+            []
+        next :
+            []
+    methods:
+        related :
+            []
+        next :
+            []
+
+
+#
+# Configure the display and description of the parameters
+#
+parameters :
+    input_genome:
+        ui-name : |
+            Genome
+        short-hint : |
+            The input prokaryotic genome to extact features
+
+    out_gtf_name:
+        ui-name : |
+            Output Reference Annotation Name
+        short-hint : |
+            Name for the created Reference Annotation
+
+description : |
+   <p>This method creates a Reference Annotation  for a given Prokaryotic reference genome.</p> 
+   
+   <p>RNASeq Pipeline requires Reference Annotation objects in GTF format to align reads and assemble them to transcripts.</p>
+   
+   <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
+    Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Fei He, Vivek Kumar</p>
+    
+publications :
+    -
+        display-text: |
+            Langmead B, Trapnell C, Pop M, Salzberg SL (2009) "Ultrafast and memory-efficient alignment of short DNA sequences to the human genome" Genome Biology 10 (3): 10:R25.
+        link: http://www.ncbi.nlm.nih.gov/pmc/articles/PMC2690996/
+        display-text: |
+            Langmead B, Salzberg SL (2012) "Fast gapped-read alignment with Bowtie 2" Nature Methods 9 (4): 357–359.
+        link: http://www.ncbi.nlm.nih.gov/pubmed/22388286
+        display-text: |
+            Karkkainen J (2007) "Fast BWT in small space by blockwise suffix sorting" Theor Comput Sci 2007, 387:249-257.
+        link: http://www.sciencedirect.com/science/article/pii/S0304397507005245

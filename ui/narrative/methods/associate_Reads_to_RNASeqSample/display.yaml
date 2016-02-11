@@ -34,27 +34,27 @@ parameters :
             Select the paired-end read file for a RNASeq sample.
     analysis_id :
         ui-name : |
-            RNASeq experiment name
+            RNASeq Experiment Name
         short-hint : |
             Select the RNASeq experiment object obtained from SetUp RNASeq Analysis method.
+    sample_id :
+        ui-name : |
+            Associated Reads
+        short-hint : |
+            Specify the name to associated reads output object
     domain:
         ui-name : |
             Domain 
         short-hint : |
-            Enter the domain of the RNASeq sample (prokaryotic or eukaryotic)
+            Enter the domain of the RNASeq sample
     genome_id :
         ui-name : |
-            Reference genome
+            Reference Genome
         short-hint : |
             Select the reference genome of the RNASeq Experiment
-    sample_id :
-        ui-name : |
-            RNASeq sample label
-        short-hint : |
-            Enter the RNASeq sample label
     replicate_id:
         ui-name : |
-            RNASeq sample replicate id
+            RNASeq Sample Replicate Id
         short-hint : |
             Specify the replicate ID for the sample replicates
     tissue: 
@@ -69,12 +69,12 @@ parameters :
             Enter the specific condition/treatment of the RNASeq sample
     platform:
         ui-name : |
-            Platform type
+            Platform
         short-hint : |
             Enter the sequencing platform used
     sample_desc :
         ui-name : |
-            Sample description
+            Sample Description
         short-hint : |
             Select the description of the RNASeq sample
     title :
@@ -87,11 +87,7 @@ parameters :
             Source 
         short-hint : |
             Enter the source for the RNASeq sample
-    ext_source_date:
-        ui-name : |
-            Publication date
-        short-hint : |
-            Enter the publication date
+
 
 description : |
     <p>This method allows users to associate single-end or paired-end reads to individual RNASeq sample of a given RNASeq experiment.</p>

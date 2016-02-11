@@ -6,7 +6,7 @@
   "categories" : ["active"],
   "widgets" : {
     "input" : null,
-    "output" : null
+    "output" : "kbaseRNASeqPie"
   },
    "parameters" : [ {
     "id" : "sample_id",
@@ -149,6 +149,10 @@
           "input_parameter" : "bowtie2_index",
           "target_property" : "bowtie2_index"
         },
+	{
+	  "input_parameter" : "output_obj_name",
+          "target_property" : "output_obj_name"
+	},	
         {
           "input_parameter" : "quality_score",
           "target_property" : "quality_score"
@@ -162,10 +166,14 @@
           "target_property" : "preset_options"
       }],
       "output_mapping" : [
-        {
-          "service_method_output_path": [0],
-          "target_property": "Bowtie2Call"
-        }
+       {
+          "service_method_output_path" : [0,"stats_obj"],
+          "target_property" : "output"
+       },
+       {
+          "narrative_system_variable": "workspace",
+          "target_property" : "workspace"
+       }
       ]
     }
   },

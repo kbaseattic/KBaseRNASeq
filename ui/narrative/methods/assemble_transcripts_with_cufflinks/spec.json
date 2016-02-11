@@ -6,7 +6,7 @@
   "categories" : ["active"],
   "widgets" : {
     "input" : null,
-    "output" : null
+    "output" : "kbaseExpressionSampleTable"
   },
    "parameters" : [ {
     "id" : "alignment_sample_id",
@@ -20,7 +20,7 @@
     }
   }, {
     "id" : "annotation_gtf",
-    "optional" : false,
+    "optional" : true,
     "advanced" : false,
     "allow_multiple" : false,
     "default_values" : [ "" ],
@@ -37,8 +37,8 @@
     "field_type" : "text"
   }, {
    "id" : "num-threads",
-    "optional" : false,
-    "advanced" : false,
+    "optional" : true,
+    "advanced" : true,
     "allow_multiple" : false,
     "default_values" : [ "" ],    
     "field_type" : "text",
@@ -47,8 +47,8 @@
     }
   }, {
    "id" : "min-intron-length",
-    "optional" : false,
-    "advanced" : false,
+    "optional" : true,
+    "advanced" : true,
     "allow_multiple" : false,
     "default_values" : [ "" ],    
     "field_type" : "text",
@@ -57,8 +57,8 @@
     }
   }, {
     "id" : "max-intron-length",
-    "optional" : false,
-    "advanced" : false,
+    "optional" : true,
+    "advanced" : true,
     "allow_multiple" : false,
     "default_values" : [ "" ],    
     "field_type" : "text",
@@ -67,8 +67,8 @@
     }
   }, {
     "id" : "overhang-tolerance",
-    "optional" : false,
-    "advanced" : false,
+    "optional" : true,
+    "advanced" : true,
     "allow_multiple" : false,
     "default_values" : [ "" ],    
     "field_type" : "text",
@@ -80,7 +80,7 @@
     "service-mapping" : {
       "url" : "",
       "name" : "KBaseRNASeq",
-      "method" : "assemble_transcripts_with_cufflinks",
+      "method" : "CufflinksCall",
       "input_mapping" : [
         {
           "narrative_system_variable": "workspace",
@@ -115,9 +115,13 @@
           "target_property" : "overhang-tolerance"
       }],
       "output_mapping" : [
-        {
-          "service_method_output_path": [0],
-          "target_property": "assemble_transcripts_with_cufflinks"
+	{
+          "narrative_system_variable": "workspace",
+          "target_property" : "workspace"
+        },
+	{
+	  "input_parameter" : "output_obj_name",
+          "target_property" : "output"
         }
       ]
     }

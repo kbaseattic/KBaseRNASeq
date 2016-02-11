@@ -1,10 +1,10 @@
 #
 # Define basic display information
 #
-name     : Assemble Transcripts with Cufflinks
+name     : Assemble Transcripts using Cufflinks
 
 tooltip  : |
-    Assemble Transcripts with Cufflinks
+    Assemble the transcripts from RNA-seq reads using Cufflinks. 
 screenshots :
     []
 
@@ -15,7 +15,7 @@ method-suggestions :
     related :
         []
     next :
-        []
+        [merge_transcripts_using_cuffmerge]
 
 
 #
@@ -24,39 +24,62 @@ method-suggestions :
 parameters :
   alignment_sample_id :
     ui-name : |
-        Alignment sample ID
+        Read Alignments 
     short-hint : |
-        Alignment sample ID
+        Select the RNA-seq read alignments in BAM format from Bowtie2 or Tophat.
   annotation_gtf :
     ui-name : |
-      Reference genome annotation
+      Reference Annotation
     short-hint : |
-      Reference genome annotation
+      Select the reference annotation of the associated genome.
   output_obj_name :
     ui-name : |
-      Output object name
+      Cufflinks Output
     short-hint : |
-      Output object name
+      Provide the name of Cufflinks output
   num-threads :
     ui-name : |
       Number of  threads
     short-hint : |
-      Number of  threads
+      Number of computational threads to assemble transcriptomes. The default is 1.
   min-intron-length :
     ui-name : |
-      Minimum length of intron
+      Minimum Intron Length
     short-hint : |
-      Minimum length of intron
+      Minimum size of intron allowed in a genome. The default is 50bp.
   max-intron-length :
     ui-name : |
-      Maximum length of intron
+      Maximum lntron Length
     short-hint : |
-      Maximum length of intron 
+      Cufflinks will not report transcripts with introns longer than this. The default is 300,000bp. 
   overhang-tolerance :
     ui-name : |
-      Overhang tolerance
+      Overhang Tolerance
     short-hint : |
-      Overhang tolerance
+      The number of terminal exon base pairs allowed in a transcript intron. The default is 8bp.
 
 description : |
-    <p>This method is used to assemble transcripts with Cufflinks.</p>
+    <p>This method assembles transcripts using Cufflinks so that you can view the relative abundances of the assembled transcripts in a histogram, obtained as output from Cufflinks.</p>
+    <p>It accepts aligned RNA-seq reads from Bowtie2 or Tophat and assembles the alignments into a parsimonious set of transcripts. It then estimates the relative abundances of these transcripts based on how many reads support each one, taking into account biases in library preparation protocols.</p>
+    <p>The Cufflinks output object contains GTF and FPKM files. The GTF file contains annotated transcripts assembled by Cufflinks whereas the FPKM file gives the normalized abundance of each transcript expressed in fragments per kilobase of exon per million fragments mapped (FPKM). The Cuffdiff Table Histogram tab displays the abundance of normalized gene expression value log2(FPKM+1).</p>
+    <p><strong>NOTE:</strong>This method currently does not support batch processing of all the read samples. Therefore, this method must be run individually for each of the RNA-seq samples. Please stay tuned for the batch version of this method that will be available in near future.</p>
+    <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
+    Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Vivek Kumar</p>
+    
+publications :
+    -
+        display-text: |
+            Trapnell C, Roberts A, Goff L, Pertea G, Kim D, Kelley DR, Pimentel H, Salzberg SL, Rinn JL, Pachter, L (2012) Differential gene and transcript expression analysis of RNA-seq experiments with TopHat and Cufflinks. Nature Protocols, 7(3), 562–578.
+        link: http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3334321/
+    -
+        display-text: |
+            Trapnell C, Pachter L, Salzberg SL. (2009) TopHat: discovering splice junctions with RNA-Seq. Bioinformatics. Vol 25, 9:1105-1111.
+        link: http://bioinformatics.oxfordjournals.org/content/25/9/1105.abstract
+    -
+        display-text: |
+            Kim D, Pertea G, Trapnell C, Pimentel H, Kelley R, Salzberg SL (2013) TopHat2: accurate alignment of transcriptomes in the presence of insertions, deletions and gene fusions. Genome Biology. 14:R36
+        link: http://www.genomebiology.com/2013/14/4/R36/abstract
+    -    
+        display-text: |
+            Langmead B, Trapnell C, Pop M, Salzberg SL (2009) Ultrafast and memory-efficient alignment of short DNA sequences to the human genome. Genome Biology 10:R25.
+        link: http://www.ncbi.nlm.nih.gov/pmc/articles/PMC2690996/

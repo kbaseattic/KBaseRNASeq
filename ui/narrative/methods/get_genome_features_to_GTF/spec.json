@@ -1,0 +1,67 @@
+{
+  "ver" : "1.0.0",
+  "authors" : [ ],
+  "contact" : "help@kbase.us",
+  "visible" : true,
+  "categories" : ["active"],
+  "widgets" : {
+    "input" : null,
+    "output" : "kbaseReportView"
+  },
+  "parameters" : [ {
+    "id" : "input_genome",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : [ "KBaseGenomes.Genome" ]
+    }
+  }, {
+    "id" : "out_gtf_name",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text"
+  } ],
+  "behavior" : {
+      "service-mapping" : {
+      	"url" : "",
+        "name" : "KBaseRNASeq",
+        "method" : "GetFeaturesToGTF",
+        "input_mapping" : [
+        {
+          "narrative_system_variable": "workspace",
+          "target_property": "ws_id"
+        },{
+          "input_parameter": "input_genome",
+          "target_property": "reference"
+        },{
+          "input_parameter": "out_gtf_name",
+          "target_property": "output_obj_name"
+        }],
+     "output_mapping" : [
+        {
+         "service_method_output_path": [0,"report_name"],
+         "target_property": "report_name"
+        },
+	{
+	 "service_method_output_path": [0,"report_ref"],
+	 "target_property": "report_ref"
+	},
+	{
+	 "narrative_system_variable": "workspace",
+	 "target_property": "workspace_name"
+	},
+	{
+	"constant_value": "5",
+	"target_property": "report_window_line_height"
+	}
+      ]
+    }
+  },
+  "job_id_output_field" : "docker"
+}
+

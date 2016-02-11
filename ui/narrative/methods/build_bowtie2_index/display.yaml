@@ -3,12 +3,12 @@
 #
 name     : Build Bowtie2 Index 
 tooltip  : |
-    Build bowtie2 index for a given genome
+    Build Bowtie2 index for a given genome
 
 screenshots :
     []
 
-replacement-text : Created a new bowtie2 Index  for {{{input_genome}}}
+replacement-text : Creates a new bowtie2 Index  for {{{input_genome}}}
 
 #
 # Define the set of other narrative methods that should be suggested to the user.
@@ -34,20 +34,21 @@ parameters :
         ui-name : |
             Genome
         short-hint : |
-            Select genome that needs to be indexed 
+            The input genome to be indexed 
 
     out_index_name:
         ui-name : |
-            Output
+            Indexed Genome
         short-hint : |
-            Enter the name of the indexed genome
+            The indexed genome as output
 
 description : |
-   <p>This method allows to build the Bowtie2 Indexes for a given reference genome object.</p> 
-    <p>Bowtie indexes the reference genome using a scheme based on the Burrows-Wheeler transform (BWT) and the full-text minute-space (FM) index (similar to a suffix array) to keep its memory footprint small.</p>
-    
-    <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
-    Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Fei He, Vivek Kumar</p>
+   <p>This method builds the Bowtie2 index for a given reference genome.</p> 
+   
+   <p>Bowtie2 indexes the sequences in the reference genome using a scheme based on the Burrows-Wheeler transform (BWT) and the full-text minute-space (FM) index (similar to a suffix array) to keep its memory footprint small.</p>
+   
+   <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
+    Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Vivek Kumar</p>
     
 publications :
     -

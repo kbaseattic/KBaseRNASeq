@@ -1,0 +1,9 @@
+{	
+	"version":"1.1",
+	"method":"KBaseRNASeq.GetFeaturesToGTF",
+	"context": null,
+	"params":[
+	{"ws_id" : "srividya22:1455032708298",
+	 "output_obj_name" :  "test_Ecoli_gtf" ,
+	 "reference" : "Escherichia_coli_str._K-12_substr._MG1655" } ]
+}
