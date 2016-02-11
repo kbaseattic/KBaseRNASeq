@@ -546,6 +546,15 @@ async funcdef SetupRNASeqAnalysis(SetupRNASeqAnalysisParams params)
 
 async funcdef BuildBowtie2Index(Bowtie2IndexParams params)
      returns(ResultsToReport) authentication required;
+
+   typedef structure{
+        string ws_id;
+        ws_genome_id reference;
+        string output_obj_name;
+        }GetFeaturesToGTFParams;
+
+async funcdef GetFeaturesToGTF(GetFeaturesToGTFParams params)
+     returns(ResultsToReport) authentication required;   
    
    typedef structure{
 	int skip;

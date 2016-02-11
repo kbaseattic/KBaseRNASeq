@@ -4,7 +4,7 @@
 name     : Identify Differential Expression using Cuffdiff
 
 tooltip  : |
-    Identify significant changes in transcript expression using Cuffdiff
+    Identify significant changes in the gene and transcript expression level using Cuffdiff
 screenshots :
     []
 
@@ -69,11 +69,14 @@ parameters :
       Select how library sizes (sequencing depths) are normalized in Cufflinks and Cuffdiff. By default, no scaling is applied to FPKM.
 
 description : |
-    <p>This method finds significant changes in the transcript expression.</p>
-    <p>It accepts GTF annotation file produced by Cuffmerge and SAM files of aligned RNA-seq reads as input. If more than two SAM files are provided, Cuffdiff tests for differential expression between all pairs of samples.</p>
-    <p>Cuffdiff calculates the FPKM of each transcript, primary transcript and gene in each sample and produces differentially expressed files.</p>
+    <p>This method uses the Cufflinks transcripts to calculate gene and transcript levels in more than one condition and finds significant changes in the expression levels.</p>
+    <p>It accepts Cufflinks annotation files merged by Cuffmerge and BAM files of aligned RNA-seq reads as input. If more than two BAM files are provided, Cuffdiff tests for differential expression between all pairs of samples.</p> 
+    
+    <p>Cuffdiff calculates the FPKM value of each transcript, primary transcript and gene in each sample and produces a number of output files zipped in Cuffdiff output object.</p>
+    <p>The Cuffdiff output can be further analyzed and visualized by using View methods such as “View CummeRbund Plots”, “View Differentially Expressed Genes from Cuffdiff in Heatmap”.</p> 
+
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
-    Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Fei He, Vivek Kumar</p>
+    Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Vivek Kumar</p>
     
 publications :
     -

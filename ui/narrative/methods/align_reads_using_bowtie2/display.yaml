@@ -65,18 +65,18 @@ parameters :
             Faster option is generally less sensitive and vice versa.
 
 description : |
-    <p>This method aligns the sequencing reads to long reference sequences using Bowtie2. </p>
+    <p>This method aligns the sequencing reads to long reference sequences of a prokaryotic genome using Bowtie2. </p>
     
-    <p>This method takes a bowtie2 index object and sequencing read file and outputs a set of alignments in SAM format.</p> 
+    <p>This method takes a Bowtie2 index object and a sequencing read file and outputs a set of alignments in BAM format.</p> 
     
     <p>In addition, it outputs the alignment statistics such as total reads, mapped and unmapped reads, singletons, multiple alignments, and alignment rate in the table format.</p>
     
-    <p>Bowtie2 supports end-to-end read alignment mode by default. In this mode, it searches for alignments involving all of the read characters. This is also called an "untrimmed" or "unclipped" alignment. The method also supports "local" alignment mode, which does not require that reads align end-to-end. This produces alignments that might be "trimmed" (or "soft clipped") at one or both extremes in a way that optimizes the alignment score.</p>
+    <p>Bowtie2 supports end-to-end read alignment mode by default. In this mode, it searches for alignments involving all of the read characters. This is also called an "untrimmed" or "unclipped" alignment. The method also supports "local" alignment mode, which produces alignments that might be "trimmed" (or "soft clipped") at one or both extremes in a way that optimizes the alignment score.</p>
     
-    <p><strong>NOTE:</strong>This method does not support batch processing of all the read samples. Therefore, this method must be run individually for each of the RNA-seq samples.</p>
+    <p><strong>NOTE:</strong>This method currently does not support batch processing of all the read samples. Therefore, this method must be run individually for each of the RNA-seq samples. Please stay tuned for the batch version of this method that will be available in near future.</p>
     
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
-    Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Fei He, Vivek Kumar</p>
+    Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Vivek Kumar</p>
     
 publications :
     -

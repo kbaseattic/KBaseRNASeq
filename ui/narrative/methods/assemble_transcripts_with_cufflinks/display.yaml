@@ -4,7 +4,7 @@
 name     : Assemble Transcripts using Cufflinks
 
 tooltip  : |
-    Assemble the transcriptomes from RNA-seq reads using Cufflinks. 
+    Assemble the transcripts from RNA-seq reads using Cufflinks. 
 screenshots :
     []
 
@@ -26,7 +26,7 @@ parameters :
     ui-name : |
         Read Alignments 
     short-hint : |
-        Select the RNA-seq read alignments in SAM format from Bowtie2 or Tophat.
+        Select the RNA-seq read alignments in BAM format from Bowtie2 or Tophat.
   annotation_gtf :
     ui-name : |
       Reference Annotation
@@ -56,14 +56,15 @@ parameters :
     ui-name : |
       Overhang Tolerance
     short-hint : |
-      The number of terminal exon base pairs allowed in a transript intron. The deafult is 8bp.
+      The number of terminal exon base pairs allowed in a transcript intron. The default is 8bp.
 
 description : |
-    <p>This method assembles transcripts using Cufflinks so that you can view the relative abundances of the assembled transcripts in histogram, obtained as output from Cufflinks.</p>
+    <p>This method assembles transcripts using Cufflinks so that you can view the relative abundances of the assembled transcripts in a histogram, obtained as output from Cufflinks.</p>
     <p>It accepts aligned RNA-seq reads from Bowtie2 or Tophat and assembles the alignments into a parsimonious set of transcripts. It then estimates the relative abundances of these transcripts based on how many reads support each one, taking into account biases in library preparation protocols.</p>
-    
+    <p>The Cufflinks output object contains GTF and FPKM files. The GTF file contains annotated transcripts assembled by Cufflinks whereas the FPKM file gives the normalized abundance of each transcript expressed in fragments per kilobase of exon per million fragments mapped (FPKM). The Cuffdiff Table Histogram tab displays the abundance of normalized gene expression value log2(FPKM+1).</p>
+    <p><strong>NOTE:</strong>This method currently does not support batch processing of all the read samples. Therefore, this method must be run individually for each of the RNA-seq samples. Please stay tuned for the batch version of this method that will be available in near future.</p>
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
-    Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Fei He, Vivek Kumar</p>
+    Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Vivek Kumar</p>
     
 publications :
     -

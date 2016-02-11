@@ -1,14 +1,14 @@
 #
 # Define basic display information
 #
-name     : Build Bowtie2 Index 
+name     : Create Reference Annotation for Prokaryotes
 tooltip  : |
-    Build Bowtie2 index for a given genome
+    creates a reference annotation in GTF format for any Prokaryotic Genome
 
 screenshots :
     []
 
-replacement-text : Creates a new bowtie2 Index  for {{{input_genome}}}
+replacement-text : Creates a Reference Annotation for any Prokaryotic Genome  for {{{input_genome}}}
 
 #
 # Define the set of other narrative methods that should be suggested to the user.
@@ -34,21 +34,21 @@ parameters :
         ui-name : |
             Genome
         short-hint : |
-            The input genome to be indexed 
+            The input prokaryotic genome to extact features
 
-    out_index_name:
+    out_gtf_name:
         ui-name : |
-            Indexed Genome
+            Output Reference Annotation Name
         short-hint : |
-            The indexed genome as output
+            Name for the created Reference Annotation
 
 description : |
-   <p>This method builds the Bowtie2 index for a given reference genome.</p> 
+   <p>This method creates a Reference Annotation  for a given Prokaryotic reference genome.</p> 
    
-   <p>Bowtie2 indexes the sequences in the reference genome using a scheme based on the Burrows-Wheeler transform (BWT) and the full-text minute-space (FM) index (similar to a suffix array) to keep its memory footprint small.</p>
+   <p>RNASeq Pipeline requires Reference Annotation objects in GTF format to align reads and assemble them to transcripts.</p>
    
    <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
-    Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Vivek Kumar</p>
+    Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Fei He, Vivek Kumar</p>
     
 publications :
     -

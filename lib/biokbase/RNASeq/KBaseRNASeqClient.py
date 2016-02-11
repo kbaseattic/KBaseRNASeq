@@ -246,6 +246,24 @@ class KBaseRNASeq(object):
             if job_state['finished']:
                 return job_state['result'][0]
   
+    def GetFeaturesToGTF_async(self, params, json_rpc_context = None):
+        if json_rpc_context and type(json_rpc_context) is not dict:
+            raise ValueError('Method GetFeaturesToGTF: argument json_rpc_context is not type dict as required.')
+        return self._call('KBaseRNASeq.GetFeaturesToGTF_async',
+                          [params], json_rpc_context)[0]
+
+    def GetFeaturesToGTF_check(self, job_id):
+        resp = self._call('KBaseRNASeq.GetFeaturesToGTF_check', [job_id])
+        return resp[0]
+
+    def GetFeaturesToGTF(self, params, json_rpc_context = None):
+        job_id = self.GetFeaturesToGTF_async(params, json_rpc_context)
+        while True:
+            time.sleep(self.async_job_check_time)
+            job_state = self.GetFeaturesToGTF_check(job_id)
+            if job_state['finished']:
+                return job_state['result'][0]
+  
     def Bowtie2Call_async(self, params, json_rpc_context = None):
         if json_rpc_context and type(json_rpc_context) is not dict:
             raise ValueError('Method Bowtie2Call: argument json_rpc_context is not type dict as required.')
