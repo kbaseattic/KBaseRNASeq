@@ -111,15 +111,13 @@ parameters :
 description : |
     <p>This method allows the users to provide the metadata to set up an RNA-seq experiment.</p>
     
-    <p>Before users provide all the metadata details to set up experiment, users need to import single-end or paired-end read files and the corresponding genome and reference genome annotation files to the Data Pane.</p>
+    <p>Users need to import single-end or paired-end read files and the corresponding genome and reference genome annotation files to the Data Pane before starting this method.</p>
     
-    <p>Users need to provide "Experiment Analysis" (RNA-seq analysis output object), select the "Genome", "Reference Genome Annotation", "Library Type", and "Domain" from the drop down menu.</p>
+    <p>It is mandatory for users to provide "Experiment Analysis" (RNA-seq analysis output object), select the "Genome", "Reference Genome Annotation", "Library Type", and "Domain" from the drop down menu along with the total number of samples, number of replicates and labels of the sample conditions/treatments. It is necessary to have the same number of replication for each sample.</p>
     
-    <p>In addition, the users need to fill in the total number of samples, number of replicates and labels of the sample conditions/treatments.</p>
+    <p>Users can optionally fill in additional metadata information in the advanced options.</p>
     
-    <p>Users can fill in other metadata information in the advanced option, those are optional.</p>
-    
-    <p>This method uses "Experiment Analysis" as an analysis object that gets updated by the successive methods in the RNA-seq pipeline.</p>
+    <p>Note that the "Experiment Analysis" object will be updated by the successive methods in the RNA-seq pipeline. This method also associates the input sequence reads with "Experiment Analysis" object to generate "RNA-seq Sample" objects.</p>
    
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
-    Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Fei He, Vivek Kumar.</p>
+    Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Vivek Kumar.</p>
