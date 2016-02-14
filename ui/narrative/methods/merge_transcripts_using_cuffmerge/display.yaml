@@ -4,7 +4,7 @@
 name     : Merge Transcripts using Cuffmerge
 
 tooltip  : |
-    Merge multiple transcripts of several Cufflinks assemblies using Cuffmerge.
+    Merge multiple transcripts of several Cufflinks assemblies into a single transcriptome annotation file using Cuffmerge.
 screenshots :
     []
 
@@ -33,9 +33,10 @@ parameters :
         short-hint : |
             Provide the name of Cuffmerge output
 description : |
-    <p>This method is essentially a meta-assembler. It merges together several input assembly GTF files from Cufflinks.</p>
+    <p>Cuffmerge creates a merged set of transcripts from several input assembly GTF files from Cufflinks that can be used by Cuffdiff. It essentially acts as a meta-assembler.</p>
+    <p>During this merging transcripts from all the assemblies are converted to representative reads and Cufflinks is run internally to see of there is any gaps that can be filled and a longer consensus sequence can be created. Basically, Cuffmerge merges transcripts that are overlapping  and share a similar exon structure (or splicing structure) to generate a longer chain of connected exons.</p>
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
-    Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Fei He, Vivek Kumar</p>
+    Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Vivek Kumar</p>
     
 publications :
     -
