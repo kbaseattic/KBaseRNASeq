@@ -299,15 +299,29 @@ class KBaseRNASeq:
             		provenance = ctx['provenance']
         	# add additional info to provenance here, in this case the input data object reference
         	provenance[0]['input_ws_objects']=[params['ws_id']+'/'+params['reference']]
-	   ## dump fasta object to a file in bowtie_dir
-		try:
+		ref_info = ws_client.get_object_info_new({"objects": [{'name': params['reference'], 'workspace': params['ws_id']}]})
+		if ref_info[0][2].split('-')[0] == 'KBaseGenomes.Genome':
+			ref = ws_client.get_objects([{'name': params['reference'], 'workspace': params['ws_id']}])
+			contig_set = ref[0]['data']['contigset_ref']
+			print contig_set
+			c_ws = str(contig_set.split('/')[0])
+			obj_id  = str(contig_set.split('/')[1])
+			obj_version_number = str(contig_set.split('/')[1])
+			print c_ws + "\t" + obj_id
 			if params['reference'].split('.')[-1] not in ['fa','fasta','fna']:
+                                outfile_ref_name = params['reference']+".fa"
+                                dumpfasta= "--workspace_service_url {0} --workspace_name {1} --working_directory {2} --output_file_name {3} --object_reference {4} --shock_service_url {5} --token \'{6}\'".format(self.__WS_URL ,c_ws,bowtie_dir,outfile_ref_name,contig_set,self.__SHOCK_URL,user_token)
+	        else:   		
+	   ## dump fasta object to a file in bowtie_dir
+		    #try:
+		 	if params['reference'].split('.')[-1] not in ['fa','fasta','fna']:
 				outfile_ref_name = params['reference']+".fa"
 	   			dumpfasta= "--workspace_service_url {0} --workspace_name {1} --working_directory {2} --output_file_name {3} --object_name {4} --shock_service_url {5} --token \'{6}\'".format(self.__WS_URL , params['ws_id'],bowtie_dir,outfile_ref_name,params['reference'],self.__SHOCK_URL,user_token)
 			else:
 			      	outfile_ref_name = params['reference']
 			  	dumpfasta= "--workspace_service_url {0} --workspace_name {1} --working_directory {2} --output_file_name {3} --object_name {4} --shock_service_url {5} --token \'{6}\'".format(self.__WS_URL , params['ws_id'],bowtie_dir,params['reference'],params['reference'],self.__SHOCK_URL,user_token)
-            		script_util.runProgram(self.__LOGGER,self.__SCRIPT_TYPE['ContigSet_to_fasta'],dumpfasta,self.__SCRIPTS_DIR,os.getcwd())
+                try: 
+			script_util.runProgram(self.__LOGGER,self.__SCRIPT_TYPE['ContigSet_to_fasta'],dumpfasta,self.__SCRIPTS_DIR,os.getcwd())
 		except Exception,e:
 			raise KBaseRNASeqException("Error Creating  FASTA object from the workspace {0},{1},{2}".format(params['reference'],os.getcwd(),e))
 		 
@@ -486,7 +500,7 @@ class KBaseRNASeq:
         finally:
                 handler_util.cleanup(self.__LOGGER,gtf_dir)
 	
-	#END GetFeaturesToGTF
+        #END GetFeaturesToGTF
 
         # At some point might do deeper type checking...
         if not isinstance(returnVal, dict):
@@ -1268,6 +1282,7 @@ class KBaseRNASeq:
             except Exception, e:
                  raise Exception("Unzip transcriptome zip file  error: Please contact help@kbase.us")
             gtf_file = os.path.join(cuffdiff_dir,"merged.gtf")
+	    
 	    try:
                 # TODO: add reference GTF later, seems googledoc command looks wrong
                 cuffdiff_command = "-o {0} -L {1} -u {2} {3}".format(output_dir,labels,gtf_file,bam_files)
