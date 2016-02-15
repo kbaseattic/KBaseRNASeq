@@ -599,13 +599,22 @@ class KBaseRNASeq:
 	    output_dir = os.path.join(bowtie2_dir,params['output_obj_name'])
 	    out_file = output_dir +"/accepted_hits.sam"
 	    bowtie2_base =os.path.join(bowtie2_dir,handler_util.get_file_with_suffix(bowtie2_dir,".rev.1.bt2"))
+
+            ### Adding advanced options to Bowtie2Call
+	    bowtie2_cmd = '' 
+	    if('quality_score' in params ): bowtie2_cmd += ( ' --'+params['quality_score'])
+	    if('alignment_type' in params ): bowtie2_cmd += ( ' --'+params['alignment_type'] )
+	    if('preset_options' in params ) and ('alignment_type' in params):
+		 if (params['alignment_type'] == 'local'):
+			 bowtie2_cmd += (' --'+params['preset_options']+'-local')
+	    	 else: bowtie2_cmd += (' --'+params['preset_options'] )
 	    if(lib_type == "SingleEnd"):
                 sample_file = os.path.join(bowtie2_dir,sample_filename)
-                bowtie2_cmd = "-U {0} -x {1} -S {2}".format(sample_file,bowtie2_base,out_file)
+                bowtie2_cmd += " -U {0} -x {1} -S {2}".format(sample_file,bowtie2_base,out_file)
             elif(lib_type == "PairedEnd"):
                 sample_file1 = os.path.join(bowtie2_dir,filename1)
                 sample_file2 = os.path.join(bowtie2_dir,filename2)
-                bowtie2_cmd = "-1 {0} -2 {1} -x {2} -S {3}".format(sample_file1,sample_file2,bowtie2_base,out_file)	
+                bowtie2_cmd += " -1 {0} -2 {1} -x {2} -S {3}".format(sample_file1,sample_file2,bowtie2_base,out_file)	
 	    
             try:
 		
