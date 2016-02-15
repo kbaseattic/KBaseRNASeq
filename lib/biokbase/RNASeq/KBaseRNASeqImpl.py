@@ -1282,10 +1282,20 @@ class KBaseRNASeq:
             except Exception, e:
                  raise Exception("Unzip transcriptome zip file  error: Please contact help@kbase.us")
             gtf_file = os.path.join(cuffdiff_dir,"merged.gtf")
-	    
+	   
+            ### Adding advanced options
+
+	    cuffdiff_command = ''
+            if('num-threads' in params ) : cuffdiff_command += (' -p '+str(params['num-threads']))
+	    if('time-series' in params ) : cuffdiff_command += (' -T ')
+	    if('min-alignment-count' in params ) : cuffdiff_command += (' -c '+str(params['min-alignment-count']))
+	    if('multi-read-correct' in params ): cuffdiff_command += (' -u ')
+	    if('library-type' in params ) : cuffdiff_command += ( ' --library-type '+params['library-type'])
+	    if('library-norm-method' in params ) : cuffdiff_command += ( ' --library-norm-method '+params['library-norm-method'])
+ 
 	    try:
                 # TODO: add reference GTF later, seems googledoc command looks wrong
-                cuffdiff_command = "-o {0} -L {1} -u {2} {3}".format(output_dir,labels,gtf_file,bam_files)
+                cuffdiff_command += " -o {0} -L {1} -u {2} {3}".format(output_dir,labels,gtf_file,bam_files)
 		self.__LOGGER.info("Executing {0}".format(cuffdiff_command))
                 script_util.runProgram(self.__LOGGER,"cuffdiff",cuffdiff_command,None,os.getcwd())
 
