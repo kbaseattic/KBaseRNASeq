@@ -20,7 +20,7 @@ import biokbase.workspace.client
 # The default level is set to INFO which includes everything except DEBUG
 def transform(workspace_service_url=None, shock_service_url=None, handle_service_url=None, 
               workspace_name=None,token=None,object_name=None, object_id=None, 
-              object_version_number=None, working_directory=None, output_file_name=None, 
+              object_version_number=None, object_reference=None,working_directory=None, output_file_name=None, 
               level=logging.INFO, logger=None):  
     """
     Converts KBaseAssembly.SingleEndLibrary to a Fasta file of assembledDNA.
@@ -33,6 +33,7 @@ def transform(workspace_service_url=None, shock_service_url=None, handle_service
         object_name: Name of the object in the workspace 
         object_id: Id of the object in the workspace, mutually exclusive to object_name
         object_version_number: Version number of workspace object (ContigSet), defaults to most recent version
+	object_reference: Object reference to the Workspace object
         working_directory: The working directory where the output file should be stored.
         output_file_name: The desired file name of the result file.
         level: Logging level, defaults to logging.INFO.
@@ -67,17 +68,19 @@ def transform(workspace_service_url=None, shock_service_url=None, handle_service
     try:
         ws_client = biokbase.workspace.client.Workspace(workspace_service_url,token=token) 
         if object_version_number and object_name:
-            print "111-----------" + object_name + ":" + workspace_name
+            #print "111-----------" + object_name + ":" + workspace_name
             contig_set = ws_client.get_objects([{"workspace":workspace_name,"name":object_name, "ver":object_version_number}])[0] 
         elif object_name:
-            print "222-----------" + object_name + ":" + workspace_name
+            #print "222-----------" + object_name + ":" + workspace_name
             contig_set = ws_client.get_objects([{"workspace":workspace_name,"name":object_name}])[0]
-            print "222-----------"
+            #print "222-----------"
         elif object_version_number and object_id:
-            print "333-----------" + object_name + ":" + workspace_name
+            #print "333-----------" + object_id + ":" + workspace_name
             contig_set = ws_client.get_objects([{"workspace":workspace_name,"objid":object_id, "ver":object_version_number}])[0]
-        else:
-            print "444-----------" + object_name + ":" + workspace_name
+        elif object_reference:
+	    contig_set = ws_client.get_objects([{'ref' : object_reference}])[0]
+	else:
+            #print "444-----------" + object_name + ":" + workspace_name
             contig_set = ws_client.get_objects([{"workspace":workspace_name,"objid":object_id}])[0] 
     except Exception, e: 
         logger.exception("Unable to retrieve workspace object from {0}:{1}.".format(workspace_service_url,workspace_name))
@@ -195,6 +198,11 @@ if __name__ == "__main__":
                              action="store", 
                              type=int, 
                              nargs="?")
+    object_info.add_argument("--object_reference",
+                             help="object_reference",
+                             action="store",
+                             type=str,
+                             nargs="?")
 
     data_services = parser.add_mutually_exclusive_group(required=True) 
     data_services.add_argument("--shock_service_url", 
@@ -220,7 +228,8 @@ if __name__ == "__main__":
 		  token = args.token, 
                   object_name = args.object_name, 
                   object_id = args.object_id, 
-                  object_version_number = args.object_version_number, 
+                  object_version_number = args.object_version_number,
+		  object_reference = args.object_reference, 
                   output_file_name = args.output_file_name,
                   working_directory = args.working_directory, 
                   logger = logger)
