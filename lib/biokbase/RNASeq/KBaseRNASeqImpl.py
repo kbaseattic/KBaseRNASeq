@@ -602,9 +602,9 @@ class KBaseRNASeq:
 
             ### Adding advanced options to Bowtie2Call
 	    bowtie2_cmd = '' 
-	    if('quality_score' in params ): bowtie2_cmd += ( ' --'+params['quality_score'])
-	    if('alignment_type' in params ): bowtie2_cmd += ( ' --'+params['alignment_type'] )
-	    if('preset_options' in params ) and ('alignment_type' in params):
+	    if('quality_score' in params and params['quality_score'] is not None): bowtie2_cmd += ( ' --'+params['quality_score'])
+	    if('alignment_type' in params and params['alignment_type'] is not None): bowtie2_cmd += ( ' --'+params['alignment_type'] )
+	    if('preset_options' in params and params['preset_options'] is not None ) and ('alignment_type' in params and params['alignment_type'] is not None):
 		 if (params['alignment_type'] == 'local'):
 			 bowtie2_cmd += (' --'+params['preset_options']+'-local')
 	    	 else: bowtie2_cmd += (' --'+params['preset_options'] )
@@ -1295,12 +1295,12 @@ class KBaseRNASeq:
             ### Adding advanced options
 
 	    cuffdiff_command = ''
-            if('num-threads' in params ) : cuffdiff_command += (' -p '+str(params['num-threads']))
-	    if('time-series' in params ) : cuffdiff_command += (' -T ')
-	    if('min-alignment-count' in params ) : cuffdiff_command += (' -c '+str(params['min-alignment-count']))
-	    if('multi-read-correct' in params ): cuffdiff_command += (' -u ')
-	    if('library-type' in params ) : cuffdiff_command += ( ' --library-type '+params['library-type'])
-	    if('library-norm-method' in params ) : cuffdiff_command += ( ' --library-norm-method '+params['library-norm-method'])
+            if('num-threads' in params and params['num-threads'] is not None) : cuffdiff_command += (' -p '+str(params['num-threads']))
+	    if('time-series' in params and params['time-series'] is not None) : cuffdiff_command += (' -T ')
+	    if('min-alignment-count' in params and params['min-alignment-count'] is not None ) : cuffdiff_command += (' -c '+str(params['min-alignment-count']))
+	    if('multi-read-correct' in params and params['multi-read-correct']  is not None): cuffdiff_command += (' -u ')
+	    if('library-type' in params and params['library-type'] is not None ) : cuffdiff_command += ( ' --library-type '+params['library-type'])
+	    if('library-norm-method' in params and params['library-norm-method'] is not None ) : cuffdiff_command += ( ' --library-norm-method '+params['library-norm-method'])
  
 	    try:
                 # TODO: add reference GTF later, seems googledoc command looks wrong
