@@ -347,10 +347,10 @@ class KBaseRNASeq:
 			raise KBaseRNASeqException("Failed to compress the index: {0}".format(e))
 	    ## Upload the file using handle service
 		try:
-			 bowtie_handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)	
-			#bowtie_handle = hs.upload(out_file_path)
-			 if self.__PUBLIC_SHOCK_NODE is 'true': 
-                	 	script_util.shock_node_2b_public(self.__LOGGER,node_id=bowtie_handle['id'],shock_service_url=bowtie_handle['url'],token=user_token)
+			#bowtie_handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)	
+			bowtie_handle = hs.upload(out_file_path)
+			# if self.__PUBLIC_SHOCK_NODE is 'true': 
+                	# 	script_util.shock_node_2b_public(self.__LOGGER,node_id=bowtie_handle['id'],shock_service_url=bowtie_handle['url'],token=user_token)
 			 
 		except Exception, e:
 			raise KBaseRNASeqException("Failed to upload the index: {0}".format(e))
@@ -399,6 +399,7 @@ class KBaseRNASeq:
 		raise KBaseRNASeqException("Build Bowtie2Index failed: {0}".format(e))
 	finally:
                 handler_util.cleanup(self.__LOGGER,bowtie_dir)
+		os.remove(out_file_path)
         #END BuildBowtie2Index
 
         # At some point might do deeper type checking...
