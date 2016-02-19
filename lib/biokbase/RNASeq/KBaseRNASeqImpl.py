@@ -231,9 +231,9 @@ class KBaseRNASeq:
 	rep_id  =  0
 	count = -1
 	l_labels = [ [x] * out_obj['num_replicates'] for x in out_obj['condition']]
-	print l_labels
+	#print l_labels
 	rep_labels = reduce(lambda x,y: x+y, l_labels)
-	print rep_labels
+	#print rep_labels
 	for reads in exp_reads:
 		count = count + 1
 		if int(params['num_replicates']) >= 1: 
@@ -304,11 +304,11 @@ class KBaseRNASeq:
 		if ref_info[0][2].split('-')[0] == 'KBaseGenomes.Genome':
 			ref = ws_client.get_objects([{'name': params['reference'], 'workspace': params['ws_id']}])
 			contig_set = ref[0]['data']['contigset_ref']
-			print contig_set
+			#print contig_set
 			c_ws = str(contig_set.split('/')[0])
 			obj_id  = str(contig_set.split('/')[1])
 			obj_version_number = str(contig_set.split('/')[1])
-			print c_ws + "\t" + obj_id
+			#print c_ws + "\t" + obj_id
 			if params['reference'].split('.')[-1] not in ['fa','fasta','fna']:
                                 outfile_ref_name = params['reference']+".fa"
                                 dumpfasta= "--workspace_service_url {0} --workspace_name {1} --working_directory {2} --output_file_name {3} --object_reference {4} --shock_service_url {5} --token \'{6}\'".format(self.__WS_URL ,c_ws,bowtie_dir,outfile_ref_name,contig_set,self.__SHOCK_URL,user_token)
@@ -803,7 +803,7 @@ class KBaseRNASeq:
 	    gtf_file = os.path.join(tophat_dir,a_filename)
 	    bowtie_base =os.path.join(tophat_dir,handler_util.get_file_with_suffix(tophat_dir,".rev.1.bt2"))
 	    num_p = multiprocessing.cpu_count()
-	    print 'processors count is ' +  str(num_p)
+	    #print 'processors count is ' +  str(num_p)
 	    tophat_cmd = (' -p '+str(num_p))
 	    #if('num_threads' in opts_dict ) :  tophat_cmd += (' -p '+str(num_p))
 	    #if('num_threads' in opts_dict ) :  tophat_cmd += (' -p '+str(opts_dict['num_threads']))
@@ -951,7 +951,7 @@ class KBaseRNASeq:
 	    gtf_file = os.path.join(cufflinks_dir,agtf_fn)
             try:
 		num_p = multiprocessing.cpu_count()
-                print 'processors count is ' +  str(num_p)
+                #print 'processors count is ' +  str(num_p)
 		cufflinks_command = (' -p '+str(num_p))
                 #if 'num_threads' in params and params['num_threads'] is not None:
                 #     cufflinks_command += (' -p '+str(params['num_threads']))
@@ -1120,7 +1120,7 @@ class KBaseRNASeq:
             try:
                 # TODO: add reference GTF later, seems googledoc command looks wrong
 		num_p = multiprocessing.cpu_count()
-	        print 'processors count is ' +  str(num_p)
+	        #print 'processors count is ' +  str(num_p)
             	#cuffmerge_command = (' -p '+str(num_p))
 		cuffmerge_command = " -p {0} -o {1} -g {2}/{3} {4}/{5}".format(str(num_p),output_dir,cuffmerge_dir,annotation_name,cuffmerge_dir,self.__ASSEMBLY_GTF_FN)
                 #command_list= ['cuffmerge', '-o', output_dir, '-G', agtf_fn, "{0}/accepted_hits.bam".format(cuffmerge_dir)]
@@ -1241,7 +1241,7 @@ class KBaseRNASeq:
                     ko,vo=ws_client.get_objects([{'ref' : k}, {'ref' : v} ])
                     #sp = os.path.join(cuffdiff_dir, ko['info'][1])
                     sp = os.path.join(cuffdiff_dir, ko['data']['metadata']['condition']+"/"+ko['data']['metadata']['replicate_id'])
-		    print sp 
+		    #print sp 
                     if not os.path.exists(sp): os.makedirs(sp)
 		    condition_id = ko['data']['metadata']['condition']
 		    if not condition_id in sample_labels:
@@ -1287,7 +1287,7 @@ class KBaseRNASeq:
 		alignments.append(rep_files) 
             
 	    bam_files = " ".join([i for i in alignments])
-	    print bam_files
+	    #print bam_files
 	    labels = ",".join(sample_labels)		
 	    merged_gtf = analysis['data']['transcriptome_id']
 	    try:
@@ -1312,7 +1312,7 @@ class KBaseRNASeq:
 	   
             ### Adding advanced options
 	    num_p = multiprocessing.cpu_count()
-            print 'processors count is ' +  str(num_p)
+            #print 'processors count is ' +  str(num_p)
 	    cuffdiff_command = (' -p '+str(num_p))
             #if('num-threads' in params and params['num-threads'] is not None) : cuffdiff_command += (' -p '+str(params['num-threads']))
 	    if('time-series' in params and params['time-series'] != 0) : cuffdiff_command += (' -T ')
