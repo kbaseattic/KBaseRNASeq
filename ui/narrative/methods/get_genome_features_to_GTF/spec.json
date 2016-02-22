@@ -28,6 +28,7 @@
     "text_options" : {
       "valid_ws_types" : ["KBaseRNASeq.ReferenceAnnotation"],
       "is_output_name": true
+  }
   } ],
   "behavior" : {
       "service-mapping" : {
