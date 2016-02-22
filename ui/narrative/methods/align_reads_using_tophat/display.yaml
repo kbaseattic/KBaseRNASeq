@@ -32,11 +32,6 @@ parameters :
             Reference Annotation
         short-hint : |
             Select the reference annotation of the associated genome
-    output_obj_name :
-        ui-name : |
-            Alignment Output
-        short-hint : |
-            Provide the name of Tophat read alignment output
     reference :
         ui-name : |
             Genome
@@ -47,6 +42,11 @@ parameters :
             Indexed Genome
         short-hint : |
             Select the indexed genome built using Bowtie2
+        output_obj_name :
+        ui-name : |
+            Alignment Output
+        short-hint : |
+            Provide the name of Tophat read alignment output
     read_mismatches :
         ui-name : |
             Read Mismatch Cutoff
