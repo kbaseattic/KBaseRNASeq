@@ -42,7 +42,7 @@ parameters :
             Indexed Genome
         short-hint : |
             Select the indexed genome built using Bowtie2
-        output_obj_name :
+    output_obj_name :
         ui-name : |
             Alignment Output
         short-hint : |
