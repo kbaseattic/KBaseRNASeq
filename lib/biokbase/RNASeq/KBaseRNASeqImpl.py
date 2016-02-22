@@ -11,6 +11,7 @@ import logging
 import time
 import subprocess
 import threading, traceback
+import multiprocessing
 from collections import OrderedDict
 from pprint import pprint,pformat
 import script_util
@@ -230,9 +231,9 @@ class KBaseRNASeq:
 	rep_id  =  0
 	count = -1
 	l_labels = [ [x] * out_obj['num_replicates'] for x in out_obj['condition']]
-	print l_labels
+	#print l_labels
 	rep_labels = reduce(lambda x,y: x+y, l_labels)
-	print rep_labels
+	#print rep_labels
 	for reads in exp_reads:
 		count = count + 1
 		if int(params['num_replicates']) >= 1: 
@@ -299,15 +300,29 @@ class KBaseRNASeq:
             		provenance = ctx['provenance']
         	# add additional info to provenance here, in this case the input data object reference
         	provenance[0]['input_ws_objects']=[params['ws_id']+'/'+params['reference']]
-	   ## dump fasta object to a file in bowtie_dir
-		try:
+		ref_info = ws_client.get_object_info_new({"objects": [{'name': params['reference'], 'workspace': params['ws_id']}]})
+		if ref_info[0][2].split('-')[0] == 'KBaseGenomes.Genome':
+			ref = ws_client.get_objects([{'name': params['reference'], 'workspace': params['ws_id']}])
+			contig_set = ref[0]['data']['contigset_ref']
+			#print contig_set
+			c_ws = str(contig_set.split('/')[0])
+			obj_id  = str(contig_set.split('/')[1])
+			obj_version_number = str(contig_set.split('/')[1])
+			#print c_ws + "\t" + obj_id
 			if params['reference'].split('.')[-1] not in ['fa','fasta','fna']:
+                                outfile_ref_name = params['reference']+".fa"
+                                dumpfasta= "--workspace_service_url {0} --workspace_name {1} --working_directory {2} --output_file_name {3} --object_reference {4} --shock_service_url {5} --token \'{6}\'".format(self.__WS_URL ,c_ws,bowtie_dir,outfile_ref_name,contig_set,self.__SHOCK_URL,user_token)
+	        else:   		
+	   ## dump fasta object to a file in bowtie_dir
+		    #try:
+		 	if params['reference'].split('.')[-1] not in ['fa','fasta','fna']:
 				outfile_ref_name = params['reference']+".fa"
 	   			dumpfasta= "--workspace_service_url {0} --workspace_name {1} --working_directory {2} --output_file_name {3} --object_name {4} --shock_service_url {5} --token \'{6}\'".format(self.__WS_URL , params['ws_id'],bowtie_dir,outfile_ref_name,params['reference'],self.__SHOCK_URL,user_token)
 			else:
 			      	outfile_ref_name = params['reference']
 			  	dumpfasta= "--workspace_service_url {0} --workspace_name {1} --working_directory {2} --output_file_name {3} --object_name {4} --shock_service_url {5} --token \'{6}\'".format(self.__WS_URL , params['ws_id'],bowtie_dir,params['reference'],params['reference'],self.__SHOCK_URL,user_token)
-            		script_util.runProgram(self.__LOGGER,self.__SCRIPT_TYPE['ContigSet_to_fasta'],dumpfasta,self.__SCRIPTS_DIR,os.getcwd())
+                try: 
+			script_util.runProgram(self.__LOGGER,self.__SCRIPT_TYPE['ContigSet_to_fasta'],dumpfasta,self.__SCRIPTS_DIR,os.getcwd())
 		except Exception,e:
 			raise KBaseRNASeqException("Error Creating  FASTA object from the workspace {0},{1},{2}".format(params['reference'],os.getcwd(),e))
 		 
@@ -333,10 +348,10 @@ class KBaseRNASeq:
 			raise KBaseRNASeqException("Failed to compress the index: {0}".format(e))
 	    ## Upload the file using handle service
 		try:
-			 bowtie_handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)	
-			#bowtie_handle = hs.upload(out_file_path)
-			 if self.__PUBLIC_SHOCK_NODE is 'true': 
-                	 	script_util.shock_node_2b_public(self.__LOGGER,node_id=bowtie_handle['id'],shock_service_url=bowtie_handle['url'],token=user_token)
+			#bowtie_handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)	
+			bowtie_handle = hs.upload(out_file_path)
+			# if self.__PUBLIC_SHOCK_NODE is 'true': 
+                	# 	script_util.shock_node_2b_public(self.__LOGGER,node_id=bowtie_handle['id'],shock_service_url=bowtie_handle['url'],token=user_token)
 			 
 		except Exception, e:
 			raise KBaseRNASeqException("Failed to upload the index: {0}".format(e))
@@ -385,6 +400,7 @@ class KBaseRNASeq:
 		raise KBaseRNASeqException("Build Bowtie2Index failed: {0}".format(e))
 	finally:
                 handler_util.cleanup(self.__LOGGER,bowtie_dir)
+		os.remove(out_file_path)
         #END BuildBowtie2Index
 
         # At some point might do deeper type checking...
@@ -434,10 +450,11 @@ class KBaseRNASeq:
                                 f_end = script_util.get_end(int(f_start),int(f_len),f_strand)
 			        output.write(contig_id + "\tKBase\t" + f_type + "\t" + str(f_start) + "\t" + str(f_end) + "\t.\t" + f_strand + "\t"+ str(0) + "\ttranscript_id " + f_id + "; gene_id " + f_id + ";\n")	
                 try:
-                         gtf_handle = script_util.create_shock_handle(self.__LOGGER,params['output_obj_name']+'.gtf',self.__SHOCK_URL,self.__HS_URL,"GTF",user_token)
-                        #bowtie_handle = hs.upload(out_file_path)
-                         if self.__PUBLIC_SHOCK_NODE is 'true':
-                                script_util.shock_node_2b_public(self.__LOGGER,node_id=gtf_handle['id'],shock_service_url=gtf_handle['url'],token=user_token)
+                        #gtf_handle = script_util.create_shock_handle(self.__LOGGER,params['output_obj_name']+'.gtf',self.__SHOCK_URL,self.__HS_URL,"GTF",user_token)
+			out_file_path = os.path.join(params['output_obj_name']+'.gtf')
+                        gtf_handle = hs.upload(out_file_path)
+                        # if self.__PUBLIC_SHOCK_NODE is 'true':
+                        #        script_util.shock_node_2b_public(self.__LOGGER,node_id=gtf_handle['id'],shock_service_url=gtf_handle['url'],token=user_token)
 
                 except Exception, e:
                         raise KBaseRNASeqException("Failed to create Reference Annotation: {0}".format(e))
@@ -485,8 +502,9 @@ class KBaseRNASeq:
                 raise KBaseRNASeqException("Create Reference Annotation Failed: {0}".format(e))
         finally:
                 handler_util.cleanup(self.__LOGGER,gtf_dir)
+		os.remove(out_file_path)
 	
-	#END GetFeaturesToGTF
+        #END GetFeaturesToGTF
 
         # At some point might do deeper type checking...
         if not isinstance(returnVal, dict):
@@ -585,13 +603,22 @@ class KBaseRNASeq:
 	    output_dir = os.path.join(bowtie2_dir,params['output_obj_name'])
 	    out_file = output_dir +"/accepted_hits.sam"
 	    bowtie2_base =os.path.join(bowtie2_dir,handler_util.get_file_with_suffix(bowtie2_dir,".rev.1.bt2"))
+
+            ### Adding advanced options to Bowtie2Call
+	    bowtie2_cmd = '' 
+	    if('quality_score' in params and params['quality_score'] is not None): bowtie2_cmd += ( ' --'+params['quality_score'])
+	    if('alignment_type' in params and params['alignment_type'] is not None): bowtie2_cmd += ( ' --'+params['alignment_type'] )
+	    if('preset_options' in params and params['preset_options'] is not None ) and ('alignment_type' in params and params['alignment_type'] is not None):
+		 if (params['alignment_type'] == 'local'):
+			 bowtie2_cmd += (' --'+params['preset_options']+'-local')
+	    	 else: bowtie2_cmd += (' --'+params['preset_options'] )
 	    if(lib_type == "SingleEnd"):
                 sample_file = os.path.join(bowtie2_dir,sample_filename)
-                bowtie2_cmd = "-U {0} -x {1} -S {2}".format(sample_file,bowtie2_base,out_file)
+                bowtie2_cmd += " -U {0} -x {1} -S {2}".format(sample_file,bowtie2_base,out_file)
             elif(lib_type == "PairedEnd"):
                 sample_file1 = os.path.join(bowtie2_dir,filename1)
                 sample_file2 = os.path.join(bowtie2_dir,filename2)
-                bowtie2_cmd = "-1 {0} -2 {1} -x {2} -S {3}".format(sample_file1,sample_file2,bowtie2_base,out_file)	
+                bowtie2_cmd += " -1 {0} -2 {1} -x {2} -S {3}".format(sample_file1,sample_file2,bowtie2_base,out_file)	
 	    
             try:
 		
@@ -626,10 +653,10 @@ class KBaseRNASeq:
             ## Upload the file using handle service
             try:
 		
-                bowtie2_handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
-		#bowtie2_handle = hs.upload(out_file_path)
-		if self.__PUBLIC_SHOCK_NODE is 'true':
-                      script_util.shock_node_2b_public(self.__LOGGER,node_id=bowtie2_handle['id'],shock_service_url=bowtie2_handle['url'],token=user_token)
+                #bowtie2_handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
+		bowtie2_handle = hs.upload(out_file_path)
+		#if self.__PUBLIC_SHOCK_NODE is 'true':
+                #      script_util.shock_node_2b_public(self.__LOGGER,node_id=bowtie2_handle['id'],shock_service_url=bowtie2_handle['url'],token=user_token)
             except Exception, e:
                 raise KBaseRNASeqException("Failed to upload the index: {0}".format(e))
             bowtie2_out = { "file" : bowtie2_handle ,"size" : os.path.getsize(out_file_path), "aligned_using" : "bowtie2" , "aligner_version" : "2.2.6","metadata" :  sample['data']['metadata']}
@@ -661,6 +688,7 @@ class KBaseRNASeq:
                  raise KBaseRNASeqException("Error Running Bowtie2Call")
 	finally:
                  handler_util.cleanup(self.__LOGGER,bowtie2_dir)
+		 os.remove(out_file_path)
         #END Bowtie2Call
 
         # At some point might do deeper type checking...
@@ -774,8 +802,11 @@ class KBaseRNASeq:
 	    output_dir = os.path.join(tophat_dir,params['output_obj_name'])
 	    gtf_file = os.path.join(tophat_dir,a_filename)
 	    bowtie_base =os.path.join(tophat_dir,handler_util.get_file_with_suffix(tophat_dir,".rev.1.bt2"))
-	    tophat_cmd = ''
-	    if('num_threads' in opts_dict ) : tophat_cmd += (' -p '+str(opts_dict['num_threads']))
+	    num_p = multiprocessing.cpu_count()
+	    #print 'processors count is ' +  str(num_p)
+	    tophat_cmd = (' -p '+str(num_p))
+	    #if('num_threads' in opts_dict ) :  tophat_cmd += (' -p '+str(num_p))
+	    #if('num_threads' in opts_dict ) :  tophat_cmd += (' -p '+str(opts_dict['num_threads']))
 	    if('max_intron_length' in opts_dict ) : tophat_cmd += (' -I '+str(opts_dict['max_intron_length']))
 	    if('min_intron_length' in opts_dict ) : tophat_cmd += (' -i '+str(opts_dict['min_intron_length']))
 	    if('read_edit_dist' in opts_dict ) : tophat_cmd += (' --read-edit-dist '+str(opts_dict['read_edit_dist']))
@@ -819,10 +850,10 @@ class KBaseRNASeq:
                 raise KBaseRNASeqException("Failed to compress the index: {0}".format(e))
             ## Upload the file using handle service
             try:
-		# tophat_handle = hs.upload(out_file_path)
-                 tophat_handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
-		 if self.__PUBLIC_SHOCK_NODE is 'true':
-                        script_util.shock_node_2b_public(self.__LOGGER,node_id=tophat_handle['id'],shock_service_url=tophat_handle['url'],token=user_token)	
+		 tophat_handle = hs.upload(out_file_path)
+                 #tophat_handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
+		 #if self.__PUBLIC_SHOCK_NODE is 'true':
+                 #       script_util.shock_node_2b_public(self.__LOGGER,node_id=tophat_handle['id'],shock_service_url=tophat_handle['url'],token=user_token)	
             except Exception, e:
                 raise KBaseRNASeqException("Failed to upload the index: {0}".format(e))
             tophat_out = { "file" : tophat_handle ,"size" : os.path.getsize(out_file_path), "aligned_using" : "tophat" , "aligner_version" : "3.1.0","metadata" :  sample['data']['metadata']}
@@ -851,6 +882,7 @@ class KBaseRNASeq:
             raise KBaseRNASeqException("Error Running Tophatcall {0}".format("".join(traceback.format_exc())))
 	finally:
 	    handler_util.cleanup(self.__LOGGER,tophat_dir)
+	    os.remove(out_file_path)
 #	
 	     
         #END TophatCall
@@ -918,9 +950,11 @@ class KBaseRNASeq:
 	    input_file = os.path.join(cufflinks_dir,"accepted_hits.bam")
 	    gtf_file = os.path.join(cufflinks_dir,agtf_fn)
             try:
-		cufflinks_command = ''
-                if 'num_threads' in params and params['num_threads'] is not None:
-                     cufflinks_command += (' -p '+str(params['num_threads']))
+		num_p = multiprocessing.cpu_count()
+                #print 'processors count is ' +  str(num_p)
+		cufflinks_command = (' -p '+str(num_p))
+                #if 'num_threads' in params and params['num_threads'] is not None:
+                #     cufflinks_command += (' -p '+str(params['num_threads']))
 		if 'max-intron-length' in params and params['max-intron-length'] is not None:
 		     cufflinks_command += (' --max-intron-length '+str(params['max-intron-length']))
 		if 'min-intron-length' in params and params['min-intron-length'] is not None:
@@ -946,10 +980,11 @@ class KBaseRNASeq:
 		self.__LOGGER.exception("".join(traceback.format_exc()))
                 raise KBaseRNASeqException("Error executing cufflinks {0},{1}".format(os.getcwd(),e))
 	    try:
-		#handle = hs.upload("{0}.zip".format(params['output_obj_name']))
-                handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
-                if self.__PUBLIC_SHOCK_NODE is 'true': 
-                    script_util.shock_node_2b_public(self.__LOGGER,node_id=handle['id'],shock_service_url=handle['url'],token=user_token)
+		out_file_path = os.path.join("%s.zip" % params['output_obj_name'])
+		handle = hs.upload(out_file_path)
+                #handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
+                #if self.__PUBLIC_SHOCK_NODE is 'true': 
+                #    script_util.shock_node_2b_public(self.__LOGGER,node_id=handle['id'],shock_service_url=handle['url'],token=user_token)
             except Exception, e:
 	        self.__LOGGER.exception("".join(traceback.format_exc()))	
                 raise KBaseRNASeqException("Error while zipping the output objects: {0}".format(e))
@@ -993,7 +1028,8 @@ class KBaseRNASeq:
                  self.__LOGGER.exception("".join(traceback.format_exc()))
                  raise KBaseRNASeqException("Error Running Cufflinks : {0}".format(e))
         finally:
-                 handler_util.cleanup(self.__LOGGER,cufflinks_dir)	
+                 handler_util.cleanup(self.__LOGGER,cufflinks_dir)
+		 os.remove(out_file_path)	
         #END CufflinksCall
 
         # At some point might do deeper type checking...
@@ -1083,7 +1119,10 @@ class KBaseRNASeq:
 	    output_dir = os.path.join(cuffmerge_dir, params['output_obj_name'])
             try:
                 # TODO: add reference GTF later, seems googledoc command looks wrong
-		cuffmerge_command = "-o {0} -g {1}/{2} {3}/{4}".format(output_dir,cuffmerge_dir,annotation_name,cuffmerge_dir,self.__ASSEMBLY_GTF_FN)
+		num_p = multiprocessing.cpu_count()
+	        #print 'processors count is ' +  str(num_p)
+            	#cuffmerge_command = (' -p '+str(num_p))
+		cuffmerge_command = " -p {0} -o {1} -g {2}/{3} {4}/{5}".format(str(num_p),output_dir,cuffmerge_dir,annotation_name,cuffmerge_dir,self.__ASSEMBLY_GTF_FN)
                 #command_list= ['cuffmerge', '-o', output_dir, '-G', agtf_fn, "{0}/accepted_hits.bam".format(cuffmerge_dir)]
                 #if 'num_threads' in params and params['num_threads'] is not None:
                 #     command_list.append('-p')
@@ -1109,10 +1148,11 @@ class KBaseRNASeq:
             except Exception,e:
                 raise KBaseRNASeqException("Error executing cuffmerge {0},{1}".format(os.getcwd(),e))
 	    try:
-		#handle = hs.upload("{0}.zip".format(params['output_obj_name']))
-                handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
-                if self.__PUBLIC_SHOCK_NODE is 'true': 
-                    script_util.shock_node_2b_public(self.__LOGGER,node_id=handle['id'],shock_service_url=handle['url'],token=user_token)
+		out_file_path = os.path.join("{0}.zip".format(params['output_obj_name']))
+		handle = hs.upload(out_file_path)
+                #handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
+                #if self.__PUBLIC_SHOCK_NODE is 'true': 
+                #    script_util.shock_node_2b_public(self.__LOGGER,node_id=handle['id'],shock_service_url=handle['url'],token=user_token)
             except Exception, e:
                 raise KBaseRNASeqException("Failed to upload the index: {0}".format(e))
 	   
@@ -1152,6 +1192,7 @@ class KBaseRNASeq:
                  raise
 	finally:
                  handler_util.cleanup(self.__LOGGER,cuffmerge_dir)
+		 os.remove(out_file_path)
         #END CuffmergeCall
 
         # At some point might do deeper type checking...
@@ -1200,7 +1241,7 @@ class KBaseRNASeq:
                     ko,vo=ws_client.get_objects([{'ref' : k}, {'ref' : v} ])
                     #sp = os.path.join(cuffdiff_dir, ko['info'][1])
                     sp = os.path.join(cuffdiff_dir, ko['data']['metadata']['condition']+"/"+ko['data']['metadata']['replicate_id'])
-		    print sp 
+		    #print sp 
                     if not os.path.exists(sp): os.makedirs(sp)
 		    condition_id = ko['data']['metadata']['condition']
 		    if not condition_id in sample_labels:
@@ -1246,7 +1287,7 @@ class KBaseRNASeq:
 		alignments.append(rep_files) 
             
 	    bam_files = " ".join([i for i in alignments])
-	    print bam_files
+	    #print bam_files
 	    labels = ",".join(sample_labels)		
 	    merged_gtf = analysis['data']['transcriptome_id']
 	    try:
@@ -1268,9 +1309,21 @@ class KBaseRNASeq:
             except Exception, e:
                  raise Exception("Unzip transcriptome zip file  error: Please contact help@kbase.us")
             gtf_file = os.path.join(cuffdiff_dir,"merged.gtf")
+	   
+            ### Adding advanced options
+	    num_p = multiprocessing.cpu_count()
+            #print 'processors count is ' +  str(num_p)
+	    cuffdiff_command = (' -p '+str(num_p))
+            #if('num-threads' in params and params['num-threads'] is not None) : cuffdiff_command += (' -p '+str(params['num-threads']))
+	    if('time-series' in params and params['time-series'] != 0) : cuffdiff_command += (' -T ')
+	    if('min-alignment-count' in params and params['min-alignment-count'] is not None ) : cuffdiff_command += (' -c '+str(params['min-alignment-count']))
+	    if('multi-read-correct' in params and params['multi-read-correct']  is not None): cuffdiff_command += (' -u ')
+	    if('library-type' in params and params['library-type'] is not None ) : cuffdiff_command += ( ' --library-type '+params['library-type'])
+	    if('library-norm-method' in params and params['library-norm-method'] is not None ) : cuffdiff_command += ( ' --library-norm-method '+params['library-norm-method'])
+ 
 	    try:
                 # TODO: add reference GTF later, seems googledoc command looks wrong
-                cuffdiff_command = "-o {0} -L {1} -u {2} {3}".format(output_dir,labels,gtf_file,bam_files)
+                cuffdiff_command += " -o {0} -L {1} -u {2} {3}".format(output_dir,labels,gtf_file,bam_files)
 		self.__LOGGER.info("Executing {0}".format(cuffdiff_command))
                 script_util.runProgram(self.__LOGGER,"cuffdiff",cuffdiff_command,None,os.getcwd())
 
@@ -1286,10 +1339,11 @@ class KBaseRNASeq:
             except Exception,e:
                 raise KBaseRNASeqException("Error executing cuffdiff {0},{1}".format(os.getcwd(),e))
             try:
-                #handle = hs.upload("{0}.zip".format(params['output_obj_name']))
-                handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
-                if self.__PUBLIC_SHOCK_NODE is 'true':
-                    script_util.shock_node_2b_public(self.__LOGGER,node_id=handle['id'],shock_service_url=handle['url'],token=user_token)
+		out_file_path = os.path.join("{0}.zip".format(params['output_obj_name']))
+                handle = hs.upload(out_file_path)
+                #handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
+                #if self.__PUBLIC_SHOCK_NODE is 'true':
+                #    script_util.shock_node_2b_public(self.__LOGGER,node_id=handle['id'],shock_service_url=handle['url'],token=user_token)
             except Exception, e:
                 raise KBaseRNASeqException("Failed to upload the Cuffdiff output files: {0}".format(e))
 
@@ -1327,7 +1381,7 @@ class KBaseRNASeq:
                  raise
 	finally:
                  handler_util.cleanup(self.__LOGGER,cuffdiff_dir)
-	
+		 os.remove(out_file_path)
         #END CuffdiffCall
 
         # At some point might do deeper type checking...
@@ -1434,7 +1488,7 @@ class KBaseRNASeq:
 
 
         # singletons
-        m = two_nums.match(lines[7])
+        m = two_nums.match(lines[8])
         singletons = int(m.group(1))
 
         # multiple alignment : skip now

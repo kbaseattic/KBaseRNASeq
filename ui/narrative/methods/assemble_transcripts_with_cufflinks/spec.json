@@ -34,7 +34,11 @@
     "advanced" : false,
     "allow_multiple" : false,
     "default_values" : [ "" ],
-    "field_type" : "text"
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : ["KBaseExpression.ExpressionSample"],
+      "is_output_name": true
+    }
   }, {
    "id" : "num-threads",
     "optional" : true,

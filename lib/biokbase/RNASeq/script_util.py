@@ -66,7 +66,7 @@ def extractStatsInfo(logger,ws_client,ws_id,sample_id,result,stats_obj_name):
         if alignment_rate > 100: alignment_rate = 100.0
 
         # singletons
-        m = two_nums.match(lines[7])
+        m = two_nums.match(lines[8])
         singletons = int(m.group(1))
 	m = two_nums.match(lines[6])
         properly_paired = int(m.group(1))

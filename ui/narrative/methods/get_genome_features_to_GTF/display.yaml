@@ -3,7 +3,7 @@
 #
 name     : Create Reference Annotation for Prokaryotes
 tooltip  : |
-    creates a reference annotation in GTF format for any Prokaryotic Genome
+    Creates a reference annotation in Gene Transfer Format (GTF) for a prokaryotic genome
 
 screenshots :
     []
@@ -23,7 +23,7 @@ suggestions :
         related :
             []
         next :
-            []
+            [align_reads_using_bowtie2, assemble_transcripts_with_cufflinks]
 
 
 #
@@ -34,18 +34,18 @@ parameters :
         ui-name : |
             Genome
         short-hint : |
-            The input prokaryotic genome to extact features
+            The input prokaryotic genome used to derive GTF annotations
 
     out_gtf_name:
         ui-name : |
-            Output Reference Annotation Name
+            Output Reference Sequence Annotations
         short-hint : |
-            Name for the created Reference Annotation
+            The output reference sequence annotations extracted from the genome
 
 description : |
-   <p>This method creates a Reference Annotation  for a given Prokaryotic reference genome.</p> 
+   <p>This method creates a reference sequence annotations file for a given prokaryotic reference genome.</p> 
    
-   <p>RNASeq Pipeline requires Reference Annotation objects in GTF format to align reads and assemble them to transcripts.</p>
+   <p>The reference annotations generated in GTF format are used by Bowtie2 to align reads and by Cufflinks to assemble transcripts.</p>
    
    <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
     Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Fei He, Vivek Kumar</p>
