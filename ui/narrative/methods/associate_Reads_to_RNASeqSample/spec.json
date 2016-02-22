@@ -3,7 +3,7 @@
   "authors" : [ ],
   "contact" : "help@kbase.us",
   "visible" : false,
-  "categories" : ["active"],
+  "categories" : ["inactive"],
   "widgets" : {
     "input" : null,
     "output" : "kbaseRNASeqSample"
