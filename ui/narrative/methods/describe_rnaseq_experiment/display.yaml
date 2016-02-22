@@ -15,7 +15,7 @@ method-suggestions :
     related :
         []
     next :
-        []
+        [align_reads_using_bowtie2,align_reads_using_tophat]
 
 
 #
@@ -71,22 +71,22 @@ parameters :
         ui-name : |
             Number of Replicates
         short-hint : |
-            The total number of replicates in the RNA-seq experiment
-    singleEnd_reads:
-        ui-name : |
-            Single-end Reads
-        short-hint : |
-            The single-end reads files based on sequencing from one end of the fragment
-    pairedEnd_reads:
-        ui-name : |
-            Paired-end Reads
-        short-hint : |
-            The paired-end reads files based on sequencing from both the ends of the fragment
+            The number of replicates for each treatment in the RNA-seq experiment
     condn_labels:
         ui-name : |
             Treatment Labels
         short-hint : |
-            Short name for each sample treatment in the RNA-seq experiment
+            Short name for each sample treatment in the RNA-seq experiment (without taking into account the replicates).
+    singleEnd_reads:
+        ui-name : |
+            Single-end Reads
+        short-hint : |
+            The single-end reads files based on sequencing from one end of the fragment. The reads belonging to the same treatment should be added consecutively. Also, the reads must be added in the same order as the Treatement Labels.
+    pairedEnd_reads:
+        ui-name : |
+            Paired-end Reads
+        short-hint : |
+            The paired-end reads files based on sequencing from both the ends of the fragment. The reads belonging to the same treatment should be added consecutively. Also, the reads must be added in the same order as the Treatement Labels.
     tissue:
         ui-name : |
             Tissue type
