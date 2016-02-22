@@ -9,6 +9,8 @@ SPEC_FILE = KBaseRNASeq.spec
 
 GITCOMMIT := $(shell git rev-parse --short HEAD)
 TAGS := $(shell git tag --contains $(GITCOMMIT))
+DTAG = $(shell git tag -l [0-9][0-9][0-1][0-9][0-3][0-9][0-2][0-9][0-5][0-9]-* | tail -n1 | sed 's/^[0-9]\{10\}-//')
+
 
 TOP_DIR = $(shell python -c "import os.path as p; print p.abspath('../..')")
 
@@ -98,6 +100,7 @@ TARGET ?= /kb/deployment
 #SERVICE_DIR ?= $(TARGET)/services/$(MODULE)
 
 deploy: deploy-scripts
+	-cp deploy-$(DTAG).cfg deploy.cfg
 
 deploy-scripts: deploy-libs deploy-executable-script
 	bash $(DIR)/deps/pylib.sh
@@ -156,6 +159,7 @@ TARGET ?= /kb/deployment
 #SERVICE_DIR ?= $(TARGET)/services/$(MODULE)
 
 deploy: deploy-lscripts deploy-cfg
+	-cp deploy-$(DTAG).cfg deploy.cfg
 
 deploy-ensure-dirs:
 	if [ ! -d $(TARGET)/shbin ]; then rm -rf $(TARGET)/shbin; mkdir -p $(TARGET)/shbin; fi
