@@ -3,7 +3,7 @@
 #
 name     : Create Reference Annotations for a Prokaryote
 tooltip  : |
-    Create reference annotations in Gene Transfer Format (GTF) for a prokaryotic genome
+    Create reference annotations in Gene Transfer Format (GTF) for a given prokaryotic genome
 
 screenshots :
     []
