@@ -294,9 +294,9 @@ class KBaseRNASeq:
 	try:
 	        self.__LOGGER.info( "Downloading KBaseGenome.ContigSet object from workspace")
 	    ## Check if the bowtie_dir is present; remove files in bowtie_dir if exists ; create a new dir if doesnt exists
-		if os.path.exists(self.__SCRATCH):
-		   shutil.rmtree(self.__SCRATCH)
-		os.makedirs(self.__SCRATCH)	
+		#if os.path.exists(self.__SCRATCH):
+		#   shutil.rmtree(self.__SCRATCH)
+		#os.makedirs(self.__SCRATCH)	
 	    	bowtie_dir = self.__SCRATCH + '/tmp' 
 	    	if os.path.exists(bowtie_dir):
 			handler_util.cleanup(self.__LOGGER,bowtie_dir)
@@ -727,7 +727,7 @@ class KBaseRNASeq:
             os.makedirs(self.__SCRATCH)
 	    
 	    tophat_dir = self.__SCRATCH +'/tmp'
-	    print os.getcwd()
+	    print tophat_dir
             if os.path.exists(tophat_dir):
 	    	handler_util.cleanup(self.__LOGGER,tophat_dir)
             if not os.path.exists(tophat_dir): os.makedirs(tophat_dir)
@@ -896,9 +896,9 @@ class KBaseRNASeq:
 	    returnVal = { "stats_obj" : stats_obj_name , "alignment_id" : params['output_obj_name'] , "analysis_id" : analysis_obj }	
 	except Exception,e:
             raise KBaseRNASeqException("Error Running Tophatcall {0}".format("".join(traceback.format_exc())))
-	finally:
-	    handler_util.cleanup(self.__LOGGER,tophat_dir)
-	    os.remove(out_file_path)
+	#finally:
+	#    handler_util.cleanup(self.__LOGGER,tophat_dir)
+	#    os.remove(out_file_path)
 #	
 	     
         #END TophatCall
