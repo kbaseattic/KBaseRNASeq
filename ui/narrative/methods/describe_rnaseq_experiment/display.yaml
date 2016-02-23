@@ -1,7 +1,7 @@
 #
 # Define basic display information
 #
-name     : Setup RNA-seq Analysis
+name     : Set up RNA-seq Analysis
 
 tooltip  : |
     Provide the metadata to set up the RNA-seq experiment 
