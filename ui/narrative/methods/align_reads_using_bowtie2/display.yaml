@@ -3,7 +3,7 @@
 #
 name     : Align Reads using Bowtie2
 tooltip  : |
-    Align the sequencing reads to long reference sequences using Bowtie2
+    Align sequencing reads to long reference sequences using Bowtie2
 
 screenshots :
     []
