@@ -1,9 +1,9 @@
 #
 # Define basic display information
 #
-name     : Create Reference Annotation for Prokaryotes
+name     : Create Reference Annotations for a Prokaryote
 tooltip  : |
-    Creates a reference annotation in Gene Transfer Format (GTF) for a prokaryotic genome
+    Create reference annotations in Gene Transfer Format (GTF) for a prokaryotic genome
 
 screenshots :
     []
