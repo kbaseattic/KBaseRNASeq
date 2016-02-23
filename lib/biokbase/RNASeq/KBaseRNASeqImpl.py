@@ -407,7 +407,7 @@ class KBaseRNASeq:
 		raise KBaseRNASeqException("Build Bowtie2Index failed: {0}".format(e))
 	finally:
                 handler_util.cleanup(self.__LOGGER,bowtie_dir)
-		os.remove(out_file_path)
+		if os.path.exists(out_file_path): os.remove(out_file_path)
         #END BuildBowtie2Index
 
         # At some point might do deeper type checking...
@@ -506,7 +506,7 @@ class KBaseRNASeq:
                 raise KBaseRNASeqException("Create Reference Annotation Failed: {0}".format(e))
         finally:
                 handler_util.cleanup(self.__LOGGER,gtf_dir)
-		os.remove(out_file_path)
+		if os.path.exists(out_file_path): os.remove(out_file_path)
 	
         #END GetFeaturesToGTF
 
@@ -698,7 +698,7 @@ class KBaseRNASeq:
                  raise KBaseRNASeqException("Error Running Bowtie2Call")
 	finally:
                  handler_util.cleanup(self.__LOGGER,bowtie2_dir)
-		 os.remove(out_file_path)
+		 if os.path.exists(out_file_path): os.remove(out_file_path)
         #END Bowtie2Call
 
         # At some point might do deeper type checking...
@@ -898,7 +898,7 @@ class KBaseRNASeq:
             raise KBaseRNASeqException("Error Running Tophatcall {0}".format("".join(traceback.format_exc())))
 	finally:
 	    handler_util.cleanup(self.__LOGGER,tophat_dir)
-	    os.remove(out_file_path)
+	    if os.path.exists(out_file_path): os.remove(out_file_path)
 #	
 	     
         #END TophatCall
@@ -1044,7 +1044,7 @@ class KBaseRNASeq:
                  raise KBaseRNASeqException("Error Running Cufflinks : {0}".format(e))
         finally:
                  handler_util.cleanup(self.__LOGGER,cufflinks_dir)
-		 os.remove(out_file_path)	
+		 if os.path.exists(out_file_path): os.remove(out_file_path)	
         #END CufflinksCall
 
         # At some point might do deeper type checking...
@@ -1211,7 +1211,7 @@ class KBaseRNASeq:
                  raise
 	finally:
                  handler_util.cleanup(self.__LOGGER,cuffmerge_dir)
-		 os.remove(out_file_path)
+		 if os.path.exists(out_file_path): os.remove(out_file_path)
         #END CuffmergeCall
 
         # At some point might do deeper type checking...
@@ -1400,7 +1400,7 @@ class KBaseRNASeq:
                  raise
 	finally:
                  handler_util.cleanup(self.__LOGGER,cuffdiff_dir)
-		 os.remove(out_file_path)
+		 if os.path.exists(out_file_path): os.remove(out_file_path)
         #END CuffdiffCall
 
         # At some point might do deeper type checking...
