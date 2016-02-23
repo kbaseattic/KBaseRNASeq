@@ -427,9 +427,9 @@ class KBaseRNASeq:
         try:
                 self.__LOGGER.info( "Downloading KBaseGenomes.Genome object from workspace")
             ## Check if the gtf_dir is present; remove files in gtf_dir if exists ; create a new dir if doesnt exists     
-                if os.path.exists(self.__SCRATCH):
-                   shutil.rmtree(self.__SCRATCH)
-                os.makedirs(self.__SCRATCH)
+		if os.path.exists(self.__SCRATCH):
+                	handler_util.cleanup(self.__LOGGER,self.__SCRATCH)
+            	if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
 		gtf_dir = self.__SCRATCH+'/tmp'
                 if os.path.exists(gtf_dir):
                         handler_util.cleanup(self.__LOGGER,gtf_dir)
@@ -723,9 +723,8 @@ class KBaseRNASeq:
 	try:
 	    ### Make a function to download the workspace object  and prepare dict of genome ,lib_type 
 	    if os.path.exists(self.__SCRATCH):
-               shutil.rmtree(self.__SCRATCH)
-            os.makedirs(self.__SCRATCH)
-	    
+             	handler_util.cleanup(self.__LOGGER,self.__SCRATCH)
+	    if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
 	    tophat_dir = self.__SCRATCH +'/tmp'
 	    print tophat_dir
             if os.path.exists(tophat_dir):
@@ -921,10 +920,10 @@ class KBaseRNASeq:
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
         hs = HandleService(url=self.__HS_URL, token=user_token)
         try:
-	    if os.path.exists(self.__SCRATCH):
-               shutil.rmtree(self.__SCRATCH)
-            os.makedirs(self.__SCRATCH)
-            cufflinks_dir = self.__SCRATCH +'/tmp'
+            if os.path.exists(self.__SCRATCH):
+                handler_util.cleanup(self.__LOGGER,self.__SCRATCH)
+            if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH) 
+	    cufflinks_dir = self.__SCRATCH +'/tmp'
             if os.path.exists(cufflinks_dir):
                 handler_util.cleanup(self.__LOGGER,cufflinks_dir)
             if not os.path.exists(cufflinks_dir): os.makedirs(cufflinks_dir)
@@ -1066,8 +1065,8 @@ class KBaseRNASeq:
         hs = HandleService(url=self.__HS_URL, token=user_token)
         try:
 	    if os.path.exists(self.__SCRATCH):
-               shutil.rmtree(self.__SCRATCH)
-            os.makedirs(self.__SCRATCH)
+                handler_util.cleanup(self.__LOGGER,self.__SCRATCH)
+            if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
             cuffmerge_dir = self.__SCRATCH +'/tmp'
             if os.path.exists(cuffmerge_dir):
                 handler_util.cleanup(self.__LOGGER,cuffmerge_dir)
@@ -1232,10 +1231,10 @@ class KBaseRNASeq:
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
         hs = HandleService(url=self.__HS_URL, token=user_token)
         try:
-	    if os.path.exists(self.__SCRATCH):
-               shutil.rmtree(self.__SCRATCH)
-            os.makedirs(self.__SCRATCH)
-            cuffdiff_dir = self.__SCRATCH +'/tmp'
+            if os.path.exists(self.__SCRATCH):
+                handler_util.cleanup(self.__LOGGER,self.__SCRATCH)
+            if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
+	    cuffdiff_dir = self.__SCRATCH +'/tmp'
             #cuffdiff_dir = self.__CUFFDIFF_DIR
             if os.path.exists(cuffdiff_dir):
                 handler_util.cleanup(self.__LOGGER,cuffdiff_dir)
