@@ -3,7 +3,7 @@
 #
 name     : Align Reads using Tophat
 tooltip  : |
-    Align the sequencing reads to a genome using Tophat in order to identify exon-exon splice junctions. 
+    Align sequencing reads to a genome using Tophat to identify exon-exon splice junctions
 
 screenshots :
     []
