@@ -2,6 +2,7 @@
 
 import simplejson
 import sys
+import shutil
 import os
 import ast
 import glob
@@ -82,6 +83,8 @@ class KBaseRNASeq:
 	      self.__HS_URL = config['hs_url']
         if 'temp_dir' in config:
               self.__TEMP_DIR = config['temp_dir']
+	if 'scratch' in config:
+	      self.__SCRATCH= config['scratch']
         if 'bowtie_dir' in config:
               self.__BOWTIE_DIR = config['bowtie_dir']
         if 'genome_input_fa' in config:
@@ -290,8 +293,11 @@ class KBaseRNASeq:
 	hs = HandleService(url=self.__HS_URL, token=user_token)
 	try:
 	        self.__LOGGER.info( "Downloading KBaseGenome.ContigSet object from workspace")
-	    ## Check if the bowtie_dir is present; remove files in bowtie_dir if exists ; create a new dir if doesnt exists	
-	    	bowtie_dir = self.__BOWTIE_DIR
+	    ## Check if the bowtie_dir is present; remove files in bowtie_dir if exists ; create a new dir if doesnt exists
+		if os.path.exists(self.__SCRATCH):
+		   shutil.rmtree(self.__SCRATCH)
+		os.makedirs(self.__SCRATCH)	
+	    	bowtie_dir = self.__SCRATCH + '/tmp' 
 	    	if os.path.exists(bowtie_dir):
 			handler_util.cleanup(self.__LOGGER,bowtie_dir)
 	   	if not os.path.exists(bowtie_dir): os.makedirs(bowtie_dir)
@@ -342,8 +348,8 @@ class KBaseRNASeq:
 		
 	    ## Zip the Index files
 		try:
-			script_util.zip_files(self.__LOGGER, bowtie_dir, "%s.zip" % params['output_obj_name'])
-			out_file_path = os.path.join("%s.zip" % params['output_obj_name'])
+			script_util.zip_files(self.__LOGGER, bowtie_dir,os.path.join(self.__SCRATCH ,"%s.zip" % params['output_obj_name']))
+			out_file_path = os.path.join(self.__SCRATCH,"%s.zip" % params['output_obj_name'])
         	except Exception, e:
 			raise KBaseRNASeqException("Failed to compress the index: {0}".format(e))
 	    ## Upload the file using handle service
@@ -421,10 +427,11 @@ class KBaseRNASeq:
         try:
                 self.__LOGGER.info( "Downloading KBaseGenomes.Genome object from workspace")
             ## Check if the gtf_dir is present; remove files in gtf_dir if exists ; create a new dir if doesnt exists     
-                gtf_dir = self.__GTF_DIR
+                if os.path.exists(self.__SCRATCH):
+                   shutil.rmtree(self.__SCRATCH)
+                os.makedirs(self.__SCRATCH)
+		gtf_dir = self.__SCRATCH+'/tmp'
                 if os.path.exists(gtf_dir):
-                        #files=glob.glob("%s/*" % bowtie_dir)
-                        #for f in files: os.remove(f)
                         handler_util.cleanup(self.__LOGGER,gtf_dir)
                 if not os.path.exists(gtf_dir): os.makedirs(gtf_dir)
                 provenance = [{}]
@@ -437,7 +444,8 @@ class KBaseRNASeq:
                 reference = ws_client.get_objects(
                                         [{ 'name' : params['reference'], 'workspace' : params['ws_id']}])
 		ref =reference[0]['data']
-		output = open(params['output_obj_name']+'.gtf','w')
+		out_file_path = os.path.join(gtf_dir,params['output_obj_name']+'.gtf')
+		output = open(out_file_path,'w')
         	if "features" in ref:
                   for f in ref['features']:
                      if "type" in f and  f['type'] == 'CDS':
@@ -445,16 +453,12 @@ class KBaseRNASeq:
                      if "id" in f:
                         f_id =  f['id']
                      if "location" in f:
-                        #print f['location']
                         for contig_id,f_start,f_strand,f_len  in f['location']:
                                 f_end = script_util.get_end(int(f_start),int(f_len),f_strand)
 			        output.write(contig_id + "\tKBase\t" + f_type + "\t" + str(f_start) + "\t" + str(f_end) + "\t.\t" + f_strand + "\t"+ str(0) + "\ttranscript_id " + f_id + "; gene_id " + f_id + ";\n")	
                 try:
-                        #gtf_handle = script_util.create_shock_handle(self.__LOGGER,params['output_obj_name']+'.gtf',self.__SHOCK_URL,self.__HS_URL,"GTF",user_token)
-			out_file_path = os.path.join(params['output_obj_name']+'.gtf')
+			#out_file_path = os.path.join(params['output_obj_name']+'.gtf')
                         gtf_handle = hs.upload(out_file_path)
-                        # if self.__PUBLIC_SHOCK_NODE is 'true':
-                        #        script_util.shock_node_2b_public(self.__LOGGER,node_id=gtf_handle['id'],shock_service_url=gtf_handle['url'],token=user_token)
 
                 except Exception, e:
                         raise KBaseRNASeqException("Failed to create Reference Annotation: {0}".format(e))
@@ -469,7 +473,6 @@ class KBaseRNASeq:
                                          "data":gtfhandle,
                                          "name":params['output_obj_name']}
                                         ]})
-                #returnVal = { "output" : params['output_obj_name'],"workspace" : params['ws_id'] }
                 info = res[0]
 		report = "Extracting Features from {0}".format(params['reference'])
              ## Create report object:
@@ -522,10 +525,12 @@ class KBaseRNASeq:
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
         hs = HandleService(url=self.__HS_URL, token=user_token)
         try:
-            bowtie2_dir = self.__BOWTIE2_DIR
+	    if os.path.exists(self.__SCRATCH):
+                   shutil.rmtree(self.__SCRATCH)
+            os.makedirs(self.__SCRATCH)
+ 
+            bowtie2_dir = self.__SCRATCH+'/tmp'
             if os.path.exists(bowtie2_dir):
-            #   files=glob.glob("%s/*" % bowtie2_dir)
-            #    for f in files: os.remove(f)
                 handler_util.cleanup(self.__LOGGER,bowtie2_dir)
             if not os.path.exists(bowtie2_dir): os.makedirs(bowtie2_dir)
 
@@ -622,20 +627,23 @@ class KBaseRNASeq:
 	    
             try:
 		
-                cmdline_output = script_util.runProgram(self.__LOGGER,"bowtie2",bowtie2_cmd,None,os.getcwd())
+                cmdline_output = script_util.runProgram(self.__LOGGER,"bowtie2",bowtie2_cmd,None,bowtie2_dir)
+                #cmdline_output = script_util.runProgram(self.__LOGGER,"bowtie2",bowtie2_cmd,None,os.getcwd())
 		bam_file = os.path.join(output_dir,"accepted_hits_unsorted.bam")
 		sam_to_bam = "view -bS -o {0} {1}".format(bam_file,out_file)
-		script_util.runProgram(self.__LOGGER,"samtools",sam_to_bam,None,os.getcwd())
+		script_util.runProgram(self.__LOGGER,"samtools",sam_to_bam,None,bowtie2_dir)
+		#script_util.runProgram(self.__LOGGER,"samtools",sam_to_bam,None,os.getcwd())
 		final_bam_prefix = os.path.join(output_dir,"accepted_hits")
 		sort_bam_cmd  = "sort {0} {1}".format(bam_file,final_bam_prefix)
-		script_util.runProgram(self.__LOGGER,"samtools",sort_bam_cmd,None,os.getcwd())
+		script_util.runProgram(self.__LOGGER,"samtools",sort_bam_cmd,None,bowtie2_dir)
+		#script_util.runProgram(self.__LOGGER,"samtools",sort_bam_cmd,None,os.getcwd())
                 #script_util.runProgram(self.__LOGGER,self.__SCRIPT_TYPE['tophat_script'],tophat_cmd,self.__SCRIPTS_DIR,os.getcwd())
             except Exception,e:
                 raise KBaseRNASeqException("Error Running the bowtie2 command {0},{1},{2}".format(bowtie2_cmd,bowtie2_dir,e))
             try:
                 bam_file = output_dir+"/accepted_hits.bam"
                 align_stats_cmd="flagstat {0}".format(bam_file)
-                stats = script_util.runProgram(self.__LOGGER,"samtools",align_stats_cmd)
+                stats = script_util.runProgram(self.__LOGGER,"samtools",align_stats_cmd,None,bowtie2_dir)
                 # Pass it to the stats['result']
                 stats_obj_name = params['output_obj_name']+"_"+str(hex(uuid.getnode()))+"_AlignmentStats"
                 script_util.extractStatsInfo(self.__LOGGER,ws_client,params['ws_id'],params['output_obj_name'],stats['result'],stats_obj_name)
@@ -645,8 +653,9 @@ class KBaseRNASeq:
 
         # Zip tophat folder
             try:
-                script_util.zip_files(self.__LOGGER, output_dir, "%s.zip" % params['output_obj_name'])
-                out_file_path = os.path.join("%s.zip" % params['output_obj_name'])
+                out_file_path = os.path.join(self.__SCRATCH,"%s.zip" % params['output_obj_name'])
+		script_util.zip_files(self.__LOGGER, output_dir,out_file_path)
+                #out_file_path = os.path.join(self.__SCRATCH,"%s.zip" % params['output_obj_name'])
                 #handler_util.cleanup(self.__LOGGER,tophat_dir)
             except Exception, e:
                 raise KBaseRNASeqException("Failed to compress the index: {0}".format(e))
@@ -713,7 +722,12 @@ class KBaseRNASeq:
         hs = HandleService(url=self.__HS_URL, token=user_token)
 	try:
 	    ### Make a function to download the workspace object  and prepare dict of genome ,lib_type 
-	    tophat_dir = self.__TOPHAT_DIR
+	    if os.path.exists(self.__SCRATCH):
+               shutil.rmtree(self.__SCRATCH)
+            os.makedirs(self.__SCRATCH)
+	    
+	    tophat_dir = self.__SCRATCH +'/tmp'
+	    print os.getcwd()
             if os.path.exists(tophat_dir):
 	    	handler_util.cleanup(self.__LOGGER,tophat_dir)
             if not os.path.exists(tophat_dir): os.makedirs(tophat_dir)
@@ -824,7 +838,8 @@ class KBaseRNASeq:
                 tophat_cmd += ' -o {0} -G {1} {2} {3} {4}'.format(output_dir,gtf_file,bowtie_base,sample_file1,sample_file2)
 
 	    try:  
-            	script_util.runProgram(self.__LOGGER,"tophat",tophat_cmd,None,os.getcwd())
+            	script_util.runProgram(self.__LOGGER,"tophat",tophat_cmd,None,tophat_dir)
+            	#script_util.runProgram(self.__LOGGER,"tophat",tophat_cmd,None,os.getcwd())
             	#script_util.runProgram(self.__LOGGER,self.__SCRIPT_TYPE['tophat_script'],tophat_cmd,self.__SCRIPTS_DIR,os.getcwd())
             except Exception,e:
                 raise KBaseRNASeqException("Error Running the tophat command and the samtools flagstat {0},{1},{2}".format(tophat_cmd,tophat_dir,e))
@@ -832,7 +847,7 @@ class KBaseRNASeq:
 	    try:
                 bam_file = output_dir+"/accepted_hits.bam"
                 align_stats_cmd="flagstat {0}".format(bam_file)
-                stats = script_util.runProgram(self.__LOGGER,"samtools",align_stats_cmd)
+                stats = script_util.runProgram(self.__LOGGER,"samtools",align_stats_cmd,None,tophat_dir)
                 # Pass it to the stats['result']
 		stats_obj_name = params['output_obj_name']+"_"+str(hex(uuid.getnode()))+"_AlignmentStats"
                 script_util.extractStatsInfo(self.__LOGGER,ws_client,params['ws_id'],params['output_obj_name'],stats['result'],stats_obj_name)
@@ -843,8 +858,9 @@ class KBaseRNASeq:
 
 	# Zip tophat folder
             try:
-                script_util.zip_files(self.__LOGGER, output_dir, "%s.zip" % params['output_obj_name'])
-                out_file_path = os.path.join("%s.zip" % params['output_obj_name'])
+                out_file_path = os.path.join(self.__SCRATCH,"%s.zip" % params['output_obj_name'])
+                script_util.zip_files(self.__LOGGER, output_dir,out_file_path)
+                #out_file_path = os.path.join("%s.zip" % params['output_obj_name'])
 		#handler_util.cleanup(self.__LOGGER,tophat_dir)
             except Exception, e:
                 raise KBaseRNASeqException("Failed to compress the index: {0}".format(e))
@@ -905,7 +921,10 @@ class KBaseRNASeq:
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
         hs = HandleService(url=self.__HS_URL, token=user_token)
         try:
-            cufflinks_dir = self.__CUFFLINKS_DIR
+	    if os.path.exists(self.__SCRATCH):
+               shutil.rmtree(self.__SCRATCH)
+            os.makedirs(self.__SCRATCH)
+            cufflinks_dir = self.__SCRATCH +'/tmp'
             if os.path.exists(cufflinks_dir):
                 handler_util.cleanup(self.__LOGGER,cufflinks_dir)
             if not os.path.exists(cufflinks_dir): os.makedirs(cufflinks_dir)
@@ -964,31 +983,27 @@ class KBaseRNASeq:
 		
 		cufflinks_command += " -o {0} -G {1} {2}".format(output_dir,gtf_file,input_file)
                 self.__LOGGER.info("Executing {0}".format(cufflinks_command))
-		script_util.runProgram(self.__LOGGER,"cufflinks",cufflinks_command,None,os.getcwd())
+		script_util.runProgram(self.__LOGGER,"cufflinks",cufflinks_command,None,cufflinks_dir)
 
             except Exception,e:
-                raise KBaseRNASeqException("Error executing cufflinks {0},{1},{2}".format(cufflinks_command,os.getcwd(),e))
+                raise KBaseRNASeqException("Error executing cufflinks {0},{1},{2}".format(cufflinks_command,cufflinks_dir,e))
             ##Parse output files
 	    exp_dict = script_util.parse_FPKMtracking(os.path.join(output_dir,"genes.fpkm_tracking"))
             ##  compress and upload to shock
             try:
                 self.__LOGGER.info("Ziping output")
-
-                script_util.zip_files(self.__LOGGER,output_dir, "{0}.zip".format(params['output_obj_name']))
+		out_file_path = os.path.join(self.__SCRATCH,"%s.zip" % params['output_obj_name'])
+                script_util.zip_files(self.__LOGGER,output_dir,out_file_path)
                 #handle = hs.upload("{0}.zip".format(params['output_obj_name']))
             except Exception,e:
 		self.__LOGGER.exception("".join(traceback.format_exc()))
                 raise KBaseRNASeqException("Error executing cufflinks {0},{1}".format(os.getcwd(),e))
 	    try:
-		out_file_path = os.path.join("%s.zip" % params['output_obj_name'])
+		#out_file_path = os.path.join(self.__SCRATCH,"%s.zip" % params['output_obj_name'])
 		handle = hs.upload(out_file_path)
-                #handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
-                #if self.__PUBLIC_SHOCK_NODE is 'true': 
-                #    script_util.shock_node_2b_public(self.__LOGGER,node_id=handle['id'],shock_service_url=handle['url'],token=user_token)
             except Exception, e:
 	        self.__LOGGER.exception("".join(traceback.format_exc()))	
                 raise KBaseRNASeqException("Error while zipping the output objects: {0}".format(e))
-	
 
 	    ## Save object to workspace
 	    try:
@@ -1050,7 +1065,10 @@ class KBaseRNASeq:
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
         hs = HandleService(url=self.__HS_URL, token=user_token)
         try:
-            cuffmerge_dir = self.__CUFFMERGE_DIR
+	    if os.path.exists(self.__SCRATCH):
+               shutil.rmtree(self.__SCRATCH)
+            os.makedirs(self.__SCRATCH)
+            cuffmerge_dir = self.__SCRATCH +'/tmp'
             if os.path.exists(cuffmerge_dir):
                 handler_util.cleanup(self.__LOGGER,cuffmerge_dir)
             if not os.path.exists(cuffmerge_dir): os.makedirs(cuffmerge_dir)
@@ -1133,22 +1151,23 @@ class KBaseRNASeq:
                 #         command_list.append(params[arg])
 
                 self.__LOGGER.info("Executing {0}".format(cuffmerge_command))
-	        cmdline_output = script_util.runProgram(self.__LOGGER,"cuffmerge",cuffmerge_command,None,os.getcwd())
+	        cmdline_output = script_util.runProgram(self.__LOGGER,"cuffmerge",cuffmerge_command,None,cuffmerge_dir)
+	        #cmdline_output = script_util.runProgram(self.__LOGGER,"cuffmerge",cuffmerge_command,None,os.getcwd())
 		if 'result' in cmdline_output:
 			report = cmdline_output['result']	
             except Exception,e:
-                raise KBaseRNASeqException("Error executing cuffmerge {0},{1},{2}".format(cuffmerge_command,os.getcwd(),e))
+                raise KBaseRNASeqException("Error executing cuffmerge {0},{1},{2}".format(cuffmerge_command,cuffmerge_dir,e))
             
             ##  compress and upload to shock
             try:
                 self.__LOGGER.info("Ziping output")
-
-                script_util.zip_files(self.__LOGGER,output_dir, "{0}.zip".format(params['output_obj_name']))
+		out_file_path = os.path.join(self.__SCRATCH,"{0}.zip".format(params['output_obj_name']))
+                script_util.zip_files(self.__LOGGER,output_dir,out_file_path)
                 #handle = hs.upload("{0}.zip".format(params['output_obj_name']))
             except Exception,e:
                 raise KBaseRNASeqException("Error executing cuffmerge {0},{1}".format(os.getcwd(),e))
 	    try:
-		out_file_path = os.path.join("{0}.zip".format(params['output_obj_name']))
+		#out_file_path = os.path.join("{0}.zip".format(params['output_obj_name']))
 		handle = hs.upload(out_file_path)
                 #handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
                 #if self.__PUBLIC_SHOCK_NODE is 'true': 
@@ -1213,7 +1232,11 @@ class KBaseRNASeq:
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
         hs = HandleService(url=self.__HS_URL, token=user_token)
         try:
-            cuffdiff_dir = self.__CUFFDIFF_DIR
+	    if os.path.exists(self.__SCRATCH):
+               shutil.rmtree(self.__SCRATCH)
+            os.makedirs(self.__SCRATCH)
+            cuffdiff_dir = self.__SCRATCH +'/tmp'
+            #cuffdiff_dir = self.__CUFFDIFF_DIR
             if os.path.exists(cuffdiff_dir):
                 handler_util.cleanup(self.__LOGGER,cuffdiff_dir)
             if not os.path.exists(cuffdiff_dir): os.makedirs(cuffdiff_dir)
@@ -1325,30 +1348,26 @@ class KBaseRNASeq:
                 # TODO: add reference GTF later, seems googledoc command looks wrong
                 cuffdiff_command += " -o {0} -L {1} -u {2} {3}".format(output_dir,labels,gtf_file,bam_files)
 		self.__LOGGER.info("Executing {0}".format(cuffdiff_command))
-                script_util.runProgram(self.__LOGGER,"cuffdiff",cuffdiff_command,None,os.getcwd())
+                script_util.runProgram(self.__LOGGER,"cuffdiff",cuffdiff_command,None,cuffdiff_dir)
+                #script_util.runProgram(self.__LOGGER,"cuffdiff",cuffdiff_command,None,os.getcwd())
 
             except Exception,e:
-                raise KBaseRNASeqException("Error executing cuffdiff {0},{1},{2}".format(cuffdiff_command,os.getcwd(),e))
+                raise KBaseRNASeqException("Error executing cuffdiff {0},{1},{2}".format(cuffdiff_command,cuffdiff_dir,e))
 
             ##  compress and upload to shock
             try:
                 self.__LOGGER.info("Ziping output")
-
-                script_util.zip_files(self.__LOGGER,output_dir, "{0}.zip".format(params['output_obj_name']))
+		out_file_path = os.path.join(self.__SCRATCH,"{0}.zip".format(params['output_obj_name']))
+                script_util.zip_files(self.__LOGGER,output_dir,out_file_path)
                 #handle = hs.upload("{0}.zip".format(params['output_obj_name']))
             except Exception,e:
                 raise KBaseRNASeqException("Error executing cuffdiff {0},{1}".format(os.getcwd(),e))
             try:
-		out_file_path = os.path.join("{0}.zip".format(params['output_obj_name']))
+		#out_file_path = os.path.join("{0}.zip".format(params['output_obj_name']))
                 handle = hs.upload(out_file_path)
-                #handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
-                #if self.__PUBLIC_SHOCK_NODE is 'true':
-                #    script_util.shock_node_2b_public(self.__LOGGER,node_id=handle['id'],shock_service_url=handle['url'],token=user_token)
             except Exception, e:
                 raise KBaseRNASeqException("Failed to upload the Cuffdiff output files: {0}".format(e))
 
-            #analysis['data']['cuffdiff_diff_exp_id'] = "{0}/{1}".format(params['ws_id'],params['output_obj_name'])
-                # raise Exception(task_output["stdout"], task_output["stderr"])
 
             ## Save object to workspace
             try:
