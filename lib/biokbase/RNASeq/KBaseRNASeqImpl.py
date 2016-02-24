@@ -22,6 +22,8 @@ from biokbase.auth import Token
 from mpipe import OrderedStage , Pipeline
 import multiprocessing as mp
 import re
+import requests.packages.urllib3
+requests.packages.urllib3.disable_warnings()
 
 try:
     from biokbase.HandleService.Client import HandleService
@@ -287,7 +289,7 @@ class KBaseRNASeq:
         # return variables are: returnVal
         #BEGIN BuildBowtie2Index
 	user_token=ctx['token']
-   	pprint(params) 
+   	#pprint(params) 
         #svc_token = Token(user_id=self.__SVC_USER, password=self.__SVC_PASS).token
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
 	hs = HandleService(url=self.__HS_URL, token=user_token)
@@ -340,7 +342,7 @@ class KBaseRNASeq:
 				bowtie_index_cmd = "{0} {1}".format(outfile_ref_name,params['reference'])
 			else:
 				bowtie_index_cmd = "{0} {1}".format(params['reference'],params['reference']) 
-	    		
+	    	        self.__LOGGER.info("Executing: bowtie2-build {0}".format(bowtie_index_cmd))  	
 			cmdline_output = script_util.runProgram(self.__LOGGER,"bowtie2-build",bowtie_index_cmd,None,bowtie_dir)
 			if 'result' in cmdline_output:
 				report = cmdline_output['result']
@@ -361,7 +363,7 @@ class KBaseRNASeq:
                 	# 	script_util.shock_node_2b_public(self.__LOGGER,node_id=bowtie_handle['id'],shock_service_url=bowtie_handle['url'],token=user_token)
 			 
 		except Exception, e:
-			raise KBaseRNASeqException("Failed to upload the index: {0}".format(e))
+			raise KBaseRNASeqException("Failed to upload the Zipped Bowtie2Indexes file: {0}".format(e))
 	    	bowtie2index = { "handle" : bowtie_handle ,"size" : os.path.getsize(out_file_path)}   
 
 	     ## Save object to workspace
@@ -422,7 +424,7 @@ class KBaseRNASeq:
         # return variables are: returnVal
         #BEGIN GetFeaturesToGTF
         user_token=ctx['token']
-        pprint(params)
+        #pprint(params)
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
         hs = HandleService(url=self.__HS_URL, token=user_token)
         try:
@@ -522,7 +524,7 @@ class KBaseRNASeq:
         # return variables are: returnVal
         #BEGIN Bowtie2Call
 	user_token=ctx['token']
-	pprint(params)
+	#pprint(params)
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
         hs = HandleService(url=self.__HS_URL, token=user_token)
         try:
@@ -627,7 +629,7 @@ class KBaseRNASeq:
                 bowtie2_cmd += " -1 {0} -2 {1} -x {2} -S {3}".format(sample_file1,sample_file2,bowtie2_base,out_file)	
 	    
             try:
-		
+	        self.__LOGGER.info("Executing: bowtie2 {0}".format(bowtie2_cmd))	
                 cmdline_output = script_util.runProgram(self.__LOGGER,"bowtie2",bowtie2_cmd,None,bowtie2_dir)
                 #cmdline_output = script_util.runProgram(self.__LOGGER,"bowtie2",bowtie2_cmd,None,os.getcwd())
 		bam_file = os.path.join(output_dir,"accepted_hits_unsorted.bam")
@@ -717,7 +719,7 @@ class KBaseRNASeq:
         ## TODO: Need to take Analysis TO as input object instead of sample id
 
 	user_token=ctx['token']
-	pprint(params)
+	#pprint(params)
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
 	ws_client=Workspace(url=self.__WS_URL, token=user_token)
         hs = HandleService(url=self.__HS_URL, token=user_token)
@@ -836,7 +838,7 @@ class KBaseRNASeq:
                 sample_file1 = os.path.join(tophat_dir,filename1)
                 sample_file2 = os.path.join(tophat_dir,filename2)
                 tophat_cmd += ' -o {0} -G {1} {2} {3} {4}'.format(output_dir,gtf_file,bowtie_base,sample_file1,sample_file2)
-
+	    self.__LOGGER.info("Executing: tophat {0}".format(tophat_cmd)) 
 	    try:  
             	script_util.runProgram(self.__LOGGER,"tophat",tophat_cmd,None,tophat_dir)
             	#script_util.runProgram(self.__LOGGER,"tophat",tophat_cmd,None,os.getcwd())
@@ -915,7 +917,7 @@ class KBaseRNASeq:
         # return variables are: returnVal
         #BEGIN CufflinksCall
 	user_token=ctx['token']
-	pprint(params)
+	#pprint(params)
         self.__LOGGER.info("Started CufflinksCall")
         
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
@@ -982,7 +984,7 @@ class KBaseRNASeq:
 		     cufflinks_command += (' --overhang-tolerance '+str(params['overhang-tolerance']))
 		
 		cufflinks_command += " -o {0} -G {1} {2}".format(output_dir,gtf_file,input_file)
-                self.__LOGGER.info("Executing {0}".format(cufflinks_command))
+                self.__LOGGER.info("Executing: cufflinks {0}".format(cufflinks_command))
 		script_util.runProgram(self.__LOGGER,"cufflinks",cufflinks_command,None,cufflinks_dir)
 
             except Exception,e:
@@ -1059,7 +1061,7 @@ class KBaseRNASeq:
         # return variables are: returnVal
         #BEGIN CuffmergeCall
 	user_token=ctx['token']
-	pprint(params)
+	#pprint(params)
         self.__LOGGER.info("Started CuffmergeCall")
         
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
@@ -1123,7 +1125,7 @@ class KBaseRNASeq:
 	            try:
                         script_util.unzip_files(self.__LOGGER,os.path.join(cuffmerge_dir,efn),sp)
                     except Exception, e:
-                           raise Exception("Unzip indexfile error: Please contact help@kbase.us")
+                           raise Exception("Unzip cufflinks file  error: Please contact help@kbase.us")
                     if not os.path.exists("{0}/transcripts.gtf\n".format(sp)):
                        # Would it be better to be skipping this? if so, replace Exception to be next
 		       next		   
@@ -1150,7 +1152,7 @@ class KBaseRNASeq:
                 #         command_list.append('--{0}'.format(arg))
                 #         command_list.append(params[arg])
 
-                self.__LOGGER.info("Executing {0}".format(cuffmerge_command))
+                self.__LOGGER.info("Executing: cuffmerge {0}".format(cuffmerge_command))
 	        cmdline_output = script_util.runProgram(self.__LOGGER,"cuffmerge",cuffmerge_command,None,cuffmerge_dir)
 	        #cmdline_output = script_util.runProgram(self.__LOGGER,"cuffmerge",cuffmerge_command,None,os.getcwd())
 		if 'result' in cmdline_output:
@@ -1226,7 +1228,7 @@ class KBaseRNASeq:
         # return variables are: returnVal
         #BEGIN CuffdiffCall
 	user_token=ctx['token']
-	pprint(params)
+	#pprint(params)
         self.__LOGGER.info("Started CuffdiffCall")
 
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
@@ -1254,7 +1256,7 @@ class KBaseRNASeq:
 	    alignments  = []
 	    sample_labels = []
             if 'data' in analysis : #and analysis['data'] is not None:
-                self.__LOGGER.info("Downloading each expression")
+                self.__LOGGER.info("Downloading Sample Expression files")
 
                 shock_re =  re.compile(r'^(.*)/node/([^?]*)\??')
                 # TODO: Change expression_values object design
@@ -1340,14 +1342,14 @@ class KBaseRNASeq:
             #if('num-threads' in params and params['num-threads'] is not None) : cuffdiff_command += (' -p '+str(params['num-threads']))
 	    if('time-series' in params and params['time-series'] != 0) : cuffdiff_command += (' -T ')
 	    if('min-alignment-count' in params and params['min-alignment-count'] is not None ) : cuffdiff_command += (' -c '+str(params['min-alignment-count']))
-	    if('multi-read-correct' in params and params['multi-read-correct']  is not None): cuffdiff_command += (' -u ')
+	    if('multi-read-correct' in params and params['multi-read-correct'] != 0 ): cuffdiff_command += (' --multi-read-correct ')
 	    if('library-type' in params and params['library-type'] is not None ) : cuffdiff_command += ( ' --library-type '+params['library-type'])
 	    if('library-norm-method' in params and params['library-norm-method'] is not None ) : cuffdiff_command += ( ' --library-norm-method '+params['library-norm-method'])
  
 	    try:
                 # TODO: add reference GTF later, seems googledoc command looks wrong
                 cuffdiff_command += " -o {0} -L {1} -u {2} {3}".format(output_dir,labels,gtf_file,bam_files)
-		self.__LOGGER.info("Executing {0}".format(cuffdiff_command))
+		self.__LOGGER.info("Executing: cuffdiff {0}".format(cuffdiff_command))
                 script_util.runProgram(self.__LOGGER,"cuffdiff",cuffdiff_command,None,cuffdiff_dir)
                 #script_util.runProgram(self.__LOGGER,"cuffdiff",cuffdiff_command,None,os.getcwd())
 
@@ -1480,7 +1482,7 @@ class KBaseRNASeq:
 	
 	#Run Command
         try:
-                self.__LOGGER.info("Executing: {0} {1}".format("samtools", align_stats_cmd))
+                self.__LOGGER.info("Executing: samtools {0} {1}".format("samtools", align_stats_cmd))
 		res = script_util.runProgram(self.__LOGGER,"samtools", align_stats_cmd,None,None)
         except Exception,e:
                 raise KBaseRNASeqException("Error running samtools flagstat {0},{1}".format(bam_file,e))
