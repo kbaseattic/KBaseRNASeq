@@ -29,17 +29,6 @@
       "valid_ws_types" : ["KBaseRNASeq.Bowtie2Indexes" ]
     }
   }, {
-    "id" : "output_obj_name",
-    "optional" : false,
-    "advanced" : false,
-    "allow_multiple" : false,
-    "default_values" : [ "" ],
-    "field_type" : "text",
-    "text_options" : {
-      "valid_ws_types" : ["KBaseRNASeq.RNASeqSampleAlignment"],
-      "is_output_name": true
-    }
-  }, {
     "id" : "reference",
     "optional" : false,
     "advanced" : false,
@@ -48,6 +37,17 @@
     "field_type" : "text",
     "text_options" : {
     "valid_ws_types" : ["KBaseGenomes.Genome" ]
+    }
+  }, {
+     "id" : "output_obj_name",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : ["KBaseRNASeq.RNASeqSampleAlignment"],
+      "is_output_name": true
     }
   }, {
     "id" : "quality_score",

@@ -210,7 +210,7 @@ def download_file_from_shock(logger,
 
     header = dict()
     header["Authorization"] = "Oauth {0}".format(token)
-    logger.info("Downloading shock node {0}/node/{1}".format(shock_service_url,shock_id))
+    #logger.info("Downloading shock node {0}/node/{1}".format(shock_service_url,shock_id))
 
     metadata_response = requests.get("{0}/node/{1}?verbosity=metadata".format(shock_service_url, shock_id), headers=header, stream=True, verify=True)
     shock_metadata = metadata_response.json()['data']
@@ -221,7 +221,7 @@ def download_file_from_shock(logger,
     metadata_response.close()
         
     download_url = "{0}/node/{1}?download_raw".format(shock_service_url, shock_id)
-    print "download_url is {0}".format(download_url)
+    #print "download_url is {0}".format(download_url)
     try: 
     	data = requests.get(download_url, headers=header, stream=True, verify=True)
     except Exception,e:
@@ -495,10 +495,10 @@ def runProgram(logger=None,
 
         # Construct shell command
         cmdStr = "%s %s" % (progPath,argStr)
-        if working_dir is None:
-            logger.info("Executing: " + cmdStr + " on cwd")
-        else:
-            logger.info("Executing: " + cmdStr + " on " + working_dir)
+        #if working_dir is None:
+        #    logger.info("Executing: " + cmdStr + " on cwd")
+        #else:
+        #    logger.info("Executing: " + cmdStr + " on " + working_dir)
 
         # Set up process obj
         process = subprocess.Popen(cmdStr,
