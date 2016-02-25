@@ -192,8 +192,8 @@
      @metadata ws metadata.source
      @metadata ws metadata.source_id
      @metadata ws metadata.sample_desc
-     @metadata ws length(metadata.tissue)
-     @metadata ws length(metadata.condition)
+     @metadata ws metadata.tissue
+     @metadata ws metadata.condition
      @metadata ws metadata.genome_id
      @metadata ws metadata.ext_source_date
      @metadata ws length(metadata.sample_annotations)
@@ -234,8 +234,8 @@
     @metadata ws metadata.ext_source_date
     @metadata ws metadata.sample_desc
     @metadata ws metadata.genome_id
-    @metadata ws length(metadata.tissue)
-    @metadata ws length(metadata.condition)
+    @metadata ws metadata.tissue
+    @metadata ws metadata.condition
     @metadata ws aligned_using
     @metadata ws aligner_version
 
@@ -464,6 +464,16 @@
 
 /*
    Object RNASeqDifferentialExpression file structure
+	@metadata ws analysis.experiment_id
+        @metadata ws analysis.title
+        @metadata ws analysis.Library_type
+        @metadata ws analysis.platform
+        @metadata ws analysis.num_samples
+        @metadata ws analysis.num_replicates
+        @metadata ws length(analysis.sample_ids)
+        @metadata ws length(analysis.tissue)
+        @metadata ws length(analysis.condition)
+
 */
    typedef structure {
       	Handle file;
