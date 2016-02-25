@@ -76,7 +76,7 @@ class KBaseRNASeq:
     def __init__(self, config):
         #BEGIN_CONSTRUCTOR
 	 # This is where config variable for deploy.cfg are available
-        pprint(config)
+        #pprint(config)
         if 'ws_url' in config:
               self.__WS_URL = config['ws_url']
         if 'shock_url' in config:
@@ -294,7 +294,7 @@ class KBaseRNASeq:
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
 	hs = HandleService(url=self.__HS_URL, token=user_token)
 	try:
-	        self.__LOGGER.info( "Downloading KBaseGenome.ContigSet object from workspace")
+	        self.__LOGGER.info( "Downloading ContigSet object from workspace")
 	    ## Check if the bowtie_dir is present; remove files in bowtie_dir if exists ; create a new dir if doesnt exists
 		#if os.path.exists(self.__SCRATCH):
 		#   shutil.rmtree(self.__SCRATCH)
@@ -428,7 +428,7 @@ class KBaseRNASeq:
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
         hs = HandleService(url=self.__HS_URL, token=user_token)
         try:
-                self.__LOGGER.info( "Downloading KBaseGenomes.Genome object from workspace")
+                self.__LOGGER.info( "Downloading Genome object from workspace")
             ## Check if the gtf_dir is present; remove files in gtf_dir if exists ; create a new dir if doesnt exists     
 		#if os.path.exists(self.__SCRATCH):
                 # 	handler_util.cleanup(self.__LOGGER,self.__SCRATCH)
@@ -552,7 +552,7 @@ class KBaseRNASeq:
                 #self.__LOGGER.info("getting here")
                 if 'metadata' in sample['data'] and sample['data']['metadata'] is not None:
                         genome = sample['data']['metadata']['genome_id']
-                        self.__LOGGER.info(genome)
+                        #self.__LOGGER.info(genome)
             if 'singleend_sample' in sample['data'] and sample['data']['singleend_sample'] is not None:
                 lib_type = "SingleEnd"
                 singleend_sample = sample['data']['singleend_sample']
@@ -587,17 +587,19 @@ class KBaseRNASeq:
             if 'analysis_id' in sample['data'] and sample['data']['analysis_id'] is not None:
 		# updata the analysis object with the alignment id
                 analysis_id = sample['data']['analysis_id']
-                self.__LOGGER.info("RNASeq Sample belongs to the {0}".format(analysis_id))
+                #self.__LOGGER.info("RNASeq Sample belongs to the {0}".format(analysis_id))
 	    if 'handle' in bowtie_index['data'] and bowtie_index['data']['handle'] is not None:
                 b_shock_id = bowtie_index['data']['handle']['id']
                 b_filename = bowtie_index['data']['handle']['file_name']
                 b_filesize = bowtie_index['data']['size']
             try:
+                self.__LOGGER.info("Downloading Bowtie2 Indices from Shock")
                 script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=b_shock_id,filename=b_filename,directory=bowtie2_dir,filesize=b_filesize,token=user_token)
             except Exception,e :
                 self.__LOGGER.exception("".join(traceback.format_exc()))
                 raise Exception( "Unable to download shock file , {0}".format(e))
 	    try:
+                self.__LOGGER.info("Unzipping Bowtie2 Indices")
                 script_util.unzip_files(self.__LOGGER,os.path.join(bowtie2_dir,b_filename),bowtie2_dir)
 		mv_dir= handler_util.get_dir(bowtie2_dir)
                 if mv_dir is not None:
@@ -791,12 +793,14 @@ class KBaseRNASeq:
 		b_filename = bowtie_index['data']['handle']['file_name']
 		b_filesize = bowtie_index['data']['size']
 	    try:
+                self.__LOGGER.info("Downloading Bowtie2 Indices from Shock")
 		script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=b_shock_id,filename=b_filename,directory=tophat_dir,filesize=b_filesize,token=user_token)
 	    except Exception,e :
 		self.__LOGGER.exception("".join(traceback.format_exc()))
 		raise Exception( "Unable to download shock file , {0}".format(e))
 
 	    try:
+                self.__LOGGER.info("Unzipping Bowtie2 Indices")
 		index_path = os.path.join(tophat_dir,b_filename)
                 script_util.unzip_files(self.__LOGGER,index_path,tophat_dir)
 		mv_dir= handler_util.get_dir(tophat_dir)
@@ -811,6 +815,7 @@ class KBaseRNASeq:
                 a_filename = annotation['data']['handle']['file_name']
 		a_filesize = annotation['data']['size']
             try:
+                self.__LOGGER.info("Downloading Reference Annotation from Shock")
                 script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=a_shock_id,filename=a_filename,directory=tophat_dir,filesize=a_filesize,token=user_token)
             except Exception,e :
 		self.__LOGGER.exception("".join(traceback.format_exc()))
@@ -846,6 +851,7 @@ class KBaseRNASeq:
             except Exception,e:
                 raise KBaseRNASeqException("Error Running the tophat command and the samtools flagstat {0},{1},{2}".format(tophat_cmd,tophat_dir,e))
 
+            self.__LOGGER.info("Generating Alignment Statistics")
 	    try:
                 bam_file = output_dir+"/accepted_hits.bam"
                 align_stats_cmd="flagstat {0}".format(bam_file)
@@ -943,7 +949,7 @@ class KBaseRNASeq:
 
             ## Downloading data from shock
 	    if 'data' in sample and sample['data'] is not None:
-                self.__LOGGER.info("Downloading alignment sample")
+                self.__LOGGER.info("Downloading Sample Alignment")
                 try:
                      script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=sample['data']['file']['id'],filename=sample['data']['file']['file_name'], directory=cufflinks_dir,token=user_token)
                 except Exception,e:
@@ -957,7 +963,7 @@ class KBaseRNASeq:
             else:
                 raise KBaseRNASeqException("No data was included in the referenced sample id");
 	    if 'data' in annotation_gtf and annotation_gtf['data'] is not None:
-                self.__LOGGER.info("Downloading ReferenceAnnotation")
+                self.__LOGGER.info("Downloading Reference Annotation")
                 try:
                      agtf_fn = annotation_gtf['data']['handle']['file_name']
                      script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=annotation_gtf['data']['handle']['id'],filename=agtf_fn, directory=cufflinks_dir,token=user_token)
@@ -993,7 +999,7 @@ class KBaseRNASeq:
 	    exp_dict = script_util.parse_FPKMtracking(os.path.join(output_dir,"genes.fpkm_tracking"))
             ##  compress and upload to shock
             try:
-                self.__LOGGER.info("Ziping output")
+                self.__LOGGER.info("Zipping Cufflinks output")
 		out_file_path = os.path.join(self.__SCRATCH,"%s.zip" % params['output_obj_name'])
                 script_util.zip_files(self.__LOGGER,output_dir,out_file_path)
                 #handle = hs.upload("{0}.zip".format(params['output_obj_name']))
@@ -1162,7 +1168,7 @@ class KBaseRNASeq:
             
             ##  compress and upload to shock
             try:
-                self.__LOGGER.info("Ziping output")
+                self.__LOGGER.info("Zipping Cuffmerge output")
 		out_file_path = os.path.join(self.__SCRATCH,"{0}.zip".format(params['output_obj_name']))
                 script_util.zip_files(self.__LOGGER,output_dir,out_file_path)
                 #handle = hs.upload("{0}.zip".format(params['output_obj_name']))
@@ -1358,7 +1364,7 @@ class KBaseRNASeq:
 
             ##  compress and upload to shock
             try:
-                self.__LOGGER.info("Ziping output")
+                self.__LOGGER.info("Zipping Cuffdiff output")
 		out_file_path = os.path.join(self.__SCRATCH,"{0}.zip".format(params['output_obj_name']))
                 script_util.zip_files(self.__LOGGER,output_dir,out_file_path)
                 #handle = hs.upload("{0}.zip".format(params['output_obj_name']))
@@ -1435,7 +1441,7 @@ class KBaseRNASeq:
                 raise KBaseRNASeqException("File Not Found: {}".format(e))
 	#download Shock Node
 	if 'data' in obj and obj['data'] is not None:
-                self.__LOGGER.info("Downloading alignment sample")
+                self.__LOGGER.info("Downloading Sample Alignments")
                 try:
                      script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=obj['data']['file']['id'],
 			 				filename=obj['data']['file']['file_name'], directory=stats_dir,token=user_token)
@@ -1462,7 +1468,7 @@ class KBaseRNASeq:
         	except Exception as e:
                 	raise FileNotFound("File Not Found: {}".format(e))
 		if 'data' in annotation and annotation['data'] is not None:
-               		self.__LOGGER.info("Downloading annotation")
+               		self.__LOGGER.info("Downloading Reference Annotation")
                 	try:
                      		script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=annotation['data']['file']['id'],
                                                         filename=annotation['data']['file']['file_name'], directory=stats_dir,token=user_token)
