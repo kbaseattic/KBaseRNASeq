@@ -1,11 +1,14 @@
 #
 # Define basic display information
 #
-name     : View Expression Histogram
-subtitle : Displays single RNASeqSample expression values in a Histogram
-tooltip  : Displays single RNASeqSample expression values in a Histogram
+name     : Expression Sample
+subtitle : Expression Sample object
+tooltip  : Expression Sample object
 
 icon : none
 
 description : |
-    <p>Displays single RNASeqSample expression values in a Histogram</p>
+    <p>This type describes expression sample.</p>
+    
+    
+    
