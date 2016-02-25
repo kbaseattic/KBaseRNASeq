@@ -1,5 +1,5 @@
 {
-  "name" : "View Alignment Statistics",
+  "name" : "View RNASeq Sample Expression",
   "ver" : "1.0.0",
   "authors" : [ ],
   "contact" : "help@kbase.us",
@@ -7,30 +7,29 @@
   "categories" : ["viewers"],
   "widgets" : {
     "input" : null,
-    "output" : "kbaseRNASeqPie"
+    "output" : "kbaseExpressionSampleTable"
   },
   "parameters" : [ {
-    "id" : "ws_alignment_sample_id",
+    "id" : "param0",
     "optional" : false,
     "advanced" : false,
     "allow_multiple" : false,
     "default_values" : [ "" ],
     "field_type" : "text",
     "text_options" : {
-      "valid_ws_types" : ["KBaseRNASeq.RNASeqSampleAlignment" ]
+      "valid_ws_types" : [ "KBaseExpression.ExpressionSample" ]
     }
-  }
-  ],
+  } ],
   "behavior" : {
     "none" : {
-    "output_mapping": [
-    	{
-         "input_parameter": "ws_alignment_sample_id",
-         "target_property": "ws_alignment_sample_id"
+      "output_mapping" : [
+        {
+          "input_parameter": "param0",
+          "target_property": "output"
         },
-	{
+        {
           "narrative_system_variable": "workspace",
-          "target_property": "workspaceName"
+          "target_property": "workspace"
         }
       ]
     }

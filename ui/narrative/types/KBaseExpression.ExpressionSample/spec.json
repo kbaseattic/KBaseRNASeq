@@ -1,7 +1,8 @@
 {
     "ver":"0.1.0",
     "view_method_ids":[
-        "view_expression_histogram"
+        "view_rnaseq_sample_expression"
     ],
-    "import_method_ids":[]
+    "import_method_ids":[],
+    "landing_page_url_prefix":""
 }
