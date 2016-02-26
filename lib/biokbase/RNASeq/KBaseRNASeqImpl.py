@@ -468,7 +468,7 @@ class KBaseRNASeq:
 
                 except Exception, e:
                         raise KBaseRNASeqException("Failed to create Reference Annotation: {0}".format(e))
-                gtfhandle = { "handle" : gtf_handle ,"size" : os.path.getsize(params['output_obj_name']+'.gtf')}
+                gtfhandle = { "handle" : gtf_handle ,"size" : os.path.getsize(out_file_path)}
 
              ## Save object to workspace
                 self.__LOGGER.info( "Saving Reference Annotation object to  workspace")
