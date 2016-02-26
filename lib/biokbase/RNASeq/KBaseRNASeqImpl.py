@@ -445,8 +445,10 @@ class KBaseRNASeq:
 		out_file_path = os.path.join(gtf_dir,params['output_obj_name']+'.gtf')
 		output = open(out_file_path,'w')
 		try:	
-                	reference = ws_client.get_objects(
-                                        [{ 'name' : params['reference'], 'workspace' : params['ws_id']}])
+                	reference = ws_client.get_object_subset(
+                                        [{ 'name' : params['reference'], 'workspace' : params['ws_id'],'included': ['features']}])
+                	#reference = ws_client.get_objects(
+                        #                [{ 'name' : params['reference'], 'workspace' : params['ws_id']}])
 			ref =reference[0]['data']
         		if "features" in ref:
                   		for f in ref['features']:
