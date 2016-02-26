@@ -442,7 +442,6 @@ class KBaseRNASeq:
                         provenance = ctx['provenance']
                 # add additional info to provenance here, in this case the input data object reference
                 provenance[0]['input_ws_objects']=[params['ws_id']+'/'+params['reference']]
-	    ## Upload the file using handle service
 		out_file_path = os.path.join(gtf_dir,params['output_obj_name']+'.gtf')
 		output = open(out_file_path,'w')
 		try:	
@@ -451,14 +450,12 @@ class KBaseRNASeq:
 			ref =reference[0]['data']
         		if "features" in ref:
                   		for f in ref['features']:
-                     			if "type" in f and  f['type'] == 'CDS':
-                        			f_type = f['type']
-                     				if "id" in f:
-                        				f_id =  f['id']
-                     				if "location" in f:
-                        				for contig_id,f_start,f_strand,f_len  in f['location']:
-                                				f_end = script_util.get_end(int(f_start),int(f_len),f_strand)
-			        				output.write(contig_id + "\tKBase\t" + f_type + "\t" + str(f_start) + "\t" + str(f_end) + "\t.\t" + f_strand + "\t"+ str(0) + "\ttranscript_id " + f_id + "; gene_id " + f_id + ";\n")
+                     			if "type" in f and  f['type'] == 'CDS': f_type = f['type']
+                     			if "id" in f: f_id =  f['id']
+                     			if "location" in f:
+                        			for contig_id,f_start,f_strand,f_len  in f['location']:
+                                			f_end = script_util.get_end(int(f_start),int(f_len),f_strand)
+			        			output.write(contig_id + "\tKBase\t" + f_type + "\t" + str(f_start) + "\t" + str(f_end) + "\t.\t" + f_strand + "\t"+ str(0) + "\ttranscript_id " + f_id + "; gene_id " + f_id + ";\n")
 		except Exception,e:
 			raise KBaseRNASeqException("Failed to create Reference Annotation File: {0}".format(e))	
 		finally:
