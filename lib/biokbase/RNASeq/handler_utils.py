@@ -18,7 +18,8 @@ def cleanup(logger=None, directory=None):
     """
     
     try:
-        shutil.rmtree(directory)
+        shutil.rmtree(directory, ignore_errors=True) # it would not delete if fold is not empty
+        # need to iterate each entry
     except IOError, e:
         logger.error("Unable to remove working directory {0}".format(directory))
         raise
