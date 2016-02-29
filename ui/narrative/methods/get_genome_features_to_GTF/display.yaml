@@ -8,6 +8,8 @@ tooltip  : |
 screenshots :
     []
 
+icon: rnaseq-yellow.png
+
 replacement-text : Creates a Reference Annotation for any Prokaryotic Genome  for {{{input_genome}}}
 
 #
