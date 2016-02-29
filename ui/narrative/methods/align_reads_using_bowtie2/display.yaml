@@ -8,6 +8,8 @@ tooltip  : |
 screenshots :
     []
 
+icon: bowtie-cyan.png
+
 #
 # Define the set of other narrative methods that should be suggested to the user.
 #

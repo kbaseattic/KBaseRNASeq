@@ -8,6 +8,8 @@ tooltip  : |
 screenshots :
     []
 
+icon: bowtie-cyan.png
+
 replacement-text : Creates a new bowtie2 Index  for {{{input_genome}}}
 
 #
