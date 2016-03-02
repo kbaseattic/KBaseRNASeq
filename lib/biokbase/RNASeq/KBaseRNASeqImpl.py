@@ -993,7 +993,22 @@ class KBaseRNASeq:
 		
 		cufflinks_command += " -o {0} -G {1} {2}".format(output_dir,gtf_file,input_file)
                 self.__LOGGER.info("Executing: cufflinks {0}".format(cufflinks_command))
-		script_util.runProgram(self.__LOGGER,"cufflinks",cufflinks_command,None,cufflinks_dir)
+		ret = script_util.runProgram(None,"cufflinks",cufflinks_command,None,cufflinks_dir)
+		result = ret["result"]
+		for line in result.splitlines(False):
+		    self.__LOGGER.info(line)
+		stderr = ret["stderr"]
+		prev_value = ''
+		for line in stderr.splitlines(False):
+		    if line.startswith('> Processing Locus'):
+			words = line.split()
+			cur_value = words[len(words) - 1]
+			if prev_value != cur_value:
+			    prev_value = cur_value
+			    self.__LOGGER.info(line)
+		    else:
+			prev_value = ''
+			self.__LOGGER.info(line)
 
             except Exception,e:
                 raise KBaseRNASeqException("Error executing cufflinks {0},{1},{2}".format(cufflinks_command,cufflinks_dir,e))
