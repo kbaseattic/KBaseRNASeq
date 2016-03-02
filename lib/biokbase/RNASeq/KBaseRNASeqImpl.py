@@ -1011,6 +1011,7 @@ class KBaseRNASeq:
 	    try:
 		#out_file_path = os.path.join(self.__SCRATCH,"%s.zip" % params['output_obj_name'])
 		handle = hs.upload(out_file_path)
+		script_util.shock_node_2b_public(self.__LOGGER,node_id=handle['id'],shock_service_url=handle['url'],token=user_token)
             except Exception, e:
 	        self.__LOGGER.exception("".join(traceback.format_exc()))	
                 raise KBaseRNASeqException("Error while zipping the output objects: {0}".format(e))
