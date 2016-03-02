@@ -1,3 +1,4 @@
 # Ignore .git folder
 .git/config.lock
 #.git/modules/narrative_method_store/config.lock
+test_local
