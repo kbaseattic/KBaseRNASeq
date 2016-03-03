@@ -1376,8 +1376,9 @@ class KBaseRNASeq:
 		self.__LOGGER.info("Executing: cuffdiff {0}".format(cuffdiff_command))
                 ret = script_util.runProgram(self.__LOGGER,"cuffdiff",cuffdiff_command,None,cuffdiff_dir)
 		result = ret["result"]
+		prev_value = ''
                 for line in result.splitlines(False):
-                    self.__LOGGER.info(line)
+                    #self.__LOGGER.info(line)
 		    if line.startswith('> Processing Locus'):
                         words = line.split()
                         cur_value = words[len(words) - 1]
