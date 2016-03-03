@@ -4,9 +4,9 @@
 	"context": null,
 	"params":[ 	
 	{
-  	"ws_id": "srividya22:1450203576610",
-	"alignment_sample_id" : "test_local_Ecoli_SRR228083",
-	"annotation_gtf" : "Ecoli_K12_MG1655_NC_000913.3.gtf",
-	"output_obj_name" : "test_local_ecoli_SRR228083_cufflinks"
+  	"ws_id": "srividya22:1456962933354",
+	"alignment_sample_id" : "SDK_test_ath_wt_tophat",
+	"annotation_gtf" : "Arabidopsis_annotation.gtf",
+	"output_obj_name" : "SDK_test_ath_wt_cufflinks"
 	}]	
 }

@@ -993,7 +993,22 @@ class KBaseRNASeq:
 		
 		cufflinks_command += " -o {0} -G {1} {2}".format(output_dir,gtf_file,input_file)
                 self.__LOGGER.info("Executing: cufflinks {0}".format(cufflinks_command))
-		script_util.runProgram(self.__LOGGER,"cufflinks",cufflinks_command,None,cufflinks_dir)
+		ret = script_util.runProgram(None,"cufflinks",cufflinks_command,None,cufflinks_dir)
+		result = ret["result"]
+		for line in result.splitlines(False):
+		    self.__LOGGER.info(line)
+		stderr = ret["stderr"]
+		prev_value = ''
+		for line in stderr.splitlines(False):
+		    if line.startswith('> Processing Locus'):
+			words = line.split()
+			cur_value = words[len(words) - 1]
+			if prev_value != cur_value:
+			    prev_value = cur_value
+			    self.__LOGGER.info(line)
+		    else:
+			prev_value = ''
+			self.__LOGGER.info(line)
 
             except Exception,e:
                 raise KBaseRNASeqException("Error executing cufflinks {0},{1},{2}".format(cufflinks_command,cufflinks_dir,e))
@@ -1011,6 +1026,7 @@ class KBaseRNASeq:
 	    try:
 		#out_file_path = os.path.join(self.__SCRATCH,"%s.zip" % params['output_obj_name'])
 		handle = hs.upload(out_file_path)
+		script_util.shock_node_2b_public(self.__LOGGER,node_id=handle['id'],shock_service_url=handle['url'],token=user_token)
             except Exception, e:
 	        self.__LOGGER.exception("".join(traceback.format_exc()))	
                 raise KBaseRNASeqException("Error while zipping the output objects: {0}".format(e))

@@ -4,15 +4,15 @@
 	"context": null,
 	"params":[ 	
 	{
-  	"ws_id": "srividya22:1450203576610",
-	"rnaseq_exp_details" : "t3_Ecoli_RNASeq_Test_Exp",
-	"output_obj_name" : "t2_Ecoli_cuffdiff",
-	"annotation_gtf" : "Ecoli_K12_MG1655_NC_000913.3.gtf",
-	"labels" : [ "1_hour" ,"2_hour"],
+  	"ws_id": "srividya22:1456962933354",
+	"rnaseq_exp_details" : "Athaliana_sdk_test_exp",
+	"output_obj_name" : "SDK_ath_cuffdiff",
+	"annotation_gtf" : "Arabidopsis_annotation.gtf",
+	"labels" : null,
 	"num-threads" : 2,
 	"min-alignment-count" : 1,
-	"time-series" : 1,
-	"multi-read-correct" : 1,
-	"library-norm-method" : "geometric"
+	"time-series" : 0,
+	"multi-read-correct" : 0,
+	"library-norm-method" : null
 	}]	
 }

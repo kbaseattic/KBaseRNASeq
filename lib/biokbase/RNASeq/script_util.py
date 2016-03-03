@@ -510,9 +510,9 @@ def runProgram(logger=None,
         result,stderr  = process.communicate()
       
         # keep this until your code is stable for easier debugging
-        if result is not None and len(result) > 0:
+        if logger is not None and result is not None and len(result) > 0:
             logger.info(result)
-        if stderr is not None and len(stderr) > 0:
+        if logger is not None and stderr is not None and len(stderr) > 0:
             logger.info(stderr)
 
         # Check returncode for success/failure
