@@ -631,7 +631,7 @@ class KBaseRNASeq:
             elif(lib_type == "PairedEnd"):
                 sample_file1 = os.path.join(bowtie2_dir,filename1)
                 sample_file2 = os.path.join(bowtie2_dir,filename2)
-                bowtie2_cmd += " -1 {0} -2 {1} -x {2} -S {3}".format(sample_file1,sample_file2,bowtie2_base,out_file)	
+                bowtie2_cmd += " -1 {0} -2 {1} -x {2} -S {3}".format(sample_file2,sample_file1,bowtie2_base,out_file)	
 	    
             try:
 	        self.__LOGGER.info("Executing: bowtie2 {0}".format(bowtie2_cmd))	
@@ -845,7 +845,7 @@ class KBaseRNASeq:
             elif(lib_type == "PairedEnd"):
                 sample_file1 = os.path.join(tophat_dir,filename1)
                 sample_file2 = os.path.join(tophat_dir,filename2)
-                tophat_cmd += ' -o {0} -G {1} {2} {3} {4}'.format(output_dir,gtf_file,bowtie_base,sample_file1,sample_file2)
+                tophat_cmd += ' -o {0} -G {1} {2} {3} {4}'.format(output_dir,gtf_file,bowtie_base,sample_file2,sample_file1)
 	    self.__LOGGER.info("Executing: tophat {0}".format(tophat_cmd)) 
 	    try:  
             	script_util.runProgram(self.__LOGGER,"tophat",tophat_cmd,None,tophat_dir)
@@ -1374,7 +1374,23 @@ class KBaseRNASeq:
                 # TODO: add reference GTF later, seems googledoc command looks wrong
                 cuffdiff_command += " -o {0} -L {1} -u {2} {3}".format(output_dir,labels,gtf_file,bam_files)
 		self.__LOGGER.info("Executing: cuffdiff {0}".format(cuffdiff_command))
-                script_util.runProgram(self.__LOGGER,"cuffdiff",cuffdiff_command,None,cuffdiff_dir)
+                ret = script_util.runProgram(self.__LOGGER,"cuffdiff",cuffdiff_command,None,cuffdiff_dir)
+		result = ret["result"]
+                for line in result.splitlines(False):
+                    self.__LOGGER.info(line)
+                stderr = ret["stderr"]
+                prev_value = ''
+                for line in stderr.splitlines(False):
+                    if line.startswith('> Processing Locus'):
+                        words = line.split()
+                        cur_value = words[len(words) - 1]
+                        if prev_value != cur_value:
+                            prev_value = cur_value
+                            self.__LOGGER.info(line)
+                    else:
+                        prev_value = ''
+                        self.__LOGGER.info(line)
+
                 #script_util.runProgram(self.__LOGGER,"cuffdiff",cuffdiff_command,None,os.getcwd())
 
             except Exception,e:
