@@ -1378,6 +1378,15 @@ class KBaseRNASeq:
 		result = ret["result"]
                 for line in result.splitlines(False):
                     self.__LOGGER.info(line)
+		    if line.startswith('> Processing Locus'):
+                        words = line.split()
+                        cur_value = words[len(words) - 1]
+                        if prev_value != cur_value:
+                            prev_value = cur_value
+                            self.__LOGGER.info(line)
+                    else:
+                        prev_value = ''
+                        self.__LOGGER.info(line)
                 stderr = ret["stderr"]
                 prev_value = ''
                 for line in stderr.splitlines(False):
