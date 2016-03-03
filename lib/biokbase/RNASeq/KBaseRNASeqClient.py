@@ -109,7 +109,7 @@ class KBaseRNASeq(object):
     def __init__(self, url=None, timeout=30 * 60, user_id=None,
                  password=None, token=None, ignore_authrc=False,
                  trust_all_ssl_certificates=False,
-                 async_job_check_time_ms=5000):
+                 async_job_check_time_ms=5000,async_version=None):
         if url is None:
             raise ValueError('A url is required')
         scheme, _, _, _, _, _ = _urlparse.urlparse(url)
@@ -120,6 +120,7 @@ class KBaseRNASeq(object):
         self._headers = dict()
         self.trust_all_ssl_certificates = trust_all_ssl_certificates
         self.async_job_check_time = async_job_check_time_ms / 1000.0
+        self.async_version = async_version
         # token overrides user_id and password
         if token is not None:
             self._headers['AUTHORIZATION'] = token
@@ -177,6 +178,10 @@ class KBaseRNASeq(object):
     def fastqcCall_async(self, params, json_rpc_context = None):
         if json_rpc_context and type(json_rpc_context) is not dict:
             raise ValueError('Method fastqcCall: argument json_rpc_context is not type dict as required.')
+        if self.async_version:
+            if not json_rpc_context:
+                json_rpc_context = {}
+            json_rpc_context['service_ver'] = self.async_version
         return self._call('KBaseRNASeq.fastqcCall_async',
                           [params], json_rpc_context)[0]
 
@@ -195,6 +200,10 @@ class KBaseRNASeq(object):
     def associateReads_async(self, params, json_rpc_context = None):
         if json_rpc_context and type(json_rpc_context) is not dict:
             raise ValueError('Method associateReads: argument json_rpc_context is not type dict as required.')
+        if self.async_version:
+            if not json_rpc_context:
+                json_rpc_context = {}
+            json_rpc_context['service_ver'] = self.async_version
         return self._call('KBaseRNASeq.associateReads_async',
                           [params], json_rpc_context)[0]
 
@@ -213,6 +222,10 @@ class KBaseRNASeq(object):
     def SetupRNASeqAnalysis_async(self, params, json_rpc_context = None):
         if json_rpc_context and type(json_rpc_context) is not dict:
             raise ValueError('Method SetupRNASeqAnalysis: argument json_rpc_context is not type dict as required.')
+        if self.async_version:
+            if not json_rpc_context:
+                json_rpc_context = {}
+            json_rpc_context['service_ver'] = self.async_version
         return self._call('KBaseRNASeq.SetupRNASeqAnalysis_async',
                           [params], json_rpc_context)[0]
 
@@ -231,6 +244,10 @@ class KBaseRNASeq(object):
     def BuildBowtie2Index_async(self, params, json_rpc_context = None):
         if json_rpc_context and type(json_rpc_context) is not dict:
             raise ValueError('Method BuildBowtie2Index: argument json_rpc_context is not type dict as required.')
+        if self.async_version:
+            if not json_rpc_context:
+                json_rpc_context = {}
+            json_rpc_context['service_ver'] = self.async_version
         return self._call('KBaseRNASeq.BuildBowtie2Index_async',
                           [params], json_rpc_context)[0]
 
@@ -249,6 +266,10 @@ class KBaseRNASeq(object):
     def GetFeaturesToGTF_async(self, params, json_rpc_context = None):
         if json_rpc_context and type(json_rpc_context) is not dict:
             raise ValueError('Method GetFeaturesToGTF: argument json_rpc_context is not type dict as required.')
+        if self.async_version:
+            if not json_rpc_context:
+                json_rpc_context = {}
+            json_rpc_context['service_ver'] = self.async_version
         return self._call('KBaseRNASeq.GetFeaturesToGTF_async',
                           [params], json_rpc_context)[0]
 
@@ -267,6 +288,10 @@ class KBaseRNASeq(object):
     def Bowtie2Call_async(self, params, json_rpc_context = None):
         if json_rpc_context and type(json_rpc_context) is not dict:
             raise ValueError('Method Bowtie2Call: argument json_rpc_context is not type dict as required.')
+        if self.async_version:
+            if not json_rpc_context:
+                json_rpc_context = {}
+            json_rpc_context['service_ver'] = self.async_version
         return self._call('KBaseRNASeq.Bowtie2Call_async',
                           [params], json_rpc_context)[0]
 
@@ -285,6 +310,10 @@ class KBaseRNASeq(object):
     def TophatCall_async(self, params, json_rpc_context = None):
         if json_rpc_context and type(json_rpc_context) is not dict:
             raise ValueError('Method TophatCall: argument json_rpc_context is not type dict as required.')
+        if self.async_version:
+            if not json_rpc_context:
+                json_rpc_context = {}
+            json_rpc_context['service_ver'] = self.async_version
         return self._call('KBaseRNASeq.TophatCall_async',
                           [params], json_rpc_context)[0]
 
@@ -303,6 +332,10 @@ class KBaseRNASeq(object):
     def CufflinksCall_async(self, params, json_rpc_context = None):
         if json_rpc_context and type(json_rpc_context) is not dict:
             raise ValueError('Method CufflinksCall: argument json_rpc_context is not type dict as required.')
+        if self.async_version:
+            if not json_rpc_context:
+                json_rpc_context = {}
+            json_rpc_context['service_ver'] = self.async_version
         return self._call('KBaseRNASeq.CufflinksCall_async',
                           [params], json_rpc_context)[0]
 
@@ -321,6 +354,10 @@ class KBaseRNASeq(object):
     def CuffmergeCall_async(self, params, json_rpc_context = None):
         if json_rpc_context and type(json_rpc_context) is not dict:
             raise ValueError('Method CuffmergeCall: argument json_rpc_context is not type dict as required.')
+        if self.async_version:
+            if not json_rpc_context:
+                json_rpc_context = {}
+            json_rpc_context['service_ver'] = self.async_version
         return self._call('KBaseRNASeq.CuffmergeCall_async',
                           [params], json_rpc_context)[0]
 
@@ -339,6 +376,10 @@ class KBaseRNASeq(object):
     def CuffdiffCall_async(self, params, json_rpc_context = None):
         if json_rpc_context and type(json_rpc_context) is not dict:
             raise ValueError('Method CuffdiffCall: argument json_rpc_context is not type dict as required.')
+        if self.async_version:
+            if not json_rpc_context:
+                json_rpc_context = {}
+            json_rpc_context['service_ver'] = self.async_version
         return self._call('KBaseRNASeq.CuffdiffCall_async',
                           [params], json_rpc_context)[0]
 
@@ -357,6 +398,10 @@ class KBaseRNASeq(object):
     def getAlignmentStats_async(self, params, json_rpc_context = None):
         if json_rpc_context and type(json_rpc_context) is not dict:
             raise ValueError('Method getAlignmentStats: argument json_rpc_context is not type dict as required.')
+        if self.async_version:
+            if not json_rpc_context:
+                json_rpc_context = {}
+            json_rpc_context['service_ver'] = self.async_version
         return self._call('KBaseRNASeq.getAlignmentStats_async',
                           [params], json_rpc_context)[0]
 
@@ -375,6 +420,10 @@ class KBaseRNASeq(object):
     def createExpressionHistogram_async(self, params, json_rpc_context = None):
         if json_rpc_context and type(json_rpc_context) is not dict:
             raise ValueError('Method createExpressionHistogram: argument json_rpc_context is not type dict as required.')
+        if self.async_version:
+            if not json_rpc_context:
+                json_rpc_context = {}
+            json_rpc_context['service_ver'] = self.async_version
         return self._call('KBaseRNASeq.createExpressionHistogram_async',
                           [params], json_rpc_context)[0]
 
