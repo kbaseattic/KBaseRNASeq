@@ -65,7 +65,7 @@ description : |
     <p>It accepts aligned RNA-seq reads from Bowtie2 or Tophat and assembles the alignments into a parsimonious set of transcripts. It then estimates the relative abundances of these transcripts based on how many reads support each one, taking into account biases in library preparation protocols.</p>
     <p>The Cufflinks output object contains GTF and FPKM files. The GTF file contains annotated transcripts assembled by Cufflinks whereas the FPKM file gives the normalized abundance of each transcript expressed in fragments per kilobase of exon per million fragments mapped (FPKM). The Cuffdiff Table Histogram tab displays the abundance of normalized gene expression value log2(FPKM+1).</p>
 
-    <p><strong>WARNING:</strong> This method is one of the steps of the <a href= "http://kbase.us/rna-seq/"> KBase RNA-seq Pipeline </a>) and is not intended to run standalone.</p>
+    <p><strong>WARNING:</strong> This method is one of the steps of the <a href= "http://kbase.us/rna-seq/"> KBase RNA-seq Pipeline </a> and is not intended to run standalone.</p>
   
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
     Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Vivek Kumar</p>
