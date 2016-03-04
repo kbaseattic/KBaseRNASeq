@@ -77,7 +77,7 @@ description : |
     <p>Cuffdiff calculates the FPKM value of each transcript, primary transcript and gene in each sample and produces a number of output files zipped in Cuffdiff output object.</p>
     <p>The Cuffdiff output can be further analyzed and visualized by using View methods such as “View CummeRbund Plots”, “View Differentially Expressed Genes from Cuffdiff in Heatmap”.</p> 
 
-    <p><strong>WARNING:</strong> This method is one of the steps of the <a href= "http://kbase.us/rna-seq/"> KBase RNA-seq Pipeline </a>) and is not intended to run standalone.</p>
+    <p><strong>WARNING:</strong> This method is one of the steps of the <a href= "http://kbase.us/rna-seq/"> KBase RNA-seq Pipeline </a> and is not intended to run standalone.</p>
   
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
     Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Vivek Kumar</p>
