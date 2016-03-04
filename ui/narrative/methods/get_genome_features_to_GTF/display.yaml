@@ -49,6 +49,8 @@ description : |
    
    <p>The reference annotations generated in GTF format are used by Bowtie2 to align reads and by Cufflinks to assemble transcripts.</p>
    
+    <p><strong>WARNING:</strong> This method is one of the steps of the <a href= "http://kbase.us/rna-seq/"> KBase RNA-seq Pipeline </a>) and is not intended to run standalone.</p>
+  
    <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
     Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Fei He, Vivek Kumar</p>
     
