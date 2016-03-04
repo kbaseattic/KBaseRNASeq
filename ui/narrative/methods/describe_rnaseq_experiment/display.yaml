@@ -111,7 +111,7 @@ parameters :
             The publication details of the data used for RNA-seq experiment
 
 description : |
-    <p>This method allows the users to provide the metadata to set up an RNA-seq experiment.</p>
+    <p>This method allows the users to provide the metadata to set up an RNA-seq experiment</p>
     
     <p>Users need to import single-end or paired-end read files and the corresponding genome and reference genome annotation files to the Data Pane before starting this method.</p>
     
@@ -121,5 +121,7 @@ description : |
     
     <p>Note that the "Experiment Analysis" object will be updated by the successive methods in the RNA-seq pipeline. This method also associates the input sequence reads with "Experiment Analysis" object to generate "RNA-seq Sample" objects.</p>
    
+    <p><b>WARNING:</b> This method is one of the steps of the <a href= "http://kbase.us/rna-seq/"> KBase RNA-seq Pipeline </a>) and is not intended to run standalone.</p>
+    
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
     Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Vivek Kumar.</p>
