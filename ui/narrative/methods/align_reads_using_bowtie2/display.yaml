@@ -75,7 +75,7 @@ description : |
     
     <p>Bowtie2 supports end-to-end read alignment mode by default. In this mode, it searches for alignments involving all of the read characters. This is also called an "untrimmed" or "unclipped" alignment. The method also supports "local" alignment mode, which produces alignments that might be "trimmed" (or "soft clipped") at one or both extremes in a way that optimizes the alignment score.</p>
 
-    <p><strong>WARNING:</strong> This method is one of the steps of the <a href= "http://kbase.us/rna-seq/"> KBase RNA-seq Pipeline </a>) and is not intended to run standalone.</p>
+    <p><strong>WARNING:</strong> This method is one of the steps of the <a href= "http://kbase.us/rna-seq/"> KBase RNA-seq Pipeline </a> and is not intended to run standalone.</p>
   
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
     Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Vivek Kumar</p>
