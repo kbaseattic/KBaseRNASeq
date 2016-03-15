@@ -58,11 +58,10 @@ def extractStatsInfo(logger,ws_client,ws_id,sample_id,result,stats_obj_name):
         total_qcpr = int(m.group(1))
         total_qcfr = int(m.group(2))
         total_read =  total_qcpr + total_qcfr
-
         m = two_nums.match(lines[2])
         mapped_r = int(m.group(1))
-        umapped_r = int(m.group(2))
-	alignment_rate = mapped_r / total_read  * 100.0
+        umapped_r = int(total_read - mapped_r)
+	alignment_rate = float(mapped_r) / float(total_read)  * 100.0
         if alignment_rate > 100: alignment_rate = 100.0
 
         # singletons
@@ -81,7 +80,6 @@ def extractStatsInfo(logger,ws_client,ws_id,sample_id,result,stats_obj_name):
                        "unmapped_reads": umapped_r,
                        "mapped_reads": mapped_r
                        }
-
         ## Save object to workspace
         logger.info( "Saving Alignment Statistics to the Workspace")
         try:
