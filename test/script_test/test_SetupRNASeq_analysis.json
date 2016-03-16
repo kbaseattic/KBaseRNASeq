@@ -22,7 +22,7 @@
   	"source_id": null,
   	"ws_id": "srividya22:1456962933354",
   	"genome_id": "Arabidopsis_thaliana",
-  	"condition": [
+  	"condn_labels": [
     			"WT",
     			"Mutant_HY5"
   		]

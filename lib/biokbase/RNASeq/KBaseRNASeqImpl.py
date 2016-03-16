@@ -206,9 +206,17 @@ class KBaseRNASeq:
 	    g_ref = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params['annotation_id']],params['ws_id'],user_token)[0]
 	    out_obj['annotation_id'] = g_ref
 	if "tissue" in params and params['tissue'] is not None:
-	    out_obj['tissue'] = params['tissue'] 
+	    out_obj['tissue'] = params['tissue']
 	if "condn_labels" in params and params['condn_labels'] is not None:
+	    if len(params['condn_labels']) != int(out_obj["num_samples"]/out_obj["num_replicates"]):
+		raise ValueError("Please specify a treatment label for each sample treatment in the RNA-seq experiment (without taking into account the replicates).The treatment labels must be added in the same order as the reads.")
             out_obj['condition'] = params['condn_labels']
+	if "singleEnd_reads" in params and params['singleEnd_reads'] is not None:
+	    if len(params['singleEnd_reads']) != out_obj["num_samples"]:
+		raise ValueError("Number of Single-end Reads selected is not equal to the 'Number of Samples' specified in the analysis. Please select all the read samples to run this method.")
+	if  "pairedEnd_reads" in params and params['pairedEnd_reads'] is not None:
+	    if len(params['pairedEnd_reads']) != out_obj["num_samples"]:
+                raise ValueError("Number of Paired-end Reads selected is not equal to the 'Number of Samples' specified in the analysis. Please select all the read samples to run this method.")
 
         self.__LOGGER.info( "Uploading RNASeq Analysis object to workspace {0}".format(out_obj['experiment_id']))
 	try:
@@ -1129,9 +1137,9 @@ class KBaseRNASeq:
 			le_samples = [ k for k,v in le.items() ]
 			missing_expression  =  [ x for x in rna_samples if  x not in le_samples ]
 			if len(missing_expression) != 0:
-				raise ValueError("Please run the Methods Align Reads Using Tophat and Assemble Transcripts Using Cufflinks for all the RNASeqSamples before running this step. The RNASeqAnalysis object is missing Cufflinks expression for few samples. ")
-			#print le_samples
-                	self.__LOGGER.info("Downloading each expression")
+				raise ValueError("Please run the methods 'Align Reads using Tophat/Bowtie2' and 'Assemble Transcripts using Cufflinks' for all the RNASeqSamples before running this step. The RNASeqAnalysis object is missing Cufflinks expression for few samples. ")
+                
+			self.__LOGGER.info("Downloading each expression")
 			
                 	shock_re =  re.compile(r'^(.*)/node/([^?]*)\??')
                 	# TODO: Change expression_values object design
@@ -1165,7 +1173,7 @@ class KBaseRNASeq:
                        		#raise Exception("{0} does not contain transcripts.gtf:  {1}".format(vo['info'][1], v))
                     		list_file.write("{0}/transcripts.gtf\n".format(sp))
 		else:
-                	raise ValueError("Please run the Methods Align Reads Using Tophat/Bowtie2 and Assemble Transcripts Using Cufflinks for all the RNASeqSamples before running this step. The RNASeqAnalysis object does not have tag 'expression_values'");
+                	raise ValueError("Please run the methods 'Align Reads using Tophat/Bowtie2' and 'Assemble Transcripts using Cufflinks' for all the RNASeqSamples before running this step.The RNASeqAnalysis object does not have tag 'expression_values'");
             else:
                 raise KBaseRNASeqException("The Input RNASeqAnalyis object is not properly formed ");
             list_file.close()
@@ -1279,7 +1287,8 @@ class KBaseRNASeq:
 			ce_samples = [ k for k,v in ce.items() ]
                         missing_expression  =  [ x for x in rna_samples if  x not in le_samples or x not in ce_samples ]
                         if len(missing_expression) != 0:
-                                raise ValueError("Please run the Methods Align Reads Using Tophat/Bowtie2 and Assemble Transcripts Using Cufflinks for all the RNASeqSamples before running this step. The RNASeqAnalysis object is missing Alignments or Cufflinks expression for few samples. ")
+                                raise ValueError("Please run the methods 'Align Reads using Tophat/Bowtie2' and 'Assemble Transcripts using Cufflinks' for all the RNASeqSamples before running this step.The RNASeqAnalysis object is missing Tophat/Bowtie2 alignments or Cufflinks expression for few samples. ")
+			
 			self.__LOGGER.info("Downloading Sample Expression files")
 
                 	shock_re =  re.compile(r'^(.*)/node/([^?]*)\??')
@@ -1429,7 +1438,7 @@ class KBaseRNASeq:
             			except Exception, e:
                 			raise KBaseRNASeqException("Failed to upload the KBaseRNASeq.RNASeqCuffdiffdifferentialExpression and KBaseRNASeq.RNASeqAnalysis : {0}".format(e))
 		else:
-                        raise ValueError("Please run the Methods Align Reads Using Tophat ,Assemble Transcripts Using Cufflinksfor all the RNASeqSamples. Also Run the method Merge trancripts using Cuffmerge before running this step. The RNASeqAnalysis object has either of the missing tags 'alignments' , 'expression_values' , 'transcriptome_id' ");
+                        raise ValueError("Please run the methods 'Align Reads using Tophat/bowtie2' , 'Assemble Transcripts using Cufflinks' for all the RNASeqSamples. Also run the method 'Merge Trancripts using Cuffmerge' before running this step. The RNASeqAnalysis object has either of the missing tags 'alignments' , 'expression_values' , 'transcriptome_id' ");
 
 		returnVal = analysis['data']
         except KBaseRNASeqException,e:
