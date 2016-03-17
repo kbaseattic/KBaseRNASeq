@@ -1342,50 +1342,50 @@ class KBaseRNASeq:
 					rep_files=",".join([ os.path.join(cuffdiff_dir+'/'+l,sub+'/accepted_hits.bam') for sub in os.listdir(os.path.join(cuffdiff_dir,l)) if os.path.isdir(os.path.join(cuffdiff_dir,l+'/'+sub))])
 					alignments.append(rep_files) 
             
-	    				bam_files = " ".join([i for i in alignments])
-	    				#print bam_files
-	    				labels = ",".join(sample_labels)		
-	   				merged_gtf = analysis['data']['transcriptome_id']
-	    			try:
-                			transcriptome = ws_client.get_objects([{ 'ref' : merged_gtf }])[0]
-            			except Exception,e:
-                 			self.__LOGGER.exception("".join(traceback.format_exc()))
-                 			raise KBaseRNASeqException("Error Downloading merged transcriptome ") 
-	    			t_url = transcriptome['data']['file']['url']
-	    			t_id = transcriptome['data']['file']['id']
-	    			t_name = transcriptome['data']['file']['file_name']
-	    			try:
-                 			script_util.download_file_from_shock(self.__LOGGER, shock_service_url=t_url, shock_id=t_id,filename=t_name, directory=cuffdiff_dir,token=user_token)
+	    		bam_files = " ".join([i for i in alignments])
+	    		#print bam_files
+	    		labels = ",".join(sample_labels)		
+	   		merged_gtf = analysis['data']['transcriptome_id']
+	    		try:
+                		transcriptome = ws_client.get_objects([{ 'ref' : merged_gtf }])[0]
+            		except Exception,e:
+                 		self.__LOGGER.exception("".join(traceback.format_exc()))
+                 		raise KBaseRNASeqException("Error Downloading merged transcriptome ") 
+	    		t_url = transcriptome['data']['file']['url']
+	    		t_id = transcriptome['data']['file']['id']
+	    		t_name = transcriptome['data']['file']['file_name']
+	    		try:
+                 		script_util.download_file_from_shock(self.__LOGGER, shock_service_url=t_url, shock_id=t_id,filename=t_name, directory=cuffdiff_dir,token=user_token)
 
-            			except Exception,e:
-                 			raise Exception( "Unable to download transcriptome shock file, {0}".format(e))
-            			try:
-                 			script_util.unzip_files(self.__LOGGER,os.path.join(cuffdiff_dir,t_name),cuffdiff_dir)
-            			except Exception, e:
-                 			raise Exception("Unzip transcriptome zip file  error: Please contact help@kbase.us")
-            			gtf_file = os.path.join(cuffdiff_dir,"merged.gtf")
+            		except Exception,e:
+                 		raise Exception( "Unable to download transcriptome shock file, {0}".format(e))
+            		try:
+                 		script_util.unzip_files(self.__LOGGER,os.path.join(cuffdiff_dir,t_name),cuffdiff_dir)
+            		except Exception, e:
+                 		raise Exception("Unzip transcriptome zip file  error: Please contact help@kbase.us")
+            		gtf_file = os.path.join(cuffdiff_dir,"merged.gtf")
 	   
-            			### Adding advanced options
-	    			num_p = multiprocessing.cpu_count()
-            			#print 'processors count is ' +  str(num_p)
-	    			cuffdiff_command = (' -p '+str(num_p))
-            			#if('num-threads' in params and params['num-threads'] is not None) : cuffdiff_command += (' -p '+str(params['num-threads']))
-	    			if('time-series' in params and params['time-series'] != 0) : cuffdiff_command += (' -T ')
-	    			if('min-alignment-count' in params and params['min-alignment-count'] is not None ) : cuffdiff_command += (' -c '+str(params['min-alignment-count']))
-	    			if('multi-read-correct' in params and params['multi-read-correct'] != 0 ): cuffdiff_command += (' --multi-read-correct ')
-	    			if('library-type' in params and params['library-type'] is not None ) : cuffdiff_command += ( ' --library-type '+params['library-type'])
-	    			if('library-norm-method' in params and params['library-norm-method'] is not None ) : cuffdiff_command += ( ' --library-norm-method '+params['library-norm-method'])
+            		### Adding advanced options
+	    		num_p = multiprocessing.cpu_count()
+            		#print 'processors count is ' +  str(num_p)
+	    		cuffdiff_command = (' -p '+str(num_p))
+            		#if('num-threads' in params and params['num-threads'] is not None) : cuffdiff_command += (' -p '+str(params['num-threads']))
+	    		if('time-series' in params and params['time-series'] != 0) : cuffdiff_command += (' -T ')
+	    		if('min-alignment-count' in params and params['min-alignment-count'] is not None ) : cuffdiff_command += (' -c '+str(params['min-alignment-count']))
+	    		if('multi-read-correct' in params and params['multi-read-correct'] != 0 ): cuffdiff_command += (' --multi-read-correct ')
+	    		if('library-type' in params and params['library-type'] is not None ) : cuffdiff_command += ( ' --library-type '+params['library-type'])
+	    		if('library-norm-method' in params and params['library-norm-method'] is not None ) : cuffdiff_command += ( ' --library-norm-method '+params['library-norm-method'])
  
-	    			try:
-                			# TODO: add reference GTF later, seems googledoc command looks wrong
-                			cuffdiff_command += " -o {0} -L {1} -u {2} {3}".format(output_dir,labels,gtf_file,bam_files)
-					self.__LOGGER.info("Executing: cuffdiff {0}".format(cuffdiff_command))
-                			ret = script_util.runProgram(None,"cuffdiff",cuffdiff_command,None,cuffdiff_dir)
-					result = ret["result"]
-                			for line in result.splitlines(False):
-                    				self.__LOGGER.info(line)
-						stderr = ret["stderr"]
-                				prev_value = ''
+	    		try:
+                		# TODO: add reference GTF later, seems googledoc command looks wrong
+                		cuffdiff_command += " -o {0} -L {1} -u {2} {3}".format(output_dir,labels,gtf_file,bam_files)
+				self.__LOGGER.info("Executing: cuffdiff {0}".format(cuffdiff_command))
+                		ret = script_util.runProgram(None,"cuffdiff",cuffdiff_command,None,cuffdiff_dir)
+				result = ret["result"]
+                		for line in result.splitlines(False):
+                    			self.__LOGGER.info(line)
+					stderr = ret["stderr"]
+                			prev_value = ''
                 			for line in stderr.splitlines(False):
                     				if line.startswith('> Processing Locus'):
                         				words = line.split()
@@ -1396,47 +1396,47 @@ class KBaseRNASeq:
                     				else:
                         				prev_value = ''
                         				self.__LOGGER.info(line)
-        			except Exception,e:
-                			raise KBaseRNASeqException("Error executing cuffdiff {0},{1},{2}".format(cuffdiff_command,cuffdiff_dir,e))
+        		except Exception,e:
+                		raise KBaseRNASeqException("Error executing cuffdiff {0},{1},{2}".format(cuffdiff_command,cuffdiff_dir,e))
 
-            			##  compress and upload to shock
-            			try:
-                			self.__LOGGER.info("Zipping Cuffdiff output")
-					out_file_path = os.path.join(self.__SCRATCH,"{0}.zip".format(params['output_obj_name']))
-                			script_util.zip_files(self.__LOGGER,output_dir,out_file_path)
-                			#handle = hs.upload("{0}.zip".format(params['output_obj_name']))
-            			except Exception,e:
-                			raise KBaseRNASeqException("Error executing cuffdiff {0},{1}".format(os.getcwd(),e))
-            			try:
-					#out_file_path = os.path.join("{0}.zip".format(params['output_obj_name']))
-                			handle = hs.upload(out_file_path)
-            			except Exception, e:
-                			raise KBaseRNASeqException("Failed to upload the Cuffdiff output files: {0}".format(e))
+            		##  compress and upload to shock
+            		try:
+                		self.__LOGGER.info("Zipping Cuffdiff output")
+				out_file_path = os.path.join(self.__SCRATCH,"{0}.zip".format(params['output_obj_name']))
+                		script_util.zip_files(self.__LOGGER,output_dir,out_file_path)
+                		#handle = hs.upload("{0}.zip".format(params['output_obj_name']))
+            		except Exception,e:
+                		raise KBaseRNASeqException("Error executing cuffdiff {0},{1}".format(os.getcwd(),e))
+            		try:
+				#out_file_path = os.path.join("{0}.zip".format(params['output_obj_name']))
+                		handle = hs.upload(out_file_path)
+            		except Exception, e:
+                		raise KBaseRNASeqException("Failed to upload the Cuffdiff output files: {0}".format(e))
 			
-            			## Save object to workspace
-            			try:
-					self.__LOGGER.info("Saving Cuffdiff object to workspace")
-                			cm_obj = { 'file' : handle,
-                           			   'analysis' : analysis['data']
-                	  			}
-                			res1= ws_client.save_objects(
-                                        			{"workspace":params['ws_id'],
-                                         			"objects": [{
+            		## Save object to workspace
+            		try:
+				self.__LOGGER.info("Saving Cuffdiff object to workspace")
+                		cm_obj = { 'file' : handle,
+                           		   'analysis' : analysis['data']
+                	  		 }
+                		res1= ws_client.save_objects(
+                                        		{"workspace":params['ws_id'],
+                                         		 "objects": [{
                                          				"type":"KBaseRNASeq.RNASeqCuffdiffdifferentialExpression",
                                          				"data":cm_obj,
                                          				"name":params['output_obj_name']}
                                         			]})	
 		
-                			analysis['data']['cuffdiff_diff_exp_id'] = "{0}/{1}".format(params['ws_id'],params['output_obj_name'])
-					res= ws_client.save_objects(
-                                        			{"workspace":params['ws_id'],
-                                         			 "objects": [{
-                                         			 "type":"KBaseRNASeq.RNASeqAnalysis",
-                                         			 "data":analysis['data'],
-                                         			 "name":params['rnaseq_exp_details']}
-                                        			]})
-            			except Exception, e:
-                			raise KBaseRNASeqException("Failed to upload the KBaseRNASeq.RNASeqCuffdiffdifferentialExpression and KBaseRNASeq.RNASeqAnalysis : {0}".format(e))
+                		analysis['data']['cuffdiff_diff_exp_id'] = "{0}/{1}".format(params['ws_id'],params['output_obj_name'])
+				res= ws_client.save_objects(
+                                        		{"workspace":params['ws_id'],
+                                         		 "objects": [{
+                                         		 "type":"KBaseRNASeq.RNASeqAnalysis",
+                                         		 "data":analysis['data'],
+                                         		 "name":params['rnaseq_exp_details']}
+                                        		]})
+            		except Exception, e:
+                		raise KBaseRNASeqException("Failed to upload the KBaseRNASeq.RNASeqCuffdiffdifferentialExpression and KBaseRNASeq.RNASeqAnalysis : {0}".format(e))
 		else:
                         raise ValueError("Please run the methods 'Align Reads using Tophat/bowtie2' , 'Assemble Transcripts using Cufflinks' for all the RNASeqSamples. Also run the method 'Merge Trancripts using Cuffmerge' before running this step. The RNASeqAnalysis object has either of the missing tags 'alignments' , 'expression_values' , 'transcriptome_id' ");
 
