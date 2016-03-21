@@ -1329,18 +1329,18 @@ class KBaseRNASeq:
 		       			#alignments.append("{0}/accepted_hits.bam ".format(sp))
                        			#raise Exception("{0} does not contain transcripts.gtf:  {1}".format(vo['info'][1], v))
                     			#list_file.write("{0}/transcripts.gtf\n".format(sp))
-            			else:
-                			raise KBaseRNASeqException("No data was included in the referenced analysis");
+            			#else:
+                			#raise KBaseRNASeqException("No data was included in the referenced analysis");
             			#list_file.close()
 
             			##  now ready to call
-            			output_dir = os.path.join(cuffdiff_dir, params['output_obj_name'])
+            		output_dir = os.path.join(cuffdiff_dir, params['output_obj_name'])
 	    			#bam_files = " ".join([i for i in alignments])
-	    			for l in sample_labels:
+	    		for l in sample_labels:
 					#for path, subdirs, files in os.walk(root):
        					#		os.path.join(path,"accepted_hits.bam")
-					rep_files=",".join([ os.path.join(cuffdiff_dir+'/'+l,sub+'/accepted_hits.bam') for sub in os.listdir(os.path.join(cuffdiff_dir,l)) if os.path.isdir(os.path.join(cuffdiff_dir,l+'/'+sub))])
-					alignments.append(rep_files) 
+				rep_files=",".join([ os.path.join(cuffdiff_dir+'/'+l,sub+'/accepted_hits.bam') for sub in os.listdir(os.path.join(cuffdiff_dir,l)) if os.path.isdir(os.path.join(cuffdiff_dir,l+'/'+sub))])
+				alignments.append(rep_files) 
             
 	    		bam_files = " ".join([i for i in alignments])
 	    		#print bam_files
