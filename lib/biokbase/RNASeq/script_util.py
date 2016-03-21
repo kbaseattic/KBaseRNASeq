@@ -60,7 +60,7 @@ def extractStatsInfo(logger,ws_client,ws_id,sample_id,result,stats_obj_name):
         total_read =  total_qcpr + total_qcfr
         m = two_nums.match(lines[2])
         mapped_r = int(m.group(1))
-        umapped_r = int(total_read - mapped_r)
+        unmapped_r = int(total_read - mapped_r)
 	alignment_rate = float(mapped_r) / float(total_read)  * 100.0
         if alignment_rate > 100: alignment_rate = 100.0
 
@@ -77,9 +77,10 @@ def extractStatsInfo(logger,ws_client,ws_id,sample_id,result,stats_obj_name):
                        "properly_paired": properly_paired,
                        "singletons": singletons,
                        "total_reads": total_read,
-                       "unmapped_reads": umapped_r,
+                       "unmapped_reads": unmapped_r,
                        "mapped_reads": mapped_r
                        }
+	logger.info(json.dumps(stats_data))
         ## Save object to workspace
         logger.info( "Saving Alignment Statistics to the Workspace")
         try:
@@ -95,6 +96,81 @@ def extractStatsInfo(logger,ws_client,ws_id,sample_id,result,stats_obj_name):
         except Exception, e:
                 raise Exception("get Alignment Statistics failed: {0}".format(e))
 
+def extractAlignmentStatsInfo(logger,tool_used,ws_client,ws_id,sample_id,result,stats_obj_name):
+        lines = result.splitlines()
+	if tool_used == 'samtools':
+        	if  len(lines) != 11:
+            		raise Exception("Error not getting enough samtool flagstat information: {0}".format(result))
+        	# patterns
+        	two_nums  = re.compile(r'^(\d+) \+ (\d+)')
+        	two_pcts  = re.compile(r'\(([0-9.na\-]+)%:([0-9.na\-]+)%\)')
+        	# alignment rate
+        	m = two_nums.match(lines[0])
+        	total_qcpr = int(m.group(1))
+        	total_qcfr = int(m.group(2))
+        	total_read =  total_qcpr + total_qcfr
+        	m = two_nums.match(lines[2])
+        	mapped_r = int(m.group(1))
+        	unmapped_r = int(total_read - mapped_r)
+        	alignment_rate = float(mapped_r) / float(total_read)  * 100.0
+        	if alignment_rate > 100: alignment_rate = 100.0
+
+        	# singletons
+       		m = two_nums.match(lines[8])
+        	singletons = int(m.group(1))
+        	m = two_nums.match(lines[6])
+        	properly_paired = int(m.group(1))
+		multiple_alignments = 0
+	elif tool_used == 'bowtie2':
+		if len(lines) not in [6,15]:
+                        raise Exception("Error not getting enough bowtie2 alignment information: {0}".format(result))
+		pattern1 = re.compile(r'^(\s*\d+)')
+	        pattern2 = re.compile(r'^(\s*\d+.\d+)')	
+		m =  pattern1.match(lines[0])
+		total_read = int(m.group(1))
+		m = pattern1.match(lines[2])
+		unmapped_r =  int(m.group(1))
+		mapped_r = total_read - unmapped_r
+		m = pattern1.match(lines[4])
+		multiple_alignments = int(m.group(1))
+		if len(lines) == 6:
+			m = pattern2.match(lines[5])
+			alignment_rate = float(m.group(1))
+			singletons = 0
+			properly_paired = 0
+		if len(lines) == 15:
+			m =pattern1.match(lines[1])
+			properly_paired = int(m.group(1))
+			singletons = total_read - properly_paired	
+			m = pattern2.match(lines[14])
+			alignment_rate = float(m.group(1))
+	elif tool_used == 'tophat':
+		pass 
+        # Create Workspace object
+        stats_data =  {
+                       "alignment_id": sample_id,
+                       "alignment_rate": alignment_rate,
+                       "multiple_alignments": multiple_alignments, 
+                       "properly_paired": properly_paired,
+                       "singletons": singletons,
+                       "total_reads": total_read,
+                       "unmapped_reads": unmapped_r,
+                       "mapped_reads": mapped_r
+                       }
+        ## Save object to workspace
+        logger.info( "Saving Alignment Statistics to the Workspace")
+        try:
+                res= ws_client.save_objects(
+                                        {"workspace":ws_id,
+                                         "objects": [{
+                                         "type":"KBaseRNASeq.AlignmentStatsResults",
+                                         "data": stats_data,
+                                         "hidden" : 1,
+                                         "name":stats_obj_name}
+                                        ]})
+                res = stats_data
+        except Exception, e:
+                raise Exception("get Alignment Statistics failed: {0}".format(e))
 def getExpressionHistogram(obj,obj_name,num_of_bins,ws_id,output_obj_name):
     if 'expression_levels' in obj['data']:
         hdict = obj['data']['expression_levels']

@@ -644,35 +644,31 @@ class KBaseRNASeq:
             try:
 	        self.__LOGGER.info("Executing: bowtie2 {0}".format(bowtie2_cmd))	
                 cmdline_output = script_util.runProgram(self.__LOGGER,"bowtie2",bowtie2_cmd,None,bowtie2_dir)
-                #cmdline_output = script_util.runProgram(self.__LOGGER,"bowtie2",bowtie2_cmd,None,os.getcwd())
+		stats_obj_name = params['output_obj_name']+"_"+str(hex(uuid.getnode()))+"_AlignmentStats"
+		script_util.extractAlignmentStatsInfo(self.__LOGGER,"bowtie2",ws_client,params['ws_id'],params['output_obj_name'],cmdline_output['stderr'],stats_obj_name)
 		bam_file = os.path.join(output_dir,"accepted_hits_unsorted.bam")
 		sam_to_bam = "view -bS -o {0} {1}".format(bam_file,out_file)
 		script_util.runProgram(self.__LOGGER,"samtools",sam_to_bam,None,bowtie2_dir)
-		#script_util.runProgram(self.__LOGGER,"samtools",sam_to_bam,None,os.getcwd())
 		final_bam_prefix = os.path.join(output_dir,"accepted_hits")
 		sort_bam_cmd  = "sort {0} {1}".format(bam_file,final_bam_prefix)
 		script_util.runProgram(self.__LOGGER,"samtools",sort_bam_cmd,None,bowtie2_dir)
-		#script_util.runProgram(self.__LOGGER,"samtools",sort_bam_cmd,None,os.getcwd())
-                #script_util.runProgram(self.__LOGGER,self.__SCRIPT_TYPE['tophat_script'],tophat_cmd,self.__SCRIPTS_DIR,os.getcwd())
             except Exception,e:
                 raise KBaseRNASeqException("Error Running the bowtie2 command {0},{1},{2}".format(bowtie2_cmd,bowtie2_dir,e))
-            try:
-                bam_file = output_dir+"/accepted_hits.bam"
-                align_stats_cmd="flagstat {0}".format(bam_file)
-                stats = script_util.runProgram(self.__LOGGER,"samtools",align_stats_cmd,None,bowtie2_dir)
-                # Pass it to the stats['result']
-                stats_obj_name = params['output_obj_name']+"_"+str(hex(uuid.getnode()))+"_AlignmentStats"
-                script_util.extractStatsInfo(self.__LOGGER,ws_client,params['ws_id'],params['output_obj_name'],stats['result'],stats_obj_name)
-            except Exception , e :
-                self.__LOGGER.exception("Failed to create RNASeqAlignmentStats: {0}".format(e))
-                raise KBaseRNASeqException("Failed to create RNASeqAlignmentStats: {0}".format(e))
+            #try:
+            #    bam_file = output_dir+"/accepted_hits.bam"
+            #    align_stats_cmd="flagstat {0}".format(bam_file)
+            #    stats = script_util.runProgram(self.__LOGGER,"samtools",align_stats_cmd,None,bowtie2_dir)
+            #    # Pass it to the stats['result']
+            #    stats_obj_name = params['output_obj_name']+"_"+str(hex(uuid.getnode()))+"_AlignmentStats"
+            #    script_util.extractStatsInfo(self.__LOGGER,ws_client,params['ws_id'],params['output_obj_name'],stats['result'],stats_obj_name)
+            #except Exception , e :
+            #    self.__LOGGER.exception("Failed to create RNASeqAlignmentStats: {0}".format(e))
+            #    raise KBaseRNASeqException("Failed to create RNASeqAlignmentStats: {0}".format(e))
 
         # Zip tophat folder
             try:
                 out_file_path = os.path.join(self.__SCRATCH,"%s.zip" % params['output_obj_name'])
 		script_util.zip_files(self.__LOGGER, output_dir,out_file_path)
-                #out_file_path = os.path.join(self.__SCRATCH,"%s.zip" % params['output_obj_name'])
-                #handler_util.cleanup(self.__LOGGER,tophat_dir)
             except Exception, e:
                 raise KBaseRNASeqException("Failed to compress the index: {0}".format(e))
             ## Upload the file using handle service
