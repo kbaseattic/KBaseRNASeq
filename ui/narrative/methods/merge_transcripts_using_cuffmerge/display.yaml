@@ -4,7 +4,7 @@
 name     : Merge Transcripts using Cuffmerge
 
 tooltip  : |
-    Merge multiple transcripts of several Cufflinks assemblies into a single transcriptome annotation file using Cuffmerge.
+    Merge multiple transcript assemblies from Cufflinks into a single transcriptome annotation file using Cuffmerge.
 screenshots :
     []
 
