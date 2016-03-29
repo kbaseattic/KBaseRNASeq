@@ -3,7 +3,7 @@
 #
 name     : Build Bowtie2 Index 
 tooltip  : |
-    Build Bowtie2 index for a given genome
+    Index the sequences in a reference genome using Bowtie2.
 
 screenshots :
     []
