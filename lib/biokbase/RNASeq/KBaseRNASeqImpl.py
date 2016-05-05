@@ -22,6 +22,10 @@ from biokbase.auth import Token
 from mpipe import OrderedStage , Pipeline
 import multiprocessing as mp
 import re
+import doekbase.data_api
+from doekbase.data_api.annotation.genome_annotation.api import GenomeAnnotationAPI , GenomeAnnotationClientAPI
+from doekbase.data_api.sequence.assembly.api import AssemblyAPI , AssemblyClientAPI
+import datetime
 import requests.packages.urllib3
 requests.packages.urllib3.disable_warnings()
 
@@ -29,6 +33,7 @@ try:
     from biokbase.HandleService.Client import HandleService
 except:
     from biokbase.AbstractHandle.Client import AbstractHandle as HandleService
+
 
 _KBaseRNASeq__DATA_VERSION = "0.2"
 
@@ -57,6 +62,8 @@ class KBaseRNASeq:
     # state. A method could easily clobber the state set by another while
     # the latter method is running.
     #########################################
+    VERSION = "0.0.1"
+    
     #BEGIN_CLASS_HEADER
     __TEMP_DIR = 'temp'
     __BOWTIE_DIR = 'bowtie'
@@ -121,6 +128,7 @@ class KBaseRNASeq:
 
         #END_CONSTRUCTOR
         pass
+    
 
     def fastqcCall(self, ctx, params):
         # ctx is the context object
@@ -302,11 +310,6 @@ class KBaseRNASeq:
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
 	hs = HandleService(url=self.__HS_URL, token=user_token)
 	try:
-	        self.__LOGGER.info( "Downloading ContigSet object from workspace")
-	    ## Check if the bowtie_dir is present; remove files in bowtie_dir if exists ; create a new dir if doesnt exists
-		#if os.path.exists(self.__SCRATCH):
-		#   shutil.rmtree(self.__SCRATCH)
-		#os.makedirs(self.__SCRATCH)
 	   	if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
 	    	bowtie_dir = self.__SCRATCH + '/tmp' 
 	    	if os.path.exists(bowtie_dir):
@@ -315,33 +318,43 @@ class KBaseRNASeq:
 	     	provenance = [{}]
         	if 'provenance' in ctx:
             		provenance = ctx['provenance']
+
         	# add additional info to provenance here, in this case the input data object reference
         	provenance[0]['input_ws_objects']=[params['ws_id']+'/'+params['reference']]
 		ref_info = ws_client.get_object_info_new({"objects": [{'name': params['reference'], 'workspace': params['ws_id']}]})
-		if ref_info[0][2].split('-')[0] == 'KBaseGenomes.Genome':
+		self.__LOGGER.info("ref_info")
+		# If Selected KBaseGenomes.Genome object type
+		# Remove lines 329 - 345  for the New object type change after it goes to production
+		if ref_info[0][2].split('-')[0] == 'KBaseGenomeAnnotations.Assembly':
+                        self.__LOGGER.info( "Generating FASTA from Genome Annotation")
+                        outfile_ref_name = params['reference']
+                        try:
+                                script_util.generate_fasta(self.__LOGGER,params['ws_id'],params['reference'])
+                        except Exception, e:
+                                raise ValueError('Unable to get FASTA for object {}'.format(params['reference']))
+		elif ref_info[0][2].split('-')[0] == 'KBaseGenomes.Genome':
+	        	self.__LOGGER.info( "Downloading Genome object from workspace")
 			ref = ws_client.get_objects([{'name': params['reference'], 'workspace': params['ws_id']}])
 			contig_set = ref[0]['data']['contigset_ref']
-			#print contig_set
 			c_ws = str(contig_set.split('/')[0])
 			obj_id  = str(contig_set.split('/')[1])
 			obj_version_number = str(contig_set.split('/')[1])
-			#print c_ws + "\t" + obj_id
 			if params['reference'].split('.')[-1] not in ['fa','fasta','fna']:
                                 outfile_ref_name = params['reference']+".fa"
                                 dumpfasta= "--workspace_service_url {0} --workspace_name {1} --working_directory {2} --output_file_name {3} --object_reference {4} --shock_service_url {5} --token \'{6}\'".format(self.__WS_URL ,c_ws,bowtie_dir,outfile_ref_name,contig_set,self.__SHOCK_URL,user_token)
-	        else:   		
-	   ## dump fasta object to a file in bowtie_dir
-		    #try:
+	        elif ref_info[0][2].split('-')[0] == 'KBaseGenomes.ContigSet':   		
+	        	self.__LOGGER.info( "Downloading ContigSet object from workspace")
 		 	if params['reference'].split('.')[-1] not in ['fa','fasta','fna']:
 				outfile_ref_name = params['reference']+".fa"
 	   			dumpfasta= "--workspace_service_url {0} --workspace_name {1} --working_directory {2} --output_file_name {3} --object_name {4} --shock_service_url {5} --token \'{6}\'".format(self.__WS_URL , params['ws_id'],bowtie_dir,outfile_ref_name,params['reference'],self.__SHOCK_URL,user_token)
 			else:
 			      	outfile_ref_name = params['reference']
 			  	dumpfasta= "--workspace_service_url {0} --workspace_name {1} --working_directory {2} --output_file_name {3} --object_name {4} --shock_service_url {5} --token \'{6}\'".format(self.__WS_URL , params['ws_id'],bowtie_dir,params['reference'],params['reference'],self.__SHOCK_URL,user_token)
-                try: 
-			script_util.runProgram(self.__LOGGER,self.__SCRIPT_TYPE['ContigSet_to_fasta'],dumpfasta,self.__SCRIPTS_DIR,os.getcwd())
-		except Exception,e:
-			raise KBaseRNASeqException("Error Creating  FASTA object from the workspace {0},{1},{2}".format(params['reference'],os.getcwd(),e))
+		if ref_info[0][2].split('-')[0] != 'KBaseGenomeAnnotations.Assembly':			
+			try: 
+				script_util.runProgram(self.__LOGGER,self.__SCRIPT_TYPE['ContigSet_to_fasta'],dumpfasta,self.__SCRIPTS_DIR,os.getcwd())
+			except Exception,e:
+				raise KBaseRNASeqException("Error Creating  FASTA object from the workspace {0},{1},{2}".format(params['reference'],os.getcwd(),e))
 		 
 	   
 	    ## Run the bowtie_indexing on the  command line
