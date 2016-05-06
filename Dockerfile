@@ -1,6 +1,7 @@
 FROM kbase/kbase:sdkbase.latest
 MAINTAINER KBase Developer
 # Install the SDK (should go away eventually)
+RUN pip install --upgrade requests==2.7.0
 RUN \
   . /kb/dev_container/user-env.sh && \
   cd /kb/dev_container/modules && \
@@ -49,5 +50,6 @@ RUN \
 ENV PATH=$PATH:/kb/dev_container/modules/kb_sdk/bin
 WORKDIR /kb/module
 RUN mkdir -p /kb/module/work
+RUN pip freeze | grep requests
 ENTRYPOINT [ "./scripts/entrypoint.sh" ]
 CMD [ ]
