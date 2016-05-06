@@ -19,7 +19,7 @@ import subprocess
 from zipfile import ZipFile
 from os import listdir
 from os.path import isfile, join
-
+import contig_id_mapping as c_mapping
 try:
     from biokbase.HandleService.Client import HandleService
 except:
@@ -31,37 +31,39 @@ from doekbase.data_api.annotation.genome_annotation.api import GenomeAnnotationA
 from doekbase.data_api.sequence.assembly.api import AssemblyAPI, AssemblyClientAPI
 import datetime
 
-def generate_fasta(logger,ref,obj_name):
+def generate_fasta(logger,internal_services,token,ref,output_dir,obj_name):
 	try:
 		ga = GenomeAnnotationAPI(internal_services,
-                             token=os.environ.get("KB_AUTH_TOKEN"),
+                             token=token,
                              ref= "{}/{}".format(ref,obj_name))
-	except:
-		raise Exception("Unable to Call GenomeAnnotationAPI : {0}".format(e))
+	except Exception as e:
+		raise Exception("Unable to Call GenomeAnnotationAPI : {0}: {1}".format(e))
 	logger.info("Generating FASTA file from Assembly for {}/{}".format(ref,obj_name))	
 	fasta_start = datetime.datetime.utcnow()
-    	with open('{}.fasta'.format(obj_name), 'w') as fasta_file:
+	output_file = os.path.join(output_dir,'{}.fasta'.format(obj_name))
+    	with open(output_file, 'w') as fasta_file:
         	ga.get_assembly().get_fasta().to_file(fasta_file)
 	fasta_file.close()
     	fasta_end = datetime.datetime.utcnow()
-	logger.info("Generating FASTA for {} took {}".format(id, fasta_end - fasta_start))
+	logger.info("Generating FASTA for {} took {}".format(obj_name, fasta_end - fasta_start))
 
 	## Additional Step for sanitizing contig id
 	logger.info("Sanitizing the fasta file to correct id names {}".format(datetime.datetime.utcnow()))
-	mapping_filename = create_sanitized_contig_ids(obj_name)
-    	replace_fasta_contig_ids(obj_name, mapping_filename, to_modified=True)
+	mapping_filename = c_mapping.create_sanitized_contig_ids(output_file)
+    	c_mapping.replace_fasta_contig_ids(output_file, mapping_filename, to_modified=True)
 	logger.info("Generating FASTA file completed successfully : {}".format(datetime.datetime.utcnow()))
 
-def generate_gff(logger,ref,obj_name):
+def generate_gff(logger,internal_services,token,ref,output_dir,obj_name):
         try:
                 ga = GenomeAnnotationAPI(internal_services,
-                             token=os.environ.get("KB_AUTH_TOKEN"),
+                             token=token,
                              ref= "{}/{}".format(ref,obj_name))
         except:
                 raise Exception("Unable to Call GenomeAnnotationAPI : {0}".format(e))
         logger.info("Requesting GenomeAnnotation GFF for {}".format(id))
     	gff_start = datetime.datetime.utcnow()
-    	with open('{}.gff'.format(id), 'w') as gff_file:
+	output_file = os.path.join(output_dir,'{}.gff'.format(obj_name))
+    	with open(output_file, 'w') as gff_file:
         	ga.get_gff().to_file(gff_file)
     	gff_file.close()
 	gff_end = datetime.datetime.utcnow()

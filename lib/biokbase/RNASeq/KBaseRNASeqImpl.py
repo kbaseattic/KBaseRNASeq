@@ -27,7 +27,8 @@ from doekbase.data_api.annotation.genome_annotation.api import GenomeAnnotationA
 from doekbase.data_api.sequence.assembly.api import AssemblyAPI , AssemblyClientAPI
 import datetime
 import requests.packages.urllib3
-requests.packages.urllib3.disable_warnings()
+
+#requests.packages.urllib3.disable_warnings()
 
 try:
     from biokbase.HandleService.Client import HandleService
@@ -63,6 +64,8 @@ class KBaseRNASeq:
     # the latter method is running.
     #########################################
     VERSION = "0.0.1"
+    GIT_URL = "https://github.com/sjyoo/KBaseRNASeq"
+    GIT_COMMIT_HASH = "8a4fa997c28376b580074c1a3fc2ed367eb64796"
     
     #BEGIN_CLASS_HEADER
     __TEMP_DIR = 'temp'
@@ -113,6 +116,9 @@ class KBaseRNASeq:
 				'tophat_script' : 'Tophat_pipeline.py'
 			     } 
 
+	self.__SERVICES = { 'workspace_service_url' : self.__WS_URL,
+			    'shock_service_url' : self.__SHOCK_URL,
+			    'handle_service_url' : self.__HS_URL }
         # logging
         self.__LOGGER = logging.getLogger('KBaseRNASeq')
         if 'log_level' in config:
@@ -322,16 +328,18 @@ class KBaseRNASeq:
         	# add additional info to provenance here, in this case the input data object reference
         	provenance[0]['input_ws_objects']=[params['ws_id']+'/'+params['reference']]
 		ref_info = ws_client.get_object_info_new({"objects": [{'name': params['reference'], 'workspace': params['ws_id']}]})
-		self.__LOGGER.info("ref_info")
+		self.__LOGGER.info(ref_info)
 		# If Selected KBaseGenomes.Genome object type
 		# Remove lines 329 - 345  for the New object type change after it goes to production
-		if ref_info[0][2].split('-')[0] == 'KBaseGenomeAnnotations.Assembly':
+		if ref_info[0][2].split('-')[0] == 'KBaseGenomeAnnotations.GenomeAnnotation':
                         self.__LOGGER.info( "Generating FASTA from Genome Annotation")
-                        outfile_ref_name = params['reference']
+                        outfile_ref_name = params['reference']+".fasta"
                         try:
-                                script_util.generate_fasta(self.__LOGGER,params['ws_id'],params['reference'])
+                                fasta_return = script_util.generate_fasta(self.__LOGGER,self.__SERVICES,user_token,params['ws_id'],bowtie_dir,params['reference'])
+				self.__LOGGER.info(fasta_return)
                         except Exception, e:
-                                raise ValueError('Unable to get FASTA for object {}'.format(params['reference']))
+				self.__LOGGER.exception("".join(traceback.format_exc()))
+                                raise ValueError('Unable to get FASTA for object {}'.format("".join(traceback.format_exc())))
 		elif ref_info[0][2].split('-')[0] == 'KBaseGenomes.Genome':
 	        	self.__LOGGER.info( "Downloading Genome object from workspace")
 			ref = ws_client.get_objects([{'name': params['reference'], 'workspace': params['ws_id']}])
@@ -350,7 +358,7 @@ class KBaseRNASeq:
 			else:
 			      	outfile_ref_name = params['reference']
 			  	dumpfasta= "--workspace_service_url {0} --workspace_name {1} --working_directory {2} --output_file_name {3} --object_name {4} --shock_service_url {5} --token \'{6}\'".format(self.__WS_URL , params['ws_id'],bowtie_dir,params['reference'],params['reference'],self.__SHOCK_URL,user_token)
-		if ref_info[0][2].split('-')[0] != 'KBaseGenomeAnnotations.Assembly':			
+		if ref_info[0][2].split('-')[0] != 'KBaseGenomeAnnotations.GenomeAnnotation':			
 			try: 
 				script_util.runProgram(self.__LOGGER,self.__SCRIPT_TYPE['ContigSet_to_fasta'],dumpfasta,self.__SCRIPTS_DIR,os.getcwd())
 			except Exception,e:
@@ -1649,4 +1657,11 @@ class KBaseRNASeq:
             raise ValueError('Method createExpressionHistogram return value ' +
                              'returnVal is not type dict as required.')
         # return the results
+        return [returnVal]
+
+    def status(self, ctx):
+        #BEGIN_STATUS
+        returnVal = {'state': "OK", 'message': "", 'version': self.VERSION, 
+                     'git_url': self.GIT_URL, 'git_commit_hash': self.GIT_COMMIT_HASH}
+        #END_STATUS
         return [returnVal]
