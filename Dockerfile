@@ -25,7 +25,6 @@ RUN \
   git clone https://github.com/kbase/genome_util && \
   cd /kb/dev_container/modules/genome_util && \
   make && make deploy
-
 ####END OF KBASE #############################
 #apt-get update && apt-get install -y ant && \
 # -----------------------------------------
@@ -49,5 +48,7 @@ RUN \
 ENV PATH=$PATH:/kb/dev_container/modules/kb_sdk/bin
 WORKDIR /kb/module
 RUN mkdir -p /kb/module/work
+RUN pip install --upgrade requests==2.7.0
+RUN pip freeze | grep requests
 ENTRYPOINT [ "./scripts/entrypoint.sh" ]
 CMD [ ]
