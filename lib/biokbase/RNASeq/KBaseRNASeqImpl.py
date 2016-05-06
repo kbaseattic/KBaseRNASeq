@@ -27,9 +27,7 @@ from doekbase.data_api.annotation.genome_annotation.api import GenomeAnnotationA
 from doekbase.data_api.sequence.assembly.api import AssemblyAPI , AssemblyClientAPI
 import datetime
 import requests.packages.urllib3
-
-#requests.packages.urllib3.disable_warnings()
-
+requests.packages.urllib3.disable_warnings()
 try:
     from biokbase.HandleService.Client import HandleService
 except:
@@ -65,7 +63,7 @@ class KBaseRNASeq:
     #########################################
     VERSION = "0.0.1"
     GIT_URL = "https://github.com/sjyoo/KBaseRNASeq"
-    GIT_COMMIT_HASH = "8a4fa997c28376b580074c1a3fc2ed367eb64796"
+    GIT_COMMIT_HASH = "4542da7a6514a4dfc00dd5a13cb50fd00b53aa7f"
     
     #BEGIN_CLASS_HEADER
     __TEMP_DIR = 'temp'
