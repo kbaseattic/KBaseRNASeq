@@ -49,5 +49,6 @@ RUN \
 ENV PATH=$PATH:/kb/dev_container/modules/kb_sdk/bin
 WORKDIR /kb/module
 RUN mkdir -p /kb/module/work
+RUN pip freeze | grep requests
 ENTRYPOINT [ "./scripts/entrypoint.sh" ]
 CMD [ ]
