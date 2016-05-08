@@ -16,6 +16,7 @@ import multiprocessing
 from collections import OrderedDict
 from pprint import pprint,pformat
 import script_util
+import contig_id_mapping as c_mapping
 from biokbase.workspace.client import Workspace
 import handler_utils as handler_util
 from biokbase.auth import Token
@@ -63,7 +64,7 @@ class KBaseRNASeq:
     #########################################
     VERSION = "0.0.1"
     GIT_URL = "https://github.com/sjyoo/KBaseRNASeq"
-    GIT_COMMIT_HASH = "4542da7a6514a4dfc00dd5a13cb50fd00b53aa7f"
+    GIT_COMMIT_HASH = "dbd5bdc723c4a0f085cd5d932c2a3c79a95bc9cc"
     
     #BEGIN_CLASS_HEADER
     __TEMP_DIR = 'temp'
@@ -333,8 +334,11 @@ class KBaseRNASeq:
                         self.__LOGGER.info( "Generating FASTA from Genome Annotation")
                         outfile_ref_name = params['reference']+".fasta"
                         try:
-                                fasta_return = script_util.generate_fasta(self.__LOGGER,self.__SERVICES,user_token,params['ws_id'],bowtie_dir,params['reference'])
-				self.__LOGGER.info(fasta_return)
+                                output_file = script_util.generate_fasta(self.__LOGGER,self.__SERVICES,user_token,params['ws_id'],bowtie_dir,params['reference'])
+				self.__LOGGER.info("Sanitizing the fasta file to correct id names {}".format(datetime.datetime.utcnow()))
+        			mapping_filename = c_mapping.create_sanitized_contig_ids(output_file)
+        			c_mapping.replace_fasta_contig_ids(output_file, mapping_filename, to_modified=True)
+        			self.__LOGGER.info("Generating FASTA file completed successfully : {}".format(datetime.datetime.utcnow()))	
                         except Exception, e:
 				self.__LOGGER.exception("".join(traceback.format_exc()))
                                 raise ValueError('Unable to get FASTA for object {}'.format("".join(traceback.format_exc())))
@@ -469,13 +473,31 @@ class KBaseRNASeq:
                         provenance = ctx['provenance']
                 # add additional info to provenance here, in this case the input data object reference
                 provenance[0]['input_ws_objects']=[params['ws_id']+'/'+params['reference']]
-		out_file_path = os.path.join(gtf_dir,params['output_obj_name']+'.gtf')
-		output = open(out_file_path,'w')
-		try:	
+		ref_info = ws_client.get_object_info_new({"objects": [{'name': params['reference'], 'workspace': params['ws_id']}]})
+		#out_file_path = os.path.join(gtf_dir,params['output_obj_name']+'.gff')
+		#output = open(out_file_path,'w')
+		obj_type = ref_info[0][2].split('-')[0] 
+		if obj_type == 'KBaseGenomeAnnotations.GenomeAnnotation':
+			out_file_path = os.path.join(gtf_dir,params['output_obj_name']+'.gff')
+			try:
+				fasta_file= script_util.generate_fasta(self.__LOGGER,self.__SERVICES,user_token,params['ws_id'],gtf_dir,params['reference'])
+                                self.__LOGGER.info("Sanitizing the fasta file to correct id names {}".format(datetime.datetime.utcnow()))
+                                mapping_filename = c_mapping.create_sanitized_contig_ids(fasta_file)
+                                c_mapping.replace_fasta_contig_ids(fasta_file, mapping_filename, to_modified=True)
+                                self.__LOGGER.info("Generating FASTA file completed successfully : {}".format(datetime.datetime.utcnow()))
+				script_util.generate_gff(self.__LOGGER,self.__SERVICES,user_token,params['ws_id'],gtf_dir,params['reference'],out_file_path)
+				c_mapping.replace_gff_contig_ids(out_file_path, mapping_filename, to_modified=True) 
+			except Exception as e:
+				self.__LOGGER.exception("".join(traceback.format_exc()))
+				raise ValueError("Generating GFF file from Genome Annotation object Failed :  {}".format("".join(traceback.format_exc())))
+		elif obj_type == 'KBaseGenomes.Genome':
+		     try:
                 	reference = ws_client.get_object_subset(
                                         [{ 'name' : params['reference'], 'workspace' : params['ws_id'],'included': ['features']}])
                 	#reference = ws_client.get_objects(
                         #                [{ 'name' : params['reference'], 'workspace' : params['ws_id']}])
+			out_file_path = os.path.join(gtf_dir,params['output_obj_name']+'.gtf')
+                	output = open(out_file_path,'w')
 			ref =reference[0]['data']
         		if "features" in ref:
                   		for f in ref['features']:
@@ -485,9 +507,9 @@ class KBaseRNASeq:
                         			for contig_id,f_start,f_strand,f_len  in f['location']:
                                 			f_end = script_util.get_end(int(f_start),int(f_len),f_strand)
 			        			output.write(contig_id + "\tKBase\t" + f_type + "\t" + str(f_start) + "\t" + str(f_end) + "\t.\t" + f_strand + "\t"+ str(0) + "\ttranscript_id " + f_id + "; gene_id " + f_id + ";\n")
-		except Exception,e:
+		     except Exception,e:
 			raise KBaseRNASeqException("Failed to create Reference Annotation File: {0}".format(e))	
-		finally:
+		     finally:
 			output.close()
                 try:
 			#out_file_path = os.path.join(params['output_obj_name']+'.gtf')

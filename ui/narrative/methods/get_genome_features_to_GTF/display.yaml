@@ -1,16 +1,16 @@
 #
 # Define basic display information
 #
-name     : Create Reference Annotations for a Prokaryote
+name     : Create Reference Annotations for RNA-seq Analysis
 tooltip  : |
-    Create reference annotations in Gene Transfer Format (GTF) for a given prokaryotic genome
+    Create reference annotations in GFF format for KBase genomes
 
 screenshots :
     []
 
 icon: rnaseq-yellow.png
 
-replacement-text : Creates a Reference Annotation for any Prokaryotic Genome  for {{{input_genome}}}
+replacement-text : Creates a Reference Annotation for RNA-seq Analysis  for {{{input_genome}}}
 
 #
 # Define the set of other narrative methods that should be suggested to the user.
@@ -36,7 +36,7 @@ parameters :
         ui-name : |
             Genome
         short-hint : |
-            The input prokaryotic genome used to derive GTF annotations
+            The input genome used to derive GFF annotations
 
     out_gtf_name:
         ui-name : |
@@ -47,7 +47,7 @@ parameters :
 description : |
    <p>This method creates a reference sequence annotations file for a given prokaryotic reference genome.</p> 
    
-   <p>The reference annotations generated in GTF format are used by Bowtie2 to align reads and by Cufflinks to assemble transcripts.</p>
+   <p>The reference annotations generated in GFF format are used by Bowtie2 to align reads and by Cufflinks to assemble transcripts.</p>
    
    <p><strong>WARNING:</strong> This method is one of the steps of the <a href= "http://kbase.us/rna-seq/"> KBase RNA-seq Pipeline </a> and is not intended to run standalone.</p>
   

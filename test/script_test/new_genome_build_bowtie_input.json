@@ -1,0 +1,9 @@
+{	
+	"version":"1.1",
+	"method":"KBaseRNASeq.BuildBowtie2Index",
+	"context": null,
+	"params":[
+	{"ws_id" : "ReferenceEnsemblPlantGenomeAnnotations",
+	 "output_obj_name" :"Algae_Ensembl_bowtie2_index" ,
+	 "reference" : "280699_Ensembl" } ]
+}

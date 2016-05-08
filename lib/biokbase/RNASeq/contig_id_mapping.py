@@ -125,31 +125,30 @@ if __name__ == "__main__":
     #fasta_filename = "test_fasta_original.fa"
     #gff_filename = "test_gff_original.gff"
 
-    fasta_filename = "test_yeast.fasta"
-    gff_filename = "test_yeast.gff"
+    fasta_filename = "t/data/contig_id_mapping/arab_fasta.fasta"
+    gff_filename = "t/data/contig_id_mapping/arab_gff.gff"
 
-    mapping_filename = create_sanitized_contig_ids(fasta_filename)
-    replace_fasta_contig_ids(fasta_filename, mapping_filename, to_modified=True)
+    #mapping_filename = create_sanitized_contig_ids(fasta_filename)
+    #replace_fasta_contig_ids(fasta_filename, mapping_filename, to_modified=True)
 
-    print "Modified FASTA file"
-    with open(fasta_filename, 'r') as f:
-        print f.read()
+    #print "Modified FASTA file"
+    #with open(fasta_filename, 'r') as f:
+    #    print f.read()
 
-    print "*" * 80
+    #print "*" * 80
 
     #replace_fasta_contig_ids(fasta_filename, mapping_filename, to_modified=False)
 
     #print "Original FASTA file"
     #with open(fasta_filename, 'r') as f:
+    #    print f.read()  
+    #print "Modified GFF file"
+    #replace_gff_contig_ids(gff_filename, mapping_filename, to_modified=True)
+
+    #with open(gff_filename, 'r') as f:
     #    print f.read()
 
-    print "Modified GFF file"
-    replace_gff_contig_ids(gff_filename, mapping_filename, to_modified=True)
-
-    with open(gff_filename, 'r') as f:
-        print f.read()
-
-    print "*" * 80
+    #print "*" * 80
 
     #print "Original GFF file"
     #replace_gff_contig_ids(gff_filename, mapping_filename, to_modified=False)
