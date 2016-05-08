@@ -1,9 +1,9 @@
 #
 # Define basic display information
 #
-name     : Align Reads using Tophat
+name     : Align Reads using TopHat
 tooltip  : |
-    Align sequencing reads to a genome using Tophat to identify exon-exon splice junctions
+    Align sequencing reads to a genome using TopHat to identify exon-exon splice junctions
 
 screenshots :
     []
@@ -48,7 +48,7 @@ parameters :
         ui-name : |
             Alignment Output
         short-hint : |
-            Provide the name of Tophat read alignment output
+            Provide the name of TopHat read alignment output
     read_mismatches :
         ui-name : |
             Read Mismatch Cutoff
@@ -68,12 +68,12 @@ parameters :
         ui-name : |
             Minimum Intron Length
         short-hint : |
-            Tophat will ignore donor/acceptor pairs closer than this many bases apart. The default is 70.
+            TopHat will ignore donor/acceptor pairs closer than this many bases apart. The default is 70.
     max_intron_length :
         ui-name : |
             Maximum Intron Length
         short-hint : |
-            Tophat will ignore donor/acceptor pairs farther than this many bases apart. The default is 500000.
+            TopHat will ignore donor/acceptor pairs farther than this many bases apart. The default is 500000.
     num_threads :
         ui-name : |
             Number of Threads
@@ -96,7 +96,7 @@ parameters :
             Select the direction of the reads with respect to the original mRNA when the library was prepared. The default is fr-unstranded.
 
 description : |
-    <p>This method aligns the RNA-seq reads from a sample to an eukaryotic genome using Tophat in order to identify splice junctions between exons with the help of Bowtie2 mapping program.</p>
+    <p>This method aligns the RNA-seq reads from a sample to an eukaryotic genome using TopHat in order to identify splice junctions between exons with the help of Bowtie2 mapping program.</p>
     <p>This method takes a Bowtie2 index object and sequencing read file and outputs a set of read alignments in BAM format.</p>
     <p>In addition, it provides the alignment statistics such as total reads, mapped and unmapped reads, singletons, multiple alignments, and alignment rate in a table format.</p>
     
