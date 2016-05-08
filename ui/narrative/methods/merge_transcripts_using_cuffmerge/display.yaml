@@ -8,6 +8,8 @@ tooltip  : |
 screenshots :
     []
 
+icon: cuffmerge-yellow.png
+
 #
 # Define the set of other narrative methods that should be suggested to the user.
 #
@@ -35,6 +37,9 @@ parameters :
 description : |
     <p>Cuffmerge creates a merged set of transcripts from several input assembly GTF files from Cufflinks that can be used by Cuffdiff. It essentially acts as a meta-assembler.</p>
     <p>During this merging transcripts from all the assemblies are converted to representative reads and Cufflinks is run internally to see of there is any gaps that can be filled and a longer consensus sequence can be created. Basically, Cuffmerge merges transcripts that are overlapping  and share a similar exon structure (or splicing structure) to generate a longer chain of connected exons.</p>
+ 
+    <p><strong>WARNING:</strong> This method is one of the steps of the <a href= "http://kbase.us/rna-seq/"> KBase RNA-seq Pipeline </a> and is not intended to run standalone.</p>
+    
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
     Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Vivek Kumar</p>
     

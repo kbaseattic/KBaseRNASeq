@@ -3,7 +3,7 @@
   "authors" : [ ],
   "contact" : "help@kbase.us",
   "visible" : true,
-  "categories" : ["active"],
+  "categories" : ["active","expression","sequence"],
   "widgets" : {
     "input" : null,
     "output" : "kbaseReportView"
@@ -16,7 +16,7 @@
     "default_values" : [ "" ],
     "field_type" : "text",
     "text_options" : {
-      "valid_ws_types" : [ "KBaseGenomes.ContigSet" , "KBaseGenomes.Genome" ]
+      "valid_ws_types" : [ "KBaseGenomes.ContigSet" , "KBaseGenomes.Genome" , "KBaseGenomeAnnotations.GenomeAnnotation"]
     }
   }, {
     "id" : "out_index_name",

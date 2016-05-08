@@ -1,0 +1,10 @@
+>123:4: test contig 1
+AGTCTGTCA
+>12:34: test contig 2
+AGGATAGAC
+>1:23:4: test contig 3
+GGACTGACATAC
+>123__4 test contig 4
+TTGAC
+GTACT
+TGCACACA

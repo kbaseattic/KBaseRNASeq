@@ -138,6 +138,7 @@ create-test-wrapper:
 	echo '#!/bin/bash' > test/script_test/run_tests.sh
 	echo 'export KB_RUNTIME=$(DEPLOY_RUNTIME)' >> $(TARGET)/bin/$(EXECUTABLE_SCRIPT_NAME) >> test/script_test/run_tests.sh
 	echo 'export PYTHONPATH="$(DIR)/$(LIB_DIR)"' >> test/script_test/run_tests.sh
+	echo 'export KB_DEPLOYMENT_CONFIG="$(DIR)/deploy.cfg"' >> test/script_test/run_tests.sh
 	echo 'python $(DIR)/test/script_test/basic_test.py $$1 $$2 $$3' \
 		>> test/script_test/run_tests.sh
 	chmod +x test/script_test/run_tests.sh
@@ -180,7 +181,7 @@ deploy-executable-script:
 	echo 'export KB_RUNTIME=$(DEPLOY_RUNTIME)' >> $(TARGET)/bin/$(EXECUTABLE_SCRIPT_NAME)
 	echo 'export PYTHONPATH="$(TARGET)/lib"' >> $(TARGET)/bin/$(EXECUTABLE_SCRIPT_NAME)
 	echo 'export KB_SERVICE_NAME="$(MODULE_CAPS)"' >> $(TARGET)/bin/$(EXECUTABLE_SCRIPT_NAME)
-	echo 'export KB_DEPLOYMENT_CONFIG="$(KB_DEPLOYMENT_CONFIG)"' >> $(TARGET)/bin/$(EXECUTABLE_SCRIPT_NAME)
+	echo 'export KB_DEPLOYMENT_CONFIG="$(DIR)/deploy.cfg"' >> $(TARGET)/bin/$(EXECUTABLE_SCRIPT_NAME)
 	echo 'python $(TARGET)/lib/biokbase/$(MODULE)/$(MODULE_CAPS).py $$1 $$2 $$3' \
 		>> $(TARGET)/bin/$(EXECUTABLE_SCRIPT_NAME)
 	chmod +x $(TARGET)/bin/$(EXECUTABLE_SCRIPT_NAME)
@@ -203,7 +204,7 @@ create-test-wrapper:
 	echo 'export KB_RUNTIME=$(DEPLOY_RUNTIME)' >> test/script_test/run_tests.sh
 	echo 'export PYTHONPATH="$(TARGET)/lib"' >> test/script_test/run_tests.sh
 	echo 'export KB_SERVICE_NAME="$(MODULE_CAPS)"' >> test/script_test/run_tests.sh
-	echo 'export KB_DEPLOYMENT_CONFIG="$(KB_DEPLOYMENT_CONFIG)"' >> test/script_test/run_tests.sh
+	echo 'export KB_DEPLOYMENT_CONFIG="$(DIR)/deploy.cfg"' >> test/script_test/run_tests.sh
 	echo 'python $(DIR)/test/script_test/basic_test.py $$1 $$2 $$3' \
 		>> test/script_test/run_tests.sh
 	chmod +x test/script_test/run_tests.sh

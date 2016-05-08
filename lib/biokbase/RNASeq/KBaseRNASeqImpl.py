@@ -2,6 +2,7 @@
 
 import simplejson
 import sys
+import shutil
 import os
 import ast
 import glob
@@ -15,17 +16,24 @@ import multiprocessing
 from collections import OrderedDict
 from pprint import pprint,pformat
 import script_util
+import contig_id_mapping as c_mapping
 from biokbase.workspace.client import Workspace
 import handler_utils as handler_util
 from biokbase.auth import Token
 from mpipe import OrderedStage , Pipeline
 import multiprocessing as mp
 import re
-
+import doekbase.data_api
+from doekbase.data_api.annotation.genome_annotation.api import GenomeAnnotationAPI , GenomeAnnotationClientAPI
+from doekbase.data_api.sequence.assembly.api import AssemblyAPI , AssemblyClientAPI
+import datetime
+import requests.packages.urllib3
+requests.packages.urllib3.disable_warnings()
 try:
     from biokbase.HandleService.Client import HandleService
 except:
     from biokbase.AbstractHandle.Client import AbstractHandle as HandleService
+
 
 _KBaseRNASeq__DATA_VERSION = "0.2"
 
@@ -54,6 +62,10 @@ class KBaseRNASeq:
     # state. A method could easily clobber the state set by another while
     # the latter method is running.
     #########################################
+    VERSION = "0.0.1"
+    GIT_URL = "https://github.com/sjyoo/KBaseRNASeq"
+    GIT_COMMIT_HASH = "dbd5bdc723c4a0f085cd5d932c2a3c79a95bc9cc"
+    
     #BEGIN_CLASS_HEADER
     __TEMP_DIR = 'temp'
     __BOWTIE_DIR = 'bowtie'
@@ -73,7 +85,7 @@ class KBaseRNASeq:
     def __init__(self, config):
         #BEGIN_CONSTRUCTOR
 	 # This is where config variable for deploy.cfg are available
-        pprint(config)
+        #pprint(config)
         if 'ws_url' in config:
               self.__WS_URL = config['ws_url']
         if 'shock_url' in config:
@@ -82,6 +94,8 @@ class KBaseRNASeq:
 	      self.__HS_URL = config['hs_url']
         if 'temp_dir' in config:
               self.__TEMP_DIR = config['temp_dir']
+	if 'scratch' in config:
+	      self.__SCRATCH= config['scratch']
         if 'bowtie_dir' in config:
               self.__BOWTIE_DIR = config['bowtie_dir']
         if 'genome_input_fa' in config:
@@ -101,6 +115,9 @@ class KBaseRNASeq:
 				'tophat_script' : 'Tophat_pipeline.py'
 			     } 
 
+	self.__SERVICES = { 'workspace_service_url' : self.__WS_URL,
+			    'shock_service_url' : self.__SHOCK_URL,
+			    'handle_service_url' : self.__HS_URL }
         # logging
         self.__LOGGER = logging.getLogger('KBaseRNASeq')
         if 'log_level' in config:
@@ -116,6 +133,7 @@ class KBaseRNASeq:
 
         #END_CONSTRUCTOR
         pass
+    
 
     def fastqcCall(self, ctx, params):
         # ctx is the context object
@@ -201,9 +219,17 @@ class KBaseRNASeq:
 	    g_ref = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params['annotation_id']],params['ws_id'],user_token)[0]
 	    out_obj['annotation_id'] = g_ref
 	if "tissue" in params and params['tissue'] is not None:
-	    out_obj['tissue'] = params['tissue'] 
+	    out_obj['tissue'] = params['tissue']
 	if "condn_labels" in params and params['condn_labels'] is not None:
+	    if len(params['condn_labels']) != int(out_obj["num_samples"]/out_obj["num_replicates"]):
+		raise ValueError("Please specify a treatment label for each sample treatment in the RNA-seq experiment (without taking into account the replicates).The treatment labels must be added in the same order as the reads.")
             out_obj['condition'] = params['condn_labels']
+	if "singleEnd_reads" in params and params['singleEnd_reads'] is not None:
+	    if len(params['singleEnd_reads']) != out_obj["num_samples"]:
+		raise ValueError("Number of Single-end Reads selected is not equal to the 'Number of Samples' specified in the analysis. Please select all the read samples to run this method.")
+	if  "pairedEnd_reads" in params and params['pairedEnd_reads'] is not None:
+	    if len(params['pairedEnd_reads']) != out_obj["num_samples"]:
+                raise ValueError("Number of Paired-end Reads selected is not equal to the 'Number of Samples' specified in the analysis. Please select all the read samples to run this method.")
 
         self.__LOGGER.info( "Uploading RNASeq Analysis object to workspace {0}".format(out_obj['experiment_id']))
 	try:
@@ -284,47 +310,61 @@ class KBaseRNASeq:
         # return variables are: returnVal
         #BEGIN BuildBowtie2Index
 	user_token=ctx['token']
-   	pprint(params) 
+   	#pprint(params) 
         #svc_token = Token(user_id=self.__SVC_USER, password=self.__SVC_PASS).token
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
 	hs = HandleService(url=self.__HS_URL, token=user_token)
 	try:
-	        self.__LOGGER.info( "Downloading KBaseGenome.ContigSet object from workspace")
-	    ## Check if the bowtie_dir is present; remove files in bowtie_dir if exists ; create a new dir if doesnt exists	
-	    	bowtie_dir = self.__BOWTIE_DIR
+	   	if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
+	    	bowtie_dir = self.__SCRATCH + '/tmp' 
 	    	if os.path.exists(bowtie_dir):
 			handler_util.cleanup(self.__LOGGER,bowtie_dir)
 	   	if not os.path.exists(bowtie_dir): os.makedirs(bowtie_dir)
 	     	provenance = [{}]
         	if 'provenance' in ctx:
             		provenance = ctx['provenance']
+
         	# add additional info to provenance here, in this case the input data object reference
         	provenance[0]['input_ws_objects']=[params['ws_id']+'/'+params['reference']]
 		ref_info = ws_client.get_object_info_new({"objects": [{'name': params['reference'], 'workspace': params['ws_id']}]})
-		if ref_info[0][2].split('-')[0] == 'KBaseGenomes.Genome':
+		self.__LOGGER.info(ref_info)
+		# If Selected KBaseGenomes.Genome object type
+		# Remove lines 329 - 345  for the New object type change after it goes to production
+		if ref_info[0][2].split('-')[0] == 'KBaseGenomeAnnotations.GenomeAnnotation':
+                        self.__LOGGER.info( "Generating FASTA from Genome Annotation")
+                        outfile_ref_name = params['reference']+".fasta"
+                        try:
+                                output_file = script_util.generate_fasta(self.__LOGGER,self.__SERVICES,user_token,params['ws_id'],bowtie_dir,params['reference'])
+				self.__LOGGER.info("Sanitizing the fasta file to correct id names {}".format(datetime.datetime.utcnow()))
+        			mapping_filename = c_mapping.create_sanitized_contig_ids(output_file)
+        			c_mapping.replace_fasta_contig_ids(output_file, mapping_filename, to_modified=True)
+        			self.__LOGGER.info("Generating FASTA file completed successfully : {}".format(datetime.datetime.utcnow()))	
+                        except Exception, e:
+				self.__LOGGER.exception("".join(traceback.format_exc()))
+                                raise ValueError('Unable to get FASTA for object {}'.format("".join(traceback.format_exc())))
+		elif ref_info[0][2].split('-')[0] == 'KBaseGenomes.Genome':
+	        	self.__LOGGER.info( "Downloading Genome object from workspace")
 			ref = ws_client.get_objects([{'name': params['reference'], 'workspace': params['ws_id']}])
 			contig_set = ref[0]['data']['contigset_ref']
-			#print contig_set
 			c_ws = str(contig_set.split('/')[0])
 			obj_id  = str(contig_set.split('/')[1])
 			obj_version_number = str(contig_set.split('/')[1])
-			#print c_ws + "\t" + obj_id
 			if params['reference'].split('.')[-1] not in ['fa','fasta','fna']:
                                 outfile_ref_name = params['reference']+".fa"
                                 dumpfasta= "--workspace_service_url {0} --workspace_name {1} --working_directory {2} --output_file_name {3} --object_reference {4} --shock_service_url {5} --token \'{6}\'".format(self.__WS_URL ,c_ws,bowtie_dir,outfile_ref_name,contig_set,self.__SHOCK_URL,user_token)
-	        else:   		
-	   ## dump fasta object to a file in bowtie_dir
-		    #try:
+	        elif ref_info[0][2].split('-')[0] == 'KBaseGenomes.ContigSet':   		
+	        	self.__LOGGER.info( "Downloading ContigSet object from workspace")
 		 	if params['reference'].split('.')[-1] not in ['fa','fasta','fna']:
 				outfile_ref_name = params['reference']+".fa"
 	   			dumpfasta= "--workspace_service_url {0} --workspace_name {1} --working_directory {2} --output_file_name {3} --object_name {4} --shock_service_url {5} --token \'{6}\'".format(self.__WS_URL , params['ws_id'],bowtie_dir,outfile_ref_name,params['reference'],self.__SHOCK_URL,user_token)
 			else:
 			      	outfile_ref_name = params['reference']
 			  	dumpfasta= "--workspace_service_url {0} --workspace_name {1} --working_directory {2} --output_file_name {3} --object_name {4} --shock_service_url {5} --token \'{6}\'".format(self.__WS_URL , params['ws_id'],bowtie_dir,params['reference'],params['reference'],self.__SHOCK_URL,user_token)
-                try: 
-			script_util.runProgram(self.__LOGGER,self.__SCRIPT_TYPE['ContigSet_to_fasta'],dumpfasta,self.__SCRIPTS_DIR,os.getcwd())
-		except Exception,e:
-			raise KBaseRNASeqException("Error Creating  FASTA object from the workspace {0},{1},{2}".format(params['reference'],os.getcwd(),e))
+		if ref_info[0][2].split('-')[0] != 'KBaseGenomeAnnotations.GenomeAnnotation':			
+			try: 
+				script_util.runProgram(self.__LOGGER,self.__SCRIPT_TYPE['ContigSet_to_fasta'],dumpfasta,self.__SCRIPTS_DIR,os.getcwd())
+			except Exception,e:
+				raise KBaseRNASeqException("Error Creating  FASTA object from the workspace {0},{1},{2}".format(params['reference'],os.getcwd(),e))
 		 
 	   
 	    ## Run the bowtie_indexing on the  command line
@@ -333,7 +373,7 @@ class KBaseRNASeq:
 				bowtie_index_cmd = "{0} {1}".format(outfile_ref_name,params['reference'])
 			else:
 				bowtie_index_cmd = "{0} {1}".format(params['reference'],params['reference']) 
-	    		
+	    	        self.__LOGGER.info("Executing: bowtie2-build {0}".format(bowtie_index_cmd))  	
 			cmdline_output = script_util.runProgram(self.__LOGGER,"bowtie2-build",bowtie_index_cmd,None,bowtie_dir)
 			if 'result' in cmdline_output:
 				report = cmdline_output['result']
@@ -342,8 +382,8 @@ class KBaseRNASeq:
 		
 	    ## Zip the Index files
 		try:
-			script_util.zip_files(self.__LOGGER, bowtie_dir, "%s.zip" % params['output_obj_name'])
-			out_file_path = os.path.join("%s.zip" % params['output_obj_name'])
+			script_util.zip_files(self.__LOGGER, bowtie_dir,os.path.join(self.__SCRATCH ,"%s.zip" % params['output_obj_name']))
+			out_file_path = os.path.join(self.__SCRATCH,"%s.zip" % params['output_obj_name'])
         	except Exception, e:
 			raise KBaseRNASeqException("Failed to compress the index: {0}".format(e))
 	    ## Upload the file using handle service
@@ -354,7 +394,7 @@ class KBaseRNASeq:
                 	# 	script_util.shock_node_2b_public(self.__LOGGER,node_id=bowtie_handle['id'],shock_service_url=bowtie_handle['url'],token=user_token)
 			 
 		except Exception, e:
-			raise KBaseRNASeqException("Failed to upload the index: {0}".format(e))
+			raise KBaseRNASeqException("Failed to upload the Zipped Bowtie2Indexes file: {0}".format(e))
 	    	bowtie2index = { "handle" : bowtie_handle ,"size" : os.path.getsize(out_file_path)}   
 
 	     ## Save object to workspace
@@ -400,7 +440,7 @@ class KBaseRNASeq:
 		raise KBaseRNASeqException("Build Bowtie2Index failed: {0}".format(e))
 	finally:
                 handler_util.cleanup(self.__LOGGER,bowtie_dir)
-		os.remove(out_file_path)
+		#if os.path.exists(out_file_path): os.remove(out_file_path)
         #END BuildBowtie2Index
 
         # At some point might do deeper type checking...
@@ -415,16 +455,17 @@ class KBaseRNASeq:
         # return variables are: returnVal
         #BEGIN GetFeaturesToGTF
         user_token=ctx['token']
-        pprint(params)
+        #pprint(params)
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
         hs = HandleService(url=self.__HS_URL, token=user_token)
         try:
-                self.__LOGGER.info( "Downloading KBaseGenomes.Genome object from workspace")
+                self.__LOGGER.info( "Downloading Genome object from workspace")
             ## Check if the gtf_dir is present; remove files in gtf_dir if exists ; create a new dir if doesnt exists     
-                gtf_dir = self.__GTF_DIR
+		#if os.path.exists(self.__SCRATCH):
+                # 	handler_util.cleanup(self.__LOGGER,self.__SCRATCH)
+            	if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
+		gtf_dir = self.__SCRATCH+'/tmp'
                 if os.path.exists(gtf_dir):
-                        #files=glob.glob("%s/*" % bowtie_dir)
-                        #for f in files: os.remove(f)
                         handler_util.cleanup(self.__LOGGER,gtf_dir)
                 if not os.path.exists(gtf_dir): os.makedirs(gtf_dir)
                 provenance = [{}]
@@ -432,33 +473,51 @@ class KBaseRNASeq:
                         provenance = ctx['provenance']
                 # add additional info to provenance here, in this case the input data object reference
                 provenance[0]['input_ws_objects']=[params['ws_id']+'/'+params['reference']]
-	    ## Upload the file using handle service
-		
-                reference = ws_client.get_objects(
-                                        [{ 'name' : params['reference'], 'workspace' : params['ws_id']}])
-		ref =reference[0]['data']
-		output = open(params['output_obj_name']+'.gtf','w')
-        	if "features" in ref:
-                  for f in ref['features']:
-                     if "type" in f and  f['type'] == 'CDS':
-                        f_type = f['type']
-                     if "id" in f:
-                        f_id =  f['id']
-                     if "location" in f:
-                        #print f['location']
-                        for contig_id,f_start,f_strand,f_len  in f['location']:
-                                f_end = script_util.get_end(int(f_start),int(f_len),f_strand)
-			        output.write(contig_id + "\tKBase\t" + f_type + "\t" + str(f_start) + "\t" + str(f_end) + "\t.\t" + f_strand + "\t"+ str(0) + "\ttranscript_id " + f_id + "; gene_id " + f_id + ";\n")	
+		ref_info = ws_client.get_object_info_new({"objects": [{'name': params['reference'], 'workspace': params['ws_id']}]})
+		#out_file_path = os.path.join(gtf_dir,params['output_obj_name']+'.gff')
+		#output = open(out_file_path,'w')
+		obj_type = ref_info[0][2].split('-')[0] 
+		if obj_type == 'KBaseGenomeAnnotations.GenomeAnnotation':
+			out_file_path = os.path.join(gtf_dir,params['output_obj_name']+'.gff')
+			try:
+				fasta_file= script_util.generate_fasta(self.__LOGGER,self.__SERVICES,user_token,params['ws_id'],gtf_dir,params['reference'])
+                                self.__LOGGER.info("Sanitizing the fasta file to correct id names {}".format(datetime.datetime.utcnow()))
+                                mapping_filename = c_mapping.create_sanitized_contig_ids(fasta_file)
+                                c_mapping.replace_fasta_contig_ids(fasta_file, mapping_filename, to_modified=True)
+                                self.__LOGGER.info("Generating FASTA file completed successfully : {}".format(datetime.datetime.utcnow()))
+				script_util.generate_gff(self.__LOGGER,self.__SERVICES,user_token,params['ws_id'],gtf_dir,params['reference'],out_file_path)
+				c_mapping.replace_gff_contig_ids(out_file_path, mapping_filename, to_modified=True) 
+			except Exception as e:
+				self.__LOGGER.exception("".join(traceback.format_exc()))
+				raise ValueError("Generating GFF file from Genome Annotation object Failed :  {}".format("".join(traceback.format_exc())))
+		elif obj_type == 'KBaseGenomes.Genome':
+		     try:
+                	reference = ws_client.get_object_subset(
+                                        [{ 'name' : params['reference'], 'workspace' : params['ws_id'],'included': ['features']}])
+                	#reference = ws_client.get_objects(
+                        #                [{ 'name' : params['reference'], 'workspace' : params['ws_id']}])
+			out_file_path = os.path.join(gtf_dir,params['output_obj_name']+'.gtf')
+                	output = open(out_file_path,'w')
+			ref =reference[0]['data']
+        		if "features" in ref:
+                  		for f in ref['features']:
+                     			if "type" in f and  f['type'] == 'CDS': f_type = f['type']
+                     			if "id" in f: f_id =  f['id']
+                     			if "location" in f:
+                        			for contig_id,f_start,f_strand,f_len  in f['location']:
+                                			f_end = script_util.get_end(int(f_start),int(f_len),f_strand)
+			        			output.write(contig_id + "\tKBase\t" + f_type + "\t" + str(f_start) + "\t" + str(f_end) + "\t.\t" + f_strand + "\t"+ str(0) + "\ttranscript_id " + f_id + "; gene_id " + f_id + ";\n")
+		     except Exception,e:
+			raise KBaseRNASeqException("Failed to create Reference Annotation File: {0}".format(e))	
+		     finally:
+			output.close()
                 try:
-                        #gtf_handle = script_util.create_shock_handle(self.__LOGGER,params['output_obj_name']+'.gtf',self.__SHOCK_URL,self.__HS_URL,"GTF",user_token)
-			out_file_path = os.path.join(params['output_obj_name']+'.gtf')
+			#out_file_path = os.path.join(params['output_obj_name']+'.gtf')
                         gtf_handle = hs.upload(out_file_path)
-                        # if self.__PUBLIC_SHOCK_NODE is 'true':
-                        #        script_util.shock_node_2b_public(self.__LOGGER,node_id=gtf_handle['id'],shock_service_url=gtf_handle['url'],token=user_token)
 
                 except Exception, e:
                         raise KBaseRNASeqException("Failed to create Reference Annotation: {0}".format(e))
-                gtfhandle = { "handle" : gtf_handle ,"size" : os.path.getsize(params['output_obj_name']+'.gtf')}
+                gtfhandle = { "handle" : gtf_handle ,"size" : os.path.getsize(out_file_path)}
 
              ## Save object to workspace
                 self.__LOGGER.info( "Saving Reference Annotation object to  workspace")
@@ -469,7 +528,6 @@ class KBaseRNASeq:
                                          "data":gtfhandle,
                                          "name":params['output_obj_name']}
                                         ]})
-                #returnVal = { "output" : params['output_obj_name'],"workspace" : params['ws_id'] }
                 info = res[0]
 		report = "Extracting Features from {0}".format(params['reference'])
              ## Create report object:
@@ -502,7 +560,7 @@ class KBaseRNASeq:
                 raise KBaseRNASeqException("Create Reference Annotation Failed: {0}".format(e))
         finally:
                 handler_util.cleanup(self.__LOGGER,gtf_dir)
-		os.remove(out_file_path)
+		#if os.path.exists(out_file_path): os.remove(out_file_path)
 	
         #END GetFeaturesToGTF
 
@@ -518,14 +576,16 @@ class KBaseRNASeq:
         # return variables are: returnVal
         #BEGIN Bowtie2Call
 	user_token=ctx['token']
-	pprint(params)
+	#pprint(params)
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
         hs = HandleService(url=self.__HS_URL, token=user_token)
         try:
-            bowtie2_dir = self.__BOWTIE2_DIR
+	    #if os.path.exists(self.__SCRATCH):
+            #       shutil.rmtree(self.__SCRATCH)
+            #os.makedirs(self.__SCRATCH)
+            if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
+            bowtie2_dir = self.__SCRATCH+'/tmp'
             if os.path.exists(bowtie2_dir):
-            #   files=glob.glob("%s/*" % bowtie2_dir)
-            #    for f in files: os.remove(f)
                 handler_util.cleanup(self.__LOGGER,bowtie2_dir)
             if not os.path.exists(bowtie2_dir): os.makedirs(bowtie2_dir)
 
@@ -544,7 +604,7 @@ class KBaseRNASeq:
                 #self.__LOGGER.info("getting here")
                 if 'metadata' in sample['data'] and sample['data']['metadata'] is not None:
                         genome = sample['data']['metadata']['genome_id']
-                        self.__LOGGER.info(genome)
+                        #self.__LOGGER.info(genome)
             if 'singleend_sample' in sample['data'] and sample['data']['singleend_sample'] is not None:
                 lib_type = "SingleEnd"
                 singleend_sample = sample['data']['singleend_sample']
@@ -579,17 +639,19 @@ class KBaseRNASeq:
             if 'analysis_id' in sample['data'] and sample['data']['analysis_id'] is not None:
 		# updata the analysis object with the alignment id
                 analysis_id = sample['data']['analysis_id']
-                self.__LOGGER.info("RNASeq Sample belongs to the {0}".format(analysis_id))
+                #self.__LOGGER.info("RNASeq Sample belongs to the {0}".format(analysis_id))
 	    if 'handle' in bowtie_index['data'] and bowtie_index['data']['handle'] is not None:
                 b_shock_id = bowtie_index['data']['handle']['id']
                 b_filename = bowtie_index['data']['handle']['file_name']
                 b_filesize = bowtie_index['data']['size']
             try:
+                self.__LOGGER.info("Downloading Bowtie2 Indices from Shock")
                 script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=b_shock_id,filename=b_filename,directory=bowtie2_dir,filesize=b_filesize,token=user_token)
             except Exception,e :
                 self.__LOGGER.exception("".join(traceback.format_exc()))
                 raise Exception( "Unable to download shock file , {0}".format(e))
 	    try:
+                self.__LOGGER.info("Unzipping Bowtie2 Indices")
                 script_util.unzip_files(self.__LOGGER,os.path.join(bowtie2_dir,b_filename),bowtie2_dir)
 		mv_dir= handler_util.get_dir(bowtie2_dir)
                 if mv_dir is not None:
@@ -618,36 +680,36 @@ class KBaseRNASeq:
             elif(lib_type == "PairedEnd"):
                 sample_file1 = os.path.join(bowtie2_dir,filename1)
                 sample_file2 = os.path.join(bowtie2_dir,filename2)
-                bowtie2_cmd += " -1 {0} -2 {1} -x {2} -S {3}".format(sample_file1,sample_file2,bowtie2_base,out_file)	
+                bowtie2_cmd += " -1 {0} -2 {1} -x {2} -S {3}".format(sample_file2,sample_file1,bowtie2_base,out_file)	
 	    
             try:
-		
-                cmdline_output = script_util.runProgram(self.__LOGGER,"bowtie2",bowtie2_cmd,None,os.getcwd())
+	        self.__LOGGER.info("Executing: bowtie2 {0}".format(bowtie2_cmd))	
+                cmdline_output = script_util.runProgram(self.__LOGGER,"bowtie2",bowtie2_cmd,None,bowtie2_dir)
+		stats_obj_name = params['output_obj_name']+"_"+str(hex(uuid.getnode()))+"_AlignmentStats"
+		script_util.extractAlignmentStatsInfo(self.__LOGGER,"bowtie2",ws_client,params['ws_id'],params['output_obj_name'],cmdline_output['stderr'],stats_obj_name)
 		bam_file = os.path.join(output_dir,"accepted_hits_unsorted.bam")
 		sam_to_bam = "view -bS -o {0} {1}".format(bam_file,out_file)
-		script_util.runProgram(self.__LOGGER,"samtools",sam_to_bam,None,os.getcwd())
+		script_util.runProgram(self.__LOGGER,"samtools",sam_to_bam,None,bowtie2_dir)
 		final_bam_prefix = os.path.join(output_dir,"accepted_hits")
 		sort_bam_cmd  = "sort {0} {1}".format(bam_file,final_bam_prefix)
-		script_util.runProgram(self.__LOGGER,"samtools",sort_bam_cmd,None,os.getcwd())
-                #script_util.runProgram(self.__LOGGER,self.__SCRIPT_TYPE['tophat_script'],tophat_cmd,self.__SCRIPTS_DIR,os.getcwd())
+		script_util.runProgram(self.__LOGGER,"samtools",sort_bam_cmd,None,bowtie2_dir)
             except Exception,e:
                 raise KBaseRNASeqException("Error Running the bowtie2 command {0},{1},{2}".format(bowtie2_cmd,bowtie2_dir,e))
-            try:
-                bam_file = output_dir+"/accepted_hits.bam"
-                align_stats_cmd="flagstat {0}".format(bam_file)
-                stats = script_util.runProgram(self.__LOGGER,"samtools",align_stats_cmd)
-                # Pass it to the stats['result']
-                stats_obj_name = params['output_obj_name']+"_"+str(hex(uuid.getnode()))+"_AlignmentStats"
-                script_util.extractStatsInfo(self.__LOGGER,ws_client,params['ws_id'],params['output_obj_name'],stats['result'],stats_obj_name)
-            except Exception , e :
-                self.__LOGGER.exception("Failed to create RNASeqAlignmentStats: {0}".format(e))
-                raise KBaseRNASeqException("Failed to create RNASeqAlignmentStats: {0}".format(e))
+            #try:
+            #    bam_file = output_dir+"/accepted_hits.bam"
+            #    align_stats_cmd="flagstat {0}".format(bam_file)
+            #    stats = script_util.runProgram(self.__LOGGER,"samtools",align_stats_cmd,None,bowtie2_dir)
+            #    # Pass it to the stats['result']
+            #    stats_obj_name = params['output_obj_name']+"_"+str(hex(uuid.getnode()))+"_AlignmentStats"
+            #    script_util.extractStatsInfo(self.__LOGGER,ws_client,params['ws_id'],params['output_obj_name'],stats['result'],stats_obj_name)
+            #except Exception , e :
+            #    self.__LOGGER.exception("Failed to create RNASeqAlignmentStats: {0}".format(e))
+            #    raise KBaseRNASeqException("Failed to create RNASeqAlignmentStats: {0}".format(e))
 
         # Zip tophat folder
             try:
-                script_util.zip_files(self.__LOGGER, output_dir, "%s.zip" % params['output_obj_name'])
-                out_file_path = os.path.join("%s.zip" % params['output_obj_name'])
-                #handler_util.cleanup(self.__LOGGER,tophat_dir)
+                out_file_path = os.path.join(self.__SCRATCH,"%s.zip" % params['output_obj_name'])
+		script_util.zip_files(self.__LOGGER, output_dir,out_file_path)
             except Exception, e:
                 raise KBaseRNASeqException("Failed to compress the index: {0}".format(e))
             ## Upload the file using handle service
@@ -688,7 +750,7 @@ class KBaseRNASeq:
                  raise KBaseRNASeqException("Error Running Bowtie2Call")
 	finally:
                  handler_util.cleanup(self.__LOGGER,bowtie2_dir)
-		 os.remove(out_file_path)
+		 #if os.path.exists(out_file_path): os.remove(out_file_path)
         #END Bowtie2Call
 
         # At some point might do deeper type checking...
@@ -707,13 +769,17 @@ class KBaseRNASeq:
         ## TODO: Need to take Analysis TO as input object instead of sample id
 
 	user_token=ctx['token']
-	pprint(params)
+	#pprint(params)
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
 	ws_client=Workspace(url=self.__WS_URL, token=user_token)
         hs = HandleService(url=self.__HS_URL, token=user_token)
 	try:
 	    ### Make a function to download the workspace object  and prepare dict of genome ,lib_type 
-	    tophat_dir = self.__TOPHAT_DIR
+	    #if os.path.exists(self.__SCRATCH):
+            # 	handler_util.cleanup(self.__LOGGER,self.__SCRATCH)
+	    if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
+	    tophat_dir = self.__SCRATCH +'/tmp'
+	    print tophat_dir
             if os.path.exists(tophat_dir):
 	    	handler_util.cleanup(self.__LOGGER,tophat_dir)
             if not os.path.exists(tophat_dir): os.makedirs(tophat_dir)
@@ -775,12 +841,14 @@ class KBaseRNASeq:
 		b_filename = bowtie_index['data']['handle']['file_name']
 		b_filesize = bowtie_index['data']['size']
 	    try:
+                self.__LOGGER.info("Downloading Bowtie2 Indices from Shock")
 		script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=b_shock_id,filename=b_filename,directory=tophat_dir,filesize=b_filesize,token=user_token)
 	    except Exception,e :
 		self.__LOGGER.exception("".join(traceback.format_exc()))
 		raise Exception( "Unable to download shock file , {0}".format(e))
 
 	    try:
+                self.__LOGGER.info("Unzipping Bowtie2 Indices")
 		index_path = os.path.join(tophat_dir,b_filename)
                 script_util.unzip_files(self.__LOGGER,index_path,tophat_dir)
 		mv_dir= handler_util.get_dir(tophat_dir)
@@ -795,6 +863,7 @@ class KBaseRNASeq:
                 a_filename = annotation['data']['handle']['file_name']
 		a_filesize = annotation['data']['size']
             try:
+                self.__LOGGER.info("Downloading Reference Annotation from Shock")
                 script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=a_shock_id,filename=a_filename,directory=tophat_dir,filesize=a_filesize,token=user_token)
             except Exception,e :
 		self.__LOGGER.exception("".join(traceback.format_exc()))
@@ -821,18 +890,20 @@ class KBaseRNASeq:
             elif(lib_type == "PairedEnd"):
                 sample_file1 = os.path.join(tophat_dir,filename1)
                 sample_file2 = os.path.join(tophat_dir,filename2)
-                tophat_cmd += ' -o {0} -G {1} {2} {3} {4}'.format(output_dir,gtf_file,bowtie_base,sample_file1,sample_file2)
-
+                tophat_cmd += ' -o {0} -G {1} {2} {3} {4}'.format(output_dir,gtf_file,bowtie_base,sample_file2,sample_file1)
+	    self.__LOGGER.info("Executing: tophat {0}".format(tophat_cmd)) 
 	    try:  
-            	script_util.runProgram(self.__LOGGER,"tophat",tophat_cmd,None,os.getcwd())
+            	script_util.runProgram(self.__LOGGER,"tophat",tophat_cmd,None,tophat_dir)
+            	#script_util.runProgram(self.__LOGGER,"tophat",tophat_cmd,None,os.getcwd())
             	#script_util.runProgram(self.__LOGGER,self.__SCRIPT_TYPE['tophat_script'],tophat_cmd,self.__SCRIPTS_DIR,os.getcwd())
             except Exception,e:
                 raise KBaseRNASeqException("Error Running the tophat command and the samtools flagstat {0},{1},{2}".format(tophat_cmd,tophat_dir,e))
 
+            self.__LOGGER.info("Generating Alignment Statistics")
 	    try:
                 bam_file = output_dir+"/accepted_hits.bam"
                 align_stats_cmd="flagstat {0}".format(bam_file)
-                stats = script_util.runProgram(self.__LOGGER,"samtools",align_stats_cmd)
+                stats = script_util.runProgram(self.__LOGGER,"samtools",align_stats_cmd,None,tophat_dir)
                 # Pass it to the stats['result']
 		stats_obj_name = params['output_obj_name']+"_"+str(hex(uuid.getnode()))+"_AlignmentStats"
                 script_util.extractStatsInfo(self.__LOGGER,ws_client,params['ws_id'],params['output_obj_name'],stats['result'],stats_obj_name)
@@ -843,8 +914,9 @@ class KBaseRNASeq:
 
 	# Zip tophat folder
             try:
-                script_util.zip_files(self.__LOGGER, output_dir, "%s.zip" % params['output_obj_name'])
-                out_file_path = os.path.join("%s.zip" % params['output_obj_name'])
+                out_file_path = os.path.join(self.__SCRATCH,"%s.zip" % params['output_obj_name'])
+                script_util.zip_files(self.__LOGGER, output_dir,out_file_path)
+                #out_file_path = os.path.join("%s.zip" % params['output_obj_name'])
 		#handler_util.cleanup(self.__LOGGER,tophat_dir)
             except Exception, e:
                 raise KBaseRNASeqException("Failed to compress the index: {0}".format(e))
@@ -882,8 +954,7 @@ class KBaseRNASeq:
             raise KBaseRNASeqException("Error Running Tophatcall {0}".format("".join(traceback.format_exc())))
 	finally:
 	    handler_util.cleanup(self.__LOGGER,tophat_dir)
-	    os.remove(out_file_path)
-#	
+	    #if os.path.exists(out_file_path): os.remove(out_file_path)
 	     
         #END TophatCall
 
@@ -899,13 +970,16 @@ class KBaseRNASeq:
         # return variables are: returnVal
         #BEGIN CufflinksCall
 	user_token=ctx['token']
-	pprint(params)
+	#pprint(params)
         self.__LOGGER.info("Started CufflinksCall")
         
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
         hs = HandleService(url=self.__HS_URL, token=user_token)
         try:
-            cufflinks_dir = self.__CUFFLINKS_DIR
+            #if os.path.exists(self.__SCRATCH):
+            #    handler_util.cleanup(self.__LOGGER,self.__SCRATCH)
+            if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH) 
+	    cufflinks_dir = self.__SCRATCH +'/tmp'
             if os.path.exists(cufflinks_dir):
                 handler_util.cleanup(self.__LOGGER,cufflinks_dir)
             if not os.path.exists(cufflinks_dir): os.makedirs(cufflinks_dir)
@@ -922,7 +996,7 @@ class KBaseRNASeq:
 
             ## Downloading data from shock
 	    if 'data' in sample and sample['data'] is not None:
-                self.__LOGGER.info("Downloading alignment sample")
+                self.__LOGGER.info("Downloading Sample Alignment")
                 try:
                      script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=sample['data']['file']['id'],filename=sample['data']['file']['file_name'], directory=cufflinks_dir,token=user_token)
                 except Exception,e:
@@ -936,7 +1010,7 @@ class KBaseRNASeq:
             else:
                 raise KBaseRNASeqException("No data was included in the referenced sample id");
 	    if 'data' in annotation_gtf and annotation_gtf['data'] is not None:
-                self.__LOGGER.info("Downloading ReferenceAnnotation")
+                self.__LOGGER.info("Downloading Reference Annotation")
                 try:
                      agtf_fn = annotation_gtf['data']['handle']['file_name']
                      script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=annotation_gtf['data']['handle']['id'],filename=agtf_fn, directory=cufflinks_dir,token=user_token)
@@ -963,32 +1037,44 @@ class KBaseRNASeq:
 		     cufflinks_command += (' --overhang-tolerance '+str(params['overhang-tolerance']))
 		
 		cufflinks_command += " -o {0} -G {1} {2}".format(output_dir,gtf_file,input_file)
-                self.__LOGGER.info("Executing {0}".format(cufflinks_command))
-		script_util.runProgram(self.__LOGGER,"cufflinks",cufflinks_command,None,os.getcwd())
+                self.__LOGGER.info("Executing: cufflinks {0}".format(cufflinks_command))
+		ret = script_util.runProgram(None,"cufflinks",cufflinks_command,None,cufflinks_dir)
+		result = ret["result"]
+		for line in result.splitlines(False):
+		    self.__LOGGER.info(line)
+		stderr = ret["stderr"]
+		prev_value = ''
+		for line in stderr.splitlines(False):
+		    if line.startswith('> Processing Locus'):
+			words = line.split()
+			cur_value = words[len(words) - 1]
+			if prev_value != cur_value:
+			    prev_value = cur_value
+			    self.__LOGGER.info(line)
+		    else:
+			prev_value = ''
+			self.__LOGGER.info(line)
 
             except Exception,e:
-                raise KBaseRNASeqException("Error executing cufflinks {0},{1},{2}".format(cufflinks_command,os.getcwd(),e))
+                raise KBaseRNASeqException("Error executing cufflinks {0},{1},{2}".format(cufflinks_command,cufflinks_dir,e))
             ##Parse output files
 	    exp_dict = script_util.parse_FPKMtracking(os.path.join(output_dir,"genes.fpkm_tracking"))
             ##  compress and upload to shock
             try:
-                self.__LOGGER.info("Ziping output")
-
-                script_util.zip_files(self.__LOGGER,output_dir, "{0}.zip".format(params['output_obj_name']))
+                self.__LOGGER.info("Zipping Cufflinks output")
+		out_file_path = os.path.join(self.__SCRATCH,"%s.zip" % params['output_obj_name'])
+                script_util.zip_files(self.__LOGGER,output_dir,out_file_path)
                 #handle = hs.upload("{0}.zip".format(params['output_obj_name']))
             except Exception,e:
 		self.__LOGGER.exception("".join(traceback.format_exc()))
                 raise KBaseRNASeqException("Error executing cufflinks {0},{1}".format(os.getcwd(),e))
 	    try:
-		out_file_path = os.path.join("%s.zip" % params['output_obj_name'])
+		#out_file_path = os.path.join(self.__SCRATCH,"%s.zip" % params['output_obj_name'])
 		handle = hs.upload(out_file_path)
-                #handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
-                #if self.__PUBLIC_SHOCK_NODE is 'true': 
-                #    script_util.shock_node_2b_public(self.__LOGGER,node_id=handle['id'],shock_service_url=handle['url'],token=user_token)
+		script_util.shock_node_2b_public(self.__LOGGER,node_id=handle['id'],shock_service_url=handle['url'],token=user_token)
             except Exception, e:
 	        self.__LOGGER.exception("".join(traceback.format_exc()))	
                 raise KBaseRNASeqException("Error while zipping the output objects: {0}".format(e))
-	
 
 	    ## Save object to workspace
 	    try:
@@ -1029,7 +1115,7 @@ class KBaseRNASeq:
                  raise KBaseRNASeqException("Error Running Cufflinks : {0}".format(e))
         finally:
                  handler_util.cleanup(self.__LOGGER,cufflinks_dir)
-		 os.remove(out_file_path)	
+		 #if os.path.exists(out_file_path): os.remove(out_file_path)	
         #END CufflinksCall
 
         # At some point might do deeper type checking...
@@ -1044,16 +1130,20 @@ class KBaseRNASeq:
         # return variables are: returnVal
         #BEGIN CuffmergeCall
 	user_token=ctx['token']
-	pprint(params)
+	#pprint(params)
         self.__LOGGER.info("Started CuffmergeCall")
         
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
         hs = HandleService(url=self.__HS_URL, token=user_token)
+        #list_file = open(cuffmerge_dir+"/"+self.__ASSEMBLY_GTF_FN,'w')
         try:
-            cuffmerge_dir = self.__CUFFMERGE_DIR
+            if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
+            cuffmerge_dir = self.__SCRATCH +'/tmp'
             if os.path.exists(cuffmerge_dir):
                 handler_util.cleanup(self.__LOGGER,cuffmerge_dir)
             if not os.path.exists(cuffmerge_dir): os.makedirs(cuffmerge_dir)
+	    
+	    # Getting the provenance for the data
 	    provenance = [{}]
             if 'provenance' in ctx:
                 provenance = ctx['provenance']
@@ -1076,43 +1166,53 @@ class KBaseRNASeq:
 			try:
                          script_util.download_file_from_shock(self.__LOGGER, shock_service_url=annotation['data']['handle']['url'], shock_id=annotation['data']['handle']['id'],filename=annotation_name, directory=cuffmerge_dir,token=user_token)
                     	except Exception,e:
-                            raise Exception( "Unable to download shock file, {0}".format(e))
-                self.__LOGGER.info("Downloading each expression")
+                            raise Exception( "Unable to Reference Annotation file from shock , {0}".format(e))
+		if 'expression_values' in analysis['data']:
+			### Add validate RNASeqAnalysis datatype and throw error message
+			rna_samples =  analysis['data']['sample_ids']
+			le = analysis['data']['expression_values']
+			le_samples = [ k for k,v in le.items() ]
+			missing_expression  =  [ x for x in rna_samples if  x not in le_samples ]
+			if len(missing_expression) != 0:
+				raise ValueError("Please run the methods 'Align Reads using Tophat/Bowtie2' and 'Assemble Transcripts using Cufflinks' for all the RNASeqSamples before running this step. The RNASeqAnalysis object is missing Cufflinks expression for few samples. ")
+                
+			self.__LOGGER.info("Downloading each expression")
 			
-                shock_re =  re.compile(r'^(.*)/node/([^?]*)\??')
-                # TODO: Change expression_values object design
-		le = analysis['data']['expression_values']
-                #for le in analysis['data']['expression_values']:
-                for k,v in le.items():
-                    ko,vo=ws_client.get_objects([{'ref' : k}, {'ref' : v} ])
-                    sp = os.path.join(cuffmerge_dir, ko['info'][1]) 
-		    if not os.path.exists(sp): os.makedirs(sp)
+                	shock_re =  re.compile(r'^(.*)/node/([^?]*)\??')
+                	# TODO: Change expression_values object design
+			#le = analysis['data']['expression_values']
+                	for k,v in le.items():
+                    		ko,vo=ws_client.get_objects([{'ref' : k}, {'ref' : v} ])
+                    		sp = os.path.join(cuffmerge_dir, ko['info'][1]) 
+		    		if not os.path.exists(sp): os.makedirs(sp)
                    
-                    if 'shock_url' not in vo['data']:
-                        self.__LOGGER.info("{0} does not contain shock_url and we skip {1}".format(vo['info'][1], v))
-                        next 
+                    		if 'shock_url' not in vo['data']:
+                        		self.__LOGGER.info("{0} does not contain shock_url and we skip {1}".format(vo['info'][1], v))
+                        		next 
 
-                    se = shock_re.search(vo['data']['shock_url'])
-                    if se is None: 
-                        self.__LOGGER.info("{0} does not contain shock_url and we skip {1}".format(vo['info'][1], v))
-                        next 
+                    		se = shock_re.search(vo['data']['shock_url'])
+                    		if se is None: 
+                        		self.__LOGGER.info("{0} does not contain shock_url and we skip {1}".format(vo['info'][1], v))
+                        		next 
 
-                    efn = "{0}.zip".format(vo['info'][1])
-                    try:
-                         script_util.download_file_from_shock(self.__LOGGER, shock_service_url=se.group(1), shock_id=se.group(2),filename=efn, directory=cuffmerge_dir,token=user_token)
-                    except Exception,e:
-                            raise Exception( "Unable to download shock file, {0}".format(e))
-	            try:
-                        script_util.unzip_files(self.__LOGGER,os.path.join(cuffmerge_dir,efn),sp)
-                    except Exception, e:
-                           raise Exception("Unzip indexfile error: Please contact help@kbase.us")
-                    if not os.path.exists("{0}/transcripts.gtf\n".format(sp)):
-                       # Would it be better to be skipping this? if so, replace Exception to be next
-		       next		   
-                       #raise Exception("{0} does not contain transcripts.gtf:  {1}".format(vo['info'][1], v))
-                    list_file.write("{0}/transcripts.gtf\n".format(sp))
+                    		efn = "{0}.zip".format(vo['info'][1])
+                    		try:
+                         		script_util.download_file_from_shock(self.__LOGGER, shock_service_url=se.group(1), shock_id=se.group(2),filename=efn, directory=cuffmerge_dir,token=user_token)
+                    		except Exception,e:
+                            		raise Exception( "Unable to download shock file, {0}".format(e))
+	            		try:
+                        		script_util.unzip_files(self.__LOGGER,os.path.join(cuffmerge_dir,efn),sp)
+                    		except Exception, e:
+                           		raise Exception("Unzip cufflinks file  error: Please contact help@kbase.us")
+                    		if not os.path.exists("{0}/transcripts.gtf\n".format(sp)):
+                       		# Would it be better to be skipping this? if so, replace Exception to be next
+		       			next		   
+                       		#raise Exception("{0} does not contain transcripts.gtf:  {1}".format(vo['info'][1], v))
+                    		list_file.write("{0}/transcripts.gtf\n".format(sp))
+		else:
+                	raise ValueError("Please run the methods 'Align Reads using Tophat/Bowtie2' and 'Assemble Transcripts using Cufflinks' for all the RNASeqSamples before running this step.The RNASeqAnalysis object does not have tag 'expression_values'");
             else:
-                raise KBaseRNASeqException("No data was included in the referenced analysis");
+                raise KBaseRNASeqException("The Input RNASeqAnalyis object is not properly formed ");
             list_file.close()
 
             ##  now ready to call
@@ -1120,52 +1220,32 @@ class KBaseRNASeq:
             try:
                 # TODO: add reference GTF later, seems googledoc command looks wrong
 		num_p = multiprocessing.cpu_count()
-	        #print 'processors count is ' +  str(num_p)
-            	#cuffmerge_command = (' -p '+str(num_p))
 		cuffmerge_command = " -p {0} -o {1} -g {2}/{3} {4}/{5}".format(str(num_p),output_dir,cuffmerge_dir,annotation_name,cuffmerge_dir,self.__ASSEMBLY_GTF_FN)
-                #command_list= ['cuffmerge', '-o', output_dir, '-G', agtf_fn, "{0}/accepted_hits.bam".format(cuffmerge_dir)]
-                #if 'num_threads' in params and params['num_threads'] is not None:
-                #     command_list.append('-p')
-                #     command_list.append(params['num_threads'])
-                #for arg in ['min-intron-length','max-intron-length','overhang-tolerance']:
-                #    if arg in params and params[arg] is not None:
-                #         command_list.append('--{0}'.format(arg))
-                #         command_list.append(params[arg])
-
-                self.__LOGGER.info("Executing {0}".format(cuffmerge_command))
-	        cmdline_output = script_util.runProgram(self.__LOGGER,"cuffmerge",cuffmerge_command,None,os.getcwd())
+                self.__LOGGER.info("Executing: cuffmerge {0}".format(cuffmerge_command))
+	        cmdline_output = script_util.runProgram(self.__LOGGER,"cuffmerge",cuffmerge_command,None,cuffmerge_dir)
 		if 'result' in cmdline_output:
 			report = cmdline_output['result']	
             except Exception,e:
-                raise KBaseRNASeqException("Error executing cuffmerge {0},{1},{2}".format(cuffmerge_command,os.getcwd(),e))
+                raise KBaseRNASeqException("Error executing cuffmerge {0},{1},{2}".format(cuffmerge_command,cuffmerge_dir,e))
             
             ##  compress and upload to shock
             try:
-                self.__LOGGER.info("Ziping output")
-
-                script_util.zip_files(self.__LOGGER,output_dir, "{0}.zip".format(params['output_obj_name']))
-                #handle = hs.upload("{0}.zip".format(params['output_obj_name']))
+                self.__LOGGER.info("Zipping Cuffmerge output")
+		out_file_path = os.path.join(self.__SCRATCH,"{0}.zip".format(params['output_obj_name']))
+                script_util.zip_files(self.__LOGGER,output_dir,out_file_path)
             except Exception,e:
                 raise KBaseRNASeqException("Error executing cuffmerge {0},{1}".format(os.getcwd(),e))
 	    try:
-		out_file_path = os.path.join("{0}.zip".format(params['output_obj_name']))
 		handle = hs.upload(out_file_path)
-                #handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
-                #if self.__PUBLIC_SHOCK_NODE is 'true': 
-                #    script_util.shock_node_2b_public(self.__LOGGER,node_id=handle['id'],shock_service_url=handle['url'],token=user_token)
             except Exception, e:
                 raise KBaseRNASeqException("Failed to upload the index: {0}".format(e))
 	   
-            #analysis['data']['transcriptome_id'] = "{0}/{1}".format(params["ws_id"], params['output_obj_name'])	
-                # raise Exception(task_output["stdout"], task_output["stderr"])
-
 	    ## Save object to workspace
 	    try:
                 self.__LOGGER.info("Saving Cuffmerge object to workspace")
                 cm_obj = { 'file' : handle,
                            'analysis' : analysis['data']
                 	 }
-		#pprint(cm_obj)
             	res1= ws_client.save_objects(
                                         {"workspace":params['ws_id'],
                                          "objects": [{
@@ -1173,6 +1253,8 @@ class KBaseRNASeq:
                                          "data":cm_obj,
                                          "name":params['output_obj_name']}
                                         ]})
+
+	   ## Update the Analysis  object 
 
                 analysis['data']['transcriptome_id'] = "{0}/{1}".format(params["ws_id"], params['output_obj_name'])	
 	        res= ws_client.save_objects(
@@ -1186,13 +1268,11 @@ class KBaseRNASeq:
 	    except Exception, e:
                 raise KBaseRNASeqException("Failed to upload the objects for Cuffmerge KBaseRNASeq.RNASeqAnalysis and KBaseRNASeq.RNASeqCuffmergetranscriptome: {0}".format(e))
 	    returnVal = analysis['data'] 
-	    #returnVal = { 'workspace' : params['ws_id'] , 'output' : params['analysis'] }
 	except KBaseRNASeqException,e:
                  self.__LOGGER.exception("".join(traceback.format_exc()))
                  raise
 	finally:
                  handler_util.cleanup(self.__LOGGER,cuffmerge_dir)
-		 os.remove(out_file_path)
         #END CuffmergeCall
 
         # At some point might do deeper type checking...
@@ -1207,13 +1287,17 @@ class KBaseRNASeq:
         # return variables are: returnVal
         #BEGIN CuffdiffCall
 	user_token=ctx['token']
-	pprint(params)
+	#pprint(params)
         self.__LOGGER.info("Started CuffdiffCall")
 
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
         hs = HandleService(url=self.__HS_URL, token=user_token)
         try:
-            cuffdiff_dir = self.__CUFFDIFF_DIR
+            #if os.path.exists(self.__SCRATCH):
+            #    handler_util.cleanup(self.__LOGGER,self.__SCRATCH)
+            if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
+	    cuffdiff_dir = self.__SCRATCH +'/tmp'
+            #cuffdiff_dir = self.__CUFFDIFF_DIR
             if os.path.exists(cuffdiff_dir):
                 handler_util.cleanup(self.__LOGGER,cuffdiff_dir)
             if not os.path.exists(cuffdiff_dir): os.makedirs(cuffdiff_dir)
@@ -1231,157 +1315,174 @@ class KBaseRNASeq:
 	    alignments  = []
 	    sample_labels = []
             if 'data' in analysis : #and analysis['data'] is not None:
-                self.__LOGGER.info("Downloading each expression")
+            	if 'alignments' in analysis['data'] and 'expression_values' in analysis['data'] and 'transcriptome_id' in analysis['data']:
+                        ### Add validate RNASeqAnalysis datatype and throw error message
+                        rna_samples =  analysis['data']['sample_ids']
+                        le = analysis['data']['alignments']
+			ce = analysis['data']['expression_values']
+                        le_samples = [ k for k,v in le.items() ]
+			ce_samples = [ k for k,v in ce.items() ]
+                        missing_expression  =  [ x for x in rna_samples if  x not in le_samples or x not in ce_samples ]
+                        if len(missing_expression) != 0:
+                                raise ValueError("Please run the methods 'Align Reads using Tophat/Bowtie2' and 'Assemble Transcripts using Cufflinks' for all the RNASeqSamples before running this step.The RNASeqAnalysis object is missing Tophat/Bowtie2 alignments or Cufflinks expression for few samples. ")
+			
+			self.__LOGGER.info("Downloading Sample Expression files")
 
-                shock_re =  re.compile(r'^(.*)/node/([^?]*)\??')
-                # TODO: Change expression_values object design
-		le  = analysis['data']['alignments']
-                #for le in analysis['data']['alignments']:
-                for k,v in le.items():
-                    ko,vo=ws_client.get_objects([{'ref' : k}, {'ref' : v} ])
-                    #sp = os.path.join(cuffdiff_dir, ko['info'][1])
-                    sp = os.path.join(cuffdiff_dir, ko['data']['metadata']['condition']+"/"+ko['data']['metadata']['replicate_id'])
-		    #print sp 
-                    if not os.path.exists(sp): os.makedirs(sp)
-		    condition_id = ko['data']['metadata']['condition']
-		    if not condition_id in sample_labels:
-			sample_labels.append(condition_id)
-                    if 'file' not in vo['data']:
-                        self.__LOGGER.info("{0} does not contain file and we skip {1}".format(vo['info'][1], v))
-                        next
-		    se = vo['data']['file']['id']
-		    se_url = vo['data']['file']['url']
-		    efn = vo['data']['file']['file_name']
-                    #se = shock_re.search(vo['data']['file'])
-                    #if se is None:
-                    #    self.__LOGGER.info("{0} does not contain shock_url and we skip {1}".format(vo['info'][1], v))
-                    #    next
+                	shock_re =  re.compile(r'^(.*)/node/([^?]*)\??')
+			#le  = analysis['data']['alignments']
+                	#for le in analysis['data']['alignments']:
+                	for k,v in le.items():
+                    		ko,vo=ws_client.get_objects([{'ref' : k}, {'ref' : v} ])
+                    		#sp = os.path.join(cuffdiff_dir, ko['info'][1])
+                    		sp = os.path.join(cuffdiff_dir, ko['data']['metadata']['condition']+"/"+ko['data']['metadata']['replicate_id'])
+                    		if not os.path.exists(sp): os.makedirs(sp)
+		    		condition_id = ko['data']['metadata']['condition']
+		    		if not condition_id in sample_labels:
+					sample_labels.append(condition_id)
+                    		if 'file' not in vo['data']:
+                        		self.__LOGGER.info("{0} does not contain file and we skip {1}".format(vo['info'][1], v))
+                        		next
+		    		se = vo['data']['file']['id']
+		    		se_url = vo['data']['file']['url']
+		    		efn = vo['data']['file']['file_name']
+                    		#se = shock_re.search(vo['data']['file'])
+                    		#if se is None:
+                    		#    self.__LOGGER.info("{0} does not contain shock_url and we skip {1}".format(vo['info'][1], v))
+                    		#    next
 
-                    #efn = "{0}.zip".format(vo['info'][1])
-	 	    try:
-                         script_util.download_file_from_shock(self.__LOGGER, shock_service_url=se_url, shock_id=se,filename=efn, directory=cuffdiff_dir,token=user_token)
+                    		#efn = "{0}.zip".format(vo['info'][1])
+	 	    		try:
+                        		script_util.download_file_from_shock(self.__LOGGER, shock_service_url=se_url, shock_id=se,filename=efn, directory=cuffdiff_dir,token=user_token)
 			 
-                    except Exception,e:
-                            raise Exception( "Unable to download shock file, {0}".format(e))
-                    try:
-                        script_util.unzip_files(self.__LOGGER,os.path.join(cuffdiff_dir,efn),sp)
-                    except Exception, e:
-                           raise Exception("Unzip indexfile error: Please contact help@kbase.us")
-                    if not os.path.exists("{0}/accepted_hits.bam\n".format(sp)):
-                       # Would it be better to be skipping this? if so, replace Exception to be next
-                       next
-		       #alignments.append("{0}/accepted_hits.bam ".format(sp))
-                       #raise Exception("{0} does not contain transcripts.gtf:  {1}".format(vo['info'][1], v))
-                    #list_file.write("{0}/transcripts.gtf\n".format(sp))
-            else:
-                raise KBaseRNASeqException("No data was included in the referenced analysis");
-            	#list_file.close()
+                    		except Exception,e:
+                            		raise Exception( "Unable to download shock file, {0}".format(e))
+                    		try:
+                        		script_util.unzip_files(self.__LOGGER,os.path.join(cuffdiff_dir,efn),sp)
+                    		except Exception, e:
+                          		 raise Exception("Unzip indexfile error: Please contact help@kbase.us")
+                    		if not os.path.exists("{0}/accepted_hits.bam\n".format(sp)):
+                       		# Would it be better to be skipping this? if so, replace Exception to be next
+                       			next
+		       			#alignments.append("{0}/accepted_hits.bam ".format(sp))
+                       			#raise Exception("{0} does not contain transcripts.gtf:  {1}".format(vo['info'][1], v))
+                    			#list_file.write("{0}/transcripts.gtf\n".format(sp))
+            			#else:
+                			#raise KBaseRNASeqException("No data was included in the referenced analysis");
+            			#list_file.close()
 
-            ##  now ready to call
-            output_dir = os.path.join(cuffdiff_dir, params['output_obj_name'])
-	    #bam_files = " ".join([i for i in alignments])
-	    for l in sample_labels:
-		#for path, subdirs, files in os.walk(root):
-       		#		os.path.join(path,"accepted_hits.bam")
-		rep_files=",".join([ os.path.join(cuffdiff_dir+'/'+l,sub+'/accepted_hits.bam') for sub in os.listdir(os.path.join(cuffdiff_dir,l)) if os.path.isdir(os.path.join(cuffdiff_dir,l+'/'+sub))])
-		alignments.append(rep_files) 
+            			##  now ready to call
+            		output_dir = os.path.join(cuffdiff_dir, params['output_obj_name'])
+	    			#bam_files = " ".join([i for i in alignments])
+	    		for l in sample_labels:
+					#for path, subdirs, files in os.walk(root):
+       					#		os.path.join(path,"accepted_hits.bam")
+				rep_files=",".join([ os.path.join(cuffdiff_dir+'/'+l,sub+'/accepted_hits.bam') for sub in os.listdir(os.path.join(cuffdiff_dir,l)) if os.path.isdir(os.path.join(cuffdiff_dir,l+'/'+sub))])
+				alignments.append(rep_files) 
             
-	    bam_files = " ".join([i for i in alignments])
-	    #print bam_files
-	    labels = ",".join(sample_labels)		
-	    merged_gtf = analysis['data']['transcriptome_id']
-	    try:
-                transcriptome = ws_client.get_objects(
-                                        [{ 'ref' : merged_gtf }])[0]
-            except Exception,e:
-                 self.__LOGGER.exception("".join(traceback.format_exc()))
-                 raise KBaseRNASeqException("Error Downloading merged transcriptome ") 
-	    t_url = transcriptome['data']['file']['url']
-	    t_id = transcriptome['data']['file']['id']
-	    t_name = transcriptome['data']['file']['file_name']
-	    try:
-                 script_util.download_file_from_shock(self.__LOGGER, shock_service_url=t_url, shock_id=t_id,filename=t_name, directory=cuffdiff_dir,token=user_token)
+	    		bam_files = " ".join([i for i in alignments])
+	    		#print bam_files
+	    		labels = ",".join(sample_labels)		
+	   		merged_gtf = analysis['data']['transcriptome_id']
+	    		try:
+                		transcriptome = ws_client.get_objects([{ 'ref' : merged_gtf }])[0]
+            		except Exception,e:
+                 		self.__LOGGER.exception("".join(traceback.format_exc()))
+                 		raise KBaseRNASeqException("Error Downloading merged transcriptome ") 
+	    		t_url = transcriptome['data']['file']['url']
+	    		t_id = transcriptome['data']['file']['id']
+	    		t_name = transcriptome['data']['file']['file_name']
+	    		try:
+                 		script_util.download_file_from_shock(self.__LOGGER, shock_service_url=t_url, shock_id=t_id,filename=t_name, directory=cuffdiff_dir,token=user_token)
 
-            except Exception,e:
-                 raise Exception( "Unable to download transcriptome shock file, {0}".format(e))
-            try:
-                 script_util.unzip_files(self.__LOGGER,os.path.join(cuffdiff_dir,t_name),cuffdiff_dir)
-            except Exception, e:
-                 raise Exception("Unzip transcriptome zip file  error: Please contact help@kbase.us")
-            gtf_file = os.path.join(cuffdiff_dir,"merged.gtf")
+            		except Exception,e:
+                 		raise Exception( "Unable to download transcriptome shock file, {0}".format(e))
+            		try:
+                 		script_util.unzip_files(self.__LOGGER,os.path.join(cuffdiff_dir,t_name),cuffdiff_dir)
+            		except Exception, e:
+                 		raise Exception("Unzip transcriptome zip file  error: Please contact help@kbase.us")
+            		gtf_file = os.path.join(cuffdiff_dir,"merged.gtf")
 	   
-            ### Adding advanced options
-	    num_p = multiprocessing.cpu_count()
-            #print 'processors count is ' +  str(num_p)
-	    cuffdiff_command = (' -p '+str(num_p))
-            #if('num-threads' in params and params['num-threads'] is not None) : cuffdiff_command += (' -p '+str(params['num-threads']))
-	    if('time-series' in params and params['time-series'] != 0) : cuffdiff_command += (' -T ')
-	    if('min-alignment-count' in params and params['min-alignment-count'] is not None ) : cuffdiff_command += (' -c '+str(params['min-alignment-count']))
-	    if('multi-read-correct' in params and params['multi-read-correct']  is not None): cuffdiff_command += (' -u ')
-	    if('library-type' in params and params['library-type'] is not None ) : cuffdiff_command += ( ' --library-type '+params['library-type'])
-	    if('library-norm-method' in params and params['library-norm-method'] is not None ) : cuffdiff_command += ( ' --library-norm-method '+params['library-norm-method'])
+            		### Adding advanced options
+	    		num_p = multiprocessing.cpu_count()
+            		#print 'processors count is ' +  str(num_p)
+	    		cuffdiff_command = (' -p '+str(num_p))
+            		#if('num-threads' in params and params['num-threads'] is not None) : cuffdiff_command += (' -p '+str(params['num-threads']))
+	    		if('time-series' in params and params['time-series'] != 0) : cuffdiff_command += (' -T ')
+	    		if('min-alignment-count' in params and params['min-alignment-count'] is not None ) : cuffdiff_command += (' -c '+str(params['min-alignment-count']))
+	    		if('multi-read-correct' in params and params['multi-read-correct'] != 0 ): cuffdiff_command += (' --multi-read-correct ')
+	    		if('library-type' in params and params['library-type'] is not None ) : cuffdiff_command += ( ' --library-type '+params['library-type'])
+	    		if('library-norm-method' in params and params['library-norm-method'] is not None ) : cuffdiff_command += ( ' --library-norm-method '+params['library-norm-method'])
  
-	    try:
-                # TODO: add reference GTF later, seems googledoc command looks wrong
-                cuffdiff_command += " -o {0} -L {1} -u {2} {3}".format(output_dir,labels,gtf_file,bam_files)
-		self.__LOGGER.info("Executing {0}".format(cuffdiff_command))
-                script_util.runProgram(self.__LOGGER,"cuffdiff",cuffdiff_command,None,os.getcwd())
+	    		try:
+                		# TODO: add reference GTF later, seems googledoc command looks wrong
+                		cuffdiff_command += " -o {0} -L {1} -u {2} {3}".format(output_dir,labels,gtf_file,bam_files)
+				self.__LOGGER.info("Executing: cuffdiff {0}".format(cuffdiff_command))
+                		ret = script_util.runProgram(None,"cuffdiff",cuffdiff_command,None,cuffdiff_dir)
+				result = ret["result"]
+                		for line in result.splitlines(False):
+                    			self.__LOGGER.info(line)
+					stderr = ret["stderr"]
+                			prev_value = ''
+                			for line in stderr.splitlines(False):
+                    				if line.startswith('> Processing Locus'):
+                        				words = line.split()
+                        				cur_value = words[len(words) - 1]
+                        				if prev_value != cur_value:
+                            					prev_value = cur_value
+                            					self.__LOGGER.info(line)
+                    				else:
+                        				prev_value = ''
+                        				self.__LOGGER.info(line)
+        		except Exception,e:
+                		raise KBaseRNASeqException("Error executing cuffdiff {0},{1},{2}".format(cuffdiff_command,cuffdiff_dir,e))
 
-            except Exception,e:
-                raise KBaseRNASeqException("Error executing cuffdiff {0},{1},{2}".format(cuffdiff_command,os.getcwd(),e))
-
-            ##  compress and upload to shock
-            try:
-                self.__LOGGER.info("Ziping output")
-
-                script_util.zip_files(self.__LOGGER,output_dir, "{0}.zip".format(params['output_obj_name']))
-                #handle = hs.upload("{0}.zip".format(params['output_obj_name']))
-            except Exception,e:
-                raise KBaseRNASeqException("Error executing cuffdiff {0},{1}".format(os.getcwd(),e))
-            try:
-		out_file_path = os.path.join("{0}.zip".format(params['output_obj_name']))
-                handle = hs.upload(out_file_path)
-                #handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
-                #if self.__PUBLIC_SHOCK_NODE is 'true':
-                #    script_util.shock_node_2b_public(self.__LOGGER,node_id=handle['id'],shock_service_url=handle['url'],token=user_token)
-            except Exception, e:
-                raise KBaseRNASeqException("Failed to upload the Cuffdiff output files: {0}".format(e))
-
-            #analysis['data']['cuffdiff_diff_exp_id'] = "{0}/{1}".format(params['ws_id'],params['output_obj_name'])
-                # raise Exception(task_output["stdout"], task_output["stderr"])
-
-            ## Save object to workspace
-            try:
-		self.__LOGGER.info("Saving Cuffdiff object to workspace")
-                cm_obj = { 'file' : handle,
-                           'analysis' : analysis['data']
-                	  }
-                res1= ws_client.save_objects(
-                                        {"workspace":params['ws_id'],
-                                         "objects": [{
-                                         "type":"KBaseRNASeq.RNASeqCuffdiffdifferentialExpression",
-                                         "data":cm_obj,
-                                         "name":params['output_obj_name']}
-                                        ]})	
+            		##  compress and upload to shock
+            		try:
+                		self.__LOGGER.info("Zipping Cuffdiff output")
+				out_file_path = os.path.join(self.__SCRATCH,"{0}.zip".format(params['output_obj_name']))
+                		script_util.zip_files(self.__LOGGER,output_dir,out_file_path)
+                		#handle = hs.upload("{0}.zip".format(params['output_obj_name']))
+            		except Exception,e:
+                		raise KBaseRNASeqException("Error executing cuffdiff {0},{1}".format(os.getcwd(),e))
+            		try:
+				#out_file_path = os.path.join("{0}.zip".format(params['output_obj_name']))
+                		handle = hs.upload(out_file_path)
+            		except Exception, e:
+                		raise KBaseRNASeqException("Failed to upload the Cuffdiff output files: {0}".format(e))
+			
+            		## Save object to workspace
+            		try:
+				self.__LOGGER.info("Saving Cuffdiff object to workspace")
+                		cm_obj = { 'file' : handle,
+                           		   'analysis' : analysis['data']
+                	  		 }
+                		res1= ws_client.save_objects(
+                                        		{"workspace":params['ws_id'],
+                                         		 "objects": [{
+                                         				"type":"KBaseRNASeq.RNASeqCuffdiffdifferentialExpression",
+                                         				"data":cm_obj,
+                                         				"name":params['output_obj_name']}
+                                        			]})	
 		
-                analysis['data']['cuffdiff_diff_exp_id'] = "{0}/{1}".format(params['ws_id'],params['output_obj_name'])
-		res= ws_client.save_objects(
-                                        {"workspace":params['ws_id'],
-                                         "objects": [{
-                                         "type":"KBaseRNASeq.RNASeqAnalysis",
-                                         "data":analysis['data'],
-                                         "name":params['rnaseq_exp_details']}
-                                        ]})
-            except Exception, e:
-                raise KBaseRNASeqException("Failed to upload the KBaseRNASeq.RNASeqCuffdiffdifferentialExpression and KBaseRNASeq.RNASeqAnalysis : {0}".format(e))
+                		analysis['data']['cuffdiff_diff_exp_id'] = "{0}/{1}".format(params['ws_id'],params['output_obj_name'])
+				res= ws_client.save_objects(
+                                        		{"workspace":params['ws_id'],
+                                         		 "objects": [{
+                                         		 "type":"KBaseRNASeq.RNASeqAnalysis",
+                                         		 "data":analysis['data'],
+                                         		 "name":params['rnaseq_exp_details']}
+                                        		]})
+            		except Exception, e:
+                		raise KBaseRNASeqException("Failed to upload the KBaseRNASeq.RNASeqCuffdiffdifferentialExpression and KBaseRNASeq.RNASeqAnalysis : {0}".format(e))
+		else:
+                        raise ValueError("Please run the methods 'Align Reads using Tophat/bowtie2' , 'Assemble Transcripts using Cufflinks' for all the RNASeqSamples. Also run the method 'Merge Trancripts using Cuffmerge' before running this step. The RNASeqAnalysis object has either of the missing tags 'alignments' , 'expression_values' , 'transcriptome_id' ");
 
-	    returnVal = analysis['data']
+		returnVal = analysis['data']
         except KBaseRNASeqException,e:
                  self.__LOGGER.exception("".join(traceback.format_exc()))
                  raise
 	finally:
                  handler_util.cleanup(self.__LOGGER,cuffdiff_dir)
-		 os.remove(out_file_path)
         #END CuffdiffCall
 
         # At some point might do deeper type checking...
@@ -1414,7 +1515,7 @@ class KBaseRNASeq:
                 raise KBaseRNASeqException("File Not Found: {}".format(e))
 	#download Shock Node
 	if 'data' in obj and obj['data'] is not None:
-                self.__LOGGER.info("Downloading alignment sample")
+                self.__LOGGER.info("Downloading Sample Alignments")
                 try:
                      script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=obj['data']['file']['id'],
 			 				filename=obj['data']['file']['file_name'], directory=stats_dir,token=user_token)
@@ -1441,7 +1542,7 @@ class KBaseRNASeq:
         	except Exception as e:
                 	raise FileNotFound("File Not Found: {}".format(e))
 		if 'data' in annotation and annotation['data'] is not None:
-               		self.__LOGGER.info("Downloading annotation")
+               		self.__LOGGER.info("Downloading Reference Annotation")
                 	try:
                      		script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=annotation['data']['file']['id'],
                                                         filename=annotation['data']['file']['file_name'], directory=stats_dir,token=user_token)
@@ -1461,7 +1562,7 @@ class KBaseRNASeq:
 	
 	#Run Command
         try:
-                self.__LOGGER.info("Executing: {0} {1}".format("samtools", align_stats_cmd))
+                self.__LOGGER.info("Executing: samtools {0} {1}".format("samtools", align_stats_cmd))
 		res = script_util.runProgram(self.__LOGGER,"samtools", align_stats_cmd,None,None)
         except Exception,e:
                 raise KBaseRNASeqException("Error running samtools flagstat {0},{1}".format(bam_file,e))
@@ -1576,4 +1677,11 @@ class KBaseRNASeq:
             raise ValueError('Method createExpressionHistogram return value ' +
                              'returnVal is not type dict as required.')
         # return the results
+        return [returnVal]
+
+    def status(self, ctx):
+        #BEGIN_STATUS
+        returnVal = {'state': "OK", 'message': "", 'version': self.VERSION, 
+                     'git_url': self.GIT_URL, 'git_commit_hash': self.GIT_COMMIT_HASH}
+        #END_STATUS
         return [returnVal]

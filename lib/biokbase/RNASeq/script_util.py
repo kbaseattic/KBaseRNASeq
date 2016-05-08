@@ -19,14 +19,57 @@ import subprocess
 from zipfile import ZipFile
 from os import listdir
 from os.path import isfile, join
-
+import contig_id_mapping as c_mapping
 try:
     from biokbase.HandleService.Client import HandleService
 except:
     from biokbase.AbstractHandle.Client import AbstractHandle as HandleService
 
 from biokbase.workspace.client import Workspace
+import doekbase.data_api
+from doekbase.data_api.annotation.genome_annotation.api import GenomeAnnotationAPI, GenomeAnnotationClientAPI
+from doekbase.data_api.sequence.assembly.api import AssemblyAPI, AssemblyClientAPI
+import datetime
 
+def generate_fasta(logger,internal_services,token,ref,output_dir,obj_name):
+	try:
+		ga = GenomeAnnotationAPI(internal_services,
+                             token=token,
+                             ref= "{}/{}".format(ref,obj_name))
+	except Exception as e:
+		raise Exception("Unable to Call GenomeAnnotationAPI : {0}: {1}".format(e))
+	logger.info("Generating FASTA file from Assembly for {}/{}".format(ref,obj_name))	
+	fasta_start = datetime.datetime.utcnow()
+	output_file = os.path.join(output_dir,'{}.fasta'.format(obj_name))
+    	with open(output_file, 'w') as fasta_file:
+        	ga.get_assembly().get_fasta().to_file(fasta_file)
+	fasta_file.close()
+    	fasta_end = datetime.datetime.utcnow()
+	logger.info("Generating FASTA for {} took {}".format(obj_name, fasta_end - fasta_start))
+	return output_file
+	## Additional Step for sanitizing contig id
+	#logger.info("Sanitizing the fasta file to correct id names {}".format(datetime.datetime.utcnow()))
+	#mapping_filename = c_mapping.create_sanitized_contig_ids(output_file)
+    	#c_mapping.replace_fasta_contig_ids(output_file, mapping_filename, to_modified=True)
+	#logger.info("Generating FASTA file completed successfully : {}".format(datetime.datetime.utcnow()))
+
+def generate_gff(logger,internal_services,token,ref,output_dir,obj_name,output_file):
+        try:
+                ga = GenomeAnnotationAPI(internal_services,
+                             token=token,
+                             ref= "{}/{}".format(ref,obj_name))
+        except:
+                raise Exception("Unable to Call GenomeAnnotationAPI : {0}".format(e))
+        logger.info("Requesting GenomeAnnotation GFF for {}/{}".format(ref,obj_name))
+    	gff_start = datetime.datetime.utcnow()
+	#output_file = os.path.join(output_dir,'{}.gff'.format(obj_name))
+    	with open(output_file, 'w') as gff_file:
+        	ga.get_gff().to_file(gff_file)
+    	gff_file.close()
+	gff_end = datetime.datetime.utcnow()
+    	logger.info("Generating GFF for {} took {}".format(obj_name, gff_end - gff_start))
+        ## Additional Step for sanitizing contig id
+        #logger.info("Sanitizing the gff file to correct id names {}".format(datetime.datetime.utcnow()))
 
 def updateAnalysisTO(logger, ws_client, field, map_key, map_value, anal_ref, ws_id, objid):
     
@@ -58,11 +101,10 @@ def extractStatsInfo(logger,ws_client,ws_id,sample_id,result,stats_obj_name):
         total_qcpr = int(m.group(1))
         total_qcfr = int(m.group(2))
         total_read =  total_qcpr + total_qcfr
-
         m = two_nums.match(lines[2])
         mapped_r = int(m.group(1))
-        umapped_r = int(m.group(2))
-	alignment_rate = mapped_r / total_read  * 100.0
+        unmapped_r = int(total_read - mapped_r)
+	alignment_rate = float(mapped_r) / float(total_read)  * 100.0
         if alignment_rate > 100: alignment_rate = 100.0
 
         # singletons
@@ -78,10 +120,10 @@ def extractStatsInfo(logger,ws_client,ws_id,sample_id,result,stats_obj_name):
                        "properly_paired": properly_paired,
                        "singletons": singletons,
                        "total_reads": total_read,
-                       "unmapped_reads": umapped_r,
+                       "unmapped_reads": unmapped_r,
                        "mapped_reads": mapped_r
                        }
-
+	logger.info(json.dumps(stats_data))
         ## Save object to workspace
         logger.info( "Saving Alignment Statistics to the Workspace")
         try:
@@ -97,6 +139,81 @@ def extractStatsInfo(logger,ws_client,ws_id,sample_id,result,stats_obj_name):
         except Exception, e:
                 raise Exception("get Alignment Statistics failed: {0}".format(e))
 
+def extractAlignmentStatsInfo(logger,tool_used,ws_client,ws_id,sample_id,result,stats_obj_name):
+        lines = result.splitlines()
+	if tool_used == 'samtools':
+        	if  len(lines) != 11:
+            		raise Exception("Error not getting enough samtool flagstat information: {0}".format(result))
+        	# patterns
+        	two_nums  = re.compile(r'^(\d+) \+ (\d+)')
+        	two_pcts  = re.compile(r'\(([0-9.na\-]+)%:([0-9.na\-]+)%\)')
+        	# alignment rate
+        	m = two_nums.match(lines[0])
+        	total_qcpr = int(m.group(1))
+        	total_qcfr = int(m.group(2))
+        	total_read =  total_qcpr + total_qcfr
+        	m = two_nums.match(lines[2])
+        	mapped_r = int(m.group(1))
+        	unmapped_r = int(total_read - mapped_r)
+        	alignment_rate = float(mapped_r) / float(total_read)  * 100.0
+        	if alignment_rate > 100: alignment_rate = 100.0
+
+        	# singletons
+       		m = two_nums.match(lines[8])
+        	singletons = int(m.group(1))
+        	m = two_nums.match(lines[6])
+        	properly_paired = int(m.group(1))
+		multiple_alignments = 0
+	elif tool_used == 'bowtie2':
+		if len(lines) not in [6,15]:
+                        raise Exception("Error not getting enough bowtie2 alignment information: {0}".format(result))
+		pattern1 = re.compile(r'^(\s*\d+)')
+	        pattern2 = re.compile(r'^(\s*\d+.\d+)')	
+		m =  pattern1.match(lines[0])
+		total_read = int(m.group(1))
+		m = pattern1.match(lines[2])
+		unmapped_r =  int(m.group(1))
+		mapped_r = total_read - unmapped_r
+		m = pattern1.match(lines[4])
+		multiple_alignments = int(m.group(1))
+		if len(lines) == 6:
+			m = pattern2.match(lines[5])
+			alignment_rate = float(m.group(1))
+			singletons = 0
+			properly_paired = 0
+		if len(lines) == 15:
+			m =pattern1.match(lines[1])
+			properly_paired = int(m.group(1))
+			singletons = total_read - properly_paired	
+			m = pattern2.match(lines[14])
+			alignment_rate = float(m.group(1))
+	elif tool_used == 'tophat':
+		pass 
+        # Create Workspace object
+        stats_data =  {
+                       "alignment_id": sample_id,
+                       "alignment_rate": alignment_rate,
+                       "multiple_alignments": multiple_alignments, 
+                       "properly_paired": properly_paired,
+                       "singletons": singletons,
+                       "total_reads": total_read,
+                       "unmapped_reads": unmapped_r,
+                       "mapped_reads": mapped_r
+                       }
+        ## Save object to workspace
+        logger.info( "Saving Alignment Statistics to the Workspace")
+        try:
+                res= ws_client.save_objects(
+                                        {"workspace":ws_id,
+                                         "objects": [{
+                                         "type":"KBaseRNASeq.AlignmentStatsResults",
+                                         "data": stats_data,
+                                         "hidden" : 1,
+                                         "name":stats_obj_name}
+                                        ]})
+                res = stats_data
+        except Exception, e:
+                raise Exception("get Alignment Statistics failed: {0}".format(e))
 def getExpressionHistogram(obj,obj_name,num_of_bins,ws_id,output_obj_name):
     if 'expression_levels' in obj['data']:
         hdict = obj['data']['expression_levels']
@@ -173,7 +290,7 @@ def zip_files(logger, src_path, output_fn):
     """
 
     files = [ f for f in listdir(src_path) if isfile(join(src_path,f)) ]
-    with ZipFile(output_fn, 'w') as izip:
+    with ZipFile(output_fn, 'w', allowZip64=True) as izip:
         for f in files:
             izip.write(join(src_path,f),f)
 
@@ -210,7 +327,7 @@ def download_file_from_shock(logger,
 
     header = dict()
     header["Authorization"] = "Oauth {0}".format(token)
-    logger.info("Downloading shock node {0}/node/{1}".format(shock_service_url,shock_id))
+    #logger.info("Downloading shock node {0}/node/{1}".format(shock_service_url,shock_id))
 
     metadata_response = requests.get("{0}/node/{1}?verbosity=metadata".format(shock_service_url, shock_id), headers=header, stream=True, verify=True)
     shock_metadata = metadata_response.json()['data']
@@ -221,7 +338,7 @@ def download_file_from_shock(logger,
     metadata_response.close()
         
     download_url = "{0}/node/{1}?download_raw".format(shock_service_url, shock_id)
-    print "download_url is {0}".format(download_url)
+    #print "download_url is {0}".format(download_url)
     try: 
     	data = requests.get(download_url, headers=header, stream=True, verify=True)
     except Exception,e:
@@ -495,10 +612,10 @@ def runProgram(logger=None,
 
         # Construct shell command
         cmdStr = "%s %s" % (progPath,argStr)
-        if working_dir is None:
-            logger.info("Executing: " + cmdStr + " on cwd")
-        else:
-            logger.info("Executing: " + cmdStr + " on " + working_dir)
+        #if working_dir is None:
+        #    logger.info("Executing: " + cmdStr + " on cwd")
+        #else:
+        #    logger.info("Executing: " + cmdStr + " on " + working_dir)
 
         # Set up process obj
         process = subprocess.Popen(cmdStr,
@@ -510,9 +627,9 @@ def runProgram(logger=None,
         result,stderr  = process.communicate()
       
         # keep this until your code is stable for easier debugging
-        if result is not None and len(result) > 0:
+        if logger is not None and result is not None and len(result) > 0:
             logger.info(result)
-        if stderr is not None and len(stderr) > 0:
+        if logger is not None and stderr is not None and len(stderr) > 0:
             logger.info(stderr)
 
         # Check returncode for success/failure

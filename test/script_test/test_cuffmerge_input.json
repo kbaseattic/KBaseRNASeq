@@ -4,8 +4,8 @@
 	"context": null,
 	"params":[ 	
 	{
-  	"ws_id": "srividya22:1450203576610",
-	"analysis" : "t3_Ecoli_RNASeq_Test_Exp",
-	"output_obj_name" : "t2_Ecoli_cuffmerge"
+  	"ws_id": "srividya22:1456962933354",
+	"analysis" : "Athaliana_sdk_test_exp",
+	"output_obj_name" : "SDK_ath_test_cuffmerge"
 	}]	
 }
