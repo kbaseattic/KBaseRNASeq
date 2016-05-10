@@ -18,7 +18,7 @@
     "text_options" : {
       "valid_ws_types" : ["KBaseRNASeq.RNASeqSample" ]
     }
-  }, {
+  },{
     "id" : "annotation_gtf",
     "optional" : false,
     "advanced" : false,
@@ -28,17 +28,7 @@
     "text_options" : {
       "valid_ws_types" : ["KBaseRNASeq.ReferenceAnnotation" ]
     }
-  }, {
-    "id" : "reference",
-    "optional" : false,
-    "advanced" : false,
-    "allow_multiple" : false,
-    "default_values" : [ "" ],
-    "field_type" : "text",
-    "text_options" : {
-      "valid_ws_types" : ["KBaseGenomes.Genome" ]
-    }
-  }, {
+  },{
     "id" : "bowtie_index",
     "optional" : false,
     "advanced" : false,
@@ -188,10 +178,6 @@
         {
           "input_parameter" : "annotation_gtf",
           "target_property" : "annotation_gtf"
-        },
-        {
-          "input_parameter" : "reference",
-          "target_property" : "reference"
         },
         {
           "input_parameter" : "bowtie_index",

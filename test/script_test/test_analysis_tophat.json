@@ -4,12 +4,11 @@
 	"context": null,
 	"params":[
 	{
-	 "ws_id" : "srividya22:1456962933354",
-	 "sample_id" : "ath_hy5_demo_Reads" ,
-	 "output_obj_name" : "SDK_test_ath_hy5_tophat" ,
-	 "reference" : "Arabidopsis_thaliana",
-	 "bowtie_index" : "Arabidopsi_bw_index",
-	 "annotation_gtf" : "Arabidopsis_annotation.gtf",
+	 "ws_id" : "srividya22:1462808114124",
+	 "sample_id" : "ath_hy5_demo_Reads_RNASeqSample" ,
+	 "output_obj_name" : "Arabidopsis_wt_tophat" ,
+	 "bowtie_index" : "Arabidopsis_3702_Ensembl_bw_Indexes",
+	 "annotation_gtf" : "Arabidopsis_3702_Ensembl_annotations",
 	 "read_mismatches" : null,
 	 "read_gap_length" : null,
          "min_intron_length" : null,

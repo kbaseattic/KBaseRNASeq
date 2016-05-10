@@ -64,7 +64,7 @@ class KBaseRNASeq:
     #########################################
     VERSION = "0.0.1"
     GIT_URL = "https://github.com/sjyoo/KBaseRNASeq"
-    GIT_COMMIT_HASH = "dbd5bdc723c4a0f085cd5d932c2a3c79a95bc9cc"
+    GIT_COMMIT_HASH = "e17827699a267288417203e0bc311cf4f7c6382e"
     
     #BEGIN_CLASS_HEADER
     __TEMP_DIR = 'temp'
@@ -247,6 +247,7 @@ class KBaseRNASeq:
 	out_obj['sample_ids']= [] 
 	exp_id = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[out_obj['experiment_id']],params['ws_id'],user_token)[0]
 	r_obj = { "analysis_id" : exp_id, "metadata" : { "domain" : params['domain'] , "platform" : params['platform'] , "genome_id" : out_obj['genome_id'] } } 
+	#r_obj = { "analysis_id" : exp_id, "metadata" : { "domain" : params['domain'] , "platform" : params['platform']} } 
 	if "singleEnd_reads" in params and params['singleEnd_reads'] is not None:
 		sample_type =  "singleend_sample"
 		exp_reads = params['singleEnd_reads']
@@ -591,20 +592,23 @@ class KBaseRNASeq:
 
             self.__LOGGER.info("Downloading RNASeq Sample file")
 	    try:
-                sample ,reference,bowtie_index = ws_client.get_objects(
+                #sample ,reference,bowtie_index = ws_client.get_objects(
+                #                        [{'name' : params['sample_id'],'workspace' : params['ws_id']},
+                #                        { 'name' : params['reference'], 'workspace' : params['ws_id']},
+                #                        { 'name' : params['bowtie2_index'], 'workspace' : params['ws_id']}])
+                sample,bowtie_index = ws_client.get_objects(
                                         [{'name' : params['sample_id'],'workspace' : params['ws_id']},
-                                        { 'name' : params['reference'], 'workspace' : params['ws_id']},
                                         { 'name' : params['bowtie2_index'], 'workspace' : params['ws_id']}])
             except Exception,e:
                  self.__LOGGER.exception("".join(traceback.format_exc()))
                  raise KBaseRNASeqException("Error Downloading objects from the workspace ")
 	    opts_dict = { k:v for k,v in params.iteritems() if not k in ('ws_id','sample_id','reference','bowtie_index','analysis_id','output_obj_name') and v is not None }
 
-	    if 'data' in sample and sample['data'] is not None:
-                #self.__LOGGER.info("getting here")
-                if 'metadata' in sample['data'] and sample['data']['metadata'] is not None:
-                        genome = sample['data']['metadata']['genome_id']
-                        #self.__LOGGER.info(genome)
+	    #if 'data' in sample and sample['data'] is not None:
+            #    #self.__LOGGER.info("getting here")
+            #    if 'metadata' in sample['data'] and sample['data']['metadata'] is not None:
+            #            genome = sample['data']['metadata']['genome_id']
+            #            #self.__LOGGER.info(genome)
             if 'singleend_sample' in sample['data'] and sample['data']['singleend_sample'] is not None:
                 lib_type = "SingleEnd"
                 singleend_sample = sample['data']['singleend_sample']
@@ -786,9 +790,13 @@ class KBaseRNASeq:
 
 	    self.__LOGGER.info("Downloading RNASeq Sample file")
 	    try:
-            	sample ,reference,bowtie_index,annotation = ws_client.get_objects(
+            	#sample ,reference,bowtie_index,annotation = ws_client.get_objects(
+                #                        [{'name' : params['sample_id'],'workspace' : params['ws_id']},
+		#			{ 'name' : params['reference'], 'workspace' : params['ws_id']},
+		#			{ 'name' : params['bowtie_index'], 'workspace' : params['ws_id']},
+		#			{ 'name' : params['annotation_gtf'] , 'workspace' : params['ws_id']}])
+                sample ,bowtie_index,annotation = ws_client.get_objects(
                                         [{'name' : params['sample_id'],'workspace' : params['ws_id']},
-					{ 'name' : params['reference'], 'workspace' : params['ws_id']},
 					{ 'name' : params['bowtie_index'], 'workspace' : params['ws_id']},
 					{ 'name' : params['annotation_gtf'] , 'workspace' : params['ws_id']}])
             except Exception,e:
@@ -798,10 +806,10 @@ class KBaseRNASeq:
 	    opts_dict = { k:v for k,v in params.iteritems() if not k in ('ws_id','sample_id','reference','bowtie_index','annotation_gtf','analysis_id','output_obj_name') and v is not None }
 	    
  
-            if 'data' in sample and sample['data'] is not None:
+            #if 'data' in sample and sample['data'] is not None:
 		#self.__LOGGER.info("getting here")
-		if 'metadata' in sample['data'] and sample['data']['metadata'] is not None:
-			genome = sample['data']['metadata']['genome_id']
+		#if 'metadata' in sample['data'] and sample['data']['metadata'] is not None:
+		#	genome = sample['data']['metadata']['genome_id']
 			#self.__LOGGER.info(genome)
 	    if 'singleend_sample' in sample['data'] and sample['data']['singleend_sample'] is not None:
 		lib_type = "SingleEnd"

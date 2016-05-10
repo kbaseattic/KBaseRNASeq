@@ -34,11 +34,6 @@ parameters :
             Indexed Genome
         short-hint : |
             Specify the indexed genome built using Bowtie2
-    reference :
-        ui-name : |
-            Genome
-        short-hint : |
-            Genome
     output_obj_name :
         ui-name : |
             Alignment Output

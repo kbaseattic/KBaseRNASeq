@@ -34,11 +34,6 @@ parameters :
             Reference Annotation
         short-hint : |
             Select the reference annotation of the associated genome
-    reference :
-        ui-name : |
-            Genome
-        short-hint : |
-            Specify the name of genome
     bowtie_index :
         ui-name : |
             Indexed Genome

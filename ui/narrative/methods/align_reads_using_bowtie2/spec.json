@@ -28,17 +28,7 @@
     "text_options" : {
       "valid_ws_types" : ["KBaseRNASeq.Bowtie2Indexes" ]
     }
-  }, {
-    "id" : "reference",
-    "optional" : false,
-    "advanced" : false,
-    "allow_multiple" : false,
-    "default_values" : [ "" ],
-    "field_type" : "text",
-    "text_options" : {
-    "valid_ws_types" : ["KBaseGenomes.Genome" ]
-    }
-  }, {
+  },{
      "id" : "output_obj_name",
     "optional" : false,
     "advanced" : false,
@@ -144,10 +134,6 @@
         {
           "input_parameter" : "sample_id",
           "target_property" : "sample_id"
-        },
-        {
-          "input_parameter" : "reference",
-          "target_property" : "reference"
         },
         {
           "input_parameter" : "bowtie2_index",
