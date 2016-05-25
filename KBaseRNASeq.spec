@@ -781,26 +781,4 @@ typedef mapping <string diff_opts,opts_cuffdiff> cuffdiff_opts;
 
 async funcdef CuffdiffCall(CuffdiffParams params)
    returns (RNASeqAnalysis) authentication required;
-
-
-typedef structure{
-	string ws_id;
-        ws_samplealignment_id alignment_sample_id;
-	/*string alignment_sample_id;*/
-	string output_obj_name;
-        }AlignmentStatsParams;
-
-async funcdef getAlignmentStats(AlignmentStatsParams params)
-   returns (AlignmentStatsResults) authentication required;
-
-typedef structure{
-	string ws_id;
-        ws_expression_sample_id expression_sample;
-        int number_of_bins;
-	string output_obj_name;
-        }ExpressionHistogramParams;
-        
-async funcdef createExpressionHistogram(ExpressionHistogramParams params)
-   returns (MAK.FloatDataTable) authentication required;
-
 };
