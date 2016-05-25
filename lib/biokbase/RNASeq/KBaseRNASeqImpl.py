@@ -64,17 +64,10 @@ class KBaseRNASeq:
     #########################################
     VERSION = "0.0.1"
     GIT_URL = "https://github.com/sjyoo/KBaseRNASeq"
-    GIT_COMMIT_HASH = "e17827699a267288417203e0bc311cf4f7c6382e"
+    GIT_COMMIT_HASH = "ae36ee5b8ef23c5601087fe4c50c39a486d1a25c"
     
     #BEGIN_CLASS_HEADER
     __TEMP_DIR = 'temp'
-    __BOWTIE_DIR = 'bowtie'
-    __BOWTIE2_DIR = 'bowtie2'
-    __GTF_DIR = 'gtfdir'
-    __TOPHAT_DIR = 'tophat'
-    __CUFFLINKS_DIR = 'cufflinks'
-    __CUFFMERGE_DIR = 'cuffmerge'
-    __CUFFDIFF_DIR = 'cuffdiff'
     __PUBLIC_SHOCK_NODE = 'true'
     __ASSEMBLY_GTF_FN = 'assembly_GTF_list.txt'
     __STATS_DIR = 'stats'
@@ -96,10 +89,6 @@ class KBaseRNASeq:
               self.__TEMP_DIR = config['temp_dir']
 	if 'scratch' in config:
 	      self.__SCRATCH= config['scratch']
-        if 'bowtie_dir' in config:
-              self.__BOWTIE_DIR = config['bowtie_dir']
-        if 'genome_input_fa' in config:
-              self.__GENOME_FA = config['genome_input_fa']
         if 'svc_user' in config:
               self.__SVC_USER = config['svc_user']
         if 'svc_pass' in config:
@@ -1305,7 +1294,6 @@ class KBaseRNASeq:
             #    handler_util.cleanup(self.__LOGGER,self.__SCRATCH)
             if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
 	    cuffdiff_dir = self.__SCRATCH +'/tmp'
-            #cuffdiff_dir = self.__CUFFDIFF_DIR
             if os.path.exists(cuffdiff_dir):
                 handler_util.cleanup(self.__LOGGER,cuffdiff_dir)
             if not os.path.exists(cuffdiff_dir): os.makedirs(cuffdiff_dir)
@@ -1496,193 +1484,6 @@ class KBaseRNASeq:
         # At some point might do deeper type checking...
         if not isinstance(returnVal, dict):
             raise ValueError('Method CuffdiffCall return value ' +
-                             'returnVal is not type dict as required.')
-        # return the results
-        return [returnVal]
-
-    def getAlignmentStats(self, ctx, params):
-        # ctx is the context object
-        # return variables are: returnVal
-        #BEGIN getAlignmentStats
-
-	user_token=ctx['token']
-        ws_client=Workspace(url=self.__WS_URL, token=user_token)        
-	stats_dir = self.__STATS_DIR
-        try:
-            if os.path.exists(stats_dir):
-            #   files=glob.glob("%s/*" % tophat_dir)
-            #    for f in files: os.remove(f)
-                handler_util.cleanup(self.__LOGGER,stats_dir)
-            if not os.path.exists(stats_dir): os.makedirs(stats_dir)
-        except Exception as e:
-                raise KBaseRNASeqException("Couldn't prepare a folder, {0}, {1}".format(stats_dir, e))
-	try:
-                obj  = ws_client.get_objects([{'name' : params['alignment_sample_id'],'workspace' : params['ws_id'] }])[0]
-        #return {"output" : str(status), "error": json_error}
-        except Exception as e:
-                raise KBaseRNASeqException("File Not Found: {}".format(e))
-	#download Shock Node
-	if 'data' in obj and obj['data'] is not None:
-                self.__LOGGER.info("Downloading Sample Alignments")
-                try:
-                     script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=obj['data']['file']['id'],
-			 				filename=obj['data']['file']['file_name'], directory=stats_dir,token=user_token)
-                except Exception,e:
-                        raise Exception( "Unable to download shock file, {0}".format(e))
-                try:
-                    script_util.unzip_files(self.__LOGGER,os.path.join(stats_dir,obj['data']['file']['file_name']),stats_dir)
-                    #script_util.move_files(self.__LOGGER,handler_util.get_dir(cufflinks_dir),cufflinks_dir)
-                except Exception, e:
-                       self.__LOGGER.error("".join(traceback.format_exc()))
-                       raise Exception("Unzip file  error: Please contact help@kbase.us")
-		#Create Command
- 	        bam_file = stats_dir+"/accepted_hits.bam"
-        	align_stats_cmd = "flagstat {0}".format(bam_file)
-        else:
-                raise KBaseRNASeqException("No data was included in the referenced sample id");
-	
-	# If Annotation is provided then run bedtools 
-		
-	if 'annotation_id' in params and params['annotation_id'] is not None:
-		try:
-                	annotation  = ws_client.get_objects([{'name' : params['annotation_id'],'workspace' : params['ws_id'] }])[0]
-        	#return {"output" : str(status), "error": json_error}
-        	except Exception as e:
-                	raise FileNotFound("File Not Found: {}".format(e))
-		if 'data' in annotation and annotation['data'] is not None:
-               		self.__LOGGER.info("Downloading Reference Annotation")
-                	try:
-                     		script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=annotation['data']['file']['id'],
-                                                        filename=annotation['data']['file']['file_name'], directory=stats_dir,token=user_token)
-                	except Exception,e:
-                        	raise Exception( "Unable to download shock file, {0}".format(e))
-                	try:
-                    		script_util.unzip_files(self.__LOGGER,os.path.join(stats_dir,obj['data']['file']['file_name']),stats_dir)
-                    #script_util.move_files(self.__LOGGER,handler_util.get_dir(cufflinks_dir),cufflinks_dir)
-                	except Exception, e:
-                       		self.__LOGGER.error("".join(traceback.format_exc()))
-                       		raise Exception("Unzip file error: Please contact help@kbase.us")
-            	else:
-                	raise KBaseRNASeqException("No data was included in the annotation id");
-		#Create Command
-		bam_file = stats_dir+"/accepted_hits.bam"
-		align_stats_cmd = "flagstat {0}".format(bam_file)
-	
-	#Run Command
-        try:
-                self.__LOGGER.info("Executing: samtools {0} {1}".format("samtools", align_stats_cmd))
-		res = script_util.runProgram(self.__LOGGER,"samtools", align_stats_cmd,None,None)
-        except Exception,e:
-                raise KBaseRNASeqException("Error running samtools flagstat {0},{1}".format(bam_file,e))
-		
-	result = res['result']
-        lines = result.splitlines()
-        if  len(lines) != 11:
-            raise KBaseRNASeqException("Error not getting enough samtool flagstat information: {0}".format(result))
-        # patterns
-        two_nums  = re.compile(r'^(\d+) \+ (\d+)')
-        two_pcts  = re.compile(r'\(([0-9.na\-]+)%:([0-9.na\-]+)%\)')
-        # alignment rate
-        m = two_nums.match(lines[0])
-        total_qcpr = int(m.group(1))
-        total_qcfr = int(m.group(2))
-        total_read =  total_qcpr + total_qcfr
-    
-        m = two_nums.match(lines[2])
-        mapped_r = int(m.group(1))
-        umapped_r = int(m.group(2))
-
-        alignment_rate = mapped_r / total_read  * 100.0
-        if alignment_rate > 100: alignment_rate = 100.0
-
-
-        # singletons
-        m = two_nums.match(lines[8])
-        singletons = int(m.group(1))
-
-        # multiple alignment : skip now
-        m = two_nums.match(lines[6])
-        properly_paired = int(m.group(1))
-	# Create Workspace object
-	stats_data =  { 
-                       "alignment_id": params['alignment_sample_id'], 
-                       "alignment_rate": alignment_rate, 
-                       #"multiple_alignments": 50, 
-                       "properly_paired": properly_paired, 
-                       "singletons": singletons, 
-                       "total_reads": total_read, 
-                       "unmapped_reads": umapped_r,
-                       "mapped_reads": mapped_r
-                       }
-	
-	## Save object to workspace
-        self.__LOGGER.info( "Saving Alignment Statistics to the Workspace")
-        try:
-		res= ws_client.save_objects(
-                                        {"workspace":params['ws_id'],
-                                         "objects": [{
-                                         "type":"KBaseRNASeq.AlignmentStatsResults",
-                                         "data": stats_data,
-                                         "name":params['output_obj_name']}
-                                        ]})
-                returnVal = stats_data
-        except Exception, e:
-                raise KBaseRNASeqException("get Alignment Statistics failed: {0}".format(e))
-
-
-        #END getAlignmentStats
-
-        # At some point might do deeper type checking...
-        if not isinstance(returnVal, dict):
-            raise ValueError('Method getAlignmentStats return value ' +
-                             'returnVal is not type dict as required.')
-        # return the results
-        return [returnVal]
-
-    def createExpressionHistogram(self, ctx, params):
-        # ctx is the context object
-        # return variables are: returnVal
-        #BEGIN createExpressionHistogram
-	user_token=ctx['token']
-        ws_client=Workspace(url=self.__WS_URL, token=user_token)
-	
-	try:
-        	obj = ws_client.get_objects([{'name' : params['expression_sample'],'workspace' : params['ws_id'] }])[0]
-        #return {"output" : str(status), "error": json_error}
-    	except Exception as e:
-        	raise FileNotFound("File Not Found: {}".format(e))
-    	if 'expression_levels' in obj['data']:
-        	hdict = obj['data']['expression_levels']
-        	tot_genes =  len(hdict)
-        	lmin = round(min([v for k,v in hdict.items()]))
-        	lmax = round(max([v for k,v in hdict.items()]))
-        	hist_dt = script_util.histogram(hdict.values(),lmin,lmax,int(params['number_of_bins']))
-        	title = "Histogram  - " + params['expression_sample']
-        	hist_json = {"title" :  title , "x_label" : "Gene Expression Level (FPKM)", "y_label" : "Number of Genes", "data" : hist_dt}
-        	sorted_dt = OrderedDict({ "id" : "", "name" : "","row_ids" : [] ,"column_ids" : [] ,"row_labels" : [] ,"column_labels" : [] , "data" : [] })
-        	sorted_dt["row_ids"] = [hist_json["x_label"]]
-        	sorted_dt["column_ids"] = [hist_json["y_label"]]
-        	sorted_dt['row_labels'] = [hist_json["x_label"]]
-        	sorted_dt["column_labels"] =  [hist_json["y_label"]]
-        	sorted_dt["data"] = [[float(i) for i in hist_json["data"]["x_axis"]],[float(j) for j in hist_json["data"]["y_axis"]]]
-    		#sorted_dt["id"] = "kb|histogramdatatable."+str(idc.allocate_id_range("kb|histogramdatatable",1))
-        	sorted_dt["id"] = params['output_obj_name']
-        	sorted_dt["name"] = hist_json["title"]
-        	res = ws_client.save_objects({"workspace": params['ws_id'],
-                                  "objects": [{
-                                                "type":"MAK.FloatDataTable",
-                                                "data": sorted_dt,
-                                                "name" : params['output_obj_name']}
-                                            ]
-
-                                 })
-	#returnVal = { "workspace" : params['ws_id']  , "output" :  params['output_obj_name'] }
-	returnVal = sorted_dt
-        #END createExpressionHistogram
-
-        # At some point might do deeper type checking...
-        if not isinstance(returnVal, dict):
-            raise ValueError('Method createExpressionHistogram return value ' +
                              'returnVal is not type dict as required.')
         # return the results
         return [returnVal]
