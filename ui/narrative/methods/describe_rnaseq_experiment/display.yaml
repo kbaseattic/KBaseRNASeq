@@ -1,10 +1,10 @@
 #
 # Define basic display information
 #
-name     : Set up RNA-seq Analysis
+name     : Create RNA-seq SampleSet
 
 tooltip  : |
-    Provide the metadata to set up an RNA-seq experiment 
+    Provide the metadata to a RNA-seq SampleSet
 screenshots :
     []
 
@@ -24,26 +24,16 @@ method-suggestions :
 # Configure the display and description of the parameters
 #
 parameters :
-    experiment_id :
+    sampleset_id :
         ui-name : |
-            Experiment Analysis
+            SampleSet ID
         short-hint : |
-            The name of the output object used by the RNA-seq experiment analysis.
-    title :
+            The name of the output object used by the RNA-seq SampleSet.
+    sampleset_desc :
         ui-name : |
-            Title
+            SampleSet Description
         short-hint : |
-            Title of the RNA-seq experiment
-    experiment_desc :
-        ui-name : |
-            Experiment Description
-        short-hint : |
-            The detailed description of the RNA-seq experiment
-    experiment_design :
-        ui-name : |
-            Experiment Design
-        short-hint : |
-            The nature of the experimental design (e.g time-series or wild vs. mutant)
+            The detailed description of the RNA-seq samples selected
     platform :
         ui-name : |
             Platform
@@ -56,44 +46,29 @@ parameters :
             The type of sequencing reads - Single-end vs. Paired-end 
     genome_id :
         ui-name : |
-            Genome
+            Genome Annotation
         short-hint : |
-            The genome used in the RNA-seq experiment
-    annotation_id :
+            The genome Annotation used in the RNA-seq sample analysis
+    bowtie2_index :
         ui-name : |
-            Reference Genome Annotation
+            Bowtie2 Index
         short-hint : |
-            The annoations for the reference sequences in the GTF (Gene Transfer Format) file format
-    num_samples :
-        ui-name : |
-            Number of Samples
-        short-hint : |
-            The total number of samples including replicates in the RNA-seq experiment
-    num_replicates :
-        ui-name : |
-            Number of Replicates
-        short-hint : |
-            The number of replicates for each treatment in the RNA-seq experiment. 
-    condn_labels:
+            The Bowtie2 index created for the Genome Assembly
+    condition:
         ui-name : |
             Treatment Labels
         short-hint : |
-            Short name for each sample treatment in the RNA-seq experiment (without taking into account the replicates). The treatment labels must be added in the same order as the reads.
-    singleEnd_reads:
+            Short name for each sample treatment in the RNA-seq experiment. The treatment labels must be added in the same order as the reads. Please specify the same treatment label for the replicates
+    se_sample_ids:
         ui-name : |
             Single-end Reads
         short-hint : |
             The single-end reads files based on sequencing from one end of the fragment. The reads belonging to the same treatment must be added consecutively. 
-    pairedEnd_reads:
+    pe_sample_ids:
         ui-name : |
             Paired-end Reads
         short-hint : |
             The paired-end reads files based on sequencing from both the ends of the fragment. The reads belonging to the same treatment must be added consecutively.
-    tissue:
-        ui-name : |
-            Tissue type
-        short-hint : |
-            The tissue types used in the sample preparation
     domain :
         ui-name : |
             Domain 
@@ -115,7 +90,7 @@ description : |
     
     <p>Users need to import single-end or paired-end read files and the corresponding genome and reference genome annotation files to the Data Pane before starting this method.</p>
     
-    <p>It is mandatory for users to provide "Experiment Analysis" (RNA-seq analysis output object), select the "Genome", "Reference Genome Annotation", "Library Type", and "Domain" from the drop down menu along with the total number of samples, number of replicates and labels of the sample conditions/treatments. It is necessary to have the same number of replication for each sample.</p>
+    <p>It is mandatory for users to provide "SampleSet" (RNA-seq sampleset object), select the "Genome", "Reference Genome Annotation", "Library Type", and "Domain" from the drop down menu along with the total number of samples, number of replicates and labels of the sample conditions/treatments. It is necessary to have the same number of replication for each sample.</p>
     
     <p>Users can optionally fill in additional metadata information in the advanced options.</p>
     

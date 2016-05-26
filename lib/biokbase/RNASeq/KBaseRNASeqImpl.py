@@ -64,7 +64,7 @@ class KBaseRNASeq:
     #########################################
     VERSION = "0.0.1"
     GIT_URL = "https://github.com/sjyoo/KBaseRNASeq"
-    GIT_COMMIT_HASH = "ae36ee5b8ef23c5601087fe4c50c39a486d1a25c"
+    GIT_COMMIT_HASH = "27f2178a4466f7f9dee93878ea0e775297a85e4d"
     
     #BEGIN_CLASS_HEADER
     __TEMP_DIR = 'temp'
@@ -99,9 +99,6 @@ class KBaseRNASeq:
 	      self.__PUBLIC_SHOCK_NODE = config['force_shock_node_2b_public']
 	
 	self.__SCRIPT_TYPE = { 'ContigSet_to_fasta' : 'ContigSet_to_fasta.py',
-			  	'RNASeqSample_to_fastq' : 'RNASeqSample_to_fastq',
-			  	'cufflinks' : 'cufflinks',
-				'tophat_script' : 'Tophat_pipeline.py'
 			     } 
 
 	self.__SERVICES = { 'workspace_service_url' : self.__WS_URL,
@@ -124,173 +121,108 @@ class KBaseRNASeq:
         pass
     
 
-    def fastqcCall(self, ctx, params):
-        # ctx is the context object
-        # return variables are: job_id
-        #BEGIN fastqcCall
-        #END fastqcCall
-
-        # At some point might do deeper type checking...
-        if not isinstance(job_id, basestring):
-            raise ValueError('Method fastqcCall return value ' +
-                             'job_id is not type basestring as required.')
-        # return the results
-        return [job_id]
-
-    def associateReads(self, ctx, params):
+    def CreateRNASeqSampleSet(self, ctx, params):
         # ctx is the context object
         # return variables are: returnVal
-        #BEGIN associateReads
-	user_token=ctx['token']
-        ws_client=Workspace(url=self.__WS_URL, token=user_token)
-	out = dict()
-	out['metadata'] = { k:v for k,v in params.iteritems() if not k in ('ws_id', "analysis_id", "genome_id","singleend_sample","pairedend_sample") and v is not None }
-	self.__LOGGER.info( "Uploading RNASeqSample {0}".format(out['metadata']['sample_id']))
-	if "genome_id" in params and params['genome_id'] is not None:
-	    out["metadata"]["genome_id"] = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params["genome_id"]],params["ws_id"],user_token)[0]
-	if "analysis_id" in params and params['analysis_id'] is not None:
-            g_ref = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params['analysis_id']],params['ws_id'],user_token)[0]
-            out['analysis_id'] = g_ref
-	if 'singleend_sample' in params and params['singleend_sample']  is not None:
-	    try:
-                s_res= ws_client.get_objects(
-                                        [{'name' : params['singleend_sample'],
-                                          'workspace' : params['ws_id']}])
-               	out['singleend_sample'] = s_res[0]['data']
-            except Exception,e:
-                raise KBaseRNASeqException("Error Downloading SingleEndlibrary object from the workspace {0},{1}".format(params['singleend_sample'],e))
-
-	if 'pairedend_sample' in params and params['pairedend_sample']  is not None:
- 	    try:
-		p_res= ws_client.get_objects(
-                                         [{'name' : params['pairedend_sample'],
-                                           'workspace' : params['ws_id']}])
-                out['pairedend_sample'] = p_res[0]['data']
-
-            except Exception,e:
-                raise KBaseRNASeqException("Error Downloading PairedEndlibrary object from the workspace {0},{1}".format(params['pairedend_sample'],e))
-
-	try:
-        	res= ws_client.save_objects(
-                                {"workspace":params['ws_id'],
-                                 "objects": [{
-                                                "type":"KBaseRNASeq.RNASeqSample",
-                                                "data":out,
-                                                "name":out['metadata']['sample_id']}]
-                                })
-	        returnVal = {"workspace": params['ws_id'],"output" : out['metadata']['sample_id'] }
-
-
-	except Exception ,e:
-		raise KBaseRNASeqException("Error Saving the object to workspace {0},{1} ".format(out['metadata']['sample_id'],e))
+        #BEGIN CreateRNASeqSampleSet
 	
-
-        #END associateReads
-
-        # At some point might do deeper type checking...
-        if not isinstance(returnVal, dict):
-            raise ValueError('Method associateReads return value ' +
-                             'returnVal is not type dict as required.')
-        # return the results
-        return [returnVal]
-
-    def SetupRNASeqAnalysis(self, ctx, params):
-        # ctx is the context object
-        # return variables are: returnVal
-        #BEGIN SetupRNASeqAnalysis
 	user_token=ctx['token']
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
-        out_obj = { k:v for k,v in params.iteritems() if not k in ('ws_id','genome_id','annotation_id', 'tissue', 'condn_labels' , 'singleEnd_reads' , 'pairedEnd_reads') and v}
-        if "num_samples" in out_obj : out_obj["num_samples"] = int(out_obj["num_samples"])
-        if "num_replicates" in out_obj : out_obj["num_replicates"] = int(out_obj["num_replicates"])
-	if "genome_id" in params and params['genome_id'] is not None: out_obj["genome_id"] = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params["genome_id"]],params["ws_id"],user_token)[0]
-	if "annotation_id" in params and params['annotation_id'] is not None: 
-	    g_ref = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params['annotation_id']],params['ws_id'],user_token)[0]
-	    out_obj['annotation_id'] = g_ref
-	if "tissue" in params and params['tissue'] is not None:
-	    out_obj['tissue'] = params['tissue']
-	if "condn_labels" in params and params['condn_labels'] is not None:
-	    if len(params['condn_labels']) != int(out_obj["num_samples"]/out_obj["num_replicates"]):
-		raise ValueError("Please specify a treatment label for each sample treatment in the RNA-seq experiment (without taking into account the replicates).The treatment labels must be added in the same order as the reads.")
-            out_obj['condition'] = params['condn_labels']
-	if "singleEnd_reads" in params and params['singleEnd_reads'] is not None:
-	    if len(params['singleEnd_reads']) != out_obj["num_samples"]:
-		raise ValueError("Number of Single-end Reads selected is not equal to the 'Number of Samples' specified in the analysis. Please select all the read samples to run this method.")
-	if  "pairedEnd_reads" in params and params['pairedEnd_reads'] is not None:
-	    if len(params['pairedEnd_reads']) != out_obj["num_samples"]:
-                raise ValueError("Number of Paired-end Reads selected is not equal to the 'Number of Samples' specified in the analysis. Please select all the read samples to run this method.")
-
-        self.__LOGGER.info( "Uploading RNASeq Analysis object to workspace {0}".format(out_obj['experiment_id']))
+	hs = HandleService(url=self.__HS_URL, token=user_token)
 	try:
-        	res= ws_client.save_objects(
+	    ### Create the working dir for the method; change it to a function call
+            if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
+            sampleset_dir = self.__SCRATCH + '/tmp'
+            if os.path.exists(sampleset_dir):
+               handler_util.cleanup(self.__LOGGER,sampleset_dir)
+            else: os.makedirs(sampleset_dir)
+	    #handler_util.setupWorkingDir("tmp")
+	    out_obj = { k:v for k,v in params.iteritems() if not k in ('ws_id', 'se_sample_ids', 'pe_sample_ids')}  	
+	    if "se_sample_ids" in params and params["se_sample_ids"] is not None:
+		sample_ids = params["se_sample_ids"]
+	    if "pe_sample_ids" in params and params["pe_sample_ids"] is not None:
+		sample_ids = params["pe_sample_ids"]
+	    out_obj['num_samples'] = len(sample_ids)
+
+	    ## Validation to Check if the number of samples is equal to number of condition
+	    if len(params["condition"]) != out_obj['num_samples']:
+		raise ValueError("Please specify a treatment label for each sample in the RNA-seq SampleSet. Please enter the same label for the replicates in a sample type")
+	    labels = params['condition']
+	    if "genome_id" in params and params['genome_id'] is not None:
+		out_obj['genome_id'] = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params["genome_id"]],params["ws_id"],user_token)[0]
+		out_file_path = os.path.join(sampleset_dir,params['genome_id']+'.gff')
+		try:
+			fasta_file= script_util.generate_fasta(self.__LOGGER,self.__SERVICES,user_token,params['ws_id'],sampleset_dir,params['genome_id'])
+               	 	self.__LOGGER.info("Sanitizing the fasta file to correct id names {}".format(datetime.datetime.utcnow()))
+                	mapping_filename = c_mapping.create_sanitized_contig_ids(fasta_file)
+                	c_mapping.replace_fasta_contig_ids(fasta_file, mapping_filename, to_modified=True)
+                	self.__LOGGER.info("Generating FASTA file completed successfully : {}".format(datetime.datetime.utcnow()))
+                	script_util.generate_gff(self.__LOGGER,self.__SERVICES,user_token,params['ws_id'],sampleset_dir,params['genome_id'],out_file_path)
+                	c_mapping.replace_gff_contig_ids(out_file_path, mapping_filename, to_modified=True)
+			gtf_path =''
+			if params['domain'] == "Prokaryotes":
+				gtf_path = os.path.join(sampleset_dir,params['genome_id']+'.gtf')
+				gtf_cmd = " -E {0} -T -o- {1}".format(out_file_path,gtf_path)
+				try:
+                		    self.__LOGGER.info("Executing: gffread {0}".format(gtf_cmd))
+                		    cmdline_output = script_util.runProgram(self.__LOGGER,"gffread",gtf_cmd,None,sampleset_dir)
+				except Exception,e:
+               			     raise KBaseRNASeqException("Error Converting the GFF file to GTF using gffread {0}".format(gtf_cmd))
+			if os.path.exists(gtf_path):
+				annotation_handle = hs.upload(gtf_path)
+				a_handle = { "handle" : annotation_handle ,"size" : os.path.getsize(gtf_path), 'genome_id' : out_obj['genome_id']}
+			else:
+				annotation_handle = hs.upload(out_file_path)
+				a_handle = { "handle" : annotation_handle ,"size" : os.path.getsize(out_file_path), 'genome_id' : out_obj['genome_id']}
+			##Saving GFF/GTF annotation to the workspace
+			res= ws_client.save_objects(
+                                        {"workspace":params['ws_id'],
+                                         "objects": [{
+                                         "type":"KBaseRNASeq.GFFAnnotation",
+                                         "data":a_handle,
+                                         "name":params['genome_id']+"_GFF_Annotation",
+					 "hidden":1}
+                                        ]})
+                except Exception as e:
+                        raise ValueError("Generating GFF file from Genome Annotation object Failed :  {}".format("".join(traceback.format_exc())))
+	
+            if "bowtie2_index" in params and params['bowtie2_index'] is not None:
+            	out_obj['bowtie2_index'] = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params['bowtie2_index']],params['ws_id'],user_token)[0]
+
+	    #reps = 0 
+	    #for i in labels:
+            #	if labels.count(i) != reps:
+	    #		reps = i
+	    #	else: 
+	    #	   raise ValueError("Every Sample should contain equal number of replicates")
+	    #out_obj['num_replicates'] = dict((i,a.count(i)) for i in labels).items()
+	    ## Code to Update the Provenance; make it a function later
+            provenance = [{}]
+            if 'provenance' in ctx:
+                provenance = ctx['provenance']
+            #add additional info to provenance here, in this case the input data object reference
+            provenance[0]['input_ws_objects']=[ params['ws_id']+'/'+sample for sample in sample_ids]+[params['ws_id']+'/'+params['bowtie2_index'],params['ws_id']+'/'+params['genome_id']]
+	    
+	    #Saving RNASeqSampleSet to Workspace
+	    self.__LOGGER.info(out_obj) 
+	    self.__LOGGER.info("Saving {0} object to workspace".format(params['sampleset_id']))
+	    res= ws_client.save_objects(
                                 {"workspace":params['ws_id'],
                                  "objects": [{
-                                                "type":"KBaseRNASeq.RNASeqAnalysis",
+                                                "type":"KBaseRNASeq.RNASeqSampleSet",
                                                 "data":out_obj,
-                                                "name":out_obj['experiment_id']}]
+                                                "name":out_obj['sampleset_id'],
+						"provenance": provenance}]
                                 })
- 		returnVal = out_obj
-	except Exception,e:
-		raise KBaseRNASeqException("Error Saving the object to workspace {0},{1}".format(out_obj['experiment_id'],e))
-	self.__LOGGER.info( "Updating  RNASeqSamples associated with the analysis")
-	out_obj['sample_ids']= [] 
-	exp_id = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[out_obj['experiment_id']],params['ws_id'],user_token)[0]
-	r_obj = { "analysis_id" : exp_id, "metadata" : { "domain" : params['domain'] , "platform" : params['platform'] , "genome_id" : out_obj['genome_id'] } } 
-	#r_obj = { "analysis_id" : exp_id, "metadata" : { "domain" : params['domain'] , "platform" : params['platform']} } 
-	if "singleEnd_reads" in params and params['singleEnd_reads'] is not None:
-		sample_type =  "singleend_sample"
-		exp_reads = params['singleEnd_reads']
-	elif "pairedEnd_reads" in params and params['pairedEnd_reads'] is not None:
-		sample_type =  "pairedend_sample"
-		exp_reads = params['pairedEnd_reads']	
-	    # Create RNASeqSample obj
-	rep_id  =  0
-	count = -1
-	l_labels = [ [x] * out_obj['num_replicates'] for x in out_obj['condition']]
-	#print l_labels
-	rep_labels = reduce(lambda x,y: x+y, l_labels)
-	#print rep_labels
-	for reads in exp_reads:
-		count = count + 1
-		if int(params['num_replicates']) >= 1: 
-	 		rep_id = rep_id + 1	 
-			if rep_id > int(params['num_replicates']):
-	 			rep_id = 1	 
-		s_res = ws_client.get_objects([{'name' : reads,
-                                        	'workspace' : params['ws_id']}])
-		r_obj['metadata']['sample_id'] = reads+"_RNASeqSample"
-		r_obj['metadata']['replicate_id'] = str(rep_id)
-		r_obj['metadata']['condition'] = rep_labels[count]
-                r_obj[sample_type] = s_res[0]['data']
-		samp_obj = ws_client.save_objects( {
-                                 "workspace":params['ws_id'],
-                                 "objects": [{
-                                                "type":"KBaseRNASeq.RNASeqSample",
-                                                "data":r_obj,
-                                                "name":r_obj['metadata']['sample_id']}]
-                                })
-		r_sample = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[r_obj['metadata']['sample_id']],params['ws_id'],user_token)[0]
-		out_obj['sample_ids'].append(r_sample)
+            returnVal = out_obj
+        except Exception,e:
+                raise KBaseRNASeqException("Error Saving the object to workspace {0},{1}".format(out_obj['sampleset_id'],"".join(traceback.format_exc())))
 
-	self.__LOGGER.info( "Updating  RNASeq Analysis object to workspace {0}".format(out_obj['experiment_id']))
-        try:
-                res= ws_client.save_objects(
-                                {"workspace":params['ws_id'],
-                                 "objects": [{
-                                                "type":"KBaseRNASeq.RNASeqAnalysis",
-                                                "data":out_obj,
-                                                "name":out_obj['experiment_id']}]
-                                })
-	except Exception,e:
-                raise KBaseRNASeqException("Error Updating the object to workspace {0},{1}".format(out_obj['experiment_id'],e))
-                #returnVal = {"workspace": params['ws_id'],"output" : out_obj['experiment_id'] }
-        returnVal = out_obj
-
-        #END SetupRNASeqAnalysis
+        #END CreateRNASeqSampleSet
 
         # At some point might do deeper type checking...
         if not isinstance(returnVal, dict):
-            raise ValueError('Method SetupRNASeqAnalysis return value ' +
+            raise ValueError('Method CreateRNASeqSampleSet return value ' +
                              'returnVal is not type dict as required.')
         # return the results
         return [returnVal]
@@ -1119,163 +1051,6 @@ class KBaseRNASeq:
         if not isinstance(returnVal, basestring):
             raise ValueError('Method CufflinksCall return value ' +
                              'returnVal is not type basestring as required.')
-        # return the results
-        return [returnVal]
-
-    def CuffmergeCall(self, ctx, params):
-        # ctx is the context object
-        # return variables are: returnVal
-        #BEGIN CuffmergeCall
-	user_token=ctx['token']
-	#pprint(params)
-        self.__LOGGER.info("Started CuffmergeCall")
-        
-        ws_client=Workspace(url=self.__WS_URL, token=user_token)
-        hs = HandleService(url=self.__HS_URL, token=user_token)
-        #list_file = open(cuffmerge_dir+"/"+self.__ASSEMBLY_GTF_FN,'w')
-        try:
-            if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
-            cuffmerge_dir = self.__SCRATCH +'/tmp'
-            if os.path.exists(cuffmerge_dir):
-                handler_util.cleanup(self.__LOGGER,cuffmerge_dir)
-            if not os.path.exists(cuffmerge_dir): os.makedirs(cuffmerge_dir)
-	    
-	    # Getting the provenance for the data
-	    provenance = [{}]
-            if 'provenance' in ctx:
-                provenance = ctx['provenance']
-                # add additional info to provenance here, in this case the input data object reference
-            provenance[0]['input_ws_objects']=[params['ws_id']+'/'+params['analysis']] 
-            self.__LOGGER.info("Downloading Analysis file")
-	    try:
-                analysis = ws_client.get_objects(
-                                        [{'name' : params['analysis'],'workspace' : params['ws_id']}])[0]
-            except Exception,e:
-                 self.__LOGGER.exception("".join(traceback.format_exc()))
-                 raise KBaseRNASeqException("Error Downloading objects from the workspace ")
-	    
-            ## Downloading data from shock
-            list_file = open(cuffmerge_dir+"/"+self.__ASSEMBLY_GTF_FN,'w')
-	    if 'data' in analysis : #and analysis['data'] is not None:
-		if 'annotation_id' in analysis['data']:
-			annotation=ws_client.get_objects([{'ref' : analysis['data']['annotation_id']} ])[0]
-			annotation_name = annotation['data']['handle']['file_name']
-			try:
-                         script_util.download_file_from_shock(self.__LOGGER, shock_service_url=annotation['data']['handle']['url'], shock_id=annotation['data']['handle']['id'],filename=annotation_name, directory=cuffmerge_dir,token=user_token)
-                    	except Exception,e:
-                            raise Exception( "Unable to Reference Annotation file from shock , {0}".format(e))
-		if 'expression_values' in analysis['data']:
-			### Add validate RNASeqAnalysis datatype and throw error message
-			rna_samples =  analysis['data']['sample_ids']
-			le = analysis['data']['expression_values']
-			le_samples = [ k for k,v in le.items() ]
-			missing_expression  =  [ x for x in rna_samples if  x not in le_samples ]
-			if len(missing_expression) != 0:
-				raise ValueError("Please run the methods 'Align Reads using Tophat/Bowtie2' and 'Assemble Transcripts using Cufflinks' for all the RNASeqSamples before running this step. The RNASeqAnalysis object is missing Cufflinks expression for few samples. ")
-                
-			self.__LOGGER.info("Downloading each expression")
-			
-                	shock_re =  re.compile(r'^(.*)/node/([^?]*)\??')
-                	# TODO: Change expression_values object design
-			#le = analysis['data']['expression_values']
-                	for k,v in le.items():
-                    		ko,vo=ws_client.get_objects([{'ref' : k}, {'ref' : v} ])
-                    		sp = os.path.join(cuffmerge_dir, ko['info'][1]) 
-		    		if not os.path.exists(sp): os.makedirs(sp)
-                   
-                    		if 'shock_url' not in vo['data']:
-                        		self.__LOGGER.info("{0} does not contain shock_url and we skip {1}".format(vo['info'][1], v))
-                        		next 
-
-                    		se = shock_re.search(vo['data']['shock_url'])
-                    		if se is None: 
-                        		self.__LOGGER.info("{0} does not contain shock_url and we skip {1}".format(vo['info'][1], v))
-                        		next 
-
-                    		efn = "{0}.zip".format(vo['info'][1])
-                    		try:
-                         		script_util.download_file_from_shock(self.__LOGGER, shock_service_url=se.group(1), shock_id=se.group(2),filename=efn, directory=cuffmerge_dir,token=user_token)
-                    		except Exception,e:
-                            		raise Exception( "Unable to download shock file, {0}".format(e))
-	            		try:
-                        		script_util.unzip_files(self.__LOGGER,os.path.join(cuffmerge_dir,efn),sp)
-                    		except Exception, e:
-                           		raise Exception("Unzip cufflinks file  error: Please contact help@kbase.us")
-                    		if not os.path.exists("{0}/transcripts.gtf\n".format(sp)):
-                       		# Would it be better to be skipping this? if so, replace Exception to be next
-		       			next		   
-                       		#raise Exception("{0} does not contain transcripts.gtf:  {1}".format(vo['info'][1], v))
-                    		list_file.write("{0}/transcripts.gtf\n".format(sp))
-		else:
-                	raise ValueError("Please run the methods 'Align Reads using Tophat/Bowtie2' and 'Assemble Transcripts using Cufflinks' for all the RNASeqSamples before running this step.The RNASeqAnalysis object does not have tag 'expression_values'");
-            else:
-                raise KBaseRNASeqException("The Input RNASeqAnalyis object is not properly formed ");
-            list_file.close()
-
-            ##  now ready to call
-	    output_dir = os.path.join(cuffmerge_dir, params['output_obj_name'])
-            try:
-                # TODO: add reference GTF later, seems googledoc command looks wrong
-		num_p = multiprocessing.cpu_count()
-		cuffmerge_command = " -p {0} -o {1} -g {2}/{3} {4}/{5}".format(str(num_p),output_dir,cuffmerge_dir,annotation_name,cuffmerge_dir,self.__ASSEMBLY_GTF_FN)
-                self.__LOGGER.info("Executing: cuffmerge {0}".format(cuffmerge_command))
-	        cmdline_output = script_util.runProgram(self.__LOGGER,"cuffmerge",cuffmerge_command,None,cuffmerge_dir)
-		if 'result' in cmdline_output:
-			report = cmdline_output['result']	
-            except Exception,e:
-                raise KBaseRNASeqException("Error executing cuffmerge {0},{1},{2}".format(cuffmerge_command,cuffmerge_dir,e))
-            
-            ##  compress and upload to shock
-            try:
-                self.__LOGGER.info("Zipping Cuffmerge output")
-		out_file_path = os.path.join(self.__SCRATCH,"{0}.zip".format(params['output_obj_name']))
-                script_util.zip_files(self.__LOGGER,output_dir,out_file_path)
-            except Exception,e:
-                raise KBaseRNASeqException("Error executing cuffmerge {0},{1}".format(os.getcwd(),e))
-	    try:
-		handle = hs.upload(out_file_path)
-            except Exception, e:
-                raise KBaseRNASeqException("Failed to upload the index: {0}".format(e))
-	   
-	    ## Save object to workspace
-	    try:
-                self.__LOGGER.info("Saving Cuffmerge object to workspace")
-                cm_obj = { 'file' : handle,
-                           'analysis' : analysis['data']
-                	 }
-            	res1= ws_client.save_objects(
-                                        {"workspace":params['ws_id'],
-                                         "objects": [{
-                                         "type":"KBaseRNASeq.RNASeqCuffmergetranscriptome",
-                                         "data":cm_obj,
-                                         "name":params['output_obj_name']}
-                                        ]})
-
-	   ## Update the Analysis  object 
-
-                analysis['data']['transcriptome_id'] = "{0}/{1}".format(params["ws_id"], params['output_obj_name'])	
-	        res= ws_client.save_objects(
-                                        {"workspace":params['ws_id'],
-                                         "objects": [{
-                                         "type":"KBaseRNASeq.RNASeqAnalysis",
-                                         "data":analysis['data'],
-                                         "name":params['analysis']}
-                                        ]})
-			
-	    except Exception, e:
-                raise KBaseRNASeqException("Failed to upload the objects for Cuffmerge KBaseRNASeq.RNASeqAnalysis and KBaseRNASeq.RNASeqCuffmergetranscriptome: {0}".format(e))
-	    returnVal = analysis['data'] 
-	except KBaseRNASeqException,e:
-                 self.__LOGGER.exception("".join(traceback.format_exc()))
-                 raise
-	finally:
-                 handler_util.cleanup(self.__LOGGER,cuffmerge_dir)
-        #END CuffmergeCall
-
-        # At some point might do deeper type checking...
-        if not isinstance(returnVal, dict):
-            raise ValueError('Method CuffmergeCall return value ' +
-                             'returnVal is not type dict as required.')
         # return the results
         return [returnVal]
 

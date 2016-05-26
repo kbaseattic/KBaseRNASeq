@@ -1,28 +1,23 @@
 {	
 	"version":"1.1",
-	"method":"KBaseRNASeq.SetupRNASeqAnalysis",
+	"method":"KBaseRNASeq.CreateRNASeqSampleSet",
 	"context": null,
 	"params":[ 	
 	{
   	"Library_type": "singleEnd",
-  	"num_replicates": 1,
   	"external_source_date": null,
-  	"title": "Arabidopsis test Data",
 	"domain" : "Eukaryotes",
   	"publication_id": null,
-  	"annotation_id": "Arabidopsis_annotation.gtf",
-  	"num_samples": 2,
-  	"experiment_desc": "Arabidopsis desc",
+  	"genome_id": "Arabidopsis_Genome_Annotation",
+	"bowtie2_index": "Arabidopsis_3702_Ensembl_bw_Indexes",
+  	"sampleset_desc": "Arabidopsis desc",
   	"platform": "Illumina",
-  	"tissue": null,
-	"singleEnd_reads" :[ "ath_wt_demo_Reads" ,"ath_hy5_demo_Reads" ],
+	"se_sample_ids" :[ "ath_hy5_demo_Reads" ,"ath_wt_demo_Reads" ],
+	"pe_sample_ids" : null,
   	"source": "NCBI",
-  	"experiment_id": "Athaliana_sdk_test_exp",
-  	"experiment_design": "Wild_type_Vs_Mutant",
-  	"source_id": null,
-  	"ws_id": "srividya22:1456962933354",
-  	"genome_id": "Arabidopsis_thaliana",
-  	"condn_labels": [
+  	"sampleset_id": "Athaliana_sdk_test_sampleset",
+  	"ws_id": "test_New_RNASeq",
+  	"condition": [
     			"WT",
     			"Mutant_HY5"
   		]

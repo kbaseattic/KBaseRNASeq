@@ -61,12 +61,8 @@ class JSONObjectEncoder(json.JSONEncoder):
 sync_methods = {}
 async_run_methods = {}
 async_check_methods = {}
-async_run_methods['KBaseRNASeq.fastqcCall_async'] = ['KBaseRNASeq', 'fastqcCall']
-async_check_methods['KBaseRNASeq.fastqcCall_check'] = ['KBaseRNASeq', 'fastqcCall']
-async_run_methods['KBaseRNASeq.associateReads_async'] = ['KBaseRNASeq', 'associateReads']
-async_check_methods['KBaseRNASeq.associateReads_check'] = ['KBaseRNASeq', 'associateReads']
-async_run_methods['KBaseRNASeq.SetupRNASeqAnalysis_async'] = ['KBaseRNASeq', 'SetupRNASeqAnalysis']
-async_check_methods['KBaseRNASeq.SetupRNASeqAnalysis_check'] = ['KBaseRNASeq', 'SetupRNASeqAnalysis']
+async_run_methods['KBaseRNASeq.CreateRNASeqSampleSet_async'] = ['KBaseRNASeq', 'CreateRNASeqSampleSet']
+async_check_methods['KBaseRNASeq.CreateRNASeqSampleSet_check'] = ['KBaseRNASeq', 'CreateRNASeqSampleSet']
 async_run_methods['KBaseRNASeq.BuildBowtie2Index_async'] = ['KBaseRNASeq', 'BuildBowtie2Index']
 async_check_methods['KBaseRNASeq.BuildBowtie2Index_check'] = ['KBaseRNASeq', 'BuildBowtie2Index']
 async_run_methods['KBaseRNASeq.GetFeaturesToGTF_async'] = ['KBaseRNASeq', 'GetFeaturesToGTF']
@@ -77,14 +73,8 @@ async_run_methods['KBaseRNASeq.TophatCall_async'] = ['KBaseRNASeq', 'TophatCall'
 async_check_methods['KBaseRNASeq.TophatCall_check'] = ['KBaseRNASeq', 'TophatCall']
 async_run_methods['KBaseRNASeq.CufflinksCall_async'] = ['KBaseRNASeq', 'CufflinksCall']
 async_check_methods['KBaseRNASeq.CufflinksCall_check'] = ['KBaseRNASeq', 'CufflinksCall']
-async_run_methods['KBaseRNASeq.CuffmergeCall_async'] = ['KBaseRNASeq', 'CuffmergeCall']
-async_check_methods['KBaseRNASeq.CuffmergeCall_check'] = ['KBaseRNASeq', 'CuffmergeCall']
 async_run_methods['KBaseRNASeq.CuffdiffCall_async'] = ['KBaseRNASeq', 'CuffdiffCall']
 async_check_methods['KBaseRNASeq.CuffdiffCall_check'] = ['KBaseRNASeq', 'CuffdiffCall']
-async_run_methods['KBaseRNASeq.getAlignmentStats_async'] = ['KBaseRNASeq', 'getAlignmentStats']
-async_check_methods['KBaseRNASeq.getAlignmentStats_check'] = ['KBaseRNASeq', 'getAlignmentStats']
-async_run_methods['KBaseRNASeq.createExpressionHistogram_async'] = ['KBaseRNASeq', 'createExpressionHistogram']
-async_check_methods['KBaseRNASeq.createExpressionHistogram_check'] = ['KBaseRNASeq', 'createExpressionHistogram']
 
 class AsyncJobServiceClient(object):
 
@@ -356,18 +346,10 @@ class Application(object):
         self.serverlog.set_log_level(6)
         self.rpc_service = JSONRPCServiceCustom()
         self.method_authentication = dict()
-        self.rpc_service.add(impl_KBaseRNASeq.fastqcCall,
-                             name='KBaseRNASeq.fastqcCall',
+        self.rpc_service.add(impl_KBaseRNASeq.CreateRNASeqSampleSet,
+                             name='KBaseRNASeq.CreateRNASeqSampleSet',
                              types=[dict])
-        self.method_authentication['KBaseRNASeq.fastqcCall'] = 'required'
-        self.rpc_service.add(impl_KBaseRNASeq.associateReads,
-                             name='KBaseRNASeq.associateReads',
-                             types=[dict])
-        self.method_authentication['KBaseRNASeq.associateReads'] = 'required'
-        self.rpc_service.add(impl_KBaseRNASeq.SetupRNASeqAnalysis,
-                             name='KBaseRNASeq.SetupRNASeqAnalysis',
-                             types=[dict])
-        self.method_authentication['KBaseRNASeq.SetupRNASeqAnalysis'] = 'required'
+        self.method_authentication['KBaseRNASeq.CreateRNASeqSampleSet'] = 'required'
         self.rpc_service.add(impl_KBaseRNASeq.BuildBowtie2Index,
                              name='KBaseRNASeq.BuildBowtie2Index',
                              types=[dict])
@@ -388,22 +370,13 @@ class Application(object):
                              name='KBaseRNASeq.CufflinksCall',
                              types=[dict])
         self.method_authentication['KBaseRNASeq.CufflinksCall'] = 'required'
-        self.rpc_service.add(impl_KBaseRNASeq.CuffmergeCall,
-                             name='KBaseRNASeq.CuffmergeCall',
-                             types=[dict])
-        self.method_authentication['KBaseRNASeq.CuffmergeCall'] = 'required'
         self.rpc_service.add(impl_KBaseRNASeq.CuffdiffCall,
                              name='KBaseRNASeq.CuffdiffCall',
                              types=[dict])
         self.method_authentication['KBaseRNASeq.CuffdiffCall'] = 'required'
-        self.rpc_service.add(impl_KBaseRNASeq.getAlignmentStats,
-                             name='KBaseRNASeq.getAlignmentStats',
+        self.rpc_service.add(impl_KBaseRNASeq.status,
+                             name='KBaseRNASeq.status',
                              types=[dict])
-        self.method_authentication['KBaseRNASeq.getAlignmentStats'] = 'required'
-        self.rpc_service.add(impl_KBaseRNASeq.createExpressionHistogram,
-                             name='KBaseRNASeq.createExpressionHistogram',
-                             types=[dict])
-        self.method_authentication['KBaseRNASeq.createExpressionHistogram'] = 'required'
         self.auth_client = biokbase.nexus.Client(
             config={'server': 'nexus.api.globusonline.org',
                     'verify_ssl': True,
