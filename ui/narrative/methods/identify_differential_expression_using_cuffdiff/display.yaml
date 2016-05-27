@@ -26,9 +26,9 @@ method-suggestions :
 parameters :
   rnaseq_exp_details :
     ui-name : |
-      Experiment Analysis
+      RNA-seq Sample Set
     short-hint : |
-      Specify the RNA-seq Experiment Analysis
+      Select the RNA-seq sample set associated with assembled transcripts using Cufflinks.
   output_obj_name :
     ui-name : |
       Cuffdiff Output
@@ -72,7 +72,7 @@ parameters :
 
 description : |
     <p>This method uses the Cufflinks transcripts to calculate gene and transcript levels in more than one condition and finds significant changes in the expression levels.</p>
-    <p>It accepts Cufflinks annotation files merged by Cuffmerge and BAM files of aligned RNA-seq reads as input. If more than two BAM files are provided, Cuffdiff tests for differential expression between all pairs of samples.</p> 
+    <p>It accepts Cufflinks annotation files as input and then merges it by using Cuffmerge at the backend. If more than two BAM files are provided, Cuffdiff tests for differential expression between all pairs of samples.</p> 
     
     <p>Cuffdiff calculates the FPKM value of each transcript, primary transcript and gene in each sample and produces a number of output files zipped in Cuffdiff output object.</p>
     <p>The Cuffdiff output can be further analyzed and visualized by using View methods such as “View CummeRbund Plots”, “View Differentially Expressed Genes from Cuffdiff in Heatmap”.</p> 
