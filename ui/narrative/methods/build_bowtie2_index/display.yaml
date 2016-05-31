@@ -34,13 +34,13 @@ suggestions :
 parameters :
     input_genome:
         ui-name : |
-            Genome
+            Genome Annotation
         short-hint : |
             The input genome to be indexed 
 
     out_index_name:
         ui-name : |
-            Indexed Genome
+            Bowtie2 Index
         short-hint : |
             The indexed genome as output
 

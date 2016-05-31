@@ -28,7 +28,7 @@ parameters :
         ui-name : |
             RNA-seq Sample Set
         short-hint : |
-            Select the RNA-seq sampleset associated with the reads
+            Select the RNA-seq sample set associated with the reads
     read_mismatches :
         ui-name : |
             Read Mismatch Cutoff

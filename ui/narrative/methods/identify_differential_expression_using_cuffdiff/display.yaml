@@ -26,9 +26,9 @@ method-suggestions :
 parameters :
   sampleset_id :
     ui-name : |
-      RNA-seq Sample Set
+      RNA-seq Expression Set
     short-hint : |
-      Select the RNA-seq sample set associated with assembled transcripts using Cufflinks.
+      Select the RNA-seq expression set associated with assembled transcripts using Cufflinks.
   output_obj_name :
     ui-name : |
       Cuffdiff Output
