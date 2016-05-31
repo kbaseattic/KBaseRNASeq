@@ -41,9 +41,13 @@ def generate_fasta(logger,internal_services,token,ref,output_dir,obj_name):
 	logger.info("Generating FASTA file from Assembly for {}/{}".format(ref,obj_name))	
 	fasta_start = datetime.datetime.utcnow()
 	output_file = os.path.join(output_dir,'{}.fasta'.format(obj_name))
-    	with open(output_file, 'w') as fasta_file:
+	fasta_file= io.open(output_file, 'wb')
+    	try:
         	ga.get_assembly().get_fasta().to_file(fasta_file)
-	fasta_file.close()
+	except Exception as e:
+		raise Exception("Unable to Create FASTA file from Genome Annotation : {0}: {1}".format(obj_name,e))
+	finally:
+		fasta_file.close()
     	fasta_end = datetime.datetime.utcnow()
 	logger.info("Generating FASTA for {} took {}".format(obj_name, fasta_end - fasta_start))
 	return output_file
@@ -62,10 +66,14 @@ def generate_gff(logger,internal_services,token,ref,output_dir,obj_name,output_f
                 raise Exception("Unable to Call GenomeAnnotationAPI : {0}".format(e))
         logger.info("Requesting GenomeAnnotation GFF for {}/{}".format(ref,obj_name))
     	gff_start = datetime.datetime.utcnow()
+        gff_file= io.open(output_file, 'wb')
 	#output_file = os.path.join(output_dir,'{}.gff'.format(obj_name))
-    	with open(output_file, 'w') as gff_file:
+	try:
         	ga.get_gff().to_file(gff_file)
-    	gff_file.close()
+	except Exception as e:
+                raise Exception("Unable to Create GFF  file from Genome Annotation : {0}: {1}".format(obj_name,e))
+        finally:
+    		gff_file.close()
 	gff_end = datetime.datetime.utcnow()
     	logger.info("Generating GFF for {} took {}".format(obj_name, gff_end - gff_start))
         ## Additional Step for sanitizing contig id

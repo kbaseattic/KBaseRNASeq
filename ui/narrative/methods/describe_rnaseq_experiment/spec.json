@@ -80,24 +80,14 @@
       "valid_ws_types" : [ "KBaseRNASeq.Bowtie2Indexes" ]
     }
   },{
-    "id" : "se_sample_ids",
-    "optional" : true,
+    "id" : "sample_ids",
+    "optional" : false,
     "advanced" : false,
     "allow_multiple" : true,
     "default_values" : [ "" ],
     "field_type" : "text",
     "text_options" : {
-      "valid_ws_types" : [ "KBaseAssembly.SingleEndLibrary" ]
-    }
-  },{
-    "id" : "pe_sample_ids",
-    "optional" : true,
-    "advanced" : false,
-    "allow_multiple" : true,
-    "default_values" : [ "" ],
-    "field_type" : "text",
-    "text_options" : {
-      "valid_ws_types" : [ "KBaseAssembly.PairedEndLibrary" ] 
+      "valid_ws_types" : [ "KBaseAssembly.SingleEndLibrary","KBaseAssembly.PairedEndLibrary" ] 
     }
   },{
     "id" : "condition",

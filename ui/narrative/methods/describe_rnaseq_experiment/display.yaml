@@ -59,16 +59,11 @@ parameters :
             Treatment Labels
         short-hint : |
             Short name for each sample treatment in the RNA-seq experiment. The treatment labels must be added in the same order as the reads. Please specify the same treatment label for the replicates
-    se_sample_ids:
+    sample_ids:
         ui-name : |
-            Single-end Reads
+            Reads (Single-end/Paired-end)
         short-hint : |
-            The single-end reads files based on sequencing from one end of the fragment. The reads belonging to the same treatment must be added consecutively. 
-    pe_sample_ids:
-        ui-name : |
-            Paired-end Reads
-        short-hint : |
-            The paired-end reads files based on sequencing from both the ends of the fragment. The reads belonging to the same treatment must be added consecutively.
+            The Single-end/Paired-end reads files based on sequencing.
     domain :
         ui-name : |
             Domain 

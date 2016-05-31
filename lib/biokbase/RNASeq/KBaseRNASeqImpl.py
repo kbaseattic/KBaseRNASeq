@@ -64,7 +64,7 @@ class KBaseRNASeq:
     #########################################
     VERSION = "0.0.1"
     GIT_URL = "https://github.com/sjyoo/KBaseRNASeq"
-    GIT_COMMIT_HASH = "27f2178a4466f7f9dee93878ea0e775297a85e4d"
+    GIT_COMMIT_HASH = "efc793f251b4f424b346107478dcb6ba00ca12ca"
     
     #BEGIN_CLASS_HEADER
     __TEMP_DIR = 'temp'
@@ -138,10 +138,10 @@ class KBaseRNASeq:
             else: os.makedirs(sampleset_dir)
 	    #handler_util.setupWorkingDir("tmp")
 	    out_obj = { k:v for k,v in params.iteritems() if not k in ('ws_id', 'se_sample_ids', 'pe_sample_ids')}  	
-	    if "se_sample_ids" in params and params["se_sample_ids"] is not None:
-		sample_ids = params["se_sample_ids"]
-	    if "pe_sample_ids" in params and params["pe_sample_ids"] is not None:
-		sample_ids = params["pe_sample_ids"]
+	    #if "se_sample_ids" in params and params["se_sample_ids"] is not None:
+	    sample_ids = params["sample_ids"]
+	    #if "pe_sample_ids" in params and params["pe_sample_ids"] is not None:
+	    #sample_ids = params["pe_sample_ids"]
 	    out_obj['num_samples'] = len(sample_ids)
 
 	    ## Validation to Check if the number of samples is equal to number of condition
