@@ -9,24 +9,14 @@
     "output" : "kbaseRNASeqPie"
   },
    "parameters" : [ {
-    "id" : "sample_id",
+    "id" : "sampleset_id",
     "optional" : false,
     "advanced" : false,
     "allow_multiple" : false,
     "default_values" : [ "" ],
     "field_type" : "text",
     "text_options" : {
-      "valid_ws_types" : ["KBaseRNASeq.RNASeqSample" ]
-    }
-  }, {
-    "id" : "bowtie2_index",
-    "optional" : false,
-    "advanced" : false,
-    "allow_multiple" : false,
-    "default_values" : [ "" ],
-    "field_type" : "text",
-    "text_options" : {
-      "valid_ws_types" : ["KBaseRNASeq.Bowtie2Indexes" ]
+      "valid_ws_types" : ["KBaseRNASeq.RNASeqSampleSet" ]
     }
   },{
      "id" : "output_obj_name",
@@ -132,12 +122,8 @@
           "target_property" : "ws_id"
         },
         {
-          "input_parameter" : "sample_id",
-          "target_property" : "sample_id"
-        },
-        {
-          "input_parameter" : "bowtie2_index",
-          "target_property" : "bowtie2_index"
+          "input_parameter" : "sampleset_id",
+          "target_property" : "sampleset_id"
         },
 	{
 	  "input_parameter" : "output_obj_name",

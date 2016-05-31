@@ -17,7 +17,7 @@ method-suggestions :
     related :
         []
     next :
-        [assemble_transcripts_with_cufflinks]
+        [assemble_transcripts_using_cufflinks]
 
 
 #
@@ -26,14 +26,9 @@ method-suggestions :
 parameters :
     sample_id :
         ui-name : |
-            RNA-seq Sample  
+            RNA-seq Sample Set 
         short-hint : |
-            Select the RNA-seq sample associated with the reads
-    bowtie2_index :
-        ui-name : |
-            Indexed Genome
-        short-hint : |
-            Specify the indexed genome built using Bowtie2
+            Select the RNA-seq sample set associated with the reads
     output_obj_name :
         ui-name : |
             Alignment Output
@@ -62,9 +57,7 @@ parameters :
             Faster option is generally less sensitive and vice versa.
 
 description : |
-    <p>This method aligns the sequencing reads to long reference sequences of a prokaryotic genome using Bowtie2 for a single sample. </p>
-    
-    <p>This method takes a Bowtie2 index object and a sequencing read file and outputs a set of alignments in BAM format.</p> 
+    <p>This method aligns the sequencing reads of a given sample set to long reference sequences of a prokaryotic genome using Bowtie2 and outputs a set of alignments for the given sample set in BAM format.</p> 
     
     <p>In addition, it outputs the alignment statistics such as total reads, mapped and unmapped reads, singletons, multiple alignments, and alignment rate in the table format.</p>
     
