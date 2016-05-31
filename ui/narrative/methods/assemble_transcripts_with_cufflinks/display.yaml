@@ -26,7 +26,7 @@ method-suggestions :
 parameters :
   sampleset_id :
     ui-name : |
-        RNA-seq Sample Set 
+        RNA-seq Alignment Set 
     short-hint : |
         Select the RNA-seq Sample Set associated with read alignments from Bowtie2 or TopHat.
   num-threads :
