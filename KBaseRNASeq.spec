@@ -338,8 +338,7 @@
         string platform;
    	ws_genome_annotation_id genome_id;
 	ws_bowtieIndex_id bowtie2_index; 
-	list<ws_SingleEndLibrary> se_sample_ids;
-	list<ws_PairedEndLibrary> pe_sample_ids;
+	list<string> sample_ids;
    	list<string> condition;
    	string source;
    	string Library_type;
