@@ -40,9 +40,9 @@ EXECUTABLE_SCRIPT_NAME = run_$(MODULE_CAPS).sh
 ##
 # Main makefiles
 #
-default: compile-kb-module build-executable-script-python
+default: compile build-executable-script-python
 
-compile-kb-module:
+compile:
 	kb-sdk compile $(SPEC_FILE) \
 		--out $(LIB_DIR) \
 		--pyclname biokbase.$(MODULE).$(MODULE_CAPS)Client \
