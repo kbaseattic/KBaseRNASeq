@@ -29,11 +29,6 @@ parameters :
             RNA-seq Sample Set
         short-hint : |
             Select the RNA-seq sampleset associated with the reads
-    output_obj_name :
-        ui-name : |
-            Alignment Output
-        short-hint : |
-            Provide the name of TopHat read alignment output
     read_mismatches :
         ui-name : |
             Read Mismatch Cutoff

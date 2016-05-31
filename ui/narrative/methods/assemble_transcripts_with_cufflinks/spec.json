@@ -19,17 +19,6 @@
       "valid_ws_types" : ["KBaseRNASeq.RNASeqSampleSet" ]
     }
   }, {
-    "id" : "output_obj_name",
-    "optional" : false,
-    "advanced" : false,
-    "allow_multiple" : false,
-    "default_values" : [ "" ],
-    "field_type" : "text",
-    "text_options" : {
-      "valid_ws_types" : ["KBaseExpression.ExpressionSample"],
-      "is_output_name": true
-    }
-  }, {
    "id" : "num-threads",
     "optional" : true,
     "advanced" : true,
@@ -85,10 +74,6 @@
           "target_property" : "sampleset_id"
         },
         {
-          "input_parameter" : "output_obj_name",
-          "target_property" : "output_obj_name"
-        },
-        {
           "input_parameter" : "num-threads",
           "target_property" : "num-threads"
         },
@@ -109,10 +94,10 @@
           "narrative_system_variable": "workspace",
           "target_property" : "workspace"
         },
-	{
-	  "input_parameter" : "output_obj_name",
+        {
+          "service_method_output_path" : [0,"expression_obj"],
           "target_property" : "output"
-        }
+       }
       ]
     }
   },

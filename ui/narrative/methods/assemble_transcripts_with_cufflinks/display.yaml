@@ -29,11 +29,6 @@ parameters :
         RNA-seq Sample Set 
     short-hint : |
         Select the RNA-seq Sample Set associated with read alignments from Bowtie2 or TopHat.
-  output_obj_name :
-    ui-name : |
-      Cufflinks Output
-    short-hint : |
-      Provide the name of Cufflinks output
   num-threads :
     ui-name : |
       Number of  Threads

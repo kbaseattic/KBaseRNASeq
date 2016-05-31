@@ -29,11 +29,6 @@ parameters :
             RNA-seq Sample Set 
         short-hint : |
             Select the RNA-seq sample set associated with the reads
-    output_obj_name :
-        ui-name : |
-            Alignment Output
-        short-hint : |
-            Provide the name of Bowtie2 read alignment output
     alignment_type :
         ui-name : |
             Alignment Type

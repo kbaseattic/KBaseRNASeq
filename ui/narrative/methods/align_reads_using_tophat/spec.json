@@ -19,17 +19,6 @@
       "valid_ws_types" : ["KBaseRNASeq.RNASeqSampleSet" ]
     }
   }, {
-    "id" : "output_obj_name",
-    "optional" : false,
-    "advanced" : false,
-    "allow_multiple" : false,
-    "default_values" : [ "" ],
-    "field_type" : "text",
-    "text_options" : {
-      "valid_ws_types" : ["KBaseRNASeq.RNASeqSampleAlignment"],
-      "is_output_name": true
-    }
-  }, {
     "id" : "read_mismatches",
     "optional" : true,
     "advanced" : true,
@@ -155,10 +144,6 @@
           "input_parameter" : "sampleset_id",
           "target_property" : "sampleset_id"
         },
-	{
-	  "input_parameter" : "output_obj_name",
-          "target_property" : "output_obj_name"
-	},
         {
           "input_parameter" : "read_mismatches",
           "target_property" : "read_mismatches"
