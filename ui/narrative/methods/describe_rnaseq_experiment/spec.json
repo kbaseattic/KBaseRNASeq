@@ -158,12 +158,9 @@
         },{
           "input_parameter": "bowtie2_index",
           "target_property": "bowtie2_index"
-        },{
-          "input_parameter": "se_sample_ids",
-          "target_property": "se_sample_ids"
 	},{
-          "input_parameter": "pe_sample_ids",
-          "target_property": "pe_sample_ids"
+          "input_parameter": "sample_ids",
+          "target_property": "sample_ids"
 	},{
           "input_parameter": "condition",
           "target_property": "condition"
