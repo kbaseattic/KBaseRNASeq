@@ -144,7 +144,7 @@
     "service-mapping" : {
     	"url" : "",
     	"name" : "KBaseRNASeq",
-    	"method" : "SetupRNASeqAnalysis",
+    	"method" : "CreateRNASeqSampleSet",
 	"input_mapping" : [    
 	{
           "narrative_system_variable": "workspace",
