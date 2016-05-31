@@ -24,7 +24,7 @@ method-suggestions :
 # Configure the display and description of the parameters
 #
 parameters :
-    sample_id :
+    sampleset_id :
         ui-name : |
             RNA-seq Sample Set
         short-hint : |
