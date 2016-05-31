@@ -1,10 +1,10 @@
 #
 # Define basic display information
 #
-name     : Create RNA-seq SampleSet
+name     : Create RNA-seq Sample Set
 
 tooltip  : |
-    Provide the metadata to a RNA-seq SampleSet
+    Provide the metadata to a RNA-seq Sample Set
 screenshots :
     []
 
@@ -26,12 +26,12 @@ method-suggestions :
 parameters :
     sampleset_id :
         ui-name : |
-            RNA-seq SampleSet
+            RNA-seq Sample Set
         short-hint : |
-            The name of the output object used by the RNA-seq SampleSet.
+            The name of the output object used by the RNA-seq Sample Set.
     sampleset_desc :
         ui-name : |
-            SampleSet Description
+            Sample Set Description
         short-hint : |
             The detailed description of the RNA-seq samples selected
     platform :
@@ -90,7 +90,7 @@ description : |
     
     <p>Users need to import single-end or paired-end read files and the corresponding genome and reference genome annotation files to the Data Pane before starting this method.</p>
     
-    <p>It is mandatory for users to provide "SampleSet" (RNA-seq sampleset object), select the "Genome", "Reference Genome Annotation", "Library Type", and "Domain" from the drop down menu along with the total number of samples, number of replicates and labels of the sample conditions/treatments. It is necessary to have the same number of replication for each sample.</p>
+    <p>It is mandatory for users to provide "RNA-seq Sample Set" (RNA-seq sample set object name), select the "Genome", "Genome Annotation", "Library Type", and "Domain" from the drop down menu along with the total number of samples, number of replicates and labels of the sample conditions/treatments. It is necessary to have the same number of replication for each sample.</p>
     
     <p>Users can optionally fill in additional metadata information in the advanced options.</p>
    
