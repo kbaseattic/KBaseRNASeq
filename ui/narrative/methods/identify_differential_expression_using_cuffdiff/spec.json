@@ -178,7 +178,7 @@
           "target_property" : "workspace"
         },
 	{
-          "input_parameter" : "rnaseq_exp_details",
+          "input_parameter" : "output_obj_name",
           "target_property" : "output"
         },
 	{
