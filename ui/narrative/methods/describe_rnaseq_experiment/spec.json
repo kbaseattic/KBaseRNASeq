@@ -60,26 +60,6 @@
       ]
     }
   },{
-    "id" : "genome_id",
-    "optional" : false,
-    "advanced" : false,
-    "allow_multiple" : false,
-    "default_values" : [ "" ],
-    "field_type" : "text",
-    "text_options" : {
-      "valid_ws_types" : [ "KBaseGenomeAnnotations.GenomeAnnotation" ]
-    }
-  },{
-    "id" : "bowtie2_index",
-    "optional" : false,
-    "advanced" : false,
-    "allow_multiple" : false,
-    "default_values" : [ "" ],
-    "field_type" : "text",
-    "text_options" : {
-      "valid_ws_types" : [ "KBaseRNASeq.Bowtie2Indexes" ]
-    }
-  },{
     "id" : "sample_ids",
     "optional" : false,
     "advanced" : false,
@@ -152,12 +132,6 @@
         },{
           "input_parameter": "Library_type",
           "target_property": "Library_type"
-        },{
-          "input_parameter": "genome_id",
-          "target_property": "genome_id"
-        },{
-          "input_parameter": "bowtie2_index",
-          "target_property": "bowtie2_index"
 	},{
           "input_parameter": "sample_ids",
           "target_property": "sample_ids"
