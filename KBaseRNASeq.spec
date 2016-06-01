@@ -108,10 +108,9 @@
 
 /*
   Object to Describe the RNASeq SampleSet
-  @optional platform num_replicates genome_id source publication_id external_source_date sample_ids
+  @optional platform num_replicates source publication_id external_source_date sample_ids
   @metadata ws sampleset_id
   @metadata ws platform
-  @metadata ws genome_id
   @metadata ws num_samples
   @metadata ws num_replicates
   @metadata ws length(condition)
@@ -122,8 +121,6 @@
         string sampleset_desc;
 	string domain;
         string platform;
-        ws_genome_annotation_id genome_id;
-        ws_bowtieIndex_id bowtie2_index;
         int num_samples;
         int num_replicates;
         list<string> sample_ids;
@@ -133,6 +130,13 @@
         string publication_id;
         string external_source_date;
         }RNASeqSampleSet;
+/*
+      Id for KBaseRNASeq.RNASeqSampleSet
+      @id ws KBaseRNASeq.RNASeqSampleSet
+   */
+
+        typedef string ws_Sampleset_id;
+
 
 
   /* Specification for the RNASeqFastq Metadata
@@ -177,9 +181,10 @@
 
  /*
     Object for the RNASeq Alignment bam file
-    @optional aligner_opts aligner_version aligned_using replicate_id platform size 
+    @optional aligner_opts aligner_version aligned_using replicate_id platform size mapped_sample_id sampleset_id 
     @metadata ws aligned_using
     @metadata ws aligner_version
+    @metadata ws genome_id
     @metadata ws size
     @metadata ws read_sample_id
     @metadata ws library_type
@@ -196,8 +201,11 @@
 	string replicate_id;
 	string condition;
 	string platform;
+        ws_genome_annotation_id genome_id;
+        ws_bowtieIndex_id bowtie2_index;
 	list<mapping<string opt_name, string opt_value>> aligner_opts;
         mapping<string condition,mapping<string sample_id , string replicate_id>> mapped_sample_id;
+	ws_Sampleset_id sampleset_id;
 	Handle file;
 	int size;
     }RNASeqSampleAlignment;
@@ -209,6 +217,28 @@
 */
 
  typedef string ws_samplealignment_id;
+
+/*
+  Set object for RNASeqSampleAlignment objects
+*/
+
+  typedef structure {
+	ws_Sampleset_id sampleset_id;
+	ws_genome_annotation_id genome_id;
+	ws_bowtieIndex_id bowtie2_index;
+	list<string> read_sample_ids;
+	list<string> condition;
+	list<RNASeqSampleAlignment> sample_alignments;
+        list<mapping<string read_sample_id , ws_samplealignment_id alignment_id>> mapped_alignments_ids;
+	}RNASeqAlignmentSet;
+
+/*
+  The workspace id for a RNASeqAlignmentSet object
+  @id ws KBaseRNASeq.RNASeqAlignmentSet
+*/
+
+ typedef string ws_alignmentSet_id;
+
 
 /*
   The workspace object for a RNASeqSampleExpression
@@ -250,6 +280,26 @@
    */  
         typedef string ws_expression_sample_id;
 
+/*
+  Set object for RNASeqSampleExpression objects
+*/
+
+  typedef structure {
+	ws_alignmentSet_id alignmentSet_id;
+        ws_Sampleset_id sampleset_id;
+        ws_genome_annotation_id genome_id;
+        list<string> sample_ids;
+        list<string> condition;
+        list<ws_expression_sample_id> sample_expression_ids;
+        list<mapping<string read_sample_id , ws_expression_sample_id expression_id>> mapped_expression_ids;
+        }RNASeqExpressionSet;
+/*
+      Id for expression sample set
+      @id ws KBaseRNASeq.RNASeqExpressionSet
+
+   */
+        typedef string ws_expressionSet_id;
+
 
 /* Structure Read_mapping_sections
    @optional introns exons splice_junctions intergenic_regions
@@ -281,16 +331,18 @@
 
 /*
    Object RNASeqDifferentialExpression file structure
-   @optional tool_opts tool_version sample_ids
+   @optional tool_opts tool_version sample_ids 
 */
    typedef structure {
 	string tool_used;
 	string tool_version;
         list<mapping<string opt_name, string opt_value>> tool_opts;	
       	Handle file;
-	list<string> condition;
-	string sampleset_id;
         list<string> sample_ids;
+	list<string> condition;
+	ws_expressionSet_id expressionSet_id;
+	ws_alignmentSet_id alignmentSet_id;
+        ws_Sampleset_id sampleset_id;
       	}RNASeqDifferentialExpression;
 
 /*
@@ -336,8 +388,6 @@
    	string sampleset_desc;
    	string domain;
         string platform;
-   	ws_genome_annotation_id genome_id;
-	ws_bowtieIndex_id bowtie2_index; 
 	list<string> sample_ids;
    	list<string> condition;
    	string source;
@@ -403,7 +453,9 @@
 	
    typedef structure{
 	string ws_id;
-     	RNASeqSampleSet rnaseq_exp_details;
+        string read_sample;
+	string genome_id;
+	string bowtie2_index;
         string phred33;
         string phred64;
         string local;
@@ -466,7 +518,9 @@ typedef mapping<string Tophat_opts,t_opts opts_tophat> t_opts_str;
 
  typedef structure{
      string ws_id;
-     RNASeqSampleSet rnaseq_exp_details;
+     string read_sample; 
+     string genome_id;
+     string bowtie2_index;
      int read_mismatches;
      int read_gap_length;
      int read_edit_dist;
@@ -511,7 +565,7 @@ typedef mapping<string Tophat_opts,t_opts opts_tophat> t_opts_str;
 
 typedef structure{
 	string ws_id;
-        RNASeqSampleSet rnaseq_exp_details;
+	string sample_alignment;
 	int num_threads;
         /*string library-type; */
         /*string library-norm-method; */

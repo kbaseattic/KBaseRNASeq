@@ -64,7 +64,7 @@ class KBaseRNASeq:
     #########################################
     VERSION = "0.0.1"
     GIT_URL = "https://github.com/sjyoo/KBaseRNASeq"
-    GIT_COMMIT_HASH = "efc793f251b4f424b346107478dcb6ba00ca12ca"
+    GIT_COMMIT_HASH = "55b1a618f1f22e28ad30f154fa14b23bcd4469e6"
     
     #BEGIN_CLASS_HEADER
     __TEMP_DIR = 'temp'
@@ -138,70 +138,60 @@ class KBaseRNASeq:
             else: os.makedirs(sampleset_dir)
 	    #handler_util.setupWorkingDir("tmp")
 	    out_obj = { k:v for k,v in params.iteritems() if not k in ('ws_id', 'se_sample_ids', 'pe_sample_ids')}  	
-	    #if "se_sample_ids" in params and params["se_sample_ids"] is not None:
 	    sample_ids = params["sample_ids"]
-	    #if "pe_sample_ids" in params and params["pe_sample_ids"] is not None:
-	    #sample_ids = params["pe_sample_ids"]
 	    out_obj['num_samples'] = len(sample_ids)
 
 	    ## Validation to Check if the number of samples is equal to number of condition
 	    if len(params["condition"]) != out_obj['num_samples']:
 		raise ValueError("Please specify a treatment label for each sample in the RNA-seq SampleSet. Please enter the same label for the replicates in a sample type")
 	    labels = params['condition']
-	    if "genome_id" in params and params['genome_id'] is not None:
-		out_obj['genome_id'] = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params["genome_id"]],params["ws_id"],user_token)[0]
-		out_file_path = os.path.join(sampleset_dir,params['genome_id']+'.gff')
-		try:
-			fasta_file= script_util.generate_fasta(self.__LOGGER,self.__SERVICES,user_token,params['ws_id'],sampleset_dir,params['genome_id'])
-               	 	self.__LOGGER.info("Sanitizing the fasta file to correct id names {}".format(datetime.datetime.utcnow()))
-                	mapping_filename = c_mapping.create_sanitized_contig_ids(fasta_file)
-                	c_mapping.replace_fasta_contig_ids(fasta_file, mapping_filename, to_modified=True)
-                	self.__LOGGER.info("Generating FASTA file completed successfully : {}".format(datetime.datetime.utcnow()))
-                	script_util.generate_gff(self.__LOGGER,self.__SERVICES,user_token,params['ws_id'],sampleset_dir,params['genome_id'],out_file_path)
-                	c_mapping.replace_gff_contig_ids(out_file_path, mapping_filename, to_modified=True)
-			gtf_path =''
-			if params['domain'] == "Prokaryotes":
-				gtf_path = os.path.join(sampleset_dir,params['genome_id']+'.gtf')
-				gtf_cmd = " -E {0} -T -o- {1}".format(out_file_path,gtf_path)
-				try:
-                		    self.__LOGGER.info("Executing: gffread {0}".format(gtf_cmd))
-                		    cmdline_output = script_util.runProgram(self.__LOGGER,"gffread",gtf_cmd,None,sampleset_dir)
-				except Exception,e:
-               			     raise KBaseRNASeqException("Error Converting the GFF file to GTF using gffread {0}".format(gtf_cmd))
-			if os.path.exists(gtf_path):
-				annotation_handle = hs.upload(gtf_path)
-				a_handle = { "handle" : annotation_handle ,"size" : os.path.getsize(gtf_path), 'genome_id' : out_obj['genome_id']}
-			else:
-				annotation_handle = hs.upload(out_file_path)
-				a_handle = { "handle" : annotation_handle ,"size" : os.path.getsize(out_file_path), 'genome_id' : out_obj['genome_id']}
-			##Saving GFF/GTF annotation to the workspace
-			res= ws_client.save_objects(
-                                        {"workspace":params['ws_id'],
-                                         "objects": [{
-                                         "type":"KBaseRNASeq.GFFAnnotation",
-                                         "data":a_handle,
-                                         "name":params['genome_id']+"_GFF_Annotation",
-					 "hidden":1}
-                                        ]})
-                except Exception as e:
-                        raise ValueError("Generating GFF file from Genome Annotation object Failed :  {}".format("".join(traceback.format_exc())))
-	
-            if "bowtie2_index" in params and params['bowtie2_index'] is not None:
-            	out_obj['bowtie2_index'] = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params['bowtie2_index']],params['ws_id'],user_token)[0]
-
-	    #reps = 0 
-	    #for i in labels:
-            #	if labels.count(i) != reps:
-	    #		reps = i
-	    #	else: 
-	    #	   raise ValueError("Every Sample should contain equal number of replicates")
-	    #out_obj['num_replicates'] = dict((i,a.count(i)) for i in labels).items()
+#	    if "genome_id" in params and params['genome_id'] is not None:
+#		out_obj['genome_id'] = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params["genome_id"]],params["ws_id"],user_token)[0]
+#		out_file_path = os.path.join(sampleset_dir,params['genome_id']+'.gff')
+#		try:
+#			fasta_file= script_util.generate_fasta(self.__LOGGER,self.__SERVICES,user_token,params['ws_id'],sampleset_dir,params['genome_id'])
+#               	 	self.__LOGGER.info("Sanitizing the fasta file to correct id names {}".format(datetime.datetime.utcnow()))
+#                	mapping_filename = c_mapping.create_sanitized_contig_ids(fasta_file)
+#                	c_mapping.replace_fasta_contig_ids(fasta_file, mapping_filename, to_modified=True)
+#                	self.__LOGGER.info("Generating FASTA file completed successfully : {}".format(datetime.datetime.utcnow()))
+#                	script_util.generate_gff(self.__LOGGER,self.__SERVICES,user_token,params['ws_id'],sampleset_dir,params['genome_id'],out_file_path)
+#                	c_mapping.replace_gff_contig_ids(out_file_path, mapping_filename, to_modified=True)
+#			gtf_path =''
+#			if params['domain'] == "Prokaryotes":
+#				gtf_path = os.path.join(sampleset_dir,params['genome_id']+'.gtf')
+#				gtf_cmd = " -E {0} -T -o- > {1}".format(out_file_path,gtf_path)
+#				try:
+#                		    self.__LOGGER.info("Executing: gffread {0}".format(gtf_cmd))
+#                		    cmdline_output = script_util.runProgram(self.__LOGGER,"gffread",gtf_cmd,None,sampleset_dir)
+#				except Exception,e:
+#               			     raise KBaseRNASeqException("Error Converting the GFF file to GTF using gffread {0},{1}".format(gtf_cmd,"".join(traceback.format_exc())))
+#			if os.path.exists(gtf_path):
+#				annotation_handle = hs.upload(gtf_path)
+#				a_handle = { "handle" : annotation_handle ,"size" : os.path.getsize(gtf_path), 'genome_id' : out_obj['genome_id']}
+#			else:
+#				annotation_handle = hs.upload(out_file_path)
+#				a_handle = { "handle" : annotation_handle ,"size" : os.path.getsize(out_file_path), 'genome_id' : out_obj['genome_id']}
+#			##Saving GFF/GTF annotation to the workspace
+#			res= ws_client.save_objects(
+#                                        {"workspace":params['ws_id'],
+#                                         "objects": [{
+#                                         "type":"KBaseRNASeq.GFFAnnotation",
+#                                         "data":a_handle,
+#                                         "name":params['genome_id']+"_GFF_Annotation",
+#					 "hidden":1}
+#                                        ]})
+#                except Exception as e:
+#                        raise ValueError("Generating GFF file from Genome Annotation object Failed :  {}".format("".join(traceback.format_exc())))
+#	
+#            if "bowtie2_index" in params and params['bowtie2_index'] is not None:
+#            	out_obj['bowtie2_index'] = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params['bowtie2_index']],params['ws_id'],user_token)[0]
+#
 	    ## Code to Update the Provenance; make it a function later
             provenance = [{}]
             if 'provenance' in ctx:
                 provenance = ctx['provenance']
             #add additional info to provenance here, in this case the input data object reference
-            provenance[0]['input_ws_objects']=[ params['ws_id']+'/'+sample for sample in sample_ids]+[params['ws_id']+'/'+params['bowtie2_index'],params['ws_id']+'/'+params['genome_id']]
+            provenance[0]['input_ws_objects']=[ params['ws_id']+'/'+sample for sample in sample_ids]
 	    
 	    #Saving RNASeqSampleSet to Workspace
 	    self.__LOGGER.info(out_obj) 
@@ -242,53 +232,27 @@ class KBaseRNASeq:
 	    	if os.path.exists(bowtie_dir):
 			handler_util.cleanup(self.__LOGGER,bowtie_dir)
 	   	if not os.path.exists(bowtie_dir): os.makedirs(bowtie_dir)
+		## Update the provenance
 	     	provenance = [{}]
         	if 'provenance' in ctx:
             		provenance = ctx['provenance']
 
         	# add additional info to provenance here, in this case the input data object reference
         	provenance[0]['input_ws_objects']=[params['ws_id']+'/'+params['reference']]
-		ref_info = ws_client.get_object_info_new({"objects": [{'name': params['reference'], 'workspace': params['ws_id']}]})
-		self.__LOGGER.info(ref_info)
-		# If Selected KBaseGenomes.Genome object type
-		# Remove lines 329 - 345  for the New object type change after it goes to production
-		if ref_info[0][2].split('-')[0] == 'KBaseGenomeAnnotations.GenomeAnnotation':
-                        self.__LOGGER.info( "Generating FASTA from Genome Annotation")
-                        outfile_ref_name = params['reference']+".fasta"
-                        try:
-                                output_file = script_util.generate_fasta(self.__LOGGER,self.__SERVICES,user_token,params['ws_id'],bowtie_dir,params['reference'])
-				self.__LOGGER.info("Sanitizing the fasta file to correct id names {}".format(datetime.datetime.utcnow()))
-        			mapping_filename = c_mapping.create_sanitized_contig_ids(output_file)
-        			c_mapping.replace_fasta_contig_ids(output_file, mapping_filename, to_modified=True)
-        			self.__LOGGER.info("Generating FASTA file completed successfully : {}".format(datetime.datetime.utcnow()))	
-                        except Exception, e:
-				self.__LOGGER.exception("".join(traceback.format_exc()))
-                                raise ValueError('Unable to get FASTA for object {}'.format("".join(traceback.format_exc())))
-		elif ref_info[0][2].split('-')[0] == 'KBaseGenomes.Genome':
-	        	self.__LOGGER.info( "Downloading Genome object from workspace")
-			ref = ws_client.get_objects([{'name': params['reference'], 'workspace': params['ws_id']}])
-			contig_set = ref[0]['data']['contigset_ref']
-			c_ws = str(contig_set.split('/')[0])
-			obj_id  = str(contig_set.split('/')[1])
-			obj_version_number = str(contig_set.split('/')[1])
-			if params['reference'].split('.')[-1] not in ['fa','fasta','fna']:
-                                outfile_ref_name = params['reference']+".fa"
-                                dumpfasta= "--workspace_service_url {0} --workspace_name {1} --working_directory {2} --output_file_name {3} --object_reference {4} --shock_service_url {5} --token \'{6}\'".format(self.__WS_URL ,c_ws,bowtie_dir,outfile_ref_name,contig_set,self.__SHOCK_URL,user_token)
-	        elif ref_info[0][2].split('-')[0] == 'KBaseGenomes.ContigSet':   		
-	        	self.__LOGGER.info( "Downloading ContigSet object from workspace")
-		 	if params['reference'].split('.')[-1] not in ['fa','fasta','fna']:
-				outfile_ref_name = params['reference']+".fa"
-	   			dumpfasta= "--workspace_service_url {0} --workspace_name {1} --working_directory {2} --output_file_name {3} --object_name {4} --shock_service_url {5} --token \'{6}\'".format(self.__WS_URL , params['ws_id'],bowtie_dir,outfile_ref_name,params['reference'],self.__SHOCK_URL,user_token)
-			else:
-			      	outfile_ref_name = params['reference']
-			  	dumpfasta= "--workspace_service_url {0} --workspace_name {1} --working_directory {2} --output_file_name {3} --object_name {4} --shock_service_url {5} --token \'{6}\'".format(self.__WS_URL , params['ws_id'],bowtie_dir,params['reference'],params['reference'],self.__SHOCK_URL,user_token)
-		if ref_info[0][2].split('-')[0] != 'KBaseGenomeAnnotations.GenomeAnnotation':			
-			try: 
-				script_util.runProgram(self.__LOGGER,self.__SCRIPT_TYPE['ContigSet_to_fasta'],dumpfasta,self.__SCRIPTS_DIR,os.getcwd())
-			except Exception,e:
-				raise KBaseRNASeqException("Error Creating  FASTA object from the workspace {0},{1},{2}".format(params['reference'],os.getcwd(),e))
-		 
-	   
+		ref_info = ws_client.get_object_info_new({"objects": [{'name': params['reference'], 'workspace': params['ws_id']}]})[0]
+		genome_id = str(ref_info[6]) + '/' + str(ref_info[0]) + '/' + str(ref_info[4])
+		#if ref_info[0][2].split('-')[0] == 'KBaseGenomeAnnotations.GenomeAnnotation':
+                self.__LOGGER.info( "Generating FASTA from Genome Annotation")
+                outfile_ref_name = params['reference']+".fasta"
+                try:
+                    	output_file = script_util.generate_fasta(self.__LOGGER,self.__SERVICES,user_token,params['ws_id'],bowtie_dir,params['reference'])
+			self.__LOGGER.info("Sanitizing the fasta file to correct id names {}".format(datetime.datetime.utcnow()))
+        		mapping_filename = c_mapping.create_sanitized_contig_ids(output_file)
+        		c_mapping.replace_fasta_contig_ids(output_file, mapping_filename, to_modified=True)
+        		self.__LOGGER.info("Generating FASTA file completed successfully : {}".format(datetime.datetime.utcnow()))	
+                except Exception, e:
+			self.__LOGGER.exception("".join(traceback.format_exc()))
+                        raise ValueError('Unable to get FASTA for object {}'.format("".join(traceback.format_exc())))
 	    ## Run the bowtie_indexing on the  command line
 		try:
 	    		if outfile_ref_name:
@@ -310,14 +274,10 @@ class KBaseRNASeq:
 			raise KBaseRNASeqException("Failed to compress the index: {0}".format(e))
 	    ## Upload the file using handle service
 		try:
-			#bowtie_handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)	
 			bowtie_handle = hs.upload(out_file_path)
-			# if self.__PUBLIC_SHOCK_NODE is 'true': 
-                	# 	script_util.shock_node_2b_public(self.__LOGGER,node_id=bowtie_handle['id'],shock_service_url=bowtie_handle['url'],token=user_token)
-			 
 		except Exception, e:
 			raise KBaseRNASeqException("Failed to upload the Zipped Bowtie2Indexes file: {0}".format(e))
-	    	bowtie2index = { "handle" : bowtie_handle ,"size" : os.path.getsize(out_file_path)}   
+	    	bowtie2index = { "handle" : bowtie_handle ,"size" : os.path.getsize(out_file_path),'genome_id' : genome_id}   
 
 	     ## Save object to workspace
 	   	self.__LOGGER.info( "Saving bowtie indexes object to  workspace")
@@ -326,9 +286,9 @@ class KBaseRNASeq:
 					 "objects": [{
 					 "type":"KBaseRNASeq.Bowtie2Indexes",
 					 "data":bowtie2index,
-					 "name":params['output_obj_name']}
+					 "name":params['output_obj_name'],
+					 "provenance" : provenance}
 					]})
-	    	#returnVal = { "output" : params['output_obj_name'],"workspace" : params['ws_id'] }
 		info = res[0]
 	     ## Create report object:
                 reportObj = {
@@ -355,14 +315,11 @@ class KBaseRNASeq:
                                                 ]
                                                 })[0]
 
-       	 	print('saved Report: '+pformat(report_info))
-			
 	    	returnVal = { "report_name" : reportName,"report_ref" : str(report_info[6]) + '/' + str(report_info[0]) + '/' + str(report_info[4]) }
 	except Exception, e:
-		raise KBaseRNASeqException("Build Bowtie2Index failed: {0}".format(e))
+		raise KBaseRNASeqException("Build Bowtie2Index failed: {0}".format("".join(traceback.format_exc())))
 	finally:
                 handler_util.cleanup(self.__LOGGER,bowtie_dir)
-		#if os.path.exists(out_file_path): os.remove(out_file_path)
         #END BuildBowtie2Index
 
         # At some point might do deeper type checking...
