@@ -28,7 +28,7 @@ parameters :
         ui-name : |
             RNA-seq Sample or Sample Set
         short-hint : |
-            Select the RNA-seq sample set associated with the reads. If you want to just run one sample reads, then provide name of single-end or paired-end read.
+            Select the RNA-seq read sample set associated with the RNA-seq experiment. Alternatively, if you have only one sample of RNA-seq reads, select the corresponding library object.
     bowtie_index :
         ui-name : |
             Indexed Genome
@@ -81,8 +81,8 @@ parameters :
             Select the direction of the reads with respect to the original mRNA when the library was prepared. The default is fr-unstranded.
 
 description : |
-    <p>This method aligns the RNA-seq reads from a sample to an eukaryotic genome using TopHat in order to identify splice junctions between exons with the help of Bowtie2 mapping program.</p>
-    <p>This method takes a Bowtie2 index object and sequencing read file and outputs a set of read alignments in BAM format.</p>
+    <p>This method aligns the sequencing reads for a set of two or more samples to an eukaryotic genome using TopHat in order to identify splice junctions between exons with the help of Bowtie2 mapping program. Alternatively, if the user has only a single sample of reads, this method will take single-end or paired-end library object instead of a sample set.</p>
+    <p>This method also takes a Bowtie2 indexed genome and outputs a set of read alignments in BAM format.</p>
     <p>In addition, it provides the alignment statistics such as total reads, mapped and unmapped reads, singletons, multiple alignments, and alignment rate in a table format.</p>
     
     <p><strong>WARNING:</strong> This method is one of the steps of the <a href= "http://kbase.us/rna-seq/"> KBase RNA-seq Pipeline </a> and is not intended to run standalone.</p>
