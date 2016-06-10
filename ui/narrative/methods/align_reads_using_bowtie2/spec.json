@@ -215,30 +215,31 @@
           "input_parameter" : "alignment_type",
           "target_property" : "alignment_type"
         },
-         {
+        {
           "input_parameter" : "trim5",
           "target_property" : "trim5"
         },
-         {
+        {
           "input_parameter" : "trim3",
           "target_property" : "trim3"
         },
-         {
+        {
           "input_parameter" : "np",
           "target_property" : "np"
         },
         {
           "input_parameter" : "preset_options",
           "target_property" : "preset_options"
-         {
+        },
+        {
           "input_parameter" : "minins",
           "target_property" : "minins"
         },
-         {
+        {
           "input_parameter" : "maxins",
           "target_property" : "maxins"
         },
-         {
+        {
           "input_parameter" : "orientation",
           "target_property" : "orientation"
       }],
