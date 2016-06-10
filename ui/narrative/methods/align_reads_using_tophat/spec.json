@@ -33,7 +33,7 @@
     "optional" : true,
     "advanced" : true,
     "allow_multiple" : false,
-    "default_values" : [ "" ],
+    "default_values" : [ "2" ],
     "field_type" : "text",
     "text_options" : {
       "validate_as" : "int"
@@ -43,7 +43,7 @@
     "optional" : true,
     "advanced" : true,
     "allow_multiple" : false,
-    "default_values" : [ "" ],
+    "default_values" : [ "2" ],
     "field_type" : "text",
      "text_options" : {
       "validate_as" : "int"
@@ -53,7 +53,7 @@
     "optional" : true,
     "advanced" : true,
     "allow_multiple" : false,
-    "default_values" : [ "" ],
+    "default_values" : [ "2" ],
     "field_type" : "text",
     "text_options" : {
       "validate_as" : "int"
@@ -63,7 +63,7 @@
     "optional" : true,
     "advanced" : true,
     "allow_multiple" : false,
-    "default_values" : [ "" ],
+    "default_values" : [ "70" ],
     "field_type" : "text",
     "text_options" : {
       "validate_as" : "int"
@@ -73,7 +73,7 @@
     "optional" : true,
     "advanced" : true,
     "allow_multiple" : false,
-    "default_values" : [ "" ],
+    "default_values" : [ "500000" ],
     "field_type" : "text",
     "text_options" : {
       "validate_as" : "int"
@@ -83,7 +83,7 @@
     "optional" : true,
     "advanced" : true,
     "allow_multiple" : false,
-    "default_values" : [ "" ],
+    "default_values" : [ "1" ],
     "field_type" : "text",
     "text_options" : {
       "validate_as" : "int"
@@ -153,10 +153,6 @@
         {
           "input_parameter" : "sampleset_id",
           "target_property" : "sampleset_id"
-        },
-        {
-          "input_parameter" : "annotation_gtf",
-          "target_property" : "annotation_gtf"
         },
         {
           "input_parameter" : "bowtie_index",
