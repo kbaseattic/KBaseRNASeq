@@ -29,11 +29,6 @@ parameters :
             RNA-seq Sample or Sample Set 
         short-hint : |
             Select the RNA-seq sample set associated with the reads. If you want to just run one sample reads, then provide name of single-end or paired-end read.
-    annotation_gtf :
-        ui-name : |
-            Genome Annotation
-        short-hint : |
-            Select the genome annotation name
     bowtie_index :
         ui-name : |
             Indexed Genome
