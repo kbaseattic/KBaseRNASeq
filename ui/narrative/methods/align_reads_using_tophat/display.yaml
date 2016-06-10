@@ -38,32 +38,32 @@ parameters :
         ui-name : |
             Read Mismatch Cutoff
         short-hint : |
-            Final read alignments with more than this many mismatches are discarded. The default is 2.
+            Final read alignments with more than this many mismatches are discarded.
     read_gap_length :
         ui-name : |
             Read Gap Cutoff
         short-hint : |
-            Final read alignments with more than this many gaps are discarded. The default is 2.
+            Final read alignments with more than this many gaps are discarded.
     read_edit_dist :
         ui-name : |
             Read Edit Cutoff
         short-hint : |
-            Final read alignments with more than this many edits are discarded. The default is 2.
+            Final read alignments with more than this many edits are discarded.
     min_intron_length :
         ui-name : |
             Minimum Intron Length
         short-hint : |
-            TopHat will ignore donor/acceptor pairs closer than this many bases apart. The default is 70.
+            TopHat will ignore donor/acceptor pairs closer than this many bases apart.
     max_intron_length :
         ui-name : |
             Maximum Intron Length
         short-hint : |
-            TopHat will ignore donor/acceptor pairs farther than this many bases apart. The default is 500000.
+            TopHat will ignore donor/acceptor pairs farther than this many bases apart.
     num_threads :
         ui-name : |
             Number of Threads
         short-hint : |
-            Number of computational threads to align reads. The default is 1.
+            Number of computational threads to align reads.
     report_secondary_alignments :
         ui-name : |
             Report Secondary Alignments
