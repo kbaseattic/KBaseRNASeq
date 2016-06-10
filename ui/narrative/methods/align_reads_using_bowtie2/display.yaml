@@ -55,7 +55,49 @@ parameters :
             Select the preset options based on alignment type
         long-hint : |
             Faster option is generally less sensitive and vice versa.
-
+    trim5 :
+        ui-name : |
+            Trim Bases From 5'end
+        short-hint : |
+            Trim the base-pairs from 5' (left) end of each read before alignment
+        long-hint : |
+            Trim the base-pairs from 5' end before alignment, if needed. By default, it is 0. 
+    trim3 :
+        ui-name : |
+            Trim Bases From 3'end
+        short-hint : |
+            Trim the base-pairs from 3' (right) end of each read before alignment
+        long-hint : |
+            Trim the base-pairs from 3' end before alignment, if needed. By default, it is 0.
+    np :
+        ui-name : |
+            Penalty
+        short-hint : |
+            Sets the penalty for positions where the read, reference, or both, contain an ambiguous character such as N. 
+        long-hint : |
+            By default, penalty is 1. 
+    minins :
+        ui-name : |
+            Minimum Fragment Length For Paired-end Alignments
+        short-hint : |
+            Select the minimum fragment length for valid untrimmed paired-end alignments 
+        long-hint : |
+            By default, 0 is used. 
+    maxins :
+        ui-name : |
+            Maximum Fragment Length For Paired-end Alignments
+        short-hint : |
+            Select the maximum fragment length for valid untrimmed paired-end alignments
+        long-hint : |
+            By default, 500 is used. 
+    orientation :
+        ui-name : |
+            Orientation
+        short-hint : |
+            Select the upstream/downstream mate orientations for a valid paired-end alignments against the forward reference strand. 
+        long-hint : |
+            By default, fr is used. 
+            
 description : |
     <p>This method aligns the sequencing reads of a given sample set to long reference sequences of a prokaryotic genome using Bowtie2 and outputs a set of alignments for the given sample set in BAM format.</p> 
     
