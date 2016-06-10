@@ -34,7 +34,7 @@
     "optional" : true,
     "advanced" : true,
     "allow_multiple" : false,
-    "default_values" : [ "" ],    
+    "default_values" : [ "1" ],    
     "field_type" : "text",
     "text_options" : {
       "validate_as": "int"
@@ -44,7 +44,7 @@
     "optional" : true,
     "advanced" : true,
     "allow_multiple" : false,
-    "default_values" : [ "" ],    
+    "default_values" : [ "10" ],    
     "field_type" : "text",
     "text_options" : {
       "validate_as": "int"
@@ -83,7 +83,7 @@
     "optional" : true,
     "advanced" : true,
     "allow_multiple" : false,
-    "default_values" : [ "" ],
+    "default_values" : [ "fr-unstranded" ],
     "field_type" : "dropdown",
     "dropdown_options":{
       "options": [
@@ -106,7 +106,7 @@
     "optional" : true,
     "advanced" : true,
     "allow_multiple" : false,
-    "default_values" : [ "" ],
+    "default_values" : [ "classic-fpkm" ],
     "field_type" : "dropdown",
     "dropdown_options":{
       "options": [
