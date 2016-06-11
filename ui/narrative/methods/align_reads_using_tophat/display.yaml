@@ -59,6 +59,11 @@ parameters :
             Maximum Intron Length
         short-hint : |
             TopHat will ignore donor/acceptor pairs farther than this many bases apart.
+    min-anchor-length :
+        ui-name : |
+            Minimum Anchor Length
+        short-hint : |
+            TopHat will report junctions spanned by reads with at least this many bases on each side of the junction. This must be at least 3 and the default is 8.
     num_threads :
         ui-name : |
             Number of Threads
@@ -79,7 +84,13 @@ parameters :
             Library Type
         short-hint : |
             Select the direction of the reads with respect to the original mRNA when the library was prepared. The default is fr-unstranded.
-
+    preset_options :
+        ui-name : |
+            Bowtie2 Alignment Preset Options
+        short-hint : |
+            Select the preset options to Bowtie2 for how reads are mapped. 
+        long-hint : |
+            Faster option is generally less sensitive and vice versa.
 description : |
     <p>This method aligns the sequencing reads for a set of two or more samples to an eukaryotic genome using TopHat in order to identify splice junctions between exons with the help of Bowtie2 mapping program. Alternatively, if the user has only a single sample of reads, this method will take single-end or paired-end library object instead of a sample set.</p>
     <p>This method also takes a Bowtie2 indexed genome and outputs a set of read alignments in BAM format.</p>
