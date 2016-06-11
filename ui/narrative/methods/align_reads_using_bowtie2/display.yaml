@@ -55,6 +55,11 @@ parameters :
             Select the preset options based on alignment type
         long-hint : |
             Faster option is generally less sensitive and vice versa.
+    num_threads :
+        ui-name : |
+            Number of Threads
+        short-hint : |
+            Number of computational threads to align reads.
     trim5 :
         ui-name : |
             Trim Bases From 5'end
