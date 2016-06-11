@@ -25,6 +25,17 @@ def cleanup(logger=None, directory=None):
         raise
 
 
+def setupWorkingDir(logger=None,directory=None):
+    """
+	Clean up an existing workingdir and create a new one
+    """
+    try:
+    	if os.path.exists(directory): cleanup(logger,directory)
+	os.makedirs(directory)
+    except IOError, e:
+	logger.error("Unable to setup working dir {0}".format(directory))
+	raise
+
 def gen_recursive_filelist(d):
     """
     Generate a list of all files present below a given directory.
@@ -57,3 +68,27 @@ def get_file_with_suffix(d,suffix):
             if file.endswith(suffix):
 		return file.split(suffix)[0]
     return None
+
+def optimize_parallel_run(num_samples,num_threads,num_cores):
+    """
+    Optimizes the pool_size and the number of threads for any parallel operation
+    """
+    if num_samples * num_threads < num_cores:
+	while num_samples * num_threads < num_cores:
+		num_threads = num_threads + 1
+      		continue 
+	pool_size = num_samples
+	return (pool_size , num_samples)
+    elif num_samples * num_threads == num_cores:
+	if num_threads == 1:
+ 	   num_threads = 2 
+           pool_size = round(num_samples/num_threads)
+	return (pool_size, num_threads)
+    elif num_samples * num_threads > num_cores:		   
+    	while num_samples * num_threads > num_cores:
+		num_threads = 2
+		num_samples = num_samples - 1 
+		continue
+	pool_size = num_samples
+	return (pool_size, num_threads)
+

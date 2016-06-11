@@ -8,8 +8,6 @@
   	"external_source_date": null,
 	"domain" : "Prokaryotes",
   	"publication_id": null,
-  	"genome_id":"Ecoli_Genome_Annotation",
-	"bowtie2_index": "Ecoli_refseq_assembly",
   	"sampleset_desc": "test Ecoli",
   	"platform": "Illumina",
 	"sample_ids" :[ "Ecoli_SingleEnd_SRR228085_16000.fastq" ,"Ecoli_SingleEnd_SRR228083_16000.fastq" ],

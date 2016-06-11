@@ -79,6 +79,38 @@ def generate_gff(logger,internal_services,token,ref,output_dir,obj_name,output_f
         ## Additional Step for sanitizing contig id
         #logger.info("Sanitizing the gff file to correct id names {}".format(datetime.datetime.utcnow()))
 
+def create_gtf_annotation(logger,ws_client,hs_client,internal_services,ws_id,genome_ref,genome_id,fasta_file,directory,token):
+        try:
+		tmp_file = os.path.join(directory,genome_id + ".gff")
+        	fasta_file= generate_fasta(logger,internal_services,token,ws_id,directory,genome_id)
+            	logger.info("Sanitizing the fasta file to correct id names {}".format(datetime.datetime.utcnow()))
+                mapping_filename = c_mapping.create_sanitized_contig_ids(fasta_file)
+                c_mapping.replace_fasta_contig_ids(fasta_file, mapping_filename, to_modified=True)
+                logger.info("Generating FASTA file completed successfully : {}".format(datetime.datetime.utcnow()))
+                generate_gff(logger,internal_services,token,ws_id,directory,genome_id,tmp_file)
+                c_mapping.replace_gff_contig_ids(tmp_file, mapping_filename, to_modified=True)
+                gtf_path = os.path.join(directory,genome_id+".gtf")
+                gtf_cmd = " -E {0} -T -o- > {1}".format(tmp_file,gtf_path)
+                try:
+                   logger.info("Executing: gffread {0}".format(gtf_cmd))
+                   cmdline_output = runProgram(logger,"gffread",gtf_cmd,None,directory)
+                except Exception,e:
+                   raise Exception("Error Converting the GFF file to GTF using gffread {0},{1}".format(gtf_cmd,"".join(traceback.format_exc())))
+                if os.path.exists(gtf_path):
+                               annotation_handle = hs_client.upload(gtf_path)
+                               a_handle = { "handle" : annotation_handle ,"size" : os.path.getsize(gtf_path), 'genome_id' : genome_ref}
+                ##Saving GFF/GTF annotation to the workspace
+                res= ws_client.save_objects(
+                                        {"workspace":ws_id,
+                                         "objects": [{
+                                         "type":"KBaseRNASeq.GFFAnnotation-1.0",
+                                         "data":a_handle,
+                                         "name":genome_id+"_GTF_Annotation",
+                                        "hidden":1}
+                                        ]})
+        except Exception as e:
+                raise ValueError("Generating GTF file from Genome Annotation object Failed :  {}".format("".join(traceback.format_exc())))
+	
 def updateAnalysisTO(logger, ws_client, field, map_key, map_value, anal_ref, ws_id, objid):
     
         analysis = ws_client.get_objects([{'ref' : anal_ref}])[0]
@@ -222,6 +254,7 @@ def extractAlignmentStatsInfo(logger,tool_used,ws_client,ws_id,sample_id,result,
                 res = stats_data
         except Exception, e:
                 raise Exception("get Alignment Statistics failed: {0}".format(e))
+
 def getExpressionHistogram(obj,obj_name,num_of_bins,ws_id,output_obj_name):
     if 'expression_levels' in obj['data']:
         hdict = obj['data']['expression_levels']
@@ -376,7 +409,14 @@ def download_file_from_shock(logger,
     finally:
         data.close()
         f.close()      
-    
+
+def download_shock_files(logger,shock_url,directory,dict_of_files,token):
+	for name, fid in dict_of_files.items():
+		try:
+			download_file_from_shock(logger, shock_service_url=shock_url, shock_id=fid,filename=name, directory=directory,token=token) 
+	   	except Exception,e:
+                        raise Exception( "Unable to download shock file , {0},{1}".format(name,fid))
+
 def query_shock_node(logger,
                              shock_service_url = None,
                              condition = None,
@@ -620,6 +660,7 @@ def runProgram(logger=None,
 
         # Construct shell command
         cmdStr = "%s %s" % (progPath,argStr)
+	print cmdStr
         #if working_dir is None:
         #    logger.info("Executing: " + cmdStr + " on cwd")
         #else:

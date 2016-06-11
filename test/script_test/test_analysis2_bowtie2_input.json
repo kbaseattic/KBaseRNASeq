@@ -4,10 +4,9 @@
 	"context": null,
 	"params":[
 	{
-	 "ws_id" : "srividya22:1450203576610",
-	 "sample_id" : "Ecoli_SingleEnd_SRR228083_bowtie2" ,
-	 "output_obj_name" : "test_local_Ecoli_SRR228083_bowtie2" ,
-	 "bowtie2_index" : "t2_Ecoli_bowtie2_Index",
+	 "ws_id" : "test_New_RNASeq",
+	 "sampleset_id" : "ecoli_sdk_test_sampleset" ,
+	 "bowtie_index" : "Ecoli_bowtie_indexed",
 	 "alignment_type" : null,
 	 "quality_score" : null,
          "preset_options" : null } ]

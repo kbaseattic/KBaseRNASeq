@@ -62,7 +62,7 @@
 
 
   /*
-      @optional genome_id genome_scientific_name
+      @optional genome_scientific_name
       @metadata ws handle.file_name
       @metadata ws handle.type
       @metadata ws genome_scientific_name
@@ -84,7 +84,7 @@
         typedef string ws_referenceAnnotation_id;
 
   /*
-      @optional genome_id genome_scientific_name handle ftp_url
+      @optional genome_scientific_name handle ftp_url
       @metadata ws handle.file_name
       @metadata ws handle.type
       @metadata ws genome_id
@@ -108,7 +108,7 @@
 
 /*
   Object to Describe the RNASeq SampleSet
-  @optional platform num_replicates source publication_id external_source_date sample_ids
+  @optional platform num_replicates source publication_Id external_source_date sample_ids
   @metadata ws sampleset_id
   @metadata ws platform
   @metadata ws num_samples
@@ -127,7 +127,7 @@
         list<string> condition;
         string source;
         string Library_type;
-        string publication_id;
+        string publication_Id;
         string external_source_date;
         }RNASeqSampleSet;
 /*
@@ -179,13 +179,45 @@
 
     typedef string ws_rnaseqSample_id;
 
+/* Structure Read_mapping_sections
+   @optional five_UTR three_UTR exons TSS TES introns intergenic_regions
+*/
+
+   typedef structure{
+        float five_UTR;
+        float three_UTR;
+        float TSS;
+        float TES;
+        float exons;
+        float introns;
+        float intergenic_regions;
+        }Read_mapping_sections;
+
+/*
+    Object - getAlignmentStats method
+    @optional singletons multiple_alignments properly_paired alignment_rate unmapped_reads mapped_sections total_reads mapped_reads
+*/
+    typedef structure{
+        int properly_paired;
+        int multiple_alignments;
+        int singletons;
+        float alignment_rate;
+        Read_mapping_sections mapped_sections;
+        int unmapped_reads;
+        int mapped_reads;
+        int total_reads;
+        }AlignmentStatsResults;
+
  /*
     Object for the RNASeq Alignment bam file
-    @optional aligner_opts aligner_version aligned_using replicate_id platform size mapped_sample_id sampleset_id 
+    @optional aligner_opts aligner_version aligned_using replicate_id platform size mapped_sample_id sampleset_id alignment_stats 
     @metadata ws aligned_using
     @metadata ws aligner_version
     @metadata ws genome_id
     @metadata ws size
+    @metadata ws alignment_stats.total_reads
+    @metadata ws alignment_stats.mapped_reads
+    @metadata ws alignment_stats.alignment_rate
     @metadata ws read_sample_id
     @metadata ws library_type
     @metadata ws replicate_id
@@ -208,18 +240,20 @@
 	ws_Sampleset_id sampleset_id;
 	Handle file;
 	int size;
-    }RNASeqSampleAlignment;
+        AlignmentStatsResults alignment_stats;	
+    }RNASeqAlignment;
 
 
 /* 
-  The workspace id for a RNASeqSampleAlignment object
-  @id ws KBaseRNASeq.RNASeqSampleAlignment
+  The workspace id for a RNASeqAlignment object
+  @id ws KBaseRNASeq.RNASeqAlignment
 */
 
  typedef string ws_samplealignment_id;
 
 /*
-  Set object for RNASeqSampleAlignment objects
+  Set object for RNASeqAlignment objects
+  @optional condition sample_alignments
 */
 
   typedef structure {
@@ -228,7 +262,7 @@
 	ws_bowtieIndex_id bowtie2_index;
 	list<string> read_sample_ids;
 	list<string> condition;
-	list<RNASeqSampleAlignment> sample_alignments;
+	list<ws_samplealignment_id> sample_alignments;
         list<mapping<string read_sample_id , ws_samplealignment_id alignment_id>> mapped_alignments_ids;
 	}RNASeqAlignmentSet;
 
@@ -241,7 +275,7 @@
 
 
 /*
-  The workspace object for a RNASeqSampleExpression
+  The workspace object for a RNASeqExpression
   @optional description data_quality_level original_median external_source_date source file processing_comments
   @metadata ws type
   @metadata ws numerical_interpretation
@@ -271,17 +305,17 @@
         string tool_used;
         string tool_version;
 	list<mapping<string opt_name, string opt_value>> tool_opts; 
-    }RNASeqSampleExpression;
+    }RNASeqExpression;
 
 /*
       Id for expression sample
-      @id ws KBaseRNASeq.RNASeqSampleExpression
+      @id ws KBaseRNASeq.RNASeqExpression
 
    */  
         typedef string ws_expression_sample_id;
 
 /*
-  Set object for RNASeqSampleExpression objects
+  Set object for RNASeqExpression objects
 */
 
   typedef structure {
@@ -299,39 +333,9 @@
 
    */
         typedef string ws_expressionSet_id;
-
-
-/* Structure Read_mapping_sections
-   @optional introns exons splice_junctions intergenic_regions
-*/
-
-   typedef structure{
-        int introns;
-        int exons;
-        int splice_junctions;
-        int intergenic_regions;
-        }Read_mapping_sections;
-	
-/*
-    Object - getAlignmentStats method
-    @optional singletons multiple_alignments properly_paired alignment_rate unmapped_reads mapped_sections total_reads mapped_reads
-*/
-    typedef structure{
-        /* later change this to ws_samplealignment_id */
-	string alignment_id;
-        int properly_paired;
-        int multiple_alignments;
-        int singletons;
-        float alignment_rate;
-        Read_mapping_sections mapped_sections;
-        int unmapped_reads;
-        int mapped_reads;
-        int total_reads;
-        }AlignmentStatsResults;
-
 /*
    Object RNASeqDifferentialExpression file structure
-   @optional tool_opts tool_version sample_ids 
+   @optional tool_opts tool_version sample_ids comments
 */
    typedef structure {
 	string tool_used;
@@ -343,6 +347,7 @@
 	ws_expressionSet_id expressionSet_id;
 	ws_alignmentSet_id alignmentSet_id;
         ws_Sampleset_id sampleset_id;
+	string comments;
       	}RNASeqDifferentialExpression;
 
 /*
@@ -396,7 +401,7 @@
    	string external_source_date;
    	}CreateRNASeqSampleSetParams;
    	
- async funcdef CreateRNASeqSampleSet(CreateRNASeqSampleSetParams params)
+  async funcdef CreateRNASeqSampleSet(CreateRNASeqSampleSetParams params)
 	returns(RNASeqSampleSet) authentication required;
 	
    typedef structure{
@@ -405,7 +410,7 @@
 	string output_obj_name;
 	}Bowtie2IndexParams;
 
- async funcdef BuildBowtie2Index(Bowtie2IndexParams params)
+  async funcdef BuildBowtie2Index(Bowtie2IndexParams params)
      returns(ResultsToReport) authentication required;
 
    typedef structure{
@@ -414,7 +419,7 @@
         string output_obj_name;
         }GetFeaturesToGTFParams;
 
- async funcdef GetFeaturesToGTF(GetFeaturesToGTFParams params)
+  async funcdef GetFeaturesToGTF(GetFeaturesToGTFParams params)
      returns(ResultsToReport) authentication required;   
    
    typedef structure{
@@ -453,9 +458,9 @@
 	
    typedef structure{
 	string ws_id;
-        string read_sample;
+        string sampleset_id;
 	string genome_id;
-	string bowtie2_index;
+	string bowtie_index;
         string phred33;
         string phred64;
         string local;
@@ -469,7 +474,7 @@
         string fast-sensitive;
 	}Bowtie2Params;
 
- async funcdef Bowtie2Call(Bowtie2Params params) 
+  async funcdef Bowtie2Call(Bowtie2Params params) 
      returns(UnspecifiedObject) authentication required;
 
 typedef structure{
@@ -533,7 +538,7 @@ typedef mapping<string Tophat_opts,t_opts opts_tophat> t_opts_str;
      ws_referenceAnnotation_id annotation_gtf;
      }TophatParams;
 
- async funcdef TophatCall(TophatParams params)
+  async funcdef TophatCall(TophatParams params)
      returns (AlignmentStatsResults) authentication required;
 
  typedef structure{
@@ -574,7 +579,7 @@ typedef structure{
 	int overhang-tolerance;
         }CufflinksParams;
 
- async funcdef CufflinksCall(CufflinksParams params)
+  async funcdef CufflinksCall(CufflinksParams params)
     returns (ws_expression_sample_id) authentication required;
 
 	typedef structure{
@@ -595,6 +600,6 @@ typedef structure{
 	string no-length-correction;
         }CuffdiffParams;
 
- async funcdef CuffdiffCall(CuffdiffParams params)
+  async funcdef CuffdiffCall(CuffdiffParams params)
    returns (RNASeqDifferentialExpression) authentication required;
 };
