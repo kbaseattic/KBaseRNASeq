@@ -148,7 +148,7 @@
           "ui_name": "fr-secondstrand"
         }
       ]
-    },
+    }
   }, {
     "id" : "preset_options",
     "optional" : true,
@@ -250,7 +250,7 @@
       ],
       "output_mapping" : [
        {
-          "service_method_output_path" : [0,"stats_obj"],
+          "service_method_output_path" : [0],
           "target_property" : "output"
        },
        {

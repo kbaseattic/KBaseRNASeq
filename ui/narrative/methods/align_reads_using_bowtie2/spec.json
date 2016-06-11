@@ -28,6 +28,7 @@
     "text_options" : {
       "valid_ws_types" : ["KBaseRNASeq.Bowtie2Indexes" ]
     }
+  },{
     "id" : "num_threads",
     "optional" : true,
     "advanced" : true,
@@ -91,7 +92,7 @@
     "default_values" : [ "0" ],
     "field_type" : "text",
     "text_options" : {
-     "validate_as": "int",
+     "validate_as": "int"
     }
   }, {
     "id" : "trim3",
@@ -101,7 +102,7 @@
     "default_values" : [ "0" ],
     "field_type" : "text",
     "text_options" : {
-     "validate_as": "int",
+     "validate_as": "int"
     }
   }, {
     "id" : "np",
@@ -111,7 +112,7 @@
     "default_values" : [ "1" ],
     "field_type" : "text",
     "text_options" : {
-     "validate_as": "int",
+     "validate_as": "int"
     }
   }, {
     "id" : "preset_options",
@@ -156,7 +157,7 @@
     "default_values" : [ "0" ],
     "field_type" : "text",
     "text_options" : {
-     "validate_as": "int",
+     "validate_as": "int"
     }
   }, {
     "id" : "maxins",
@@ -166,7 +167,7 @@
     "default_values" : [ "500" ],
     "field_type" : "text",
     "text_options" : {
-     "validate_as": "int",
+     "validate_as": "int"
     }
   }, {
     "id" : "orientation",
@@ -216,6 +217,7 @@
           "input_parameter" : "bowtie_index",
           "target_property" : "bowtie_index"
         },
+	{
           "input_parameter" : "num_threads",
           "target_property" : "num_threads"
         },
@@ -257,7 +259,7 @@
       }],
       "output_mapping" : [
        {
-          "service_method_output_path" : [0,"stats_obj"],
+          "service_method_output_path" : [0],
           "target_property" : "output"
        },
        {
