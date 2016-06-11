@@ -79,6 +79,16 @@
       "validate_as" : "int"
     }
   }, {
+      "id" : "min-anchor-length",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "8" ],
+    "field_type" : "text",
+    "text_options" : {
+      "validate_as" : "int"
+    }
+  }, {
     "id" : "num_threads",
     "optional" : true,
     "advanced" : true,
@@ -138,6 +148,41 @@
           "ui_name": "fr-secondstrand"
         }
       ]
+    },
+  }, {
+    "id" : "preset_options",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "dropdown",
+    "dropdown_options":{
+      "options": [
+        {
+          "value": "b2-very-fast",
+          "display": "b2-very-fast",
+          "id": "b2-very-fast",
+          "ui_name": "b2-very-fast"
+        },
+        {
+          "value": "b2-fast",
+          "display": "b2-fast",
+          "id": "b2-fast",
+          "ui_name": "b2-fast"
+        },
+        {
+          "value": "b2-sensitive",
+          "display": "b2-sensitive",
+          "id": "b2-sensitive",
+          "ui_name": "b2-sensitive"
+        },
+        {
+          "value": "b2-very-sensitive",
+          "display": "b2-very-sensitive",
+          "id": "b2-very-sensitive",
+          "ui_name": "b2-very-sensitive"
+        }
+      ]
     }
   } ],
   "behavior" : {
@@ -178,6 +223,10 @@
           "input_parameter" : "max_intron_length",
           "target_property" : "maxi_intron_length"
         },
+       	{
+          "input_parameter" : "min-anchor-length",
+          "target_property" : "min-anchor-length"
+        },
         {
           "input_parameter" : "num_threads",
           "target_property" : "num_threads"
@@ -193,6 +242,10 @@
         {
           "input_parameter" : "library_type",
           "target_property" : "library_type"
+        },
+        {
+          "input_parameter" : "preset_options",
+          "target_property" : "preset_options"
         }
       ],
       "output_mapping" : [
