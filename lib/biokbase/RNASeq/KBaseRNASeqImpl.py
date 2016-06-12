@@ -47,10 +47,9 @@ class KBaseRNASeqException(BaseException):
 def parallelize(function,num_processors):
        def temp(_):
          def apply(args):
-             print args
              final_result = []
              #num_processors=  mp.cpu_count()
-             print "Number of processors is {0} ".format(num_processors)
+             print "Number of processors running parallel jobs {0} ".format(num_processors)
              pool = mp.Pool(num_processors)
              result = pool.map_async(function, args)
              pool.close()
@@ -84,7 +83,7 @@ class KBaseRNASeq:
     #########################################
     VERSION = "0.0.1"
     GIT_URL = "https://github.com/sjyoo/KBaseRNASeq"
-    GIT_COMMIT_HASH = "3e01fcbabdef2612fc43ef0d5ce5be0006881009"
+    GIT_COMMIT_HASH = "bb2a6361bb313058a97748791b1f1cf84f88a8ae"
     
     #BEGIN_CLASS_HEADER
     __TEMP_DIR = 'temp'
@@ -480,6 +479,7 @@ class KBaseRNASeq:
 	    else:
 			num_threads = 2   
 	    num_cores = mp.cpu_count()
+	    self.__LOGGER.info("Number of available cores : {0}".format(num_cores))
             if sample_type == 'KBaseRNASeq.RNASeqSampleSet':
                 reads = sample['data']['sample_ids']
 		reads_type= sample['data']['Library_type']
@@ -492,8 +492,9 @@ class KBaseRNASeq:
 		   pool_size = 1
 		   num_threads = 1
 		count = 0 
+		self.__LOGGER.info(" Number of threads used by each process {0}".format(num_threads)) 
                 for i in reads:
-			try:	
+			try:
 				label = r_label[count]
 				b_tasks.append((None,self.__SERVICES,ws_client,hs,params['ws_id'],reads_type,num_threads,i,label,bowtie2_dir, bowtie2index_id,genome_id,sampleset_id,params,user_token))
 				count = count + 1
@@ -504,7 +505,8 @@ class KBaseRNASeq:
             else:
    		try:
 		    pool_size=1
-		    num_threads = num_cores 
+		    num_threads = num_cores
+		    self.__LOGGER.info(" Number of threads used by each process {0}".format(num_threads)) 
                     b_tasks.append((self.__LOGGER,self.__SERVICES,ws_client,hs,params['ws_id'],sample_type,num_threads,params['sampleset_id'],'Single-Sample',bowtie2_dir, bowtie2index_id,genome_id,None,params,user_token))
 		    #CallBowtie2(self.__LOGGER,self.__services,ws_client,params['ws_id'],params['Library_type'],i,bowtie2_dir,bowtie2_base,options,output_name,user_token)     
                 except Exception,e:
@@ -571,26 +573,16 @@ class KBaseRNASeq:
 	user_token=ctx['token']
 	#pprint(params)
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
-	ws_client=Workspace(url=self.__WS_URL, token=user_token)
         hs = HandleService(url=self.__HS_URL, token=user_token)
 	try:
-	    ### Make a function to download the workspace object  and prepare dict of genome ,lib_type 
-	    #if os.path.exists(self.__SCRATCH):
-            # 	handler_util.cleanup(self.__LOGGER,self.__SCRATCH)
 	    if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
 	    tophat_dir = self.__SCRATCH +'/tmp'
-	    print tophat_dir
             if os.path.exists(tophat_dir):
 	    	handler_util.cleanup(self.__LOGGER,tophat_dir)
             if not os.path.exists(tophat_dir): os.makedirs(tophat_dir)
 
 	    self.__LOGGER.info("Downloading RNASeq Sample file")
 	    try:
-            	#sample ,reference,bowtie_index,annotation = ws_client.get_objects(
-                #                        [{'name' : params['sample_id'],'workspace' : params['ws_id']},
-		#			{ 'name' : params['reference'], 'workspace' : params['ws_id']},
-		#			{ 'name' : params['bowtie_index'], 'workspace' : params['ws_id']},
-		#			{ 'name' : params['annotation_gtf'] , 'workspace' : params['ws_id']}])
                 sample ,bowtie_index,annotation = ws_client.get_objects(
                                         [{'name' : params['sample_id'],'workspace' : params['ws_id']},
 					{ 'name' : params['bowtie_index'], 'workspace' : params['ws_id']},

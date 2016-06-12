@@ -73,16 +73,18 @@ def optimize_parallel_run(num_samples,num_threads,num_cores):
     """
     Optimizes the pool_size and the number of threads for any parallel operation
     """
+    print "Optimizing parallel jobs for number ot threads and samples run at a time"
+    print "Parameters passed : no. samples {0} ,  no. threads {1} , no. cores {2}".format(num_samples,num_threads,num_cores)
     if num_samples * num_threads < num_cores:
 	while num_samples * num_threads < num_cores:
 		num_threads = num_threads + 1
       		continue 
 	pool_size = num_samples
-	return (pool_size , num_samples)
+	return (pool_size , num_threads)
     elif num_samples * num_threads == num_cores:
 	if num_threads == 1:
  	   num_threads = 2 
-           pool_size = round(num_samples/num_threads)
+           pool_size = int(round(num_samples/num_threads))
 	return (pool_size, num_threads)
     elif num_samples * num_threads > num_cores:		   
     	while num_samples * num_threads > num_cores:
