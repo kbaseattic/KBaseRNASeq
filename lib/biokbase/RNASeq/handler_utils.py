@@ -82,14 +82,17 @@ def optimize_parallel_run(num_samples,num_threads,num_cores):
 	pool_size = num_samples
 	return (pool_size , num_threads)
     elif num_samples * num_threads == num_cores:
-	if num_threads == 1:
+	if num_threads < 2:
  	   num_threads = 2 
-           pool_size = int(round(num_samples/num_threads))
+           num_samples = int(round(num_samples/num_threads))
+	pool_size = num_samples
 	return (pool_size, num_threads)
     elif num_samples * num_threads > num_cores:		   
     	while num_samples * num_threads > num_cores:
-		num_threads = 2
-		num_samples = num_samples - 1 
+		if num_threads > 2:
+			num_threads = num_threads - 1
+		if num_samples > 1:
+			num_samples = num_samples - 1 
 		continue
 	pool_size = num_samples
 	return (pool_size, num_threads)
