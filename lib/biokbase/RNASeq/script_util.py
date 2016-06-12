@@ -31,6 +31,12 @@ from doekbase.data_api.annotation.genome_annotation.api import GenomeAnnotationA
 from doekbase.data_api.sequence.assembly.api import AssemblyAPI, AssemblyClientAPI
 import datetime
 
+def check_workspace_objects(l_objs,ws_client,ws_id,token):
+    """
+	Checks if the list of objs exists in workspace and returns the missing objects names
+    """
+    pass
+
 def generate_fasta(logger,internal_services,token,ref,output_dir,obj_name):
 	try:
 		ga = GenomeAnnotationAPI(internal_services,
@@ -110,6 +116,7 @@ def create_gtf_annotation(logger,ws_client,hs_client,internal_services,ws_id,gen
                                         ]})
         except Exception as e:
                 raise ValueError("Generating GTF file from Genome Annotation object Failed :  {}".format("".join(traceback.format_exc())))
+	return gtf_path
 	
 def updateAnalysisTO(logger, ws_client, field, map_key, map_value, anal_ref, ws_id, objid):
     
@@ -660,7 +667,7 @@ def runProgram(logger=None,
 
         # Construct shell command
         cmdStr = "%s %s" % (progPath,argStr)
-	print cmdStr
+	print "Executing : "+cmdStr
         #if working_dir is None:
         #    logger.info("Executing: " + cmdStr + " on cwd")
         #else:
@@ -683,7 +690,8 @@ def runProgram(logger=None,
 
         # Check returncode for success/failure
         if process.returncode != 0:
-                raise RuntimeError('Return Code : {0} , result {1} , progName {2}'.format(process.returncode,result[1],progName))
+		raise Exception("Command execution failed  {0}".format("".join(traceback.format_exc())))
+                raise RuntimeError('Return Code : {0} , result {1} , progName {2}'.format(process.returncode,result,progName))
 
         # Return result
         return { "result" : result , "stderr" :stderr }

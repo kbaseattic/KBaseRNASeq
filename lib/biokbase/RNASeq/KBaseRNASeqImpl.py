@@ -63,6 +63,11 @@ def CallBowtie2_helper(x):
     logger,services,ws_client,hs,ws_id,sample_type,num_threads,read_sample,condition,directory,bowtie2index_id,genome_id,sampleset_id,params,token = x
     return parallel._CallBowtie2(logger,services,ws_client,hs,ws_id,sample_type,num_threads,read_sample,condition,directory,bowtie2index_id,genome_id,sampleset_id,params,token)
 
+## Helper Function for Parallel call 
+def CallTophat_helper(x):
+	logger,services,ws_client,hs,ws_id,sample_type,num_threads,read_sample,gtf_file,condition,directory,bowtie2index_id,genome_id,sampleset_id,params,token = x
+	return parallel._CallTophat(logger,services,ws_client,hs,ws_id,sample_type,num_threads,read_sample,gtf_file,condition,directory,bowtie2index_id,genome_id,sampleset_id,params,token)
+
 #END_HEADER
 
 
@@ -83,7 +88,7 @@ class KBaseRNASeq:
     #########################################
     VERSION = "0.0.1"
     GIT_URL = "https://github.com/sjyoo/KBaseRNASeq"
-    GIT_COMMIT_HASH = "bb2a6361bb313058a97748791b1f1cf84f88a8ae"
+    GIT_COMMIT_HASH = "97125961714d9f2acfc4aa3d3c5c22b03f910198"
     
     #BEGIN_CLASS_HEADER
     __TEMP_DIR = 'temp'
@@ -547,6 +552,7 @@ class KBaseRNASeq:
 		single_read, single_alignment = results
 		single_align_obj = ws_client.get_objects(
                                         [{ 'name' : single_alignment, 'workspace' : params['ws_id']}])[0]['data'] 	
+      		returnVal = single_align_obj
 	except Exception,e:
                  self.__LOGGER.exception("".join(traceback.format_exc()))
                  raise KBaseRNASeqException("Error Running Bowtie2Call")
@@ -566,192 +572,145 @@ class KBaseRNASeq:
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN TophatCall
-       
-
-        ## TODO: Need to take Analysis TO as input object instead of sample id
-
 	user_token=ctx['token']
-	#pprint(params)
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
         hs = HandleService(url=self.__HS_URL, token=user_token)
 	try:
 	    if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
 	    tophat_dir = self.__SCRATCH +'/tmp'
-            if os.path.exists(tophat_dir):
-	    	handler_util.cleanup(self.__LOGGER,tophat_dir)
-            if not os.path.exists(tophat_dir): os.makedirs(tophat_dir)
-
-	    self.__LOGGER.info("Downloading RNASeq Sample file")
+	    handler_util.setupWorkingDir(self.__LOGGER,tophat_dir)
+	    self.__LOGGER.info("Downloading Bowtie2Indexes and GFF annotation objects")
 	    try:
-                sample ,bowtie_index,annotation = ws_client.get_objects(
-                                        [{'name' : params['sample_id'],'workspace' : params['ws_id']},
-					{ 'name' : params['bowtie_index'], 'workspace' : params['ws_id']},
-					{ 'name' : params['annotation_gtf'] , 'workspace' : params['ws_id']}])
+                sample ,bowtie_index = ws_client.get_objects(
+                                        [{'name' : params['sampleset_id'],'workspace' : params['ws_id']},
+					{ 'name' : params['bowtie_index'], 'workspace' : params['ws_id']}])
             except Exception,e:
 		 self.__LOGGER.exception("".join(traceback.format_exc()))
 		 raise KBaseRNASeqException("Error Downloading objects from the workspace ") 
                      
-	    opts_dict = { k:v for k,v in params.iteritems() if not k in ('ws_id','sample_id','reference','bowtie_index','annotation_gtf','analysis_id','output_obj_name') and v is not None }
-	    
- 
-            #if 'data' in sample and sample['data'] is not None:
-		#self.__LOGGER.info("getting here")
-		#if 'metadata' in sample['data'] and sample['data']['metadata'] is not None:
-		#	genome = sample['data']['metadata']['genome_id']
-			#self.__LOGGER.info(genome)
-	    if 'singleend_sample' in sample['data'] and sample['data']['singleend_sample'] is not None:
-		lib_type = "SingleEnd"
-		singleend_sample = sample['data']['singleend_sample']
-		sample_shock_id = singleend_sample['handle']['id']
-		sample_filename = singleend_sample['handle']['file_name']
-		try:
-               	     script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=sample_shock_id,filename=singleend_sample['handle']['file_name'], directory=tophat_dir,token=user_token)
-        	except Exception,e:
-                	raise Exception( "Unable to download shock file , {0}".format(e))
-	    if 'pairedend_sample' in sample['data'] and sample['data']['pairedend_sample'] is not None: 
-		lib_type = "PairedEnd"
-		pairedend_sample = sample['data']['pairedend_sample']
-		#self.__LOGGER.info(lib_type)
-		if "handle_1" in pairedend_sample and "id" in pairedend_sample['handle_1']:
-                	sample_shock_id1  = pairedend_sample['handle_1']['id']
-        	if "handle_1" in pairedend_sample and "file_name" in pairedend_sample['handle_1']:
-                	filename1 = pairedend_sample['handle_1']['file_name']
-        	if sample_shock_id1 is None:
-                	raise Exception("Handle1 there was not shock id found.")
-        	if "handle_2" in pairedend_sample  and "id" in pairedend_sample['handle_2']:
-                	sample_shock_id2  = pairedend_sample['handle_2']['id']
-        	if "handle_2" in pairedend_sample and "file_name" in pairedend_sample['handle_2']:
-                	filename2 = pairedend_sample['handle_2']['file_name']
-
-        	if sample_shock_id2 is None:
-                	raise Exception("Handle2 there was not shock id found.")
-		try:
-        		script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=sample_shock_id1,filename=filename1,directory=tophat_dir, token=user_token)
-        		script_util.download_file_from_shock(self.__LOGGER,shock_service_url=self.__SHOCK_URL, shock_id=sample_shock_id2,filename=filename2,directory=tophat_dir, token=user_token)
-                except Exception,e:
-                        raise Exception( "Unable to download shock file , {0}".format(e))
-
-	    # Download bowtie_Indexes
-	    if 'handle' in bowtie_index['data'] and bowtie_index['data']['handle'] is not None:
-		b_shock_id = bowtie_index['data']['handle']['id']
-		b_filename = bowtie_index['data']['handle']['file_name']
-		b_filesize = bowtie_index['data']['size']
-	    try:
-                self.__LOGGER.info("Downloading Bowtie2 Indices from Shock")
-		script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=b_shock_id,filename=b_filename,directory=tophat_dir,filesize=b_filesize,token=user_token)
-	    except Exception,e :
-		self.__LOGGER.exception("".join(traceback.format_exc()))
-		raise Exception( "Unable to download shock file , {0}".format(e))
-
-	    try:
+	    ### Get obejct IDs
+            bowtie2_index_info,sampleset_info = ws_client.get_object_info_new({"objects": [{'name': params['bowtie_index'], 'workspace': params['ws_id']},{'name': params['sampleset_id'], 'workspace': params['ws_id']}]})
+            bowtie2index_id = str(bowtie2_index_info[6]) + '/' + str(bowtie2_index_info[0]) + '/' + str(bowtie2_index_info[4])  
+            sampleset_id = str(sampleset_info[6]) + '/' + str(sampleset_info[0]) + '/' + str(sampleset_info[4]) 
+            bw_id = bowtie_index['data']['handle']['id'] 
+            bw_name =  bowtie_index['data']['handle']['file_name']
+            genome_id = bowtie_index['data']['genome_id']
+            annotation_gtf = ws_client.get_object_info([{"ref" :genome_id}],includeMetadata=None)[0][1]
+            shared_files={}
+            shared_files[bw_name] = bw_id
+            script_util.download_shock_files(self.__LOGGER,self.__SHOCK_URL,tophat_dir,shared_files,user_token)
+            try:
                 self.__LOGGER.info("Unzipping Bowtie2 Indices")
-		index_path = os.path.join(tophat_dir,b_filename)
-                script_util.unzip_files(self.__LOGGER,index_path,tophat_dir)
-		mv_dir= handler_util.get_dir(tophat_dir)
-		if mv_dir is not None:
-			script_util.move_files(self.__LOGGER,mv_dir,tophat_dir)
+                script_util.unzip_files(self.__LOGGER,os.path.join(tophat_dir,bw_name),tophat_dir)
+                mv_dir= handler_util.get_dir(tophat_dir)
+                if mv_dir is not None:
+                        script_util.move_files(self.__LOGGER,mv_dir,tophat_dir)
             except Exception, e:
-                   self.__LOGGER.exception("".join(traceback.format_exc()))
+                   self.__LOGGER.error("".join(traceback.format_exc()))
                    raise Exception("Unzip indexfile error: Please contact help@kbase.us")
+            fasta_file =os.path.join(tophat_dir,(handler_util.get_file_with_suffix(tophat_dir,".fasta")+".fasta"))
+            bowtie2base =os.path.join(tophat_dir,handler_util.get_file_with_suffix(tophat_dir,".rev.1.bt2"))
+
+	    ### Check if GTF annotation object exist or skip this step
+	    ### Check if the gtf object exists in the workspace
+            ### Only run create_gtf_annotation if object doesnt exist
+	    gtf_file = script_util.create_gtf_annotation(self.__LOGGER,ws_client,hs,self.__SERVICES,params['ws_id'],genome_id,annotation_gtf,fasta_file,tophat_dir,user_token)
+            ### Need this code when if want to download exising gtf object
+	    #gtf_obj = annotation_gtf+"_GTF_Annotation"
+	    #gtf_obj=ws_client.get_objects([{'name' : params['annotation_gtf'],'workspace' : params['ws_id']])[0]
+	    #gtf_id=gtf_obj['data']['handle']['id']
+	    #gtf_name=gtf_obj['data']['handle']['name']
+	    #try:
+            #         script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=gtf_id,filename=gtf_name, directory=tophat_dir,token=user_token)
+	    # 	     gtf_file = os.path.join(tophat_dir,gtf_name)
+            #except Exception,e:
+            #            raise Exception( "Unable to download shock file, {0}".format(gtf_name))  
 	    
-            if 'handle' in annotation['data'] and annotation['data']['handle'] is not None:
-                a_shock_id = annotation['data']['handle']['id']
-                a_filename = annotation['data']['handle']['file_name']
-		a_filesize = annotation['data']['size']
-            try:
-                self.__LOGGER.info("Downloading Reference Annotation from Shock")
-                script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=a_shock_id,filename=a_filename,directory=tophat_dir,filesize=a_filesize,token=user_token)
-            except Exception,e :
-		self.__LOGGER.exception("".join(traceback.format_exc()))
-                raise Exception( "Unable to download shock file , {0}".format(e))
-	    output_dir = os.path.join(tophat_dir,params['output_obj_name'])
-	    gtf_file = os.path.join(tophat_dir,a_filename)
-	    bowtie_base =os.path.join(tophat_dir,handler_util.get_file_with_suffix(tophat_dir,".rev.1.bt2"))
-	    num_p = multiprocessing.cpu_count()
-	    #print 'processors count is ' +  str(num_p)
-	    tophat_cmd = (' -p '+str(num_p))
-	    #if('num_threads' in opts_dict ) :  tophat_cmd += (' -p '+str(num_p))
-	    #if('num_threads' in opts_dict ) :  tophat_cmd += (' -p '+str(opts_dict['num_threads']))
-	    if('max_intron_length' in opts_dict ) : tophat_cmd += (' -I '+str(opts_dict['max_intron_length']))
-	    if('min_intron_length' in opts_dict ) : tophat_cmd += (' -i '+str(opts_dict['min_intron_length']))
-	    if('read_edit_dist' in opts_dict ) : tophat_cmd += (' --read-edit-dist '+str(opts_dict['read_edit_dist']))
-	    if('read_gap_length' in opts_dict ) : tophat_cmd += (' --read-gap-length '+str(opts_dict['read_gap_length']))
-	    if('read_mismatches' in opts_dict) : tophat_cmd += (' -N '+str(opts_dict['read_mismatches']))
-	    if('library_type' in opts_dict) : tophat_cmd += (' --library-type ' + opts_dict['library_type'])
-	    if('report_secondary_alignments' in opts_dict and int(opts_dict['report_secondary_alignments']) == 1) : tophat_cmd += ' --report-secondary-alignments'
-	    if('no_coverage_search' in opts_dict and int(opts_dict['no_coverage_search']) == 1): tophat_cmd += ' --no-coverage-search'
-	    if(lib_type == "SingleEnd"):
-                sample_file = os.path.join(tophat_dir,sample_filename)
-                tophat_cmd += ' -o {0} -G {1} {2} {3}'.format(output_dir,gtf_file,bowtie_base,sample_file)
-            elif(lib_type == "PairedEnd"):
-                sample_file1 = os.path.join(tophat_dir,filename1)
-                sample_file2 = os.path.join(tophat_dir,filename2)
-                tophat_cmd += ' -o {0} -G {1} {2} {3} {4}'.format(output_dir,gtf_file,bowtie_base,sample_file2,sample_file1)
-	    self.__LOGGER.info("Executing: tophat {0}".format(tophat_cmd)) 
-	    try:  
-            	script_util.runProgram(self.__LOGGER,"tophat",tophat_cmd,None,tophat_dir)
-            	#script_util.runProgram(self.__LOGGER,"tophat",tophat_cmd,None,os.getcwd())
-            	#script_util.runProgram(self.__LOGGER,self.__SCRIPT_TYPE['tophat_script'],tophat_cmd,self.__SCRIPTS_DIR,os.getcwd())
-            except Exception,e:
-                raise KBaseRNASeqException("Error Running the tophat command and the samtools flagstat {0},{1},{2}".format(tophat_cmd,tophat_dir,e))
+  	    #### Getting Samples info
+            sample_info = ws_client.get_object_info_new({"objects": [{'name': params['sampleset_id'], 'workspace': params['ws_id']}]})[0]
+            sample_type = sample_info[2].split('-')[0]
+            shared_files = {}
+	    # Determine the num_threads provided by the user otherwise default the number of threads to 2
+            if('num_threads' in params and params['num_threads'] is not None): 
+                        num_threads = int(params['num_threads']) 
+            else:
+                        num_threads = 2   
+            num_cores = mp.cpu_count()
+            self.__LOGGER.info("Number of available cores : {0}".format(num_cores))
+            if sample_type == 'KBaseRNASeq.RNASeqSampleSet':
+                reads = sample['data']['sample_ids']
+                reads_type= sample['data']['Library_type']
+                r_label = sample['data']['condition']
+                b_tasks =[]
+                num_samples =  len(reads)
+                if num_cores != 1:
+                        pool_size,num_threads=handler_util.optimize_parallel_run(num_samples,num_threads,num_cores)
+                else:
+                   pool_size = 1
+                   num_threads = 1
+                count = 0 
+                self.__LOGGER.info(" Number of threads used by each process {0}".format(num_threads)) 
+                for i in reads:
+                        try:
+                                label = r_label[count]
+                                b_tasks.append((None,self.__SERVICES,ws_client,hs,params['ws_id'],reads_type,num_threads,i,gtf_file,label,tophat_dir, bowtie2index_id,genome_id,sampleset_id,params,user_token))
+                                count = count + 1
+                                ### Call multiprocessing of bowtie2 function
+                                #CallBowtie2(self.__LOGGER,self.__services,ws_client,params['ws_id'],params['Library_type'],i,tophat_dir,bowtie2_base,options,output_name,user_token)     
+                        except Exception,e:
+                                raise
+            else:
+                try:
+                    pool_size=1
+  		    num_threads = num_cores
+                    self.__LOGGER.info(" Number of threads used by each process {0}".format(num_threads)) 
+                    b_tasks.append((self.__LOGGER,self.__SERVICES,ws_client,hs,params['ws_id'],sample_type,num_threads,params['sampleset_id'],gtf_file,'Single-Sample',tophat_dir, bowtie2index_id,genome_id,None,params,user_token))
+                except Exception,e:
+                     raise
 
-            self.__LOGGER.info("Generating Alignment Statistics")
-	    try:
-                bam_file = output_dir+"/accepted_hits.bam"
-                align_stats_cmd="flagstat {0}".format(bam_file)
-                stats = script_util.runProgram(self.__LOGGER,"samtools",align_stats_cmd,None,tophat_dir)
-                # Pass it to the stats['result']
-		stats_obj_name = params['output_obj_name']+"_"+str(hex(uuid.getnode()))+"_AlignmentStats"
-                script_util.extractStatsInfo(self.__LOGGER,ws_client,params['ws_id'],params['output_obj_name'],stats['result'],stats_obj_name)
-            except Exception , e :
-                self.__LOGGER.exception("Failed to create RNASeqAlignmentStats: {0}".format(e))
-                raise KBaseRNASeqException("Failed to create RNASeqAlignmentStats: {0}".format(e))
-
-
-	# Zip tophat folder
-            try:
-                out_file_path = os.path.join(self.__SCRATCH,"%s.zip" % params['output_obj_name'])
-                script_util.zip_files(self.__LOGGER, output_dir,out_file_path)
-                #out_file_path = os.path.join("%s.zip" % params['output_obj_name'])
-		#handler_util.cleanup(self.__LOGGER,tophat_dir)
-            except Exception, e:
-                raise KBaseRNASeqException("Failed to compress the index: {0}".format(e))
-            ## Upload the file using handle service
-            try:
-		 tophat_handle = hs.upload(out_file_path)
-                 #tophat_handle = script_util.create_shock_handle(self.__LOGGER,"%s.zip" % params['output_obj_name'],self.__SHOCK_URL,self.__HS_URL,"Zip",user_token)
-		 #if self.__PUBLIC_SHOCK_NODE is 'true':
-                 #       script_util.shock_node_2b_public(self.__LOGGER,node_id=tophat_handle['id'],shock_service_url=tophat_handle['url'],token=user_token)	
-            except Exception, e:
-                raise KBaseRNASeqException("Failed to upload the index: {0}".format(e))
-            tophat_out = { "file" : tophat_handle ,"size" : os.path.getsize(out_file_path), "aligned_using" : "tophat" , "aligner_version" : "3.1.0","metadata" :  sample['data']['metadata']}
-	     
-	    ## Save object to workspace
-            self.__LOGGER.info( "Saving Tophat object to  workspace")
-	    try:
-            	res= ws_client.save_objects(
+            @parallelize(CallTophat_helper,pool_size)
+            def run_tophat_in_parallel(tasks):
+                pass
+            results=run_tophat_in_parallel(b_tasks)
+            ### Create AlignmentSet object
+            if sample_type == 'KBaseRNASeq.RNASeqSampleSet':
+                set_obj = { 'sampleset_id' :sampleset_id ,'genome_id' : genome_id,'bowtie2_index' : bowtie2index_id }
+                sids=[]
+                m_alignments = []
+                alignments = []
+                for sid,s_alignments in results:
+                    a_ref = ws_client.get_object_info_new({"objects": [{'name':s_alignments, 'workspace': params['ws_id']}]})[0]
+                    a_id = str(a_ref[6]) + '/' + str(a_ref[0]) + '/' + str(a_ref[4]) 
+                    m_alignments.append({sid : a_id})
+                    sids.append(sid)
+                    alignments.append(a_id)
+                set_obj['read_sample_ids']= sids
+                set_obj['sample_alignments']= alignments
+                set_obj['mapped_alignments_ids']=m_alignments
+                try:
+                        self.__LOGGER.info( "Saving AlignmentSet object to  workspace")
+                        res= ws_client.save_objects(
                                         {"workspace":params['ws_id'],
                                          "objects": [{
-                                         "type":"KBaseRNASeq.RNASeqSampleAlignment",
-                                         "data":tophat_out,
-                                         "name":params['output_obj_name']}
+                                         "type":"KBaseRNASeq.RNASeqAlignmentSet",
+                                         "data":set_obj,
+                                         "name":params['sampleset_id']+"_AlignmentSet"}
                                         ]})
-	        self.__LOGGER.info( "Updating the Analysis object")
-		map_key = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params['sample_id']],params["ws_id"],user_token)[0]
-                map_value = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params['output_obj_name']],params["ws_id"],user_token)[0]	
-                if 'analysis_id' in sample['data']  and sample['data']['analysis_id'] is not None:
-		    analysis_obj = "/".join(sample['data']['analysis_id'].split('/')[0:2])
-		    script_util.updateAnalysisTO(self.__LOGGER, ws_client, 'alignments', map_key, map_value,analysis_obj,  params['ws_id'], int(analysis_obj.split('/')[1]))
-            except Exception, e:
-                    self.__LOGGER.exception("Failed to upload the alignment: {0}".format(e))
-                    raise KBaseRNASeqException("Failed to upload  the alignment: {0}".format(e))
-	    returnVal = { "stats_obj" : stats_obj_name , "alignment_id" : params['output_obj_name'] , "analysis_id" : analysis_obj }	
-	except Exception,e:
-            raise KBaseRNASeqException("Error Running Tophatcall {0}".format("".join(traceback.format_exc())))
-	finally:
-	    handler_util.cleanup(self.__LOGGER,tophat_dir)
-	    #if os.path.exists(out_file_path): os.remove(out_file_path)
-	     
+                        returnVal = set_obj
+                except Exception,e:
+                     raise Exception("Failed Saving AlignmentSet to Workspace")         
+            else:
+                single_read, single_alignment = results
+                single_align_obj = ws_client.get_objects(
+                                        [{ 'name' : single_alignment, 'workspace' : params['ws_id']}])[0]['data'] 
+      		returnVal = single_align_obj
+        except Exception,e:
+                 self.__LOGGER.exception("".join(traceback.format_exc()))
+                 raise KBaseRNASeqException("Error Running Bowtie2Call")
+        finally:
+                 handler_util.cleanup(self.__LOGGER,tophat_dir)
+                 #if os.path.exists(out_file_path): os.remove(out_file_path)
+        
         #END TophatCall
 
         # At some point might do deeper type checking...

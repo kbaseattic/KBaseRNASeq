@@ -45,7 +45,7 @@ def _CallBowtie2(logger,services,ws_client,hs,ws_id,sample_type,num_threads,read
                 	else: bowtie2_cmd += (' --'+params['preset_options'] )
 
 		if sample_type  == 'KBaseAssembly.SingleEndLibrary':
-			lib_type = 'single-End'
+			lib_type = 'SingleEnd'
 			read_id = r_sample['data']['handle']['id']
 			read_name =  r_sample['data']['handle']['file_name']
 			try:
@@ -54,7 +54,7 @@ def _CallBowtie2(logger,services,ws_client,hs,ws_id,sample_type,num_threads,read
                 	except Exception,e:
                         	raise Exception( "Unable to download shock file , {0}".format(read_name))
 		if sample_type == 'KBaseAssembly.PairedEndLibrary':
-			lib_type = 'paired-End'
+			lib_type = 'PairedEnd'
 			read1_id = r_sample['data']['handle_1']['id']
 			read1_name = r_sample['data']['handle_1']['name']
 			read2_id = r_sample['data']['handle_2']['id'] 
@@ -110,10 +110,91 @@ def _CallBowtie2(logger,services,ws_client,hs,ws_id,sample_type,num_threads,read
                         raise Exception("Failed to create bowtie2 Alignment {0}".format(" ".join(traceback.print_exc())))
     	return (read_sample,output_name )
 
-#def CallBowtie2_helper(x):
-#	logger,services,ws_client,hs,ws_id,sample_type,num_threads,read_sample,directory,bowtie2base,params,token = x
-#        return _CallBowtie2(logger,services,ws_client,hs,ws_id,sample_type,read_sample,directory,bowtie2base,params,token)
+def _CallTophat(logger,services,ws_client,hs,ws_id,sample_type,num_threads,read_sample,gtf_file,condition,directory,bowtie2index_id,genome_id,sampleset_id,params,token):
+	print "Downloading Read Sample{0}".format(read_sample)
+	try:
+		r_sample = ws_client.get_objects(
+                                        [{ 'name' : read_sample, 'workspace' : ws_id}])[0]
+		r_sample_info = ws_client.get_object_info_new({"objects": [{'name': read_sample, 'workspace': ws_id}]})[0]	
+		sample_type = r_sample_info[2].split('-')[0]
+		output_name = read_sample.split('.')[0]+"_tophat_alignment"
+		output_dir = os.path.join(directory,output_name)
+	        #if not os.path.exists(output_dir): os.makedirs(output_dir)
+            	#out_file = output_dir +"/accepted_hits.sam"
+            	bowtie2_base =os.path.join(directory,handler_util.get_file_with_suffix(directory,".rev.1.bt2"))
 
-#@parallel(CallBowtie2_helper,2)
-#def run_bowtie2_in_parallel(tasks):
-#        pass
+            	### Adding advanced options to tophat command
+		tophat_cmd = (' -p '+str(num_threads))
+            	if('max_intron_length' in params and params['max_intron_length'] is not None ) : tophat_cmd += (' -I '+str(params['max_intron_length']))
+            	if('min_intron_length' in params and params['min_intron_length'] is not None ): tophat_cmd += (' -i '+str(params['min_intron_length']))
+            	if('read_edit_dist' in params and params['read_edit_dist'] is not None ) : tophat_cmd += (' --read-edit-dist '+str(params['read_edit_dist']))
+            	if('read_gap_length' in params and params['read_gap_length'] is not None) : tophat_cmd += (' --read-gap-length '+str(params['read_gap_length']))
+            	if('read_mismatches' in params and params['read_mismatches'] is not None) : tophat_cmd += (' -N '+str(params['read_mismatches']))
+            	if('library_type' in params and params['library_type']  is not None ) : tophat_cmd += (' --library-type ' + params['library_type'])
+            	if('report_secondary_alignments' in params and int(params['report_secondary_alignments']) == 1) : tophat_cmd += ' --report-secondary-alignments'
+            	if('no_coverage_search' in params and int(params['no_coverage_search']) == 1): tophat_cmd += ' --no-coverage-search'
+		if sample_type  == 'KBaseAssembly.SingleEndLibrary':
+			lib_type = 'SingleEnd'
+			read_id = r_sample['data']['handle']['id']
+			read_name =  r_sample['data']['handle']['file_name']
+			try:
+                     		script_util.download_file_from_shock(logger, shock_service_url=services['shock_service_url'], shock_id=read_id,filename=read_name, directory=directory,token=token)	
+                		tophat_cmd += ' -o {0} -G {1} {2} {3}'.format(output_dir,gtf_file,bowtie2_base,os.path.join(directory,read_name))
+                	except Exception,e:
+                        	raise Exception( "Unable to download shock file , {0}".format(read_name))
+		if sample_type == 'KBaseAssembly.PairedEndLibrary':
+			lib_type = 'PairedEnd'
+			read1_id = r_sample['data']['handle_1']['id']
+			read1_name = r_sample['data']['handle_1']['name']
+			read2_id = r_sample['data']['handle_2']['id'] 
+			read2_name = r_sample['data']['handle_2']['name']
+			try:
+                                script_util.download_file_from_shock(logger, shock_service_url=services['shock_service_url'], shock_id=read1_id,filename=read1_name, directory=directory,token=token)
+                                script_util.download_file_from_shock(logger, shock_service_url=services['shock_service_url'], shock_id=read2_id,filename=read2_name, directory=directory,token=token)
+                		tophat_cmd += ' -o {0} -G {1} {2} {3} {4}'.format(output_dir,gtf_file,bowtie2_base,os.path.join(directory,read1_name),os.path.join(directory,read2_name))
+			except Exception,e:
+                        	raise Exception( "Unable to download shock file , {0} or {1}".format(read1_name,read2_name))
+		try:
+                	
+                        script_util.runProgram(logger,"tophat",tophat_cmd,None,directory)	
+            	except Exception,e:
+                	raise Exception("Error Running the tophat command {0},{1} {2}".format(tophat_cmd,directory," ".join(traceback.print_exc())))
+	 	try:
+                	bam_file = output_dir+"/accepted_hits.bam"
+                	align_stats_cmd="flagstat {0}".format(bam_file)
+                	stats = script_util.runProgram(logger,"samtools",align_stats_cmd,None,directory)
+                	# Pass it to the stats['result']
+                	#stats_obj_name = params['output_obj_name']+"_"+str(hex(uuid.getnode()))+"_AlignmentStats"
+                	#script_util.extractStatsInfo(self.__LOGGER,ws_client,params['ws_id'],params['output_obj_name'],stats['result'],stats_obj_name)
+            	except Exception , e :
+                	raise Exception("Failed to create RNASeqAlignmentStats: {0}".format(bam_file))
+       	 	# Zip tophat folder
+            	try:
+                	out_file_path = os.path.join(directory,"%s.zip" % output_name)
+                	script_util.zip_files(logger, output_dir,out_file_path)
+            	except Exception, e:
+                	raise Exception("Failed to compress the index: {0}".format(out_file_path))
+            	## Upload the file using handle service
+            	try:
+                	tophat_handle = hs.upload(out_file_path)
+            	except Exception, e:
+                	raise Exception("Failed to upload the index")
+		#### Replace version with get_version command#####
+            	tophat_out = { "file" : tophat_handle ,"size" : os.path.getsize(out_file_path), "aligned_using" : "tophat" , "aligner_version" : "2.1.1" , 'library_type' : lib_type , 'condition' : condition ,'read_sample_id': read_sample, 'genome_id' : genome_id , 'bowtie2_index' : bowtie2index_id }
+		#logger.info( "Saving bowtie2 object to  workspace")
+            	if not sampleset_id is None: tophat_out['sampleset_id'] = sampleset_id
+		try:
+                	res= ws_client.save_objects(
+                                        {"workspace":ws_id,
+                                         "objects": [{
+                                         "type":"KBaseRNASeq.RNASeqAlignment",
+                                         "data":tophat_out,
+                                         "name":output_name}
+                                        ]})
+                #map_key = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params['sample_id']],params["ws_id"],user_token)[0]
+                #map_value = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params['output_obj_name']],params["ws_id"],user_token)[0]
+            	except Exception, e:
+                	raise Exception("Failed to save alignment to workspace")
+	except Exception, e:
+                        raise Exception("Failed to create tophat Alignment {0}".format(" ".join(traceback.print_exc())))
+    	return (read_sample,output_name )
