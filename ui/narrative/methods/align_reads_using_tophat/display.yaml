@@ -96,7 +96,7 @@ description : |
     <p>This method also takes a Bowtie2 indexed genome and outputs a set of read alignments in BAM format.</p>
     <p>In addition, it provides the alignment statistics such as total reads, mapped and unmapped reads, singletons, multiple alignments, and alignment rate in a table format.</p>
     
-    <p><strong>WARNING:</strong> This method is one of the steps of the <a href= "http://kbase.us/rna-seq/"> KBase RNA-seq Pipeline </a> and is not intended to run standalone.</p>
+    <p><strong>NOTE:</strong> This method is one of the steps of the <a href= "http://kbase.us/rna-seq/"> KBase RNA-seq Pipeline </a>, however it can also be run standalone for one or more samples.</p>
   
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
     Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Vivek Kumar</p>
