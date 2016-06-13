@@ -20,10 +20,30 @@ try:
 except:
     from biokbase.AbstractHandle.Client import AbstractHandle as HandleService
 
+def create_logger(log_dir,name):
+    """Create a logger
+
+    args: name (str): name of logger
+
+    returns: logger (obj): logging.Logger instance
+    """
+    logger = logging.getLogger(name)
+    fmt = logging.Formatter('%(asctime)s - %(process)d - %(name)s - '
+                            ' %(levelname)s -%(message)s')
+    hdl = logging.FileHandler(os.path.join(log_dir,name+'.log'))
+    hdl.setFormatter(fmt)
+
+    logger.addHandler(hdl)
+
+    return logger
+
 def _CallBowtie2(logger,services,ws_client,hs,ws_id,sample_type,num_threads,read_sample,condition,directory,bowtie2index_id,genome_id,sampleset_id,params,token):
 	#logger.info("Downloading Read Sample{0}".format(read_sample))
 	print "Downloading Read Sample{0}".format(read_sample)
+	if not logger:
+		logger = create_logger(directory,"run_Bowtie2_"+read_sample)
 	
+	logger.info("Downloading Read Sample{0}".format(read_sample))
 	try:
 		r_sample = ws_client.get_objects(
                                         [{ 'name' : read_sample, 'workspace' : ws_id}])[0]
@@ -66,14 +86,21 @@ def _CallBowtie2(logger,services,ws_client,hs,ws_id,sample_type,num_threads,read
 			except Exception,e:
                         	raise Exception( "Unable to download shock file , {0} or {1}".format(read1_name,read2_name))
 		try:
-                	#logger.info("Executing: bowtie2 {0}".format(bowtie2_cmd))
+                	logger.info("Executing: bowtie2 {0}".format(bowtie2_cmd))
                 	cmdline_output = script_util.runProgram(logger,"bowtie2",bowtie2_cmd,None,directory)
-                	#stats_obj_name = params['output_obj_name']+"_"+str(hex(uuid.getnode()))+"_AlignmentStats"
-                	#script_util.extractAlignmentStatsInfo(logger,"bowtie2",ws_client,ws_id,params['output_obj_name'],cmdline_output['stderr'],stats_obj_name)
+                 	#print cmdline_output
+		except Exception,e:	
+                	raise Exception("Failed to upload the index")
+		try:
+			#stats_obj_name = params['output_obj_name']+"_"+str(hex(uuid.getnode()))+"_AlignmentStats"
+			stats_data = {}
+                	stats_data = script_util.extractAlignmentStatsInfo(logger,"bowtie2",ws_client,ws_id,None,cmdline_output['stderr'],None)
                 	bam_file = os.path.join(output_dir,"accepted_hits_unsorted.bam")
-                	sam_to_bam = "view -bS -o {0} {1}".format(bam_file,out_file)
+                	logger.info("Executing: sam_to_bam  {0}".format(bam_file))
+			sam_to_bam = "view -bS -o {0} {1}".format(bam_file,out_file)
                 	script_util.runProgram(logger,"samtools",sam_to_bam,None,directory)
                 	final_bam_prefix = os.path.join(output_dir,"accepted_hits")
+                	logger.info("Executing: Sorting bam file  {0}".format(bam_file))
                 	sort_bam_cmd  = "sort {0} {1}".format(bam_file,final_bam_prefix)
                 	script_util.runProgram(logger,"samtools",sort_bam_cmd,None,directory)
             	except Exception,e:
@@ -82,6 +109,7 @@ def _CallBowtie2(logger,services,ws_client,hs,ws_id,sample_type,num_threads,read
        	 	# Zip tophat folder
             	try:
                 	out_file_path = os.path.join(directory,"%s.zip" % output_name)
+                	logger.info("Zipping the output files".format(out_file_path))
                 	script_util.zip_files(logger, output_dir,out_file_path)
             	except Exception, e:
                 	raise Exception("Failed to compress the index: {0}".format(out_file_path))
@@ -89,16 +117,17 @@ def _CallBowtie2(logger,services,ws_client,hs,ws_id,sample_type,num_threads,read
             	try:
                 	bowtie2_handle = hs.upload(out_file_path)
             	except Exception, e:
-                	raise Exception("Failed to upload the index")
+                	raise Exception("Failed to upload zipped output file".format(out_file_path))
 		#### Replace version with get_version command#####
-            	bowtie2_out = { "file" : bowtie2_handle ,"size" : os.path.getsize(out_file_path), "aligned_using" : "bowtie2" , "aligner_version" : "2.2.6" , 'library_type' : lib_type , 'condition' : condition ,'read_sample_id': read_sample, 'genome_id' : genome_id , 'bowtie2_index' : bowtie2index_id }
+            	bowtie2_out = { "file" : bowtie2_handle ,"size" : os.path.getsize(out_file_path), "aligned_using" : "bowtie2" , "aligner_version" : "2.2.6" , 'library_type' : lib_type , 'condition' : condition ,'read_sample_id': read_sample, 'genome_id' : genome_id , 'bowtie2_index' : bowtie2index_id , "alignment_stats" : stats_data }
+		
 		#logger.info( "Saving bowtie2 object to  workspace")
             	if not sampleset_id is None: bowtie2_out['sampleset_id'] = sampleset_id
 		try:
                 	res= ws_client.save_objects(
                                         {"workspace":ws_id,
                                          "objects": [{
-                                         "type":"KBaseRNASeq.RNASeqAlignment-2.0",
+                                         "type":"KBaseRNASeq.RNASeqAlignment",
                                          "data":bowtie2_out,
                                          "name":output_name}
                                         ]})
@@ -112,6 +141,8 @@ def _CallBowtie2(logger,services,ws_client,hs,ws_id,sample_type,num_threads,read
 
 def _CallTophat(logger,services,ws_client,hs,ws_id,sample_type,num_threads,read_sample,gtf_file,condition,directory,bowtie2index_id,genome_id,sampleset_id,params,token):
 	print "Downloading Read Sample{0}".format(read_sample)
+	if not logger:
+		logger = create_logger(directory,"run_Tophat_"+read_sample)	
 	try:
 		r_sample = ws_client.get_objects(
                                         [{ 'name' : read_sample, 'workspace' : ws_id}])[0]
@@ -163,9 +194,11 @@ def _CallTophat(logger,services,ws_client,hs,ws_id,sample_type,num_threads,read_
                 	bam_file = output_dir+"/accepted_hits.bam"
                 	align_stats_cmd="flagstat {0}".format(bam_file)
                 	stats = script_util.runProgram(logger,"samtools",align_stats_cmd,None,directory)
+			#print stats
+			stats_data = {}
                 	# Pass it to the stats['result']
                 	#stats_obj_name = params['output_obj_name']+"_"+str(hex(uuid.getnode()))+"_AlignmentStats"
-                	#script_util.extractStatsInfo(self.__LOGGER,ws_client,params['ws_id'],params['output_obj_name'],stats['result'],stats_obj_name)
+                	stats_data =script_util.extractAlignmentStatsInfo(logger,"samtools",ws_client,ws_id,None,stats['result'],None)
             	except Exception , e :
                 	raise Exception("Failed to create RNASeqAlignmentStats: {0}".format(bam_file))
        	 	# Zip tophat folder
@@ -180,7 +213,7 @@ def _CallTophat(logger,services,ws_client,hs,ws_id,sample_type,num_threads,read_
             	except Exception, e:
                 	raise Exception("Failed to upload the index")
 		#### Replace version with get_version command#####
-            	tophat_out = { "file" : tophat_handle ,"size" : os.path.getsize(out_file_path), "aligned_using" : "tophat" , "aligner_version" : "2.1.1" , 'library_type' : lib_type , 'condition' : condition ,'read_sample_id': read_sample, 'genome_id' : genome_id , 'bowtie2_index' : bowtie2index_id }
+            	tophat_out = { "file" : tophat_handle ,"size" : os.path.getsize(out_file_path), "aligned_using" : "tophat" , "aligner_version" : "2.1.1" , 'library_type' : lib_type , 'condition' : condition ,'read_sample_id': read_sample, 'genome_id' : genome_id , 'bowtie2_index' : bowtie2index_id , "alignment_stats" : stats_data}
 		#logger.info( "Saving bowtie2 object to  workspace")
             	if not sampleset_id is None: tophat_out['sampleset_id'] = sampleset_id
 		try:

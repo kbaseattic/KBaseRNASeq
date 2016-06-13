@@ -87,7 +87,7 @@ def generate_gff(logger,internal_services,token,ref,output_dir,obj_name,output_f
 
 def create_gtf_annotation(logger,ws_client,hs_client,internal_services,ws_id,genome_ref,genome_id,fasta_file,directory,token):
         try:
-		tmp_file = os.path.join(directory,genome_id + ".gff")
+		tmp_file = os.path.join(directory,genome_id + "_GFF.gff")
         	fasta_file= generate_fasta(logger,internal_services,token,ws_id,directory,genome_id)
             	logger.info("Sanitizing the fasta file to correct id names {}".format(datetime.datetime.utcnow()))
                 mapping_filename = c_mapping.create_sanitized_contig_ids(fasta_file)
@@ -95,13 +95,14 @@ def create_gtf_annotation(logger,ws_client,hs_client,internal_services,ws_id,gen
                 logger.info("Generating FASTA file completed successfully : {}".format(datetime.datetime.utcnow()))
                 generate_gff(logger,internal_services,token,ws_id,directory,genome_id,tmp_file)
                 c_mapping.replace_gff_contig_ids(tmp_file, mapping_filename, to_modified=True)
-                gtf_path = os.path.join(directory,genome_id+".gtf")
+                gtf_path = os.path.join(directory,genome_id+"_GTF.gtf")
                 gtf_cmd = " -E {0} -T -o- > {1}".format(tmp_file,gtf_path)
                 try:
                    logger.info("Executing: gffread {0}".format(gtf_cmd))
                    cmdline_output = runProgram(logger,"gffread",gtf_cmd,None,directory)
                 except Exception,e:
                    raise Exception("Error Converting the GFF file to GTF using gffread {0},{1}".format(gtf_cmd,"".join(traceback.format_exc())))
+		#if os.path.exists(tmp_file): os.remove(tmp_file)
                 if os.path.exists(gtf_path):
                                annotation_handle = hs_client.upload(gtf_path)
                                a_handle = { "handle" : annotation_handle ,"size" : os.path.getsize(gtf_path), 'genome_id' : genome_ref}
@@ -109,7 +110,7 @@ def create_gtf_annotation(logger,ws_client,hs_client,internal_services,ws_id,gen
                 res= ws_client.save_objects(
                                         {"workspace":ws_id,
                                          "objects": [{
-                                         "type":"KBaseRNASeq.GFFAnnotation-1.0",
+                                         "type":"KBaseRNASeq.GFFAnnotation",
                                          "data":a_handle,
                                          "name":genome_id+"_GTF_Annotation",
                                         "hidden":1}
@@ -238,7 +239,7 @@ def extractAlignmentStatsInfo(logger,tool_used,ws_client,ws_id,sample_id,result,
 		pass 
         # Create Workspace object
         stats_data =  {
-                       "alignment_id": sample_id,
+                       #"alignment_id": sample_id,
                        "alignment_rate": alignment_rate,
                        "multiple_alignments": multiple_alignments, 
                        "properly_paired": properly_paired,
@@ -247,20 +248,22 @@ def extractAlignmentStatsInfo(logger,tool_used,ws_client,ws_id,sample_id,result,
                        "unmapped_reads": unmapped_r,
                        "mapped_reads": mapped_r
                        }
+	print stats_data
+	return stats_data
         ## Save object to workspace
-        logger.info( "Saving Alignment Statistics to the Workspace")
-        try:
-                res= ws_client.save_objects(
-                                        {"workspace":ws_id,
-                                         "objects": [{
-                                         "type":"KBaseRNASeq.AlignmentStatsResults",
-                                         "data": stats_data,
-                                         "hidden" : 1,
-                                         "name":stats_obj_name}
-                                        ]})
-                res = stats_data
-        except Exception, e:
-                raise Exception("get Alignment Statistics failed: {0}".format(e))
+        #logger.info( "Saving Alignment Statistics to the Workspace")
+#        try:
+#                res= ws_client.save_objects(
+#                                        {"workspace":ws_id,
+#                                         "objects": [{
+#                                         "type":"KBaseRNASeq.AlignmentStatsResults",
+#                                         "data": stats_data,
+#                                         "hidden" : 1,
+#                                         "name":stats_obj_name}
+#                                        ]})
+#                res = stats_data
+#        except Exception, e:
+#                raise Exception("get Alignment Statistics failed: {0}".format(e))
 
 def getExpressionHistogram(obj,obj_name,num_of_bins,ws_id,output_obj_name):
     if 'expression_levels' in obj['data']:
@@ -668,6 +671,7 @@ def runProgram(logger=None,
         # Construct shell command
         cmdStr = "%s %s" % (progPath,argStr)
 	print "Executing : "+cmdStr
+	logger.info("Executing : "+cmdStr)
         #if working_dir is None:
         #    logger.info("Executing: " + cmdStr + " on cwd")
         #else:
@@ -681,7 +685,8 @@ def runProgram(logger=None,
                                cwd=working_dir)
         # Get results
         result,stderr  = process.communicate()
-      
+     	#print result
+	print stderr 
         # keep this until your code is stable for easier debugging
         if logger is not None and result is not None and len(result) > 0:
             logger.info(result)

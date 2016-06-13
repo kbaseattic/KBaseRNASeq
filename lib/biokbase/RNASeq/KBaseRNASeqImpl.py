@@ -88,7 +88,7 @@ class KBaseRNASeq:
     #########################################
     VERSION = "0.0.1"
     GIT_URL = "https://github.com/sjyoo/KBaseRNASeq"
-    GIT_COMMIT_HASH = "97125961714d9f2acfc4aa3d3c5c22b03f910198"
+    GIT_COMMIT_HASH = "c1770e652dd6b22eb1dfba2c805ef48dbc5c4d8e"
     
     #BEGIN_CLASS_HEADER
     __TEMP_DIR = 'temp'
@@ -485,11 +485,11 @@ class KBaseRNASeq:
 			num_threads = 2   
 	    num_cores = mp.cpu_count()
 	    self.__LOGGER.info("Number of available cores : {0}".format(num_cores))
+	    b_tasks =[]
             if sample_type == 'KBaseRNASeq.RNASeqSampleSet':
                 reads = sample['data']['sample_ids']
 		reads_type= sample['data']['Library_type']
                 r_label = sample['data']['condition']
-		b_tasks =[]
 		num_samples =  len(reads)
 		if num_cores != 1:
 			pool_size,num_threads=handler_util.optimize_parallel_run(num_samples,num_threads,num_cores)
@@ -556,8 +556,8 @@ class KBaseRNASeq:
 	except Exception,e:
                  self.__LOGGER.exception("".join(traceback.format_exc()))
                  raise KBaseRNASeqException("Error Running Bowtie2Call")
-	finally:
-                 handler_util.cleanup(self.__LOGGER,bowtie2_dir)
+	#finally:
+        #         handler_util.cleanup(self.__LOGGER,bowtie2_dir)
 		 #if os.path.exists(out_file_path): os.remove(out_file_path)
         #END Bowtie2Call
 
@@ -637,11 +637,11 @@ class KBaseRNASeq:
                         num_threads = 2   
             num_cores = mp.cpu_count()
             self.__LOGGER.info("Number of available cores : {0}".format(num_cores))
+            b_tasks =[]
             if sample_type == 'KBaseRNASeq.RNASeqSampleSet':
                 reads = sample['data']['sample_ids']
                 reads_type= sample['data']['Library_type']
                 r_label = sample['data']['condition']
-                b_tasks =[]
                 num_samples =  len(reads)
                 if num_cores != 1:
                         pool_size,num_threads=handler_util.optimize_parallel_run(num_samples,num_threads,num_cores)
@@ -707,8 +707,8 @@ class KBaseRNASeq:
         except Exception,e:
                  self.__LOGGER.exception("".join(traceback.format_exc()))
                  raise KBaseRNASeqException("Error Running Bowtie2Call")
-        finally:
-                 handler_util.cleanup(self.__LOGGER,tophat_dir)
+        #finally:
+                 #handler_util.cleanup(self.__LOGGER,tophat_dir)
                  #if os.path.exists(out_file_path): os.remove(out_file_path)
         
         #END TophatCall
