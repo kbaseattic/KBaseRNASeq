@@ -174,7 +174,7 @@
     "optional" : true,
     "advanced" : true,
     "allow_multiple" : false,
-    "default_values" : [ "fr" ],
+    "default_values" : [ "" ],
     "field_type" : "dropdown",
     "dropdown_options":{
       "options": [
