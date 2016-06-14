@@ -88,7 +88,7 @@ class KBaseRNASeq:
     #########################################
     VERSION = "0.0.1"
     GIT_URL = "https://github.com/sjyoo/KBaseRNASeq"
-    GIT_COMMIT_HASH = "c1770e652dd6b22eb1dfba2c805ef48dbc5c4d8e"
+    GIT_COMMIT_HASH = "742508e74db1968249767ec338beaf4c3032b7e7"
     
     #BEGIN_CLASS_HEADER
     __TEMP_DIR = 'temp'
@@ -521,50 +521,75 @@ class KBaseRNASeq:
 	    def run_bowtie2_in_parallel(tasks):
         	pass
 	    results=run_bowtie2_in_parallel(b_tasks)
+	    reportName = 'Align_Reads_using_Bowtie2_'+str(hex(uuid.getnode()))
 	    ### Create AlignmentSet object
 	    if sample_type == 'KBaseRNASeq.RNASeqSampleSet':
-		set_obj = { 'sampleset_id' :sampleset_id ,'genome_id' : genome_id,'bowtie2_index' : bowtie2index_id }
-		sids=[]
-		m_alignments = []
-		alignments = []
-		for sid,s_alignments in results:
-		    a_ref = ws_client.get_object_info_new({"objects": [{'name':s_alignments, 'workspace': params['ws_id']}]})[0]
-		    a_id = str(a_ref[6]) + '/' + str(a_ref[0]) + '/' + str(a_ref[4]) 
-		    m_alignments.append({sid : a_id})
-		    sids.append(sid)
-		    alignments.append(a_id)
-		set_obj['read_sample_ids']= sids
-		set_obj['sample_alignments']= alignments
-		set_obj['mapped_alignments_ids']=m_alignments
-		try:
-			self.__LOGGER.info( "Saving AlignmentSet object to  workspace")
-               		res= ws_client.save_objects(
-                                        {"workspace":params['ws_id'],
-                                         "objects": [{
-                                         "type":"KBaseRNASeq.RNASeqAlignmentSet",
-                                         "data":set_obj,
-                                         "name":params['sampleset_id']+"_AlignmentSet"}
-                                        ]})
-			returnVal = set_obj
-		except Exception,e:
-                     raise Exception("Failed Saving AlignmentSet to Workspace")		
+                alignmentSet_name = params['sampleset_id']+"_AlignmentSet"
+                reportObj=script_util.create_RNASeq_AlignmentSet_and_build_report(self.__LOGGER,ws_client,params['ws_id'],reads,sampleset_id,genome_id,bowtie2index_id,results,alignmentSet_name)
+#		set_obj = { 'sampleset_id' :sampleset_id ,'genome_id' : genome_id,'bowtie2_index' : bowtie2index_id }
+#		sids=[]
+#		m_alignments = []
+#		alignments = []
+#		for sid,s_alignments in results:
+#		    a_ref = ws_client.get_object_info_new({"objects": [{'name':s_alignments, 'workspace': params['ws_id']}]})[0]
+#		    a_id = str(a_ref[6]) + '/' + str(a_ref[0]) + '/' + str(a_ref[4]) 
+#		    m_alignments.append({sid : a_id})
+#		    sids.append(sid)
+#		    alignments.append(a_id)
+#		set_obj['read_sample_ids']= sids
+#		set_obj['sample_alignments']= alignments
+#		set_obj['mapped_alignments_ids']=m_alignments
+#		try:
+#			self.__LOGGER.info( "Saving AlignmentSet object to  workspace")
+#               		res= ws_client.save_objects(
+#                                        {"workspace":params['ws_id'],
+#                                         "objects": [{
+#                                         "type":"KBaseRNASeq.RNASeqAlignmentSet",
+#                                         "data":set_obj,
+#                                         "name":params['sampleset_id']+"_AlignmentSet"}
+#                                        ]})
+#			returnVal = set_obj
+#		except Exception,e:
+#                     raise Exception("Failed Saving AlignmentSet to Workspace")		
  	    else:
 		single_read, single_alignment = results
 		single_align_obj = ws_client.get_objects(
                                         [{ 'name' : single_alignment, 'workspace' : params['ws_id']}])[0]['data'] 	
-      		returnVal = single_align_obj
+      		#returnVal = single_align_obj
+                sref = ws_client.get_object_info_new({"objects": [{'name':single_alignment, 'workspace': params['ws_id']}]})[0]
+                reportObj = {'objects_created':[{'ref' :str(sref[6]) + '/' + str(sref[0]) + '/' + str(sref[4]),
+                                                 'description' : "RNA-seq Alignment for reads Sample: {0}".format(single_read)}],
+                                                 'text_message': "RNA-seq Alignment for reads Sample: {0}".format(single_read)}         
+            #### Save to report object #######
+                #returnVal = single_align_obj   
+            report_info = ws_client.save_objects({
+                                                'id':sampleset_info[6],
+                                                'objects':[
+                                                {
+                                                'type':'KBaseReport.Report',
+                                                'data':reportObj,
+                                                'name':reportName,
+                                                'meta':{},
+                                                'hidden':1, # important!  make sure the report is hidden
+                                                #'provenance':provenance
+                                                }
+                                                ]
+                                                })[0]
+
+            returnVal = { "report_name" : reportName,"report_ref" : str(report_info[6]) + '/' + str(report_info[0]) + '/' + str(report_info[4]) }
+
 	except Exception,e:
                  self.__LOGGER.exception("".join(traceback.format_exc()))
                  raise KBaseRNASeqException("Error Running Bowtie2Call")
-	#finally:
-        #         handler_util.cleanup(self.__LOGGER,bowtie2_dir)
+	finally:
+                 handler_util.cleanup(self.__LOGGER,bowtie2_dir)
 		 #if os.path.exists(out_file_path): os.remove(out_file_path)
         #END Bowtie2Call
 
         # At some point might do deeper type checking...
-        if not isinstance(returnVal, object):
+        if not isinstance(returnVal, dict):
             raise ValueError('Method Bowtie2Call return value ' +
-                             'returnVal is not type object as required.')
+                             'returnVal is not type dict as required.')
         # return the results
         return [returnVal]
 
@@ -672,43 +697,75 @@ class KBaseRNASeq:
             def run_tophat_in_parallel(tasks):
                 pass
             results=run_tophat_in_parallel(b_tasks)
+	    ### Create report object 
+	    #output_objs = {}
+	    reportName = 'Align_Reads_using_Tophat_'+str(hex(uuid.getnode()))
             ### Create AlignmentSet object
             if sample_type == 'KBaseRNASeq.RNASeqSampleSet':
-                set_obj = { 'sampleset_id' :sampleset_id ,'genome_id' : genome_id,'bowtie2_index' : bowtie2index_id }
-                sids=[]
-                m_alignments = []
-                alignments = []
-                for sid,s_alignments in results:
-                    a_ref = ws_client.get_object_info_new({"objects": [{'name':s_alignments, 'workspace': params['ws_id']}]})[0]
-                    a_id = str(a_ref[6]) + '/' + str(a_ref[0]) + '/' + str(a_ref[4]) 
-                    m_alignments.append({sid : a_id})
-                    sids.append(sid)
-                    alignments.append(a_id)
-                set_obj['read_sample_ids']= sids
-                set_obj['sample_alignments']= alignments
-                set_obj['mapped_alignments_ids']=m_alignments
-                try:
-                        self.__LOGGER.info( "Saving AlignmentSet object to  workspace")
-                        res= ws_client.save_objects(
-                                        {"workspace":params['ws_id'],
-                                         "objects": [{
-                                         "type":"KBaseRNASeq.RNASeqAlignmentSet",
-                                         "data":set_obj,
-                                         "name":params['sampleset_id']+"_AlignmentSet"}
-                                        ]})
-                        returnVal = set_obj
-                except Exception,e:
-                     raise Exception("Failed Saving AlignmentSet to Workspace")         
+		alignmentSet_name = params['sampleset_id']+"_AlignmentSet"
+		reportObj=script_util.create_RNASeq_AlignmentSet_and_build_report(self.__LOGGER,ws_client,params['ws_id'],reads,sampleset_id,genome_id,bowtie2index_id,results,alignmentSet_name)
+		###### Save to report obj #######
+		
+		#save_report(ws_client,reportName,report
+#                set_obj = { 'sampleset_id' :sampleset_id ,'genome_id' : genome_id,'bowtie2_index' : bowtie2index_id }
+#                sids=[]
+#                m_alignments = []
+#                alignments = []
+#                for sid,s_alignments in results:
+#                    a_ref = ws_client.get_object_info_new({"objects": [{'name':s_alignments, 'workspace': params['ws_id']}]})[0]
+#                    a_id = str(a_ref[6]) + '/' + str(a_ref[0]) + '/' + str(a_ref[4]) 
+#                    m_alignments.append({sid : a_id})
+#		    output_objs.append({'ref' : a_id , 'description': "RNA-seq Alignment for reads Sample :  {0}".format(sid)})
+#                    sids.append(sid)
+#                    alignments.append(a_id)
+#                set_obj['read_sample_ids']= sids
+#                set_obj['sample_alignments']= alignments
+#                set_obj['mapped_alignments_ids']=m_alignments
+#                try:
+#                        self.__LOGGER.info( "Saving AlignmentSet object to  workspace")
+#                        res= ws_client.save_objects(
+#                                        {"workspace":params['ws_id'],
+#                                         "objects": [{
+#                                         "type":"KBaseRNASeq.RNASeqAlignmentSet",
+#                                         "data":set_obj,
+#                                         "name":params['sampleset_id']+"_AlignmentSet"}
+#                                        ]})[0]
+#                        #returnVal = set_obj
+#			 
+#			output_objs.append({'ref': str(res[6]) + '/' + str(res[0]) + '/' + str(res[4]),'description' : "Set of Alignments for Sampleset : {0}".format(params['sampleset_id'])
+#			
+#                except Exception,e:
+#                     raise Exception("Failed Saving AlignmentSet to Workspace")         
             else:
                 single_read, single_alignment = results
                 single_align_obj = ws_client.get_objects(
                                         [{ 'name' : single_alignment, 'workspace' : params['ws_id']}])[0]['data'] 
-      		returnVal = single_align_obj
+		sref = ws_client.get_object_info_new({"objects": [{'name':single_alignment, 'workspace': params['ws_id']}]})[0]
+		reportObj = {'objects_created':[{'ref' :str(sref[6]) + '/' + str(sref[0]) + '/' + str(sref[4]),
+			    			 'description' : "RNA-seq Alignment for reads Sample: {0}".format(single_read)}],
+						 'text_message': "RNA-seq Alignment for reads Sample: {0}".format(single_read)}	
+	    #### Save to report object #######
+      		#returnVal = single_align_obj	
+	    report_info = ws_client.save_objects({
+                                                'id':sampleset_info[6],
+                                                'objects':[
+                                                {
+                                                'type':'KBaseReport.Report',
+                                                'data':reportObj,
+                                                'name':reportName,
+                                                'meta':{},
+                                                'hidden':1, # important!  make sure the report is hidden
+                                                #'provenance':provenance
+                                                }
+                                                ]
+                                                })[0]
+
+	    returnVal = { "report_name" : reportName,"report_ref" : str(report_info[6]) + '/' + str(report_info[0]) + '/' + str(report_info[4]) } 
         except Exception,e:
                  self.__LOGGER.exception("".join(traceback.format_exc()))
-                 raise KBaseRNASeqException("Error Running Bowtie2Call")
-        #finally:
-                 #handler_util.cleanup(self.__LOGGER,tophat_dir)
+                 raise KBaseRNASeqException("Error Running TophatCall")
+        finally:
+                 handler_util.cleanup(self.__LOGGER,tophat_dir)
                  #if os.path.exists(out_file_path): os.remove(out_file_path)
         
         #END TophatCall

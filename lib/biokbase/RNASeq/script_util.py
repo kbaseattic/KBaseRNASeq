@@ -100,7 +100,7 @@ def create_gtf_annotation(logger,ws_client,hs_client,internal_services,ws_id,gen
                 try:
                    logger.info("Executing: gffread {0}".format(gtf_cmd))
                    cmdline_output = runProgram(logger,"gffread",gtf_cmd,None,directory)
-                except Exception,e:
+                except Exception as e:
                    raise Exception("Error Converting the GFF file to GTF using gffread {0},{1}".format(gtf_cmd,"".join(traceback.format_exc())))
 		#if os.path.exists(tmp_file): os.remove(tmp_file)
                 if os.path.exists(gtf_path):
@@ -119,6 +119,56 @@ def create_gtf_annotation(logger,ws_client,hs_client,internal_services,ws_id,gen
                 raise ValueError("Generating GTF file from Genome Annotation object Failed :  {}".format("".join(traceback.format_exc())))
 	return gtf_path
 	
+
+def create_RNASeq_AlignmentSet_and_build_report(logger,ws_client,ws_id,sample_list,sampleset_id,genome_id,bowtie2index_id,results,alignmentSet_name):
+	 set_obj = { 'sampleset_id' :sampleset_id ,'genome_id' : genome_id,'bowtie2_index' : bowtie2index_id }
+         sids=[]
+         m_alignments = []
+         alignments = []
+	 output_objs = []
+	 num_samples = len(sample_list)
+	 num_results = len(results)
+	 num_failed = num_samples - num_results
+	 run_list = [ k for (k,v) in results ]
+	 print run_list
+	 failed_list = [k for k in sample_list if k not in run_list ]
+	 print  "\n".join(failed_list)
+         for sid,s_alignments in results:
+                    a_ref = ws_client.get_object_info_new({"objects": [{'name':s_alignments, 'workspace': ws_id}]})[0]
+                    a_id = str(a_ref[6]) + '/' + str(a_ref[0]) + '/' + str(a_ref[4])
+                    m_alignments.append({sid : a_id})
+                    output_objs.append({'ref' : a_id , 'description': "RNA-seq Alignment for reads Sample :  {0}".format(sid)})
+                    sids.append(sid)
+                    alignments.append(a_id)
+         set_obj['read_sample_ids']= sids
+         set_obj['sample_alignments']= alignments
+         set_obj['mapped_alignments_ids']=m_alignments
+         try:
+        	logger.info( "Saving AlignmentSet object to  workspace")
+                res= ws_client.save_objects(
+                                        {"workspace":ws_id,
+                                         "objects": [{
+                                         "type":"KBaseRNASeq.RNASeqAlignmentSet",
+                                         "data":set_obj,
+                                         "name":alignmentSet_name}
+                                        ]})[0]
+                                                                
+                output_objs.append({'ref': str(res[6]) + '/' + str(res[0]) + '/' + str(res[4]),'description' : "Set of Alignments for Sampleset : {0}".format(sampleset_id)})
+	 except Exception as e:
+                    raise Exception("Failed Saving AlignmentSet to Workspace") 
+	 ### Build Report obj ###
+	 report = []
+	 report.append("Total number of reads : {0}".format(str(num_samples)))
+	 report.append("Number of reads ran successfully : {0}".format(str(num_results)))
+	 report.append("Number of reads failed during this run : {0}".format(str(num_failed))) 
+	 if len(failed_list) != 0:
+		report.append("List of reads failed in this run : {0}".format("\n".join(failed_list)))
+	 reportObj = {
+                      'objects_created':output_objs,
+                      'text_message':'\n'.join(report)
+                     }
+	 return reportObj
+	   	
 def updateAnalysisTO(logger, ws_client, field, map_key, map_value, anal_ref, ws_id, objid):
     
         analysis = ws_client.get_objects([{'ref' : anal_ref}])[0]
