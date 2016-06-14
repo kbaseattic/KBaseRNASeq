@@ -125,6 +125,7 @@ def create_RNASeq_AlignmentSet_and_build_report(logger,ws_client,ws_id,sample_li
          sids=[]
          m_alignments = []
          alignments = []
+	 m_align_names = []
 	 output_objs = []
 	 num_samples = len(sample_list)
 	 num_results = len(results)
@@ -137,12 +138,14 @@ def create_RNASeq_AlignmentSet_and_build_report(logger,ws_client,ws_id,sample_li
                     a_ref = ws_client.get_object_info_new({"objects": [{'name':s_alignments, 'workspace': ws_id}]})[0]
                     a_id = str(a_ref[6]) + '/' + str(a_ref[0]) + '/' + str(a_ref[4])
                     m_alignments.append({sid : a_id})
+                    m_align_names.append({sid : s_alignments})
                     output_objs.append({'ref' : a_id , 'description': "RNA-seq Alignment for reads Sample :  {0}".format(sid)})
                     sids.append(sid)
                     alignments.append(a_id)
          set_obj['read_sample_ids']= sids
          set_obj['sample_alignments']= alignments
          set_obj['mapped_alignments_ids']=m_alignments
+	 set_obj['mapped_rnaseq_alignments'] = m_align_names
          try:
         	logger.info( "Saving AlignmentSet object to  workspace")
                 res= ws_client.save_objects(
