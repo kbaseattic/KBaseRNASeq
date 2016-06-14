@@ -263,6 +263,7 @@
 	list<string> read_sample_ids;
 	list<string> condition;
 	list<ws_samplealignment_id> sample_alignments;
+        list<mapping<string read_sample_name , string  alignment_name>> mapped_rnaseq_alignments;
         list<mapping<string read_sample_id , ws_samplealignment_id alignment_id>> mapped_alignments_ids;
 	}RNASeqAlignmentSet;
 
@@ -276,7 +277,7 @@
 
 /*
   The workspace object for a RNASeqExpression
-  @optional description data_quality_level original_median external_source_date source file processing_comments
+  @optional description data_quality_level original_median external_source_date source file processing_comments mapped_sample_id
   @metadata ws type
   @metadata ws numerical_interpretation
   @metadata ws description
@@ -325,6 +326,7 @@
         list<string> sample_ids;
         list<string> condition;
         list<ws_expression_sample_id> sample_expression_ids;
+        list<mapping<string read_sample_name , string expression_name>> mapped_expression_objects;
         list<mapping<string read_sample_id , ws_expression_sample_id expression_id>> mapped_expression_ids;
         }RNASeqExpressionSet;
 /*
@@ -475,7 +477,7 @@
 	}Bowtie2Params;
 
   async funcdef Bowtie2Call(Bowtie2Params params) 
-     returns(UnspecifiedObject) authentication required;
+     returns(ResultsToReport) authentication required;
 
 typedef structure{
      string read-mismatches;
@@ -539,7 +541,7 @@ typedef mapping<string Tophat_opts,t_opts opts_tophat> t_opts_str;
      }TophatParams;
 
   async funcdef TophatCall(TophatParams params)
-     returns (AlignmentStatsResults) authentication required;
+     returns (ResultsToReport) authentication required;
 
  typedef structure{
         int num_threads;
