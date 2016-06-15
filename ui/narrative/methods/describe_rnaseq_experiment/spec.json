@@ -6,7 +6,7 @@
   "categories" : ["active","expression"],
   "widgets" : {
     "input" : null,
-    "output" : "kbaseRNASeqAnalysis"
+    "output" : "kbaseRNASeqAnalysisNew"
   },
   "parameters" : [ {
     "id" : "sampleset_id",
