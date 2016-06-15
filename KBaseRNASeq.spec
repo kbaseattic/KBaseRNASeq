@@ -277,7 +277,7 @@
 
 /*
   The workspace object for a RNASeqExpression
-  @optional description data_quality_level original_median external_source_date source file processing_comments mapped_sample_id
+  @optional description platform tool_opts data_quality_level original_median external_source_date source file processing_comments mapped_sample_id
   @metadata ws type
   @metadata ws numerical_interpretation
   @metadata ws description
@@ -293,7 +293,7 @@
         int data_quality_level;
         float original_median;
         string external_source_date;
-        list<mapping<string feature_id,float feature_value>> expression_levels; 
+        mapping<string feature_id,float feature_value> expression_levels; 
         ws_genome_annotation_id genome_id; 
         ws_referenceAnnotation_id annotation_id;
 	string condition;
@@ -317,6 +317,7 @@
 
 /*
   Set object for RNASeqExpression objects
+  @optional sample_ids condition 
 */
 
   typedef structure {
@@ -582,7 +583,7 @@ typedef structure{
         }CufflinksParams;
 
   async funcdef CufflinksCall(CufflinksParams params)
-    returns (ws_expression_sample_id) authentication required;
+    returns (ResultsToReport) authentication required;
 
 	typedef structure{
 	string ws_id;

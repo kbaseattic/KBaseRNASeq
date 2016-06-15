@@ -68,6 +68,10 @@ def CallTophat_helper(x):
 	logger,services,ws_client,hs,ws_id,sample_type,num_threads,read_sample,gtf_file,condition,directory,bowtie2index_id,genome_id,sampleset_id,params,token = x
 	return parallel._CallTophat(logger,services,ws_client,hs,ws_id,sample_type,num_threads,read_sample,gtf_file,condition,directory,bowtie2index_id,genome_id,sampleset_id,params,token)
 
+## Helper Function for Parallel call 
+def CallCufflinks_helper(x):
+	logger,services,ws_client,hs,ws_id,num_threads,s_alignment,gtf_file,directory,genome_id,annotation_id,sample_id,alignmentset_id,params,token = x
+	return  parallel._CallCufflinks(logger,services,ws_client,hs,ws_id,num_threads,s_alignment,gtf_file,directory,genome_id,annotation_id,sample_id,alignmentset_id,params,token) 
 #END_HEADER
 
 
@@ -88,7 +92,7 @@ class KBaseRNASeq:
     #########################################
     VERSION = "0.0.1"
     GIT_URL = "https://github.com/sjyoo/KBaseRNASeq"
-    GIT_COMMIT_HASH = "742508e74db1968249767ec338beaf4c3032b7e7"
+    GIT_COMMIT_HASH = "45bf8fe192a9446475f9722602eeb4baf631e77b"
     
     #BEGIN_CLASS_HEADER
     __TEMP_DIR = 'temp'
@@ -526,31 +530,6 @@ class KBaseRNASeq:
 	    if sample_type == 'KBaseRNASeq.RNASeqSampleSet':
                 alignmentSet_name = params['sampleset_id']+"_AlignmentSet"
                 reportObj=script_util.create_RNASeq_AlignmentSet_and_build_report(self.__LOGGER,ws_client,params['ws_id'],reads,sampleset_id,genome_id,bowtie2index_id,results,alignmentSet_name)
-#		set_obj = { 'sampleset_id' :sampleset_id ,'genome_id' : genome_id,'bowtie2_index' : bowtie2index_id }
-#		sids=[]
-#		m_alignments = []
-#		alignments = []
-#		for sid,s_alignments in results:
-#		    a_ref = ws_client.get_object_info_new({"objects": [{'name':s_alignments, 'workspace': params['ws_id']}]})[0]
-#		    a_id = str(a_ref[6]) + '/' + str(a_ref[0]) + '/' + str(a_ref[4]) 
-#		    m_alignments.append({sid : a_id})
-#		    sids.append(sid)
-#		    alignments.append(a_id)
-#		set_obj['read_sample_ids']= sids
-#		set_obj['sample_alignments']= alignments
-#		set_obj['mapped_alignments_ids']=m_alignments
-#		try:
-#			self.__LOGGER.info( "Saving AlignmentSet object to  workspace")
-#               		res= ws_client.save_objects(
-#                                        {"workspace":params['ws_id'],
-#                                         "objects": [{
-#                                         "type":"KBaseRNASeq.RNASeqAlignmentSet",
-#                                         "data":set_obj,
-#                                         "name":params['sampleset_id']+"_AlignmentSet"}
-#                                        ]})
-#			returnVal = set_obj
-#		except Exception,e:
-#                     raise Exception("Failed Saving AlignmentSet to Workspace")		
  	    else:
 		single_read, single_alignment = results
 		single_align_obj = ws_client.get_objects(
@@ -704,38 +683,6 @@ class KBaseRNASeq:
             if sample_type == 'KBaseRNASeq.RNASeqSampleSet':
 		alignmentSet_name = params['sampleset_id']+"_AlignmentSet"
 		reportObj=script_util.create_RNASeq_AlignmentSet_and_build_report(self.__LOGGER,ws_client,params['ws_id'],reads,sampleset_id,genome_id,bowtie2index_id,results,alignmentSet_name)
-		###### Save to report obj #######
-		
-		#save_report(ws_client,reportName,report
-#                set_obj = { 'sampleset_id' :sampleset_id ,'genome_id' : genome_id,'bowtie2_index' : bowtie2index_id }
-#                sids=[]
-#                m_alignments = []
-#                alignments = []
-#                for sid,s_alignments in results:
-#                    a_ref = ws_client.get_object_info_new({"objects": [{'name':s_alignments, 'workspace': params['ws_id']}]})[0]
-#                    a_id = str(a_ref[6]) + '/' + str(a_ref[0]) + '/' + str(a_ref[4]) 
-#                    m_alignments.append({sid : a_id})
-#		    output_objs.append({'ref' : a_id , 'description': "RNA-seq Alignment for reads Sample :  {0}".format(sid)})
-#                    sids.append(sid)
-#                    alignments.append(a_id)
-#                set_obj['read_sample_ids']= sids
-#                set_obj['sample_alignments']= alignments
-#                set_obj['mapped_alignments_ids']=m_alignments
-#                try:
-#                        self.__LOGGER.info( "Saving AlignmentSet object to  workspace")
-#                        res= ws_client.save_objects(
-#                                        {"workspace":params['ws_id'],
-#                                         "objects": [{
-#                                         "type":"KBaseRNASeq.RNASeqAlignmentSet",
-#                                         "data":set_obj,
-#                                         "name":params['sampleset_id']+"_AlignmentSet"}
-#                                        ]})[0]
-#                        #returnVal = set_obj
-#			 
-#			output_objs.append({'ref': str(res[6]) + '/' + str(res[0]) + '/' + str(res[4]),'description' : "Set of Alignments for Sampleset : {0}".format(params['sampleset_id'])
-#			
-#                except Exception,e:
-#                     raise Exception("Failed Saving AlignmentSet to Workspace")         
             else:
                 single_read, single_alignment = results
                 single_align_obj = ws_client.get_objects(
@@ -788,152 +735,139 @@ class KBaseRNASeq:
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
         hs = HandleService(url=self.__HS_URL, token=user_token)
         try:
-            #if os.path.exists(self.__SCRATCH):
-            #    handler_util.cleanup(self.__LOGGER,self.__SCRATCH)
             if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH) 
 	    cufflinks_dir = self.__SCRATCH +'/tmp'
-            if os.path.exists(cufflinks_dir):
-                handler_util.cleanup(self.__LOGGER,cufflinks_dir)
-            if not os.path.exists(cufflinks_dir): os.makedirs(cufflinks_dir)
-
+	    handler_util.setupWorkingDir(self.__LOGGER,cufflinks_dir)
             self.__LOGGER.info("Downloading Alignment Sample file")
 	    try:
-                sample,annotation_gtf = ws_client.get_objects(
-                                        [{'name' : params['alignment_sample_id'],'workspace' : params['ws_id']},
-                                         {'name' : params['annotation_gtf'], 'workspace' : params['ws_id']}])
+                a_sample = ws_client.get_objects(
+                                        [{'name' : params['alignmentset_id'],'workspace' : params['ws_id']}])[0]
             except Exception,e:
-                 self.__LOGGER.exception("".join(traceback.format_exc()))
-                 raise KBaseRNASeqException("Error Downloading objects from the workspace ")
-	    opts_dict = { k:v for k,v in params.iteritems() if not k in ('ws_id','alignment_sample_id','annotation_gtf','num_threads','min-intron-length','max-intron-length','overhang-tolerance','output_obj_name') and v is not None }
+                self.__LOGGER.exception("".join(traceback.format_exc()))
+                raise KBaseRNASeqException("Error Downloading objects from the workspace ")
+	    print a_sample
+	    ## Get the Input object type ##
+	    a_sample_info = ws_client.get_object_info_new({"objects": [{'name': params['alignmentset_id'], 'workspace': params['ws_id']}]})[0]
+            a_sample_type = a_sample_info[2].split('-')[0] 		
+            alignmentset_id = str(a_sample_info[6]) + '/' + str(a_sample_info[0]) + '/' + str(a_sample_info[4])		
+            #shared_files = {}
 
-            ## Downloading data from shock
-	    if 'data' in sample and sample['data'] is not None:
-                self.__LOGGER.info("Downloading Sample Alignment")
-                try:
-                     script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=sample['data']['file']['id'],filename=sample['data']['file']['file_name'], directory=cufflinks_dir,token=user_token)
-                except Exception,e:
-                        raise Exception( "Unable to download shock file, {0}".format(e))
-	        try:
-                    script_util.unzip_files(self.__LOGGER,os.path.join(cufflinks_dir,sample['data']['file']['file_name']),cufflinks_dir)
-		    #script_util.move_files(self.__LOGGER,handler_util.get_dir(cufflinks_dir),cufflinks_dir)
-                except Exception, e:
-		       self.__LOGGER.error("".join(traceback.format_exc()))
-                       raise Exception("Unzip indexfile error: Please contact help@kbase.us")
-            else:
-                raise KBaseRNASeqException("No data was included in the referenced sample id");
-	    if 'data' in annotation_gtf and annotation_gtf['data'] is not None:
-                self.__LOGGER.info("Downloading Reference Annotation")
-                try:
-                     agtf_fn = annotation_gtf['data']['handle']['file_name']
-                     script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=annotation_gtf['data']['handle']['id'],filename=agtf_fn, directory=cufflinks_dir,token=user_token)
-                except Exception,e:
-                        raise Exception( "Unable to download shock file, {0}".format(e))
-            else:
-                raise KBaseRNASeqException("No data was included in the referenced ReferenceAnnotation");
-
-            ##  now ready to call
-	    output_dir = os.path.join(cufflinks_dir, params['output_obj_name'])
-	    input_file = os.path.join(cufflinks_dir,"accepted_hits.bam")
-	    gtf_file = os.path.join(cufflinks_dir,agtf_fn)
+	    ### Check if there are existing cufflinks run on the alignments,
+	    ### if exists : skip cufflinks run, 
+		### get existing ids for set obj,
+		### create new run list ,
+	    ###  else : run on all alignments
+	
+	    ### Check if the gtf file exists in the workspace. if exists download the file from that
+	    annotation_id = a_sample['data']['genome_id']
+	    annotation_name = ws_client.get_object_info([{"ref" :annotation_id}],includeMetadata=None)[0][1]
+	    gtf_obj_name = annotation_name+"_GTF_Annotation"
+	    gtf_obj= ws_client.get_objects([{'name' : gtf_obj_name,'workspace' : params['ws_id']}])[0]
+	    gtf_info = ws_client.get_object_info_new({"objects": [{'name': gtf_obj_name, 'workspace': params['ws_id']}]})[0]
+            gtf_annotation_id = str(gtf_info[6]) + '/' + str(gtf_info[0]) + '/' + str(gtf_info[4])
+            gtf_id=gtf_obj['data']['handle']['id']
+            gtf_name=gtf_obj['data']['handle']['file_name']
             try:
-		num_p = multiprocessing.cpu_count()
-                #print 'processors count is ' +  str(num_p)
-		cufflinks_command = (' -p '+str(num_p))
-                #if 'num_threads' in params and params['num_threads'] is not None:
-                #     cufflinks_command += (' -p '+str(params['num_threads']))
-		if 'max-intron-length' in params and params['max-intron-length'] is not None:
-		     cufflinks_command += (' --max-intron-length '+str(params['max-intron-length']))
-		if 'min-intron-length' in params and params['min-intron-length'] is not None:
-		     cufflinks_command += (' --min-intron-length '+str(params['min-intron-length']))
-		if 'overhang-tolerance' in params  and params['overhang-tolerance'] is not None:
-		     cufflinks_command += (' --overhang-tolerance '+str(params['overhang-tolerance']))
-		
-		cufflinks_command += " -o {0} -G {1} {2}".format(output_dir,gtf_file,input_file)
-                self.__LOGGER.info("Executing: cufflinks {0}".format(cufflinks_command))
-		ret = script_util.runProgram(None,"cufflinks",cufflinks_command,None,cufflinks_dir)
-		result = ret["result"]
-		for line in result.splitlines(False):
-		    self.__LOGGER.info(line)
-		stderr = ret["stderr"]
-		prev_value = ''
-		for line in stderr.splitlines(False):
-		    if line.startswith('> Processing Locus'):
-			words = line.split()
-			cur_value = words[len(words) - 1]
-			if prev_value != cur_value:
-			    prev_value = cur_value
-			    self.__LOGGER.info(line)
-		    else:
-			prev_value = ''
-			self.__LOGGER.info(line)
-
+                     script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=gtf_id,filename=gtf_name, directory=cufflinks_dir,token=user_token)
+                     gtf_file = os.path.join(cufflinks_dir,gtf_name)
             except Exception,e:
-                raise KBaseRNASeqException("Error executing cufflinks {0},{1},{2}".format(cufflinks_command,cufflinks_dir,e))
-            ##Parse output files
-	    exp_dict = script_util.parse_FPKMtracking(os.path.join(output_dir,"genes.fpkm_tracking"))
-            ##  compress and upload to shock
-            try:
-                self.__LOGGER.info("Zipping Cufflinks output")
-		out_file_path = os.path.join(self.__SCRATCH,"%s.zip" % params['output_obj_name'])
-                script_util.zip_files(self.__LOGGER,output_dir,out_file_path)
-                #handle = hs.upload("{0}.zip".format(params['output_obj_name']))
-            except Exception,e:
-		self.__LOGGER.exception("".join(traceback.format_exc()))
-                raise KBaseRNASeqException("Error executing cufflinks {0},{1}".format(os.getcwd(),e))
-	    try:
-		#out_file_path = os.path.join(self.__SCRATCH,"%s.zip" % params['output_obj_name'])
-		handle = hs.upload(out_file_path)
-		script_util.shock_node_2b_public(self.__LOGGER,node_id=handle['id'],shock_service_url=handle['url'],token=user_token)
-            except Exception, e:
-	        self.__LOGGER.exception("".join(traceback.format_exc()))	
-                raise KBaseRNASeqException("Error while zipping the output objects: {0}".format(e))
+                        raise Exception( "Unable to download shock file, {0}".format(gtf_name))  
 
-	    ## Save object to workspace
-	    try:
-                self.__LOGGER.info("Saving Cufflinks object to workspace")
-                es_obj = { 'id' : '1234',
-                           'source_id' : 'source_id',
-                           'type' : 'RNA-Seq',
-                           'numerical_interpretation' : 'FPKM',
-                           'external_source_date' : 'external_source_date',
-                           'expression_levels' : exp_dict,
-			   'genome_id' : sample['data']['metadata']['genome_id'],
-                           'data_source' : 'data_source',
-                           'shock_url' : "{0}/node/{1}".format(handle['url'],handle['id'])
-                }
+	
+	    # Determine the num_threads provided by the user otherwise default the number of threads to 2
+            if('num_threads' in params and params['num_threads'] is not None): 
+                        num_threads = int(params['num_threads']) 
+            else:
+                        num_threads = 2   
+            num_cores = mp.cpu_count()
+            self.__LOGGER.info("Number of available cores : {0}".format(num_cores))
+            b_tasks =[]
+            if a_sample_type == 'KBaseRNASeq.RNASeqAlignmentSet':
+                alignment_ids = a_sample['data']['sample_alignments']
+		m_alignment_names = a_sample['data']['mapped_rnaseq_alignments']
+		sampleset_id =   a_sample['data']['sampleset_id']
+		### Get List of Alignments Names
+		align_names = []
+		for d_align in m_alignment_names:
+			for i , j  in d_align.items():
+				align_names.append(j)
 
-            	res= ws_client.save_objects(
-                                        {"workspace":params['ws_id'],
-                                         "objects": [{
-                                         "type":"KBaseExpression.ExpressionSample",
-                                         "data":es_obj,
-                                         "name":params['output_obj_name']}
-                                        ]})
-                self.__LOGGER.info( "Updating the Analysis object")
-                map_key = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[sample['data']['metadata']['sample_id']],params["ws_id"],user_token) # it will be the same one
-                map_value = script_util.get_obj_info(self.__LOGGER,self.__WS_URL,[params['output_obj_name']],params["ws_id"],user_token)
-		rna_sample = ws_client.get_objects([{'ref' : map_key[0] }])[0]
-		
-                if 'analysis_id' in rna_sample['data']  and rna_sample['data']['analysis_id'] is not None:
-		    analysis_obj = "/".join(rna_sample['data']['analysis_id'].split('/')[0:2])
-		    script_util.updateAnalysisTO(self.__LOGGER, ws_client, 'expression_values', map_key[0], map_value[0], analysis_obj,  params['ws_id'], int(analysis_obj.split('/')[1]))
-                    
-	    except Exception, e:
-		self.__LOGGER.exception("".join(traceback.format_exc()))
-                raise KBaseRNASeqException("Failed to upload the ExpressionSample: {0}".format(e))
-	    returnVal = params['output_obj_name']
+                m_alignment_ids = a_sample['data']['mapped_alignments_ids']	
+		print m_alignment_ids
+                #reads_type= sample['data']['Library_type']
+                #r_label = sample['data']['condition']
+                num_samples =  len(alignment_ids)
+                if num_cores != 1:
+                        pool_size,num_threads=handler_util.optimize_parallel_run(num_samples,num_threads,num_cores)
+                else:
+                   pool_size = 1
+                   num_threads = 1
+                self.__LOGGER.info(" Number of threads used by each process {0}".format(num_threads)) 
+                for d_align in m_alignment_ids:
+		  for s_name,a_id in d_align.items():
+                        try:
+                                b_tasks.append((None,self.__SERVICES,ws_client,hs,params['ws_id'],num_threads,a_id,gtf_file,cufflinks_dir,annotation_id,gtf_annotation_id,s_name,alignmentset_id,params,user_token))
+                        except Exception,e:
+                                raise
+            else:
+                try:
+                    pool_size=1
+  		    num_threads = num_cores
+		    single_a_id = alignmentset_id
+                    self.__LOGGER.info(" Number of threads used by each process {0}".format(num_threads)) 
+                    b_tasks.append((None,self.__SERVICES,ws_client,hs,params['ws_id'],num_threads,single_a_id,gtf_file,cufflinks_dir,annotation_id,gtf_annotation_id,s_name,None,params,user_token))
+                except Exception,e:
+                     raise
+
+            @parallelize(CallCufflinks_helper,pool_size)
+            def run_cufflinks_in_parallel(tasks):
+                pass
+            results=run_cufflinks_in_parallel(b_tasks)
+	    print results
+	    ### Create report object 
+	    #output_objs = {}
+	    reportName = 'Assemble_Transcripts_Using_Cufflinks_'+str(hex(uuid.getnode()))
+            ### Create ExpressionSet object
+            if a_sample_type == 'KBaseRNASeq.RNASeqAlignmentSet':
+		expressionSet_name = params['alignmentset_id']+"_ExpressionSet"
+		reportObj=script_util.create_RNASeq_ExpressionSet_and_build_report(self.__LOGGER,ws_client,params['ws_id'],align_names,alignmentset_id,annotation_id,sampleset_id,results,expressionSet_name)
+            else:
+                single_alignment, single_expression = results
+                single_expr_obj = ws_client.get_objects(
+                                        [{ 'name' : single_expression, 'workspace' : params['ws_id']}])[0]['data'] 
+		e_ref = ws_client.get_object_info_new({"objects": [{'name':single_expression, 'workspace': params['ws_id']}]})[0]
+		reportObj = {'objects_created':[{'ref' :str(eref[6]) + '/' + str(eref[0]) + '/' + str(eref[4]),
+			    			 'description' : "RNA-seq Alignment for reads Sample: {0}".format(single_alignment)}],
+						 'text_message': "RNA-seq Alignment for reads Sample: {0}".format(single_alignment)}	
+	    #### Save to report object #######
+      		#returnVal = single_align_obj	
+	    report_info = ws_client.save_objects({
+                                                'id':a_sample_info[6],
+                                                'objects':[
+                                                {
+                                                'type':'KBaseReport.Report',
+                                                'data':reportObj,
+                                                'name':reportName,
+                                                'meta':{},
+                                                'hidden':1, # important!  make sure the report is hidden
+                                                #'provenance':provenance
+                                                }
+                                                ]
+                                                })[0]
+
+	    returnVal = { "report_name" : reportName,"report_ref" : str(report_info[6]) + '/' + str(report_info[0]) + '/' + str(report_info[4]) } 
 	except KBaseRNASeqException,e:
-                 self.__LOGGER.exception("".join(traceback.format_exc()))
-                 raise KBaseRNASeqException("Error Running Cufflinks : {0}".format(e))
+                self.__LOGGER.exception("".join(traceback.format_exc()))
+                raise KBaseRNASeqException("Error Running Cufflinks ")
         finally:
                  handler_util.cleanup(self.__LOGGER,cufflinks_dir)
 		 #if os.path.exists(out_file_path): os.remove(out_file_path)	
         #END CufflinksCall
 
         # At some point might do deeper type checking...
-        if not isinstance(returnVal, basestring):
+        if not isinstance(returnVal, dict):
             raise ValueError('Method CufflinksCall return value ' +
-                             'returnVal is not type basestring as required.')
+                             'returnVal is not type dict as required.')
         # return the results
         return [returnVal]
 

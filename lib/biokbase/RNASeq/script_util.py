@@ -171,7 +171,59 @@ def create_RNASeq_AlignmentSet_and_build_report(logger,ws_client,ws_id,sample_li
                       'text_message':'\n'.join(report)
                      }
 	 return reportObj
-	   	
+
+def create_RNASeq_ExpressionSet_and_build_report(logger,ws_client,ws_id,alignment_list,alignmentset_id,genome_id,sampleset_id,results,expressionSet_name):
+	 set_obj = { 'alignmentSet_id' : alignmentset_id ,'genome_id' : genome_id,'sampleset_id' : sampleset_id }
+         sids=[]
+         condition = []
+	 expr_ids = []
+         m_expr_names= []
+	 m_expr_ids = []
+	 output_objs = []
+	 num_samples = len(alignment_list)
+	 num_results = len(results)
+	 num_failed = num_samples - num_results
+	 run_list = [ k for (k,v) in results ]
+	 failed_list = [k for k in alignment_list if k not in run_list ]
+         for a_name, e_name in results:
+                    a_ref,e_ref = ws_client.get_object_info_new({"objects": [{'name':a_name, 'workspace': ws_id},{'name':e_name, 'workspace': ws_id}]})
+                    a_id = str(a_ref[6]) + '/' + str(a_ref[0]) + '/' + str(a_ref[4])
+                    e_id = str(e_ref[6]) + '/' + str(e_ref[0]) + '/' + str(e_ref[4])
+                    m_expr_ids.append({a_id : e_id})
+                    m_expr_names.append({a_name : e_name})
+                    output_objs.append({'ref' : e_id , 'description': "RNA-seq Alignment for reads Sample :  {0}".format(a_name)})
+                    expr_ids.append(e_id)
+         set_obj['sample_expression_ids']= expr_ids
+         set_obj['mapped_expression_objects']= m_expr_names
+         set_obj['mapped_expression_ids'] = m_expr_ids
+         try:
+        	logger.info( "Saving AlignmentSet object to  workspace")
+                res= ws_client.save_objects(
+                                        {"workspace":ws_id,
+                                         "objects": [{
+                                         "type":"KBaseRNASeq.RNASeqExpressionSet",
+                                         "data":set_obj,
+                                         "name":expressionSet_name}
+                                        ]})[0]
+                                                                
+                output_objs.append({'ref': str(res[6]) + '/' + str(res[0]) + '/' + str(res[4]),'description' : "Set of Expression objects for AlignmentSet : {0}".format(alignmentset_id)})
+	 except Exception as e:
+		    logger.exception("".join(traceback.format_exc()))
+                    raise Exception("Failed Saving ExpressionSet to Workspace") 
+	 ### Build Report obj ###
+	 report = []
+	 report.append("Total number of alignments given : {0}".format(str(num_samples)))
+	 report.append("Number of assemblies ran successfully : {0}".format(str(num_results)))
+	 report.append("Number of  assemblies failed during this run : {0}".format(str(num_failed))) 
+	 if len(failed_list) != 0:
+		report.append("List of reads failed in this run : {0}".format("\n".join(failed_list)))
+	 reportObj = {
+                      'objects_created':output_objs,
+                      'text_message':'\n'.join(report)
+                     }
+	 return reportObj
+
+		   	
 def updateAnalysisTO(logger, ws_client, field, map_key, map_value, anal_ref, ws_id, objid):
     
         analysis = ws_client.get_objects([{'ref' : anal_ref}])[0]

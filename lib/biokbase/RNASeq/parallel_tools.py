@@ -137,7 +137,7 @@ def _CallBowtie2(logger,services,ws_client,hs,ws_id,sample_type,num_threads,read
                 	raise Exception("Failed to save alignment to workspace")
 	except Exception, e:
                         raise Exception("Failed to create bowtie2 Alignment {0}".format(" ".join(traceback.print_exc())))
-    	return (read_sample,output_name )
+    	return (read_sample,output_name)
 
 def _CallTophat(logger,services,ws_client,hs,ws_id,sample_type,num_threads,read_sample,gtf_file,condition,directory,bowtie2index_id,genome_id,sampleset_id,params,token):
 	print "Downloading Read Sample{0}".format(read_sample)
@@ -230,4 +230,111 @@ def _CallTophat(logger,services,ws_client,hs,ws_id,sample_type,num_threads,read_
                 	raise Exception("Failed to save alignment to workspace")
 	except Exception, e:
                         raise Exception("Failed to create tophat Alignment {0}".format(" ".join(traceback.print_exc())))
-    	return (read_sample,output_name )
+    	return (read_sample, output_name )
+
+
+def _CallCufflinks(logger,services,ws_client,hs,ws_id,num_threads,s_alignment,gtf_file,directory,genome_id,annotation_id,sample_id,alignmentset_id,params,token):
+	print "Downloading Read Sample{0}".format(s_alignment)
+	alignment_name = ws_client.get_object_info([{"ref" :s_alignment}],includeMetadata=None)[0][1]
+	if not logger:
+		logger = create_logger(directory,"run_Cufflinks_"+alignment_name)	
+	try:
+		alignment = ws_client.get_objects(
+                                        [{ 'ref' : s_alignment }])[0]
+		#alignment_info = ws_client.get_object_info_new({"objects": [{'name': read_sample, 'workspace': ws_id}]})[0]	
+		#sample_type = r_sample_info[2].split('-')[0]
+		output_name = alignment_name.split('_alignment')[0]+"_cufflinks_expression"
+		output_dir = os.path.join(directory,output_name)
+		#Download Alignment from shock
+		a_file_id = alignment['data']['file']['id']
+		a_filename = alignment['data']['file']['file_name']
+		condition = alignment['data']['condition']
+		#i_name = alignment_name+"_"+a_filename
+		#if replicate_id in alignment['data'] : replicate_id = alignment['data']['replicate_id']
+		try:
+                     script_util.download_file_from_shock(logger, shock_service_url=services['shock_service_url'], shock_id=a_file_id,filename=a_filename,directory=directory,token=token)
+                except Exception,e:
+                        raise Exception( "Unable to download shock file, {0}".format(i_name))
+                try:
+		    input_dir = os.path.join(directory,alignment_name)
+		    if not os.path.exists(input_dir): os.makedirs(input_dir)
+                    script_util.unzip_files(logger,os.path.join(directory,a_filename), input_dir)
+                except Exception, e:
+                       logger.error("".join(traceback.format_exc()))
+                       raise Exception("Unzip alignment files  error: Please contact help@kbase.us")
+
+		input_file = os.path.join(input_dir,"accepted_hits.bam")
+		### Adding advanced options to tophat command
+		cufflinks_command = (' -p '+str(num_threads))
+		if 'max-intron-length' in params and params['max-intron-length'] is not None:
+                     cufflinks_command += (' --max-intron-length '+str(params['max-intron-length']))
+                if 'min-intron-length' in params and params['min-intron-length'] is not None:
+                     cufflinks_command += (' --min-intron-length '+str(params['min-intron-length']))
+                if 'overhang-tolerance' in params  and params['overhang-tolerance'] is not None:
+                     cufflinks_command += (' --overhang-tolerance '+str(params['overhang-tolerance']))
+
+                cufflinks_command += " -o {0} -G {1} {2}".format(output_dir,gtf_file,input_file)
+		logger.info("Executing: cufflinks {0}".format(cufflinks_command))
+                ret = script_util.runProgram(logger,"cufflinks",cufflinks_command,None,directory)
+                result = ret["result"]
+                for line in result.splitlines(False):
+                    logger.info(line)
+                stderr = ret["stderr"]
+                prev_value = ''
+                for line in stderr.splitlines(False):
+                    if line.startswith('> Processing Locus'):
+                        words = line.split()
+                        cur_value = words[len(words) - 1]
+                        if prev_value != cur_value:
+				logger.info(line)
+                    else:
+                        prev_value = ''
+                        logger.info(line)
+
+        except Exception,e:
+		logger.exception("".join(traceback.format_exc()))
+                raise Exception("Error executing cufflinks {0},{1}".format(cufflinks_command,directory))
+        ##Parse output files
+        exp_dict = script_util.parse_FPKMtracking(os.path.join(output_dir,"genes.fpkm_tracking"))
+        ##  compress and upload to shock
+        try:
+                logger.info("Zipping Cufflinks output")
+                out_file_path = os.path.join(directory,"%s.zip" % output_name)
+                script_util.zip_files(logger,output_dir,out_file_path)
+        except Exception,e:
+                logger.exception("".join(traceback.format_exc()))
+                raise Exception("Error executing cufflinks")
+        try:
+                handle = hs.upload(out_file_path)
+        except Exception, e:
+                logger.exception("".join(traceback.format_exc()))
+                raise Exception("Error while zipping the output objects: {0}".format(out_file_path))
+        ## Save object to workspace
+        try:
+                logger.info("Saving Cufflinks object to workspace")
+                es_obj = { 'id' : output_name,
+                           'type' : 'RNA-Seq',
+                           'numerical_interpretation' : 'FPKM',
+                           'expression_levels' : exp_dict,
+			   'processing_comments' : "log2 Normalized",
+                           'genome_id' : genome_id,
+			   'annotation_id' : annotation_id,
+			   'condition' : condition, 
+			   'mapped_rnaseq_alignment' : { sample_id : s_alignment },
+			   'tool_used' : "Cufflinks",
+			   'tool_version' : "version",
+			   'file' : handle
+                	   }
+		
+        	res= ws_client.save_objects(
+                                   {"workspace":ws_id,
+                                    "objects": [{
+                                    "type":"KBaseRNASeq.RNASeqExpression",
+                                    "data":es_obj,
+                                    "name":output_name}
+                                     ]})[0]
+		expr_id = str(res[6]) + '/' + str(res[0]) + '/' + str(res[4]) 
+	except Exception, e:
+                logger.exception("".join(traceback.format_exc()))
+                raise Exception("Failed to upload the ExpressionSample: {0}".format(output_name))
+    	return (alignment_name, output_name )
