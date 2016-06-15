@@ -99,7 +99,7 @@ def create_gtf_annotation(logger,ws_client,hs_client,internal_services,ws_id,gen
                 gtf_cmd = " -E {0} -T -o- > {1}".format(tmp_file,gtf_path)
                 try:
                    logger.info("Executing: gffread {0}".format(gtf_cmd))
-                   cmdline_output = runProgram(logger,"gffread",gtf_cmd,None,directory)
+                   cmdline_output = runProgram(None,"gffread",gtf_cmd,None,directory)
                 except Exception as e:
                    raise Exception("Error Converting the GFF file to GTF using gffread {0},{1}".format(gtf_cmd,"".join(traceback.format_exc())))
 		#if os.path.exists(tmp_file): os.remove(tmp_file)
