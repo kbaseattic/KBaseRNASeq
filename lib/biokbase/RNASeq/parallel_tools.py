@@ -76,9 +76,9 @@ def _CallBowtie2(logger,services,ws_client,hs,ws_id,sample_type,num_threads,read
 		if sample_type == 'KBaseAssembly.PairedEndLibrary':
 			lib_type = 'PairedEnd'
 			read1_id = r_sample['data']['handle_1']['id']
-			read1_name = r_sample['data']['handle_1']['name']
+			read1_name = r_sample['data']['handle_1']['file_name']
 			read2_id = r_sample['data']['handle_2']['id'] 
-			read2_name = r_sample['data']['handle_2']['name']
+			read2_name = r_sample['data']['handle_2']['file_name']
 			try:
                                 script_util.download_file_from_shock(logger, shock_service_url=services['shock_service_url'], shock_id=read1_id,filename=read1_name, directory=directory,token=token)
                                 script_util.download_file_from_shock(logger, shock_service_url=services['shock_service_url'], shock_id=read2_id,filename=read2_name, directory=directory,token=token)
@@ -176,9 +176,9 @@ def _CallTophat(logger,services,ws_client,hs,ws_id,sample_type,num_threads,read_
 		if sample_type == 'KBaseAssembly.PairedEndLibrary':
 			lib_type = 'PairedEnd'
 			read1_id = r_sample['data']['handle_1']['id']
-			read1_name = r_sample['data']['handle_1']['name']
+			read1_name = r_sample['data']['handle_1']['file_name']
 			read2_id = r_sample['data']['handle_2']['id'] 
-			read2_name = r_sample['data']['handle_2']['name']
+			read2_name = r_sample['data']['handle_2']['file_name']
 			try:
                                 script_util.download_file_from_shock(logger, shock_service_url=services['shock_service_url'], shock_id=read1_id,filename=read1_name, directory=directory,token=token)
                                 script_util.download_file_from_shock(logger, shock_service_url=services['shock_service_url'], shock_id=read2_id,filename=read2_name, directory=directory,token=token)
