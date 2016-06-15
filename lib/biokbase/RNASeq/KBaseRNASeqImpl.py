@@ -92,7 +92,7 @@ class KBaseRNASeq:
     #########################################
     VERSION = "0.0.1"
     GIT_URL = "https://github.com/sjyoo/KBaseRNASeq"
-    GIT_COMMIT_HASH = "45bf8fe192a9446475f9722602eeb4baf631e77b"
+    GIT_COMMIT_HASH = "038a89d31ac8c06a6b5fc6e6d5dab973de7a3a5c"
     
     #BEGIN_CLASS_HEADER
     __TEMP_DIR = 'temp'
@@ -745,7 +745,6 @@ class KBaseRNASeq:
             except Exception,e:
                 self.__LOGGER.exception("".join(traceback.format_exc()))
                 raise KBaseRNASeqException("Error Downloading objects from the workspace ")
-	    print a_sample
 	    ## Get the Input object type ##
 	    a_sample_info = ws_client.get_object_info_new({"objects": [{'name': params['alignmentset_id'], 'workspace': params['ws_id']}]})[0]
             a_sample_type = a_sample_info[2].split('-')[0] 		
@@ -793,7 +792,6 @@ class KBaseRNASeq:
 				align_names.append(j)
 
                 m_alignment_ids = a_sample['data']['mapped_alignments_ids']	
-		print m_alignment_ids
                 #reads_type= sample['data']['Library_type']
                 #r_label = sample['data']['condition']
                 num_samples =  len(alignment_ids)

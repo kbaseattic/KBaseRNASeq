@@ -275,7 +275,7 @@ def _CallCufflinks(logger,services,ws_client,hs,ws_id,num_threads,s_alignment,gt
 
                 cufflinks_command += " -o {0} -G {1} {2}".format(output_dir,gtf_file,input_file)
 		logger.info("Executing: cufflinks {0}".format(cufflinks_command))
-                ret = script_util.runProgram(logger,"cufflinks",cufflinks_command,None,directory)
+                ret = script_util.runProgram(None,"cufflinks",cufflinks_command,None,directory)
                 result = ret["result"]
                 for line in result.splitlines(False):
                     logger.info(line)
@@ -287,9 +287,11 @@ def _CallCufflinks(logger,services,ws_client,hs,ws_id,num_threads,s_alignment,gt
                         cur_value = words[len(words) - 1]
                         if prev_value != cur_value:
 				logger.info(line)
+				#print line
                     else:
                         prev_value = ''
                         logger.info(line)
+                        #print line
 
         except Exception,e:
 		logger.exception("".join(traceback.format_exc()))

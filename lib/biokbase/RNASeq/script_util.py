@@ -776,7 +776,8 @@ def runProgram(logger=None,
         # Construct shell command
         cmdStr = "%s %s" % (progPath,argStr)
 	print "Executing : "+cmdStr
-	logger.info("Executing : "+cmdStr)
+	if logger is not None:
+		logger.info("Executing : "+cmdStr)
         #if working_dir is None:
         #    logger.info("Executing: " + cmdStr + " on cwd")
         #else:
@@ -791,12 +792,14 @@ def runProgram(logger=None,
         # Get results
         result,stderr  = process.communicate()
      	#print result
-	print stderr 
+	#print stderr 
         # keep this until your code is stable for easier debugging
         if logger is not None and result is not None and len(result) > 0:
             logger.info(result)
+	    print result
         if logger is not None and stderr is not None and len(stderr) > 0:
             logger.info(stderr)
+	    print stderr
 
         # Check returncode for success/failure
         if process.returncode != 0:
