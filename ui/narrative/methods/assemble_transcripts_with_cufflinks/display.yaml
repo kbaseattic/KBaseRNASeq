@@ -24,7 +24,7 @@ method-suggestions :
 # Configure the display and description of the parameters
 #
 parameters :
-  sampleset_id :
+  alignmentset_id :
     ui-name : |
         RNA-seq Alignment or Alignment Set 
     short-hint : |
