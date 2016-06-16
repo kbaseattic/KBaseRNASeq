@@ -417,4 +417,4 @@ def call_cuffmerge_and_cuffdiff(logger,ws_client,hs,ws_id,num_threads,list_file,
          except Exception, e:
                  raise Exception("Failed to upload the KBaseRNASeq.RNASeqDifferentialExpression : {0}".format(output_name))
 	 
-	 return ( expressionSet_id , output_name)
+	 return ( expressionset_id , output_name)
