@@ -341,7 +341,7 @@ def _CallCufflinks(logger,services,ws_client,hs,ws_id,num_threads,s_alignment,gt
                 raise Exception("Failed to upload the ExpressionSample: {0}".format(output_name))
     	return (alignment_name, output_name )
 
-def call_cuffmerge_and_cuffdiff(logger,ws_client,ws_id,num_threads,list_file,gtf_file,bam_files,t_labels,genome_id,expressionset_id,alignmentset_id,sampleset_id,params,directory,token):
+def call_cuffmerge_and_cuffdiff(logger,ws_client,hs,ws_id,num_threads,list_file,gtf_file,bam_files,t_labels,genome_id,expressionset_id,alignmentset_id,sampleset_id,params,directory,token):
 	 ## Adding Advanced options for cuffmerge command
 	 cuffmerge_dir = os.path.join(directory,"cuffmerge")	
 	 cuffmerge_command = " -p {0} -o {1} -g {2} {3}".format(str(num_threads),cuffmerge_dir,gtf_file,list_file)
@@ -392,20 +392,22 @@ def call_cuffmerge_and_cuffdiff(logger,ws_client,ws_id,num_threads,list_file,gtf
          try:
                  handle = hs.upload(out_file_path)
          except Exception, e:
+		 print " ".join(traceback.print_exc())	
                  raise Exception("Failed to upload the Cuffdiff output files: {0}".format(out_file_path))
 	 output_name = params['output_obj_name']
          ## Save object to workspace
          try:
                  logger.info("Saving Cuffdiff object to workspace")
-                 cm_obj = { 'tool_used' : "Cuffdiff",
-			    'tool_version' : '2.2.1',
-			    'condition' : t_labels,
-			    'genome_id' : genome_id,
-			    'expressionSet_id' : expressionset_id,
-			    'alignmentSet_id':alignmentset_id,
-			    'sampleset_id' : sampleset_id,
-			    'file' : handle
+                 cm_obj = { "tool_used" : "Cuffdiff",
+			    "tool_version" : "2.2.1",
+			    "condition" : t_labels.split(","),
+			    "genome_id" : genome_id,
+			    "expressionSet_id" : expressionset_id,
+			    "alignmentSet_id":alignmentset_id,
+			    "sampleset_id" : sampleset_id,
+			    "file" : handle
                            }
+		 print cm_obj
                  res1= ws_client.save_objects(
                                              {"workspace":params['ws_id'],
                                                "objects": [{
