@@ -398,7 +398,7 @@ def call_cuffmerge_and_cuffdiff(logger,ws_client,ws_id,num_threads,list_file,gtf
          try:
                  logger.info("Saving Cuffdiff object to workspace")
                  cm_obj = { 'tool_used' : "Cuffdiff",
-			    'tool_version' : '',
+			    'tool_version' : '2.2.1',
 			    'condition' : t_labels,
 			    'genome_id' : genome_id,
 			    'expressionSet_id' : expressionset_id,

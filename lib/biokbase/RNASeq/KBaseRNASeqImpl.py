@@ -961,7 +961,7 @@ class KBaseRNASeq:
 	   
 	    num_threads = multiprocessing.cpu_count()
 
-	    results = parallel.call_cuffmerge_and_cuffdiff(self.__LOGGER,ws_client,params['ws_id'],num_threads,assembly_file,gtf_file,bam_files,t_labels,params,annotation_id,expressionset_id,alignmentset_id,sampleset_id,cuffdiff_dir,user_token)
+	    results = parallel.call_cuffmerge_and_cuffdiff(self.__LOGGER,ws_client,params['ws_id'],num_threads,assembly_file,gtf_file,bam_files,t_labels,annotation_id,expressionset_id,alignmentset_id,sampleset_id,params,cuffdiff_dir,user_token)
 	    expr_id, cuffdiff_obj = results
 	    returnVal = { 'output'  : cuffdiff_obj ,'workspace' : params['ws_id']}
 # 
