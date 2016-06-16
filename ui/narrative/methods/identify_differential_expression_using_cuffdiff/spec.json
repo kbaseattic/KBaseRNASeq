@@ -9,14 +9,14 @@
     "output" : "kbaseRNASeqAnalysis"
   },
    "parameters" : [ {
-    "id" : "sampleset_id",
+    "id" : "expressionset_id",
     "optional" : false,
     "advanced" : false,
     "allow_multiple" : false,
     "default_values" : [ "" ],
     "field_type" : "text",
     "text_options" : {
-      "valid_ws_types" : ["KBaseRNASeq.RNASeqSampleSet" ]
+      "valid_ws_types" : ["KBaseRNASeq.RNASeqExpressionSet" ]
     }
   },{
     "id" : "output_obj_name",
@@ -136,8 +136,8 @@
           "target_property" : "ws_id"
         },
         {
-          "input_parameter" : "sampleset_id",
-          "target_property" : "sampleset_id"
+          "input_parameter" : "expressionset_id",
+          "target_property" : "expressionset_id"
         },
         {
           "input_parameter" : "output_obj_name",

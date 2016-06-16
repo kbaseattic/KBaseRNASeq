@@ -340,3 +340,79 @@ def _CallCufflinks(logger,services,ws_client,hs,ws_id,num_threads,s_alignment,gt
                 logger.exception("".join(traceback.format_exc()))
                 raise Exception("Failed to upload the ExpressionSample: {0}".format(output_name))
     	return (alignment_name, output_name )
+
+def call_cuffmerge_and_cuffdiff(logger,ws_client,ws_id,num_threads,list_file,gtf_file,bam_files,t_labels,genome_id,expressionset_id,alignmentset_id,sampleset_id,params,directory,token):
+	 ## Adding Advanced options for cuffmerge command
+	 cuffmerge_dir = os.path.join(directory,"cuffmerge")	
+	 cuffmerge_command = " -p {0} -o {1} -g {2} {3}".format(str(num_threads),cuffmerge_dir,gtf_file,list_file)
+         try:
+                logger.info("Executing: cuffmerge {0}".format(cuffmerge_command))
+	        script_util.runProgram(logger,"cuffmerge",cuffmerge_command,None,directory)
+		if os.path.exists(cuffmerge_dir+"/merged.gtf") : merged_gtf = os.path.join(cuffmerge_dir,"merged.gtf")
+         except Exception,e:
+                raise Exception("Error executing cuffmerge {0},{1}".format(cuffmerge_command,cuffmerge_dir))
+             
+	 ## Adding Advanced options for cuffdiff command
+       	 output_dir = os.path.join(directory,params['output_obj_name']) 
+	 cuffdiff_command = (' -p '+str(num_threads))
+         if('time-series' in params and params['time-series'] != 0) : cuffdiff_command += (' -T ')
+         if('min-alignment-count' in params and params['min-alignment-count'] is not None ) : cuffdiff_command += (' -c '+str(params['min-alignment-count']))
+         if('multi-read-correct' in params and params['multi-read-correct'] != 0 ): cuffdiff_command += (' --multi-read-correct ')
+         if('library-type' in params and params['library-type'] is not None ) : cuffdiff_command += ( ' --library-type '+params['library-type'])
+         if('library-norm-method' in params and params['library-norm-method'] is not None ) : cuffdiff_command += ( ' --library-norm-method '+params['library-norm-method'])
+	 try:
+         	cuffdiff_command += " -o {0} -L {1} -u {2} {3}".format(output_dir,t_labels,gtf_file,bam_files)
+                logger.info("Executing: cuffdiff {0}".format(cuffdiff_command))
+                ret = script_util.runProgram(None,"cuffdiff",cuffdiff_command,None,directory)
+                result = ret["result"]
+                for line in result.splitlines(False):
+                       logger.info(line)
+                       stderr = ret["stderr"]
+                       prev_value = ''
+                       for line in stderr.splitlines(False):
+                           if line.startswith('> Processing Locus'):
+                                   words = line.split()
+                                   cur_value = words[len(words) - 1]
+                                   if prev_value != cur_value:
+                                      prev_value = cur_value
+                                      logger.info(line)
+                                   else:
+                                      prev_value = ''
+                                      logger.info(line)
+         except Exception,e:
+                raise Exception("Error executing cuffdiff {0},{1}".format(cuffdiff_command,directory))
+
+                        ##  compress and upload to shock
+         try:
+                 logger.info("Zipping Cuffdiff output")
+                 out_file_path = os.path.join(directory,"{0}.zip".format(params['output_obj_name']))
+                 script_util.zip_files(logger,output_dir,out_file_path)
+         except Exception,e:
+                 raise Exception("Error executing cuffdiff")
+         try:
+                 handle = hs.upload(out_file_path)
+         except Exception, e:
+                 raise Exception("Failed to upload the Cuffdiff output files: {0}".format(out_file_path))
+	 output_name = params['output_obj_name']
+         ## Save object to workspace
+         try:
+                 logger.info("Saving Cuffdiff object to workspace")
+                 cm_obj = { 'tool_used' : "Cuffdiff",
+			    'tool_version' : '',
+			    'condition' : t_labels,
+			    'genome_id' : genome_id,
+			    'expressionSet_id' : expressionset_id,
+			    'alignmentSet_id':alignmentset_id,
+			    'sampleset_id' : sampleset_id,
+			    'file' : handle
+                           }
+                 res1= ws_client.save_objects(
+                                             {"workspace":params['ws_id'],
+                                               "objects": [{
+                                               "type":"KBaseRNASeq.RNASeqDifferentialExpression",
+                                               "data":cm_obj,
+                                               "name":output_name}]})
+         except Exception, e:
+                 raise Exception("Failed to upload the KBaseRNASeq.RNASeqDifferentialExpression : {0}".format(output_name))
+	 
+	 return ( expressionSet_id , output_name)

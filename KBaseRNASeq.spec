@@ -347,6 +347,7 @@
       	Handle file;
         list<string> sample_ids;
 	list<string> condition;
+        ws_genome_annotation_id genome_id;
 	ws_expressionSet_id expressionSet_id;
 	ws_alignmentSet_id alignmentSet_id;
         ws_Sampleset_id sampleset_id;
