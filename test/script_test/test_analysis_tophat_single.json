@@ -1,0 +1,15 @@
+{	
+	"version":"1.1",
+	"method":"KBaseRNASeq.TophatCall",
+	"context": null,
+	"params":[
+	{
+	 "ws_id" : "single_RNASeq_test",
+	 "sampleset_id" : "ath_wt_demo_Reads" ,
+	 "bowtie_index" : "Arabidopsis_bw_index",
+	 "read_mismatches" : null,
+	 "read_gap_length" : null,
+         "min_intron_length" : null,
+	 "num_threads" : 2,
+	 "no_coverage_search" : 0 } ]
+}

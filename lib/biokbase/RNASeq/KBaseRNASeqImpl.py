@@ -92,7 +92,7 @@ class KBaseRNASeq:
     #########################################
     VERSION = "0.0.1"
     GIT_URL = "https://github.com/sjyoo/KBaseRNASeq"
-    GIT_COMMIT_HASH = "9951f0d9b584861c8e828cdfd1c780a063184f9a"
+    GIT_COMMIT_HASH = "9283ae31ace5a743963d0d0e007d812c7b72dfa1"
     
     #BEGIN_CLASS_HEADER
     __TEMP_DIR = 'temp'
@@ -121,6 +121,7 @@ class KBaseRNASeq:
               self.__TEMP_DIR = config['temp_dir']
 	if 'scratch' in config:
 	      self.__SCRATCH= config['scratch']
+	      #print self.__SCRATCH
         if 'svc_user' in config:
               self.__SVC_USER = config['svc_user']
         if 'svc_pass' in config:
@@ -215,7 +216,7 @@ class KBaseRNASeq:
 	hs = HandleService(url=self.__HS_URL, token=user_token)
 	try:
 	    	if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
-                bowtie_dir = os.path.join(self.__SCRATCH ,'/tmp') 
+                bowtie_dir = os.path.join(self.__SCRATCH ,'tmp') 
 	        handler_util.setupWorkingDir(self.__LOGGER,bowtie_dir)
 		## Update the provenance
 	     	provenance = [{}]
@@ -416,7 +417,7 @@ class KBaseRNASeq:
                                                 ]
                                                 })[0]
 
-                print('saved Report: '+pformat(report_info))
+                #print('saved Report: '+pformat(report_info))
 
 		returnVal = { "report_name" : reportName,"report_ref" : str(report_info[6]) + '/' + str(report_info[0]) + '/' + str(report_info[4]) }
         except Exception, e:
@@ -443,7 +444,8 @@ class KBaseRNASeq:
         hs = HandleService(url=self.__HS_URL, token=user_token)
         try:
 	    if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
-            bowtie2_dir = os.path.join(self.__SCRATCH,'/tmp')
+            bowtie2_dir = os.path.join(self.__SCRATCH,"tmp")
+	    #print bowtie2_dir
             handler_util.setupWorkingDir(self.__LOGGER,bowtie2_dir)
             self.__LOGGER.info("Downloading Bowtie2Indexes and GFF annotation objects")
 	    try:
@@ -511,26 +513,25 @@ class KBaseRNASeq:
                         	#CallBowtie2(self.__LOGGER,self.__services,ws_client,params['ws_id'],params['Library_type'],i,bowtie2_dir,bowtie2_base,options,output_name,user_token)     
 			except Exception,e:
 				raise
-            else:
+
+	    	@parallelize(CallBowtie2_helper,pool_size)
+	   	def run_bowtie2_in_parallel(tasks):
+        		pass
+	    	results=run_bowtie2_in_parallel(b_tasks)
+	    	#reportName = 'Align_Reads_using_Bowtie2_'+str(hex(uuid.getnode()))
+	    	### Create AlignmentSet object
+	    	#if sample_type == 'KBaseRNASeq.RNASeqSampleSet':
+                alignmentSet_name = params['sampleset_id']+"_AlignmentSet"
+                reportObj=script_util.create_RNASeq_AlignmentSet_and_build_report(self.__LOGGER,ws_client,params['ws_id'],reads,sampleset_id,genome_id,bowtie2index_id,results,alignmentSet_name)
+ 	    else:
    		try:
 		    pool_size=1
 		    num_threads = num_cores
 		    self.__LOGGER.info(" Number of threads used by each process {0}".format(num_threads)) 
-                    b_tasks.append((self.__LOGGER,self.__SERVICES,ws_client,hs,params['ws_id'],sample_type,num_threads,params['sampleset_id'],'Single-Sample',bowtie2_dir, bowtie2index_id,genome_id,None,params,user_token))
-		    #CallBowtie2(self.__LOGGER,self.__services,ws_client,params['ws_id'],params['Library_type'],i,bowtie2_dir,bowtie2_base,options,output_name,user_token)     
-                except Exception,e:
+                    #b_tasks.append((self.__LOGGER,self.__SERVICES,ws_client,hs,params['ws_id'],sample_type,num_threads,params['sampleset_id'],'Single-Sample',bowtie2_dir, bowtie2index_id,genome_id,None,params,user_token))
+                    results = parallel._CallBowtie2(self.__LOGGER,self.__SERVICES,ws_client,hs,params['ws_id'],sample_type,num_threads,params['sampleset_id'],'Single-Sample',bowtie2_dir, bowtie2index_id,genome_id,None,params,user_token)
+		except Exception,e:
                      raise
-
-	    @parallelize(CallBowtie2_helper,pool_size)
-	    def run_bowtie2_in_parallel(tasks):
-        	pass
-	    results=run_bowtie2_in_parallel(b_tasks)
-	    reportName = 'Align_Reads_using_Bowtie2_'+str(hex(uuid.getnode()))
-	    ### Create AlignmentSet object
-	    if sample_type == 'KBaseRNASeq.RNASeqSampleSet':
-                alignmentSet_name = params['sampleset_id']+"_AlignmentSet"
-                reportObj=script_util.create_RNASeq_AlignmentSet_and_build_report(self.__LOGGER,ws_client,params['ws_id'],reads,sampleset_id,genome_id,bowtie2index_id,results,alignmentSet_name)
- 	    else:
 		single_read, single_alignment = results
 		single_align_obj = ws_client.get_objects(
                                         [{ 'name' : single_alignment, 'workspace' : params['ws_id']}])[0]['data'] 	
@@ -541,6 +542,7 @@ class KBaseRNASeq:
                                                  'text_message': "RNA-seq Alignment for reads Sample: {0}".format(single_read)}         
             #### Save to report object #######
                 #returnVal = single_align_obj   
+	    reportName = 'Align_Reads_using_Bowtie2_'+str(hex(uuid.getnode()))
             report_info = ws_client.save_objects({
                                                 'id':sampleset_info[6],
                                                 'objects':[
@@ -663,27 +665,21 @@ class KBaseRNASeq:
                                 #CallBowtie2(self.__LOGGER,self.__services,ws_client,params['ws_id'],params['Library_type'],i,tophat_dir,bowtie2_base,options,output_name,user_token)     
                         except Exception,e:
                                 raise
+
+                @parallelize(CallTophat_helper,pool_size)
+                def run_tophat_in_parallel(tasks):
+                    pass
+                results=run_tophat_in_parallel(b_tasks)
+		alignmentSet_name = params['sampleset_id']+"_AlignmentSet"
+		reportObj=script_util.create_RNASeq_AlignmentSet_and_build_report(self.__LOGGER,ws_client,params['ws_id'],reads,sampleset_id,genome_id,bowtie2index_id,results,alignmentSet_name)
             else:
                 try:
                     pool_size=1
   		    num_threads = num_cores
                     self.__LOGGER.info(" Number of threads used by each process {0}".format(num_threads)) 
-                    b_tasks.append((self.__LOGGER,self.__SERVICES,ws_client,hs,params['ws_id'],sample_type,num_threads,params['sampleset_id'],gtf_file,'Single-Sample',tophat_dir, bowtie2index_id,genome_id,None,params,user_token))
+                    results=parallel._CallTophat(self.__LOGGER,self.__SERVICES,ws_client,hs,params['ws_id'],sample_type,num_threads,params['sampleset_id'],gtf_file,'Single-Sample',tophat_dir, bowtie2index_id,genome_id,None,params,user_token)
                 except Exception,e:
                      raise
-
-            @parallelize(CallTophat_helper,pool_size)
-            def run_tophat_in_parallel(tasks):
-                pass
-            results=run_tophat_in_parallel(b_tasks)
-	    ### Create report object 
-	    #output_objs = {}
-	    reportName = 'Align_Reads_using_Tophat_'+str(hex(uuid.getnode()))
-            ### Create AlignmentSet object
-            if sample_type == 'KBaseRNASeq.RNASeqSampleSet':
-		alignmentSet_name = params['sampleset_id']+"_AlignmentSet"
-		reportObj=script_util.create_RNASeq_AlignmentSet_and_build_report(self.__LOGGER,ws_client,params['ws_id'],reads,sampleset_id,genome_id,bowtie2index_id,results,alignmentSet_name)
-            else:
                 single_read, single_alignment = results
                 single_align_obj = ws_client.get_objects(
                                         [{ 'name' : single_alignment, 'workspace' : params['ws_id']}])[0]['data'] 
@@ -693,6 +689,7 @@ class KBaseRNASeq:
 						 'text_message': "RNA-seq Alignment for reads Sample: {0}".format(single_read)}	
 	    #### Save to report object #######
       		#returnVal = single_align_obj	
+	    reportName = 'Align_Reads_using_Tophat_'+str(hex(uuid.getnode()))
 	    report_info = ws_client.save_objects({
                                                 'id':sampleset_info[6],
                                                 'objects':[
@@ -807,38 +804,32 @@ class KBaseRNASeq:
                                 b_tasks.append((None,self.__SERVICES,ws_client,hs,params['ws_id'],num_threads,a_id,gtf_file,cufflinks_dir,annotation_id,gtf_annotation_id,s_name,alignmentset_id,params,user_token))
                         except Exception,e:
                                 raise
+
+                @parallelize(CallCufflinks_helper,pool_size)
+                def run_cufflinks_in_parallel(tasks):
+                  pass
+                results=run_cufflinks_in_parallel(b_tasks)
+		expressionSet_name = params['alignmentset_id']+"_ExpressionSet"
+		reportObj=script_util.create_RNASeq_ExpressionSet_and_build_report(self.__LOGGER,ws_client,params['ws_id'],align_names,alignmentset_id,annotation_id,sampleset_id,results,expressionSet_name)
             else:
                 try:
                     pool_size=1
   		    num_threads = num_cores
 		    single_a_id = alignmentset_id
                     self.__LOGGER.info(" Number of threads used by each process {0}".format(num_threads)) 
-                    b_tasks.append((None,self.__SERVICES,ws_client,hs,params['ws_id'],num_threads,single_a_id,gtf_file,cufflinks_dir,annotation_id,gtf_annotation_id,s_name,None,params,user_token))
+	            results = parallel._CallCufflinks(None,self.__SERVICES,ws_client,hs,params['ws_id'],num_threads,single_a_id,gtf_file,cufflinks_dir,annotation_id,gtf_annotation_id,params['alignmentset_id'],None,params,user_token)
                 except Exception,e:
                      raise
-
-            @parallelize(CallCufflinks_helper,pool_size)
-            def run_cufflinks_in_parallel(tasks):
-                pass
-            results=run_cufflinks_in_parallel(b_tasks)
-	    print results
-	    ### Create report object 
-	    #output_objs = {}
-	    reportName = 'Assemble_Transcripts_Using_Cufflinks_'+str(hex(uuid.getnode()))
-            ### Create ExpressionSet object
-            if a_sample_type == 'KBaseRNASeq.RNASeqAlignmentSet':
-		expressionSet_name = params['alignmentset_id']+"_ExpressionSet"
-		reportObj=script_util.create_RNASeq_ExpressionSet_and_build_report(self.__LOGGER,ws_client,params['ws_id'],align_names,alignmentset_id,annotation_id,sampleset_id,results,expressionSet_name)
-            else:
                 single_alignment, single_expression = results
                 single_expr_obj = ws_client.get_objects(
                                         [{ 'name' : single_expression, 'workspace' : params['ws_id']}])[0]['data'] 
 		e_ref = ws_client.get_object_info_new({"objects": [{'name':single_expression, 'workspace': params['ws_id']}]})[0]
-		reportObj = {'objects_created':[{'ref' :str(eref[6]) + '/' + str(eref[0]) + '/' + str(eref[4]),
+		reportObj = {'objects_created':[{'ref' :str(e_ref[6]) + '/' + str(e_ref[0]) + '/' + str(e_ref[4]),
 			    			 'description' : "RNA-seq Alignment for reads Sample: {0}".format(single_alignment)}],
 						 'text_message': "RNA-seq Alignment for reads Sample: {0}".format(single_alignment)}	
 	    #### Save to report object #######
       		#returnVal = single_align_obj	
+	    reportName = 'Assemble_Transcripts_Using_Cufflinks_'+str(hex(uuid.getnode()))
 	    report_info = ws_client.save_objects({
                                                 'id':a_sample_info[6],
                                                 'objects':[
@@ -921,7 +912,7 @@ class KBaseRNASeq:
             list_file = open(assembly_file,'w')
 	    for i in m_expr_ids:
 	    	for a_id ,e_id in i.items():
-			print a_id  + ":" + e_id
+			#print a_id  + ":" + e_id
 			files = {}
 			a_obj,e_obj = ws_client.get_objects(
                                         [{'ref' : a_id},{'ref': e_id}])
@@ -932,7 +923,7 @@ class KBaseRNASeq:
 			files[e_obj['data']['file']['file_name']] = e_obj['data']['file']['id']
                         if not condition in labels: labels.append(condition)
 			else :  counter += 1 #### comment it when replicate_id is available from methods
-			print condition
+			#print condition
 			s_path = os.path.join(cuffdiff_dir,condition+"/"+str(counter)) ### Comment this line when replicate_id is available from the methods
 			#s_path = os.path.join(cuffdiff_dir,condition+"/"+replicate_id)
             	        if not os.path.exists(s_path): os.makedirs(s_path)

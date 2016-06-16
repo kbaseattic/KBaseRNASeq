@@ -1,0 +1,13 @@
+{	
+	"version":"1.1",
+	"method":"KBaseRNASeq.Bowtie2Call",
+	"context": null,
+	"params":[
+	{
+	 "ws_id" : "single_RNASeq_test",
+	 "sampleset_id" : "Ecoli_SingleEnd_SRR228083_16000.fastq" ,
+	 "bowtie_index" : "Ecoli_bowtie_indexed",
+	 "alignment_type" : null,
+	 "quality_score" : null,
+         "preset_options" : null } ]
+}

@@ -41,17 +41,17 @@ def generate_fasta(logger,internal_services,token,ref,output_dir,obj_name):
 	try:
 		ga = GenomeAnnotationAPI(internal_services,
                              token=token,
-                             ref= "{}/{}".format(ref,obj_name))
+                             ref= ref)
 	except Exception as e:
-		raise Exception("Unable to Call GenomeAnnotationAPI : {0}: {1}".format(e))
-	logger.info("Generating FASTA file from Assembly for {}/{}".format(ref,obj_name))	
+		raise Exception("Unable to Call GenomeAnnotationAPI : {0}".format("".join(traceback.format_exc())))
+	logger.info("Generating FASTA file from Assembly for {}".format(obj_name))	
 	fasta_start = datetime.datetime.utcnow()
 	output_file = os.path.join(output_dir,'{}.fasta'.format(obj_name))
 	fasta_file= io.open(output_file, 'wb')
     	try:
         	ga.get_assembly().get_fasta().to_file(fasta_file)
 	except Exception as e:
-		raise Exception("Unable to Create FASTA file from Genome Annotation : {0}: {1}".format(obj_name,e))
+		raise Exception("Unable to Create FASTA file from Genome Annotation : {0}".format(obj_name))
 	finally:
 		fasta_file.close()
     	fasta_end = datetime.datetime.utcnow()
@@ -67,10 +67,10 @@ def generate_gff(logger,internal_services,token,ref,output_dir,obj_name,output_f
         try:
                 ga = GenomeAnnotationAPI(internal_services,
                              token=token,
-                             ref= "{}/{}".format(ref,obj_name))
+                             ref= ref)
         except:
-                raise Exception("Unable to Call GenomeAnnotationAPI : {0}".format(e))
-        logger.info("Requesting GenomeAnnotation GFF for {}/{}".format(ref,obj_name))
+                raise Exception("Unable to Call GenomeAnnotationAPI : {0}".format(("".join(traceback.format_exc()))))
+        logger.info("Requesting GenomeAnnotation GFF for {}".format(obj_name))
     	gff_start = datetime.datetime.utcnow()
         gff_file= io.open(output_file, 'wb')
 	#output_file = os.path.join(output_dir,'{}.gff'.format(obj_name))
@@ -88,12 +88,12 @@ def generate_gff(logger,internal_services,token,ref,output_dir,obj_name,output_f
 def create_gtf_annotation(logger,ws_client,hs_client,internal_services,ws_id,genome_ref,genome_id,fasta_file,directory,token):
         try:
 		tmp_file = os.path.join(directory,genome_id + "_GFF.gff")
-        	fasta_file= generate_fasta(logger,internal_services,token,ws_id,directory,genome_id)
+        	fasta_file= generate_fasta(logger,internal_services,token,genome_ref,directory,genome_id)
             	logger.info("Sanitizing the fasta file to correct id names {}".format(datetime.datetime.utcnow()))
                 mapping_filename = c_mapping.create_sanitized_contig_ids(fasta_file)
                 c_mapping.replace_fasta_contig_ids(fasta_file, mapping_filename, to_modified=True)
                 logger.info("Generating FASTA file completed successfully : {}".format(datetime.datetime.utcnow()))
-                generate_gff(logger,internal_services,token,ws_id,directory,genome_id,tmp_file)
+                generate_gff(logger,internal_services,token,genome_ref,directory,genome_id,tmp_file)
                 c_mapping.replace_gff_contig_ids(tmp_file, mapping_filename, to_modified=True)
                 gtf_path = os.path.join(directory,genome_id+"_GTF.gtf")
                 gtf_cmd = " -E {0} -T -o- > {1}".format(tmp_file,gtf_path)
