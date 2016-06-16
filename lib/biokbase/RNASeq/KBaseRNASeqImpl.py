@@ -92,7 +92,7 @@ class KBaseRNASeq:
     #########################################
     VERSION = "0.0.1"
     GIT_URL = "https://github.com/sjyoo/KBaseRNASeq"
-    GIT_COMMIT_HASH = "9283ae31ace5a743963d0d0e007d812c7b72dfa1"
+    GIT_COMMIT_HASH = "10439d69bc3074f1f090a1a4c62b679ac1de11c1"
     
     #BEGIN_CLASS_HEADER
     __TEMP_DIR = 'temp'
@@ -174,8 +174,16 @@ class KBaseRNASeq:
 	    ## Validation to Check if the number of samples is equal to number of condition
 	    if len(params["condition"]) != out_obj['num_samples']:
 		raise ValueError("Please specify a treatment label for each sample in the RNA-seq SampleSet. Please enter the same label for the replicates in a sample type")
-	    
-	    ## Code to Update the Provenance; make it a function later
+	    ## Validation to Check if the user is loading the same type as specified above
+	    if params["Library_type"] == 'PairedEnd' : lib_type = 'KBaseAssembly.PairedEndLibrary'
+	    else: lib_type = 'KBaseAssembly.SingleEndLibrary'
+	    for i in sample_ids:
+	    	s_info = ws_client.get_object_info_new({"objects": [{'name': i, 'workspace': params['ws_id']}]})
+                obj_type = s_info[0][2].split('-')[0]
+		if obj_type != lib_type:
+			raise ValueError("Library_type mentioned : {0}. Please add only {1} typed objects in Reads fields".format(lib_type,lib_type)) 
+	
+   	    ## Code to Update the Provenance; make it a function later
             provenance = [{}]
             if 'provenance' in ctx:
                 provenance = ctx['provenance']

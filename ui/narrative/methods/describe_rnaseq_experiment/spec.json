@@ -46,16 +46,16 @@
     "dropdown_options":{
       "options": [
         {
-          "value": "singleEnd",
-          "display": "Single-end",
+          "value": "SingleEnd",
+          "display": "SingleEnd",
           "id": "singleEnd",
           "ui_name": "singleEnd"
         },
         {
-          "value": "pairedEnd",
-          "display": "Paired-end",
+          "value": "PairedEnd",
+          "display": "PairedEnd",
           "id": "pairedEnd",
-          "ui_name": "pairedEnd"
+          "ui_name": "PairedEnd"
         }
       ]
     }
