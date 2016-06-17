@@ -48,7 +48,7 @@ parameters :
         ui-name : |
             Treatment Labels
         short-hint : |
-            Short name for each unique sample treatment (no replicates) in the RNA-seq experiment. The treatment labels must be added in the same order as the reads.
+            Short label for each sample in the RNA-seq experiment. The treatment labels must be added in the same order as the reads. All replicates for the same treatment must have same label.
     sample_ids:
         ui-name : |
             Reads (Single-end/Paired-end)
