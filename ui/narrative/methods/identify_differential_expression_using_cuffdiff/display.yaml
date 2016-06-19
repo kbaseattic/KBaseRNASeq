@@ -28,7 +28,7 @@ parameters :
     ui-name : |
       RNA-seq Expression Set
     short-hint : |
-      Select the RNA-seq expression set associated with assembled transcripts using Cufflinks.
+      Select the RNA-seq expression set associated with transcripts assembled by Cufflinks.
   output_obj_name :
     ui-name : |
       Cuffdiff Output
@@ -38,7 +38,7 @@ parameters :
     ui-name : |
       Number of Threads
     short-hint : |
-      Number of  computational threads to align reads. The default is 1.
+      Number of  computational threads to align reads. The default is 2.
   min-alignment-count :
     ui-name : |
       Minimum Alignments
@@ -71,11 +71,11 @@ parameters :
       Select how library sizes (sequencing depths) are normalized in Cufflinks and Cuffdiff. By default, no scaling is applied to FPKM.
 
 description : |
-    <p>This method uses the Cufflinks transcripts to calculate gene and transcript levels in more than one condition and finds significant changes in the expression levels.</p>
-    <p>It accepts Cufflinks annotation files as input and then merges it by using Cuffmerge at the backend. If more than two BAM files are provided, Cuffdiff tests for differential expression between all pairs of samples.</p> 
+    <p>This method uses the Cufflinks transcripts for two or more samples to calculate gene and transcript levels in more than one condition and finds significant changes in the expression levels.</p>
+    <p>Internally, it uses Cuffmerge to merge multiple Cufflinks generated annotation files. If more than two BAM files are provided, Cuffdiff tests for differential expression between all pairs of samples.</p> 
     
     <p>Cuffdiff calculates the FPKM value of each transcript, primary transcript and gene in each sample and produces a number of output files zipped in Cuffdiff output object.</p>
-    <p>The Cuffdiff output can be further analyzed and visualized by using View methods such as “View CummeRbund Plots”, “View Differentially Expressed Genes from Cuffdiff in Heatmap”.</p> 
+    <p>The Cuffdiff output can be further analyzed and visualized using methods such as 'Create Expression Matrix from Cuffdiff' and 'View CummeRbund Plots'.</p> 
 
     <p><strong>WARNING:</strong> This method is one of the steps of the <a href= "http://kbase.us/rna-seq/"> KBase RNA-seq Pipeline </a> and is not intended to run standalone.</p>
   
