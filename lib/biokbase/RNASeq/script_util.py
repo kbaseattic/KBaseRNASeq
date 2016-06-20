@@ -31,11 +31,16 @@ from doekbase.data_api.annotation.genome_annotation.api import GenomeAnnotationA
 from doekbase.data_api.sequence.assembly.api import AssemblyAPI, AssemblyClientAPI
 import datetime
 
-def check_workspace_objects(l_objs,ws_client,ws_id,token):
-    """
-	Checks if the list of objs exists in workspace and returns the missing objects names
-    """
-    pass
+def if_obj_exists(logger,ws_client,ws_id,o_type,obj_l):
+    obj_list = ws_client.list_objects( {"workspaces" : [ws_id ] ,"type" : o_type})
+    obj_names = [i[1] for i in obj_list]
+    existing_names = [i for i in obj_l if i in obj_names]
+    obj_ids = None
+    if len(existing_names) != 0:
+        e_queries = [{'name' : j , 'workspace' : ws_id } for j in existing_names]
+        e_infos = ws_client.get_object_info_new({"objects": e_queries })      
+        obj_ids =[(str(k[6]) + '/' + str(k[0]) + '/' + str(k[4])) for k in e_infos]
+    return obj_ids
 
 def generate_fasta(logger,internal_services,token,ref,output_dir,obj_name):
 	try:
@@ -121,6 +126,8 @@ def create_gtf_annotation(logger,ws_client,hs_client,internal_services,ws_id,gen
 	
 
 def create_RNASeq_AlignmentSet_and_build_report(logger,ws_client,ws_id,sample_list,sampleset_id,genome_id,bowtie2index_id,results,alignmentSet_name):
+	 results =  [ ret for ret in results if not ret is None ]
+	 #print results
 	 set_obj = { 'sampleset_id' :sampleset_id ,'genome_id' : genome_id,'bowtie2_index' : bowtie2index_id }
          sids=[]
          m_alignments = []
@@ -173,6 +180,7 @@ def create_RNASeq_AlignmentSet_and_build_report(logger,ws_client,ws_id,sample_li
 	 return reportObj
 
 def create_RNASeq_ExpressionSet_and_build_report(logger,ws_client,ws_id,alignment_list,alignmentset_id,genome_id,sampleset_id,results,expressionSet_name):
+	 results =  [ ret for ret in results if not ret is None ]
 	 set_obj = { 'alignmentSet_id' : alignmentset_id ,'genome_id' : genome_id,'sampleset_id' : sampleset_id }
          sids=[]
          condition = []

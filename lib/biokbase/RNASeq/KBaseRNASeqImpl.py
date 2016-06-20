@@ -92,7 +92,7 @@ class KBaseRNASeq:
     #########################################
     VERSION = "0.0.1"
     GIT_URL = "https://github.com/sjyoo/KBaseRNASeq"
-    GIT_COMMIT_HASH = "10439d69bc3074f1f090a1a4c62b679ac1de11c1"
+    GIT_COMMIT_HASH = "0772b072f746d42399b8a481ed9aca281f393bfb"
     
     #BEGIN_CLASS_HEADER
     __TEMP_DIR = 'temp'
@@ -529,7 +529,7 @@ class KBaseRNASeq:
 	    	#reportName = 'Align_Reads_using_Bowtie2_'+str(hex(uuid.getnode()))
 	    	### Create AlignmentSet object
 	    	#if sample_type == 'KBaseRNASeq.RNASeqSampleSet':
-                alignmentSet_name = params['sampleset_id']+"_AlignmentSet"
+                alignmentSet_name = params['sampleset_id']+"_bowtie2_AlignmentSet"
                 reportObj=script_util.create_RNASeq_AlignmentSet_and_build_report(self.__LOGGER,ws_client,params['ws_id'],reads,sampleset_id,genome_id,bowtie2index_id,results,alignmentSet_name)
  	    else:
    		try:
@@ -678,7 +678,7 @@ class KBaseRNASeq:
                 def run_tophat_in_parallel(tasks):
                     pass
                 results=run_tophat_in_parallel(b_tasks)
-		alignmentSet_name = params['sampleset_id']+"_AlignmentSet"
+		alignmentSet_name = params['sampleset_id']+"_tophat_AlignmentSet"
 		reportObj=script_util.create_RNASeq_AlignmentSet_and_build_report(self.__LOGGER,ws_client,params['ws_id'],reads,sampleset_id,genome_id,bowtie2index_id,results,alignmentSet_name)
             else:
                 try:
