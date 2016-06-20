@@ -238,7 +238,9 @@ class KBaseRNASeq:
                 self.__LOGGER.info( "Generating FASTA from Genome Annotation")
                 outfile_ref_name = params['reference']+".fasta"
                 try:
-                    	output_file = script_util.generate_fasta(self.__LOGGER,self.__SERVICES,user_token,params['ws_id'],bowtie_dir,params['reference'])
+			#generate_fasta(logger,internal_services,token,genome_ref,directory,genome_id)
+                    	output_file = script_util.generate_fasta(self.__LOGGER,self.__SERVICES,user_token,genome_id,bowtie_dir,params['reference'])
+                    	#output_file = script_util.generate_fasta(self.__LOGGER,self.__SERVICES,user_token,params['ws_id'],bowtie_dir,params['reference'])
 			self.__LOGGER.info("Sanitizing the fasta file to correct id names {}".format(datetime.datetime.utcnow()))
         		mapping_filename = c_mapping.create_sanitized_contig_ids(output_file)
         		c_mapping.replace_fasta_contig_ids(output_file, mapping_filename, to_modified=True)
