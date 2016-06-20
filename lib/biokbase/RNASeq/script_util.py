@@ -31,12 +31,17 @@ from doekbase.data_api.annotation.genome_annotation.api import GenomeAnnotationA
 from doekbase.data_api.sequence.assembly.api import AssemblyAPI, AssemblyClientAPI
 import datetime
 
-def check_workspace_objects(l_objs,ws_client,ws_id,token):
-    """
-	Checks if the list of objs exists in workspace and returns the missing objects names
-    """
-    pass
-
+def if_obj_exists(logger,ws_client,ws_id,o_type,obj_l):
+    obj_list = ws_client.list_objects( {"workspaces" : [ws_id ] ,"type" : o_type})
+    obj_names = [i[1] for i in obj_list]
+    existing_names = [i for i in obj_l if i in obj_names]
+    obj_ids = None
+    if len(existing_names) != 0:
+        e_queries = [{'name' : j , 'workspace' : ws_id } for j in existing_names]
+        e_infos = ws_client.get_object_info_new({"objects": e_queries })      
+        obj_ids =[(str(k[6]) + '/' + str(k[0]) + '/' + str(k[4])) for k in e_infos]
+    return obj_ids
+    
 def generate_fasta(logger,internal_services,token,ref,output_dir,obj_name):
 	try:
 		ga = GenomeAnnotationAPI(internal_services,
