@@ -32,7 +32,7 @@ from doekbase.data_api.sequence.assembly.api import AssemblyAPI, AssemblyClientA
 import datetime
 
 def if_obj_exists(logger,ws_client,ws_id,o_type,obj_l):
-    obj_list = ws_client.list_objects( {"workspaces" : [ws_id ] ,"type" : o_type})
+    obj_list = ws_client.list_objects( {"workspaces" : [ws_id ] ,"type" : o_type,'showHidden' : 1})
     obj_names = [i[1] for i in obj_list]
     existing_names = [i for i in obj_l if i in obj_names]
     obj_ids = None

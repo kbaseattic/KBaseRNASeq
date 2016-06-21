@@ -92,12 +92,15 @@ class KBaseRNASeq:
     #########################################
     VERSION = "0.0.1"
     GIT_URL = "https://github.com/sjyoo/KBaseRNASeq"
-    GIT_COMMIT_HASH = "0772b072f746d42399b8a481ed9aca281f393bfb"
+    GIT_COMMIT_HASH = "5898805d412b788eba23507cff1d4b971d46cf9c"
     
     #BEGIN_CLASS_HEADER
     __TEMP_DIR = 'temp'
     __PUBLIC_SHOCK_NODE = 'true'
     __ASSEMBLY_GTF_FN = 'assembly_GTF_list.txt'
+    __GTF_SUFFIX = '_GTF_Annotation'
+    __BOWTIE2_SUFFIX = '_bowtie2_Alignment'
+    __TOPHAT_SUFFIX = '_tophat_Alignment'
     __STATS_DIR = 'stats'
     def generic_helper(self, ctx, params):
 	  pass
@@ -489,7 +492,22 @@ class KBaseRNASeq:
                    raise Exception("Unzip indexfile error: Please contact help@kbase.us")
 	    fasta_file =os.path.join(bowtie2_dir,(handler_util.get_file_with_suffix(bowtie2_dir,".fasta")+".fasta"))
 	    bowtie2base =os.path.join(bowtie2_dir,handler_util.get_file_with_suffix(bowtie2_dir,".rev.1.bt2"))
-	    script_util.create_gtf_annotation(self.__LOGGER,ws_client,hs,self.__SERVICES,params['ws_id'],genome_id,annotation_gtf,fasta_file,bowtie2_dir,user_token)
+	    ws_gtf = annotation_gtf+self.__GTF_SUFFIX
+	    ret = script_util.if_obj_exists(None,ws_client,params['ws_id'],"KBaseRNASeq.GFFAnnotation",[ws_gtf])
+            print ret 
+	    if not ret is None:
+                self.__LOGGER.info("GFF Annotation Exist for Genome Annotation {0}.... Skipping step ".format(annotation_gtf))
+		annot_id = ret[0]
+	    	gtf_obj=ws_client.get_objects([{'ref' : annot_id}])[0]
+	   	gtf_id=gtf_obj['data']['handle']['id']
+	   	gtf_name=gtf_obj['data']['handle']['file_name']
+	    	try:
+                     script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=gtf_id,filename=gtf_name, directory=bowtie2_dir,token=user_token)
+	     	     gtf_file = os.path.join(bowtie2_dir,gtf_name)
+            	except Exception,e:
+                        raise Exception( "Unable to download shock file, {0}".format(gtf_name))  
+ 	    else:		
+	    	script_util.create_gtf_annotation(self.__LOGGER,ws_client,hs,self.__SERVICES,params['ws_id'],genome_id,annotation_gtf,fasta_file,bowtie2_dir,user_token)
 	    #### Getting Samples info
 	    sample_info = ws_client.get_object_info_new({"objects": [{'name': params['sampleset_id'], 'workspace': params['ws_id']}]})[0]
             sample_type = sample_info[2].split('-')[0]
@@ -630,18 +648,21 @@ class KBaseRNASeq:
 	    ### Check if GTF annotation object exist or skip this step
 	    ### Check if the gtf object exists in the workspace
             ### Only run create_gtf_annotation if object doesnt exist
-	    gtf_file = script_util.create_gtf_annotation(self.__LOGGER,ws_client,hs,self.__SERVICES,params['ws_id'],genome_id,annotation_gtf,fasta_file,tophat_dir,user_token)
-            ### Need this code when if want to download exising gtf object
-	    #gtf_obj = annotation_gtf+"_GTF_Annotation"
-	    #gtf_obj=ws_client.get_objects([{'name' : params['annotation_gtf'],'workspace' : params['ws_id']])[0]
-	    #gtf_id=gtf_obj['data']['handle']['id']
-	    #gtf_name=gtf_obj['data']['handle']['name']
-	    #try:
-            #         script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=gtf_id,filename=gtf_name, directory=tophat_dir,token=user_token)
-	    # 	     gtf_file = os.path.join(tophat_dir,gtf_name)
-            #except Exception,e:
-            #            raise Exception( "Unable to download shock file, {0}".format(gtf_name))  
-	    
+	    ws_gtf = annotation_gtf+self.__GTF_SUFFIX
+	    ret = script_util.if_obj_exists(None,ws_client,params['ws_id'],"KBaseRNASeq.GFFAnnotation",[ws_gtf])
+            if not ret is None:
+                self.__LOGGER.info("GFF Annotation Exist for Genome Annotation {0}.... Skipping step ".format(annotation_gtf))
+		annot_id = ret[0]
+	    	gtf_obj=ws_client.get_objects([{'ref' : annot_id}])[0]
+	   	gtf_id=gtf_obj['data']['handle']['id']
+	   	gtf_name=gtf_obj['data']['handle']['file_name']
+	    	try:
+                     script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=gtf_id,filename=gtf_name, directory=tophat_dir,token=user_token)
+	     	     gtf_file = os.path.join(tophat_dir,gtf_name)
+            	except Exception,e:
+                        raise Exception( "Unable to download shock file, {0}".format(gtf_name))  
+ 	    else:		
+            	gtf_file = script_util.create_gtf_annotation(self.__LOGGER,ws_client,hs,self.__SERVICES,params['ws_id'],genome_id,annotation_gtf,fasta_file,tophat_dir,user_token)
   	    #### Getting Samples info
             sample_info = ws_client.get_object_info_new({"objects": [{'name': params['sampleset_id'], 'workspace': params['ws_id']}]})[0]
             sample_type = sample_info[2].split('-')[0]

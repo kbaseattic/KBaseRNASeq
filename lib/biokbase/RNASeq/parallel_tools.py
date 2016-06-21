@@ -63,7 +63,13 @@ def _CallBowtie2(logger,services,ws_client,hs,ws_id,sample_type,num_threads,read
                 	if (params['alignment_type'] == 'local'):
                         	 bowtie2_cmd += (' --'+params['preset_options']+'-local')
                 	else: bowtie2_cmd += (' --'+params['preset_options'] )
-
+            	if('trim5' in params and params['trim5'] is not None): bowtie2_cmd += ( ' --trim5 '+str(params['trim5']))
+            	if('trim3' in params and params['trim3'] is not None): bowtie2_cmd += ( ' --trim3 '+str(params['trim3']))
+            	if('np' in params and params['np'] is not None): bowtie2_cmd += ( ' --np '+str(params['np']))
+            	if('minins' in params and params['minins'] is not None): bowtie2_cmd += ( ' --minins '+str(params['minins']))
+            	if('maxins' in params and params['maxins'] is not None): bowtie2_cmd += ( ' --maxins '+str(params['maxins']))
+            	if('orientation' in params and params['orientation'] is not None): bowtie2_cmd += ( ' --'+params['orientation'])
+		
 		if sample_type  == 'KBaseAssembly.SingleEndLibrary':
 			lib_type = 'SingleEnd'
 			read_id = r_sample['data']['handle']['id']
@@ -175,6 +181,7 @@ def _CallTophat(logger,services,ws_client,hs,ws_id,sample_type,num_threads,read_
             	if('library_type' in params and params['library_type']  is not None ) : tophat_cmd += (' --library-type ' + params['library_type'])
             	if('report_secondary_alignments' in params and int(params['report_secondary_alignments']) == 1) : tophat_cmd += ' --report-secondary-alignments'
             	if('no_coverage_search' in params and int(params['no_coverage_search']) == 1): tophat_cmd += ' --no-coverage-search'
+            	if('preset_options' in params and params['preset_options'] is not None ): tophat_cmd += ' --'+params['preset_options']
 		if sample_type  == 'KBaseAssembly.SingleEndLibrary':
 			lib_type = 'SingleEnd'
 			read_id = r_sample['data']['handle']['id']
