@@ -886,7 +886,8 @@ def parse_FPKMtracking(filename):
 	next(f)
     	for line in f:
 		larr = line.split("\t")
-		result[larr[0]] = math.log(float(larr[9])+1,2)
+		if larr[0] != "":
+			result[larr[0]] = math.log(float(larr[9])+1,2)
     return result
 
 def get_end(start,leng,strand):
