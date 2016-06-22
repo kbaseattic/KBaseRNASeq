@@ -92,7 +92,7 @@ class KBaseRNASeq:
     #########################################
     VERSION = "0.0.1"
     GIT_URL = "https://github.com/sjyoo/KBaseRNASeq"
-    GIT_COMMIT_HASH = "5898805d412b788eba23507cff1d4b971d46cf9c"
+    GIT_COMMIT_HASH = "08583f68ebadaa2cf858aed424c62bb71c505420"
     
     #BEGIN_CLASS_HEADER
     __TEMP_DIR = 'temp'
@@ -820,9 +820,9 @@ class KBaseRNASeq:
 				align_names.append(j)
 
                 m_alignment_ids = a_sample['data']['mapped_alignments_ids']	
-                #reads_type= sample['data']['Library_type']
-                #r_label = sample['data']['condition']
                 num_samples =  len(alignment_ids)
+                if num_samples < 2:
+			raise ValueError("Please ensure you have atleast 2 alignments to run Cufflinks in Set mode")
                 if num_cores != 1:
                         pool_size,num_threads=handler_util.optimize_parallel_run(num_samples,num_threads,num_cores)
                 else:
@@ -936,6 +936,9 @@ class KBaseRNASeq:
                         raise Exception( "Unable to download shock file, {0}".format(gtf_name))
             #### Getting the alignments and expression from the alignment set and expression set 
 	    m_expr_ids = e_set['data']['mapped_expression_ids']
+	    
+            if len(m_expr_ids)  < 2:
+		raise ValueError("Error the ExpressionSet object has less than 2 expression samples. Kindly check your reads files and repeat the previous step (Cufflinks)")
 	    labels = []
 	    alignments = []
 	    counter = 0

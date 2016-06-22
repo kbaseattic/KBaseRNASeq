@@ -51,7 +51,7 @@ def _CallBowtie2(logger,services,ws_client,hs,ws_id,sample_type,num_threads,read
 		sample_type = r_sample_info[2].split('-')[0]
 		output_name = read_sample.split('.')[0]+"_bowtie2_alignment"
 		output_dir = os.path.join(directory,output_name)
-	        if not os.path.exists(output_dir): os.makedirs(output_dir)
+	        if not os.path.exists(output_dir): os.mkdir(output_dir)
             	out_file = output_dir +"/accepted_hits.sam"
             	bowtie2_base =os.path.join(directory,handler_util.get_file_with_suffix(directory,".rev.1.bt2"))
             	### Adding advanced options to Bowtie2Call
@@ -280,7 +280,7 @@ def _CallCufflinks(logger,services,ws_client,hs,ws_id,num_threads,s_alignment,gt
                         raise Exception( "Unable to download shock file, {0}".format(i_name))
                 try:
 		    input_dir = os.path.join(directory,alignment_name)
-		    if not os.path.exists(input_dir): os.makedirs(input_dir)
+		    if not os.path.exists(input_dir): os.mkdir(input_dir)
                     script_util.unzip_files(logger,os.path.join(directory,a_filename), input_dir)
                 except Exception, e:
                        logger.error("".join(traceback.format_exc()))

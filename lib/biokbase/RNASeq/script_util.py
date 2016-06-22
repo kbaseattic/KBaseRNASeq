@@ -127,7 +127,8 @@ def create_gtf_annotation(logger,ws_client,hs_client,internal_services,ws_id,gen
 
 def create_RNASeq_AlignmentSet_and_build_report(logger,ws_client,ws_id,sample_list,sampleset_id,genome_id,bowtie2index_id,results,alignmentSet_name):
 	 results =  [ ret for ret in results if not ret is None ]
-	 #print results
+	 if len(results) < 2:
+	  	raise ValueError("Not enough alignments got created for a AlignmentSet obj")
 	 set_obj = { 'sampleset_id' :sampleset_id ,'genome_id' : genome_id,'bowtie2_index' : bowtie2index_id }
          sids=[]
          m_alignments = []
@@ -181,6 +182,8 @@ def create_RNASeq_AlignmentSet_and_build_report(logger,ws_client,ws_id,sample_li
 
 def create_RNASeq_ExpressionSet_and_build_report(logger,ws_client,ws_id,alignment_list,alignmentset_id,genome_id,sampleset_id,results,expressionSet_name):
 	 results =  [ ret for ret in results if not ret is None ]
+	 if len(results) < 2:
+	  	raise ValueError("Not enough expression results to create a ExpressionSet object")
 	 set_obj = { 'alignmentSet_id' : alignmentset_id ,'genome_id' : genome_id,'sampleset_id' : sampleset_id }
          sids=[]
          condition = []
