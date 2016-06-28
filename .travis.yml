@@ -1,12 +1,19 @@
 ---
-language: perl
+language: python
 
-perl:
-  - "5.18"
+python:
+  - "2.7"
+
+sudo: false
+
+cache:
+  directories:
+    - $HOME/.cache/pip
 
 install:
-  - cpanm --verbose --notest JSON::RPC::Client
-  - cpanm --verbose --notest Exception::Class
-  - cpanm --verbose --notest File::Slurp
+  - pip install -r requirements.txt
+  
+script:
+  - coverage run `which nosetests` -c nose.cfg 
+  - coverage report --skip-covered
 
-script: make 
