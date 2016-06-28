@@ -9,4 +9,4 @@ install:
   - cpanm --verbose --notest Exception::Class
   - cpanm --verbose --notest File::Slurp
 
-script: make -f Makefile.spec_test test
+script: make 
