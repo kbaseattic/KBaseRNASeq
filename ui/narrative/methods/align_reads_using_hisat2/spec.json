@@ -1,0 +1,281 @@
+{
+  "ver" : "1.0.0",
+  "authors" : [ ],
+  "contact" : "help@kbase.us",
+  "visible" : true,
+  "categories" : ["active","expression","sequence"],
+  "widgets" : {
+    "input" : null,
+    "output" : "no-display"
+  },
+   "parameters" : [ {
+    "id" : "sampleset_id",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : ["KBaseRNASeq.RNASeqSampleSet" , "KBaseAssembly.SingleEndLibrary", "KBaseAssembly.PairedEndLibrary"]
+    }
+  }, {
+    "id" : "bowtie_index",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : ["KBaseRNASeq.Bowtie2Indexes" ]
+    }
+  },{
+    "id" : "num_threads",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "2" ],
+    "field_type" : "text",
+    "text_options" : {
+      "validate_as" : "int"
+    }
+  }, {
+    "id" : "quality_score",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "phred33" ],
+    "field_type" : "dropdown",
+    "dropdown_options":{
+      "options": [
+        {
+          "value": "phred33",
+          "display": "phred33",
+          "id": "phred33",
+          "ui_name": "phred33"
+        },
+        {
+          "value": "phred64",
+          "display": "phred64",
+          "id": "phred64",
+          "ui_name": "phred64"
+        }
+      ]
+    }
+  }, {
+    "id" : "alignment_type",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "end-to-end" ],
+    "field_type" : "dropdown",
+    "dropdown_options":{
+      "options": [
+        {
+          "value": "end-to-end",
+          "display": "end-to-end",
+          "id": "end-to-end",
+          "ui_name": "end-to-end"
+        },
+        {
+          "value": "local",
+          "display": "local",
+          "id": "local",
+          "ui_name": "local"
+        }
+      ]
+    }
+  }, {
+    "id" : "trim5",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "0" ],
+    "field_type" : "text",
+    "text_options" : {
+     "validate_as": "int"
+    }
+  }, {
+    "id" : "trim3",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "0" ],
+    "field_type" : "text",
+    "text_options" : {
+     "validate_as": "int"
+    }
+  }, {
+    "id" : "np",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "1" ],
+    "field_type" : "text",
+    "text_options" : {
+     "validate_as": "int"
+    }
+  }, {
+    "id" : "preset_options",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "dropdown",
+    "dropdown_options":{
+      "options": [
+        {
+          "value": "sensitive",
+          "display": "sensitive",
+          "id": "sensitive",
+          "ui_name": "sensitive"
+        },
+        {
+          "value": "very-sensitive",
+          "display": "very-sensitive",
+          "id": "very-sensitive",
+          "ui_name": "very-sensitive"
+        },
+        {
+          "value": "fast",
+          "display": "fast",
+          "id": "fast",
+          "ui_name": "fast"
+        },
+        {
+          "value": "very-fast",
+          "display": "very-fast",
+          "id": "very-fast",
+          "ui_name": "very-fast"
+        }
+      ]
+    }
+  }, {
+    "id" : "minins",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "0" ],
+    "field_type" : "text",
+    "text_options" : {
+     "validate_as": "int"
+    }
+  }, {
+    "id" : "maxins",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "500" ],
+    "field_type" : "text",
+    "text_options" : {
+     "validate_as": "int"
+    }
+  }, {
+    "id" : "orientation",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "dropdown",
+    "dropdown_options":{
+      "options": [
+        {
+          "value": "fr",
+          "display": "fr",
+          "id": "fr",
+          "ui_name": "fr"
+        },
+        {
+          "value": "rf",
+          "display": "rf",
+          "id": "rf",
+          "ui_name": "rf"
+        },
+        {
+          "value": "ff",
+          "display": "ff",
+          "id": "ff",
+          "ui_name": "ff"
+        }
+      ]
+    }
+  } ],
+  "behavior" : {
+    "service-mapping" : {
+      "url" : "",
+      "name" : "KBaseRNASeq",
+      "method" : "Bowtie2Call",
+      "input_mapping" : [
+        {
+          "narrative_system_variable": "workspace",
+          "target_property" : "ws_id"
+        },
+        {
+          "input_parameter" : "sampleset_id",
+          "target_property" : "sampleset_id"
+        },
+        {
+          "input_parameter" : "bowtie_index",
+          "target_property" : "bowtie_index"
+        },
+	{
+          "input_parameter" : "num_threads",
+          "target_property" : "num_threads"
+        },
+        {
+          "input_parameter" : "quality_score",
+          "target_property" : "quality_score"
+        },
+        {
+          "input_parameter" : "alignment_type",
+          "target_property" : "alignment_type"
+        },
+        {
+          "input_parameter" : "trim5",
+          "target_property" : "trim5"
+        },
+        {
+          "input_parameter" : "trim3",
+          "target_property" : "trim3"
+        },
+        {
+          "input_parameter" : "np",
+          "target_property" : "np"
+        },
+        {
+          "input_parameter" : "preset_options",
+          "target_property" : "preset_options"
+        },
+        {
+          "input_parameter" : "minins",
+          "target_property" : "minins"
+        },
+        {
+          "input_parameter" : "maxins",
+          "target_property" : "maxins"
+        },
+        {
+          "input_parameter" : "orientation",
+          "target_property" : "orientation"
+      }],
+      "output_mapping" : [
+        {
+         "service_method_output_path": [0,"report_name"],
+         "target_property": "report_name"
+        },
+        {
+         "service_method_output_path": [0,"report_ref"],
+         "target_property": "report_ref"
+        },
+        {
+         "narrative_system_variable": "workspace",
+         "target_property": "workspace_name"
+        },
+        {
+        "constant_value": "5",
+        "target_property": "report_window_line_height"
+        }
+     ]
+    }
+  },
+  "job_id_output_field" : "docker"
+}
