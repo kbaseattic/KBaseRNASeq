@@ -31,7 +31,7 @@ def setupWorkingDir(logger=None,directory=None):
     """
     try:
     	if os.path.exists(directory): cleanup(logger,directory)
-	os.makedirs(directory)
+	os.mkdir(directory)
     except IOError, e:
 	logger.error("Unable to setup working dir {0}".format(directory))
 	raise

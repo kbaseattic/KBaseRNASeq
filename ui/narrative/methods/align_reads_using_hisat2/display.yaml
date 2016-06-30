@@ -38,13 +38,6 @@ parameters :
             Select the quality score type depending on the sequencing platform
         long-hint : |
             phred33 is used by Illumina starting with v1.8
-    preset_options :
-        ui-name : |
-            Alignment Type Preset Options
-        short-hint : |
-            Select the preset options based on alignment type
-        long-hint : |
-            Faster option is generally less sensitive and vice versa.
     num_threads :
         ui-name : |
             Number of Threads

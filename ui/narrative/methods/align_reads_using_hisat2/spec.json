@@ -19,14 +19,14 @@
       "valid_ws_types" : ["KBaseRNASeq.RNASeqSampleSet" , "KBaseAssembly.SingleEndLibrary", "KBaseAssembly.PairedEndLibrary"]
     }
   }, {
-    "id" : "bowtie_index",
+    "id" : "genome_id",
     "optional" : false,
     "advanced" : false,
     "allow_multiple" : false,
     "default_values" : [ "" ],
     "field_type" : "text",
     "text_options" : {
-      "valid_ws_types" : ["KBaseRNASeq.Bowtie2Indexes" ]
+      "valid_ws_types" : ["KBaseGenomeAnnotations.GenomeAnnotation" ]
     }
   },{
     "id" : "num_threads",
@@ -60,29 +60,81 @@
           "ui_name": "phred64"
         }
       ]
-    }
-  }, {
-    "id" : "alignment_type",
+    }  
+  },{
+    "id" : "min_intron_length",
     "optional" : true,
     "advanced" : true,
     "allow_multiple" : false,
-    "default_values" : [ "end-to-end" ],
+    "default_values" : [ "20" ],
+    "field_type" : "text",
+    "text_options" : {
+      "validate_as" : "int"
+    }
+  },{   
+    "id" : "max_intron_length",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "500000" ],
+    "field_type" : "text",
+    "text_options" : {
+      "validate_as" : "int"
+    }
+  }, {
+    "id": "no_spliced_alignment",
+    "optional":false,
+    "advanced":false,
+    "allow_multiple":false,
+    "default_values":[""],
+    "field_type" : "checkbox",
+    "checkbox_options":{
+      "checked_value": 1,
+      "unchecked_value": 0
+    }
+  }, {
+    "id": "transcriptome_mapping_only",
+    "optional":false,
+    "advanced":false,
+    "allow_multiple":false,
+    "default_values":[""],
+    "field_type" : "checkbox",
+    "checkbox_options":{
+      "checked_value": 1,
+      "unchecked_value": 0
+    }
+  }, {
+    "id" : "tailor_alignments",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "dta-cufflinks" ],
     "field_type" : "dropdown",
     "dropdown_options":{
       "options": [
         {
-          "value": "end-to-end",
-          "display": "end-to-end",
-          "id": "end-to-end",
-          "ui_name": "end-to-end"
+          "value": "dta-cufflinks",
+          "display": "dta-cufflinks",
+          "id": "dta-cufflinks",
+          "ui_name": "dta-cufflinks"
         },
         {
-          "value": "local",
-          "display": "local",
-          "id": "local",
-          "ui_name": "local"
+          "value": "dta",
+          "display": "dta",
+          "id": "dta",
+          "ui_name": "dta"
         }
       ]
+    }
+  }, {
+    "id" : "skip",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "0" ],
+    "field_type" : "text",
+    "text_options" : {
+     "validate_as": "int"
     }
   }, {
     "id" : "trim5",
@@ -113,41 +165,6 @@
     "field_type" : "text",
     "text_options" : {
      "validate_as": "int"
-    }
-  }, {
-    "id" : "preset_options",
-    "optional" : true,
-    "advanced" : true,
-    "allow_multiple" : false,
-    "default_values" : [ "" ],
-    "field_type" : "dropdown",
-    "dropdown_options":{
-      "options": [
-        {
-          "value": "sensitive",
-          "display": "sensitive",
-          "id": "sensitive",
-          "ui_name": "sensitive"
-        },
-        {
-          "value": "very-sensitive",
-          "display": "very-sensitive",
-          "id": "very-sensitive",
-          "ui_name": "very-sensitive"
-        },
-        {
-          "value": "fast",
-          "display": "fast",
-          "id": "fast",
-          "ui_name": "fast"
-        },
-        {
-          "value": "very-fast",
-          "display": "very-fast",
-          "id": "very-fast",
-          "ui_name": "very-fast"
-        }
-      ]
     }
   }, {
     "id" : "minins",
@@ -203,7 +220,7 @@
     "service-mapping" : {
       "url" : "",
       "name" : "KBaseRNASeq",
-      "method" : "Bowtie2Call",
+      "method" : "Hisat2Call",
       "input_mapping" : [
         {
           "narrative_system_variable": "workspace",
@@ -214,8 +231,8 @@
           "target_property" : "sampleset_id"
         },
         {
-          "input_parameter" : "bowtie_index",
-          "target_property" : "bowtie_index"
+          "input_parameter" : "genome_id",
+          "target_property" : "genome_id"
         },
 	{
           "input_parameter" : "num_threads",
@@ -226,8 +243,8 @@
           "target_property" : "quality_score"
         },
         {
-          "input_parameter" : "alignment_type",
-          "target_property" : "alignment_type"
+          "input_parameter" : "skip",
+          "target_property" : "skip"
         },
         {
           "input_parameter" : "trim5",
@@ -242,8 +259,24 @@
           "target_property" : "np"
         },
         {
-          "input_parameter" : "preset_options",
-          "target_property" : "preset_options"
+          "input_parameter" : "min_intron_length",
+          "target_property" : "min_intron_length"
+        },
+        {
+          "input_parameter" : "max_intron_length",
+          "target_property" : "max_intron_length"
+        },
+ 	{
+          "input_parameter" : "no_spliced_alignment",
+          "target_property" : "no_spliced_alignment"
+        },
+	{
+          "input_parameter" : "transcriptome_mapping_only",
+          "target_property" : "transcriptome_mapping_only"
+        },
+	{
+          "input_parameter" : "tailor_alignments",
+          "target_property" : "tailor_alignments"
         },
         {
           "input_parameter" : "minins",

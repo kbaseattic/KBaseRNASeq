@@ -150,6 +150,8 @@ def _CallBowtie2(logger,services,ws_client,hs,ws_id,sample_type,num_threads,read
                         #logger.exception("Failed to create bowtie2 Alignment {0}".format(" ".join(traceback.print_exc())))
                         raise Exception("Failed to create bowtie2 Alignment {0}".format(" ".join(traceback.print_exc())))
 	finally:
+		if os.path.exists(out_file_path): os.remove(out_file_path)
+		if os.path.exists(output_dir): os.remove(output_dir)
 		ret = script_util.if_obj_exists(None,ws_client,ws_id,"KBaseRNASeq.RNASeqAlignment",[output_name])	
 		if not ret is None:
 		    return (read_sample,output_name)
@@ -249,6 +251,8 @@ def _CallTophat(logger,services,ws_client,hs,ws_id,sample_type,num_threads,read_
 	except Exception, e:
                         raise Exception("Failed to create tophat Alignment {0}".format(" ".join(traceback.print_exc())))
 	finally:
+		if os.path.exists(out_file_path): os.remove(out_file_path)
+		if os.path.exists(output_dir): os.remove(output_dir)
 		ret = script_util.if_obj_exists(None,ws_client,ws_id,"KBaseRNASeq.RNASeqAlignment",[output_name])	
 		if not ret is None:
 		    return (read_sample,output_name)
@@ -363,6 +367,8 @@ def _CallCufflinks(logger,services,ws_client,hs,ws_id,num_threads,s_alignment,gt
 		logger.exception("".join(traceback.format_exc()))
                 raise Exception("Error executing cufflinks {0},{1}".format(cufflinks_command,directory))
 	finally:
+		if os.path.exists(out_file_path): os.remove(out_file_path)
+		if os.path.exists(output_dir): os.remove(output_dir)
 		ret = script_util.if_obj_exists(None,ws_client,ws_id,"KBaseRNASeq.RNASeqExpression",[output_name])	
 		if not ret is None:
     		    return (alignment_name, output_name )
