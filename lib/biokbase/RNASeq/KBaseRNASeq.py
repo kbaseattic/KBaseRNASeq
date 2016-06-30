@@ -69,6 +69,8 @@ async_run_methods['KBaseRNASeq.GetFeaturesToGTF_async'] = ['KBaseRNASeq', 'GetFe
 async_check_methods['KBaseRNASeq.GetFeaturesToGTF_check'] = ['KBaseRNASeq', 'GetFeaturesToGTF']
 async_run_methods['KBaseRNASeq.Bowtie2Call_async'] = ['KBaseRNASeq', 'Bowtie2Call']
 async_check_methods['KBaseRNASeq.Bowtie2Call_check'] = ['KBaseRNASeq', 'Bowtie2Call']
+async_run_methods['KBaseRNASeq.Hisat2Call_async'] = ['KBaseRNASeq', 'Hisat2Call']
+async_check_methods['KBaseRNASeq.Hisat2Call_check'] = ['KBaseRNASeq', 'Hisat2Call']
 async_run_methods['KBaseRNASeq.TophatCall_async'] = ['KBaseRNASeq', 'TophatCall']
 async_check_methods['KBaseRNASeq.TophatCall_check'] = ['KBaseRNASeq', 'TophatCall']
 async_run_methods['KBaseRNASeq.CufflinksCall_async'] = ['KBaseRNASeq', 'CufflinksCall']
@@ -362,6 +364,10 @@ class Application(object):
                              name='KBaseRNASeq.Bowtie2Call',
                              types=[dict])
         self.method_authentication['KBaseRNASeq.Bowtie2Call'] = 'required'
+        self.rpc_service.add(impl_KBaseRNASeq.Hisat2Call,
+                             name='KBaseRNASeq.Hisat2Call',
+                             types=[dict])
+        self.method_authentication['KBaseRNASeq.Hisat2Call'] = 'required'
         self.rpc_service.add(impl_KBaseRNASeq.TophatCall,
                              name='KBaseRNASeq.TophatCall',
                              types=[dict])

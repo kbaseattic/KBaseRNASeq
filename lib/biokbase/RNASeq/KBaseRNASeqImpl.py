@@ -92,7 +92,7 @@ class KBaseRNASeq:
     #########################################
     VERSION = "0.0.1"
     GIT_URL = "https://github.com/sjyoo/KBaseRNASeq"
-    GIT_COMMIT_HASH = "08583f68ebadaa2cf858aed424c62bb71c505420"
+    GIT_COMMIT_HASH = "37528ecbee0bc7fd22a55d49ede6deafb97d870e"
     
     #BEGIN_CLASS_HEADER
     __TEMP_DIR = 'temp'
@@ -598,6 +598,19 @@ class KBaseRNASeq:
         # At some point might do deeper type checking...
         if not isinstance(returnVal, dict):
             raise ValueError('Method Bowtie2Call return value ' +
+                             'returnVal is not type dict as required.')
+        # return the results
+        return [returnVal]
+
+    def Hisat2Call(self, ctx, params):
+        # ctx is the context object
+        # return variables are: returnVal
+        #BEGIN Hisat2Call
+        #END Hisat2Call
+
+        # At some point might do deeper type checking...
+        if not isinstance(returnVal, dict):
+            raise ValueError('Method Hisat2Call return value ' +
                              'returnVal is not type dict as required.')
         # return the results
         return [returnVal]

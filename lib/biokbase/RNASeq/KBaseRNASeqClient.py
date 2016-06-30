@@ -263,6 +263,28 @@ class KBaseRNASeq(object):
             if job_state['finished']:
                 return job_state['result'][0]
   
+    def Hisat2Call_async(self, params, json_rpc_context = None):
+        if json_rpc_context and type(json_rpc_context) is not dict:
+            raise ValueError('Method Hisat2Call: argument json_rpc_context is not type dict as required.')
+        if self.async_version:
+            if not json_rpc_context:
+                json_rpc_context = {}
+            json_rpc_context['service_ver'] = self.async_version
+        return self._call('KBaseRNASeq.Hisat2Call_async',
+                          [params], json_rpc_context)[0]
+
+    def Hisat2Call_check(self, job_id):
+        resp = self._call('KBaseRNASeq.Hisat2Call_check', [job_id])
+        return resp[0]
+
+    def Hisat2Call(self, params, json_rpc_context = None):
+        job_id = self.Hisat2Call_async(params, json_rpc_context)
+        while True:
+            time.sleep(self.async_job_check_time)
+            job_state = self.Hisat2Call_check(job_id)
+            if job_state['finished']:
+                return job_state['result'][0]
+  
     def TophatCall_async(self, params, json_rpc_context = None):
         if json_rpc_context and type(json_rpc_context) is not dict:
             raise ValueError('Method TophatCall: argument json_rpc_context is not type dict as required.')
