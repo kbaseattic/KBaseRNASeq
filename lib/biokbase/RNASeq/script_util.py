@@ -39,8 +39,19 @@ def if_obj_exists(logger,ws_client,ws_id,o_type,obj_l):
     if len(existing_names) != 0:
         e_queries = [{'name' : j , 'workspace' : ws_id } for j in existing_names]
         e_infos = ws_client.get_object_info_new({"objects": e_queries })      
-        obj_ids =[(str(k[6]) + '/' + str(k[0]) + '/' + str(k[4])) for k in e_infos]
+	obj_ids =[ (str(k[1]) , (str(k[6]) + '/' + str(k[0]) + '/' + str(k[4])) ) for k in e_infos]
     return obj_ids
+
+def find_read_objects(logger,ex_reads_alignments,suffix1,suffix2):
+    #try:
+    if len(ex_reads_alignments) != 0:
+            objects = []
+            for i in ex_reads_alignments:
+                 objects.append(i.split(suffix1)[0]+suffix2)
+
+            return objects
+    else:
+            return None
 
 def generate_fasta(logger,internal_services,token,ref,output_dir,obj_name):
 	try:

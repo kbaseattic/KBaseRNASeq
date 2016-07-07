@@ -497,7 +497,7 @@ class KBaseRNASeq:
             print ret 
 	    if not ret is None:
                 self.__LOGGER.info("GFF Annotation Exist for Genome Annotation {0}.... Skipping step ".format(annotation_gtf))
-		annot_id = ret[0]
+		annot_name,annot_id = ret[0]
 	    	gtf_obj=ws_client.get_objects([{'ref' : annot_id}])[0]
 	   	gtf_id=gtf_obj['data']['handle']['id']
 	   	gtf_name=gtf_obj['data']['handle']['file_name']
@@ -665,7 +665,7 @@ class KBaseRNASeq:
 	    ret = script_util.if_obj_exists(None,ws_client,params['ws_id'],"KBaseRNASeq.GFFAnnotation",[ws_gtf])
             if not ret is None:
                 self.__LOGGER.info("GFF Annotation Exist for Genome Annotation {0}.... Skipping step ".format(annotation_gtf))
-		annot_id = ret[0]
+		annot_name,annot_id = ret[0]
 	    	gtf_obj=ws_client.get_objects([{'ref' : annot_id}])[0]
 	   	gtf_id=gtf_obj['data']['handle']['id']
 	   	gtf_name=gtf_obj['data']['handle']['file_name']
