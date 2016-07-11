@@ -570,6 +570,26 @@ typedef mapping<string Tophat_opts,t_opts opts_tophat> t_opts_str;
      returns (ResultsToReport) authentication required;
 
  typedef structure{
+        string ws_id;
+        string sample_alignment;
+        int num-threads;
+	string label;
+        float min_isoform_abundance;
+	int a_juncs;
+	int  min_length;
+	float j_min_reads;
+	float c_min_read_coverage;
+	int gap_sep_value;
+	bool disable_trimming;
+	bool ballgown_mode;
+	bool skip_reads_with_no_ref;
+	string merge;
+        }StringTieParams;
+
+async funcdef StringTieCall(StringTieParams params)
+    returns (ResultsToReport) authentication required;
+
+ typedef structure{
         int num_threads;
         string library-type;
         string library-norm-method;

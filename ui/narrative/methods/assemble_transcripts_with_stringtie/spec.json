@@ -1,0 +1,220 @@
+{
+  "ver" : "1.0.0",
+  "authors" : [ ],
+  "contact" : "help@kbase.us",
+  "visible" : true,
+  "categories" : ["active","expression","assembly"],
+  "widgets" : {
+    "input" : null,
+    "output" : "no-display"
+  },
+   "parameters" : [ {
+    "id" : "alignmentset_id",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : ["KBaseRNASeq.RNASeqAlignmentSet" , "KBaseRNASeq.RNASeqAlignment" ]
+    }
+  }, {
+   "id" : "num-threads",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "2" ],    
+    "field_type" : "text",
+    "text_options" : {
+      "validate_as": "int"
+    }
+  }, {
+   "id" : "label",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "STRG" ],
+    "field_type" : "text"
+  }, {
+   "id" : "min_isoform_abundance",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "0.1" ],
+    "field_type" : "text",
+    "text_options" : {
+      "validate_as": "float"
+    }
+  }, {
+   "id" : "min_length",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "200" ],    
+    "field_type" : "text",
+    "text_options" : {
+      "validate_as": "int"
+    }
+  }, {
+    "id" : "a_juncs",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "10" ],    
+    "field_type" : "text",
+    "text_options" : {
+      "validate_as": "int"
+    }
+  }, {
+    "id" : "j_min_reads",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "1" ],     
+    "field_type" : "text",
+    "text_options" : {
+      "validate_as": "float"
+    }
+  }, {
+    "id" : "c_min_read_coverage",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "2.5" ],
+    "field_type" : "text",
+    "text_options" : {
+      "validate_as": "float"
+    }
+  }, {
+    "id" : "gap_sep_value",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "50" ],
+    "field_type" : "text",
+    "text_options" : {
+      "validate_as": "int"
+    }
+  }, {
+    "id" : "disable_trimming",
+    "optional":false,
+    "advanced":false,
+    "allow_multiple":false,
+    "default_values":[""],
+    "field_type" : "checkbox",
+    "checkbox_options":{
+      "checked_value": 1,
+      "unchecked_value": 0
+    }  
+ }, {
+   "id" : "ballgown_mode",
+    "optional":false,
+    "advanced":false,
+    "allow_multiple":false,
+    "default_values":[""],
+    "field_type" : "checkbox",
+    "checkbox_options":{
+      "checked_value": 1,
+      "unchecked_value": 0
+    }  
+ }, {
+    "id" : "skip_reads_with_no_ref",
+    "optional":false,
+    "advanced":false,
+    "allow_multiple":false,
+    "default_values":[""],
+    "field_type" : "checkbox",
+    "checkbox_options":{
+      "checked_value": 1,
+      "unchecked_value": 0
+    }
+ }, {
+    "id" : "merge",
+    "optional":false,
+    "advanced":false,
+    "allow_multiple":false,
+    "default_values":[""],
+    "field_type" : "checkbox",
+    "checkbox_options":{
+      "checked_value": 1,
+      "unchecked_value": 0
+    }
+} ],
+  "behavior" : {
+    "service-mapping" : {
+      "url" : "",
+      "name" : "KBaseRNASeq",
+      "method" : "CufflinksCall",
+      "input_mapping" : [
+        {
+          "narrative_system_variable": "workspace",
+          "target_property" : "ws_id"
+        },
+        {
+          "input_parameter" : "alignmentset_id",
+          "target_property" : "alignmentset_id"
+        },
+        {
+          "input_parameter" : "num-threads",
+          "target_property" : "num-threads"
+        },
+	{
+          "input_parameter" : "label",
+          "target_property" : "label"
+        },
+        {
+          "input_parameter" : "min_length",
+          "target_property" : "min_length"
+        },
+        {
+          "input_parameter" : "min_isoform_abundance",
+          "target_property" : "min_isoform_abundance"
+        },
+	{
+          "input_parameter" : "a_juncs",
+          "target_property" : "a_juncs"
+        },        {
+          "input_parameter" : "j_min_reads",
+          "target_property" : "j_min_reads"
+        },        {
+          "input_parameter" : "c_min_read_coverage",
+          "target_property" : "c_min_read_coverage"
+        },        {
+          "input_parameter" : "gap_sep_value",
+          "target_property" : "gap_sep_value"
+        },        {
+          "input_parameter" : "disable_trimming",
+          "target_property" : "disable_trimming"
+        },        {
+          "input_parameter" : "ballgown_mode",
+          "target_property" : "ballgown_mode"
+        },        {
+          "input_parameter" : "skip_reads_with_no_ref",
+          "target_property" : "skip_reads_with_no_ref"
+        },
+        {
+          "input_parameter" : "merge",
+          "target_property" : "merge"
+      }],
+      "output_mapping" : [
+	{
+         "service_method_output_path": [0,"report_name"],
+         "target_property": "report_name"
+        },
+        {
+         "service_method_output_path": [0,"report_ref"],
+         "target_property": "report_ref"
+        },
+        {
+         "narrative_system_variable": "workspace",
+         "target_property": "workspace_name"
+        },
+        {
+        "constant_value": "5",
+        "target_property": "report_window_line_height"
+        }
+      ]
+    }
+  },
+  "job_id_output_field" : "docker"
+}

@@ -1,0 +1,117 @@
+#
+# Define basic display information
+#
+name     : Assemble Transcripts using Cufflinks
+
+tooltip  : |
+    Assemble the transcripts from RNA-seq reads using Cufflinks. 
+screenshots :
+    []
+
+icon: cufflinks-yellow.png
+
+#
+# Define the set of other narrative methods that should be suggested to the user.
+#
+method-suggestions :
+    related :
+        []
+    next :
+        [merge_transcripts_using_cuffmerge]
+
+
+#
+# Configure the display and description of the parameters
+#
+parameters :
+  alignmentset_id :
+    ui-name : |
+        RNA-seq Alignment or Alignment Set 
+    short-hint : |
+        Select the RNA-seq alignment or alignment set created by Bowtie2 or TopHat.
+  num-threads :
+    ui-name : |
+      Number of  Threads
+    short-hint : |
+      Number of computational threads to assemble transcriptomes. The default is 1.
+  label :
+    ui-name : |
+      label
+    short-hint : |
+      Sets label as the prefix for the name of the output transcripts
+  min_isoform_abundance :
+    ui-name : |
+      Minimum Isoform Abundance
+    short-hint : |
+      Sets the minimum isoform abundance of the predicted transcripts as a fraction of the most abundant transcript assembled at a given locus. Lower abundance transcripts are often artifacts of incompletely spliced precursors of processed transcripts. Default: 0.1. 
+  a_juncs :
+    ui-name : |
+      Filter Junctions with no splice reads with the number of given bases
+    short-hint : |
+      Junctions that don't have spliced reads that align across them with at least this amount of bases on both sides are filtered out. Default: 10
+  min_length :
+    ui-name : |
+      Minimum Length for Predicted Transcripts
+    short-hint : |      
+      Minimum Length for Predicted Transcripts.Default: 200
+  j_min_reads :
+    ui-name : |
+      Minimum Spliced Reads to align across a Junction
+    short-hint : |
+      Minimum Spliced Reads to align across a Junction.Default: 1
+  c_min_read_coverage :
+    ui-name : |
+      Minimum Read Coverage Allowed for Predicted Transcripts
+    short-hint : |
+      Minimum Read Coverage Allowed for Predicted Transcripts.Default: 2.5
+  gap_sep_value :
+    ui-name : |
+      Minimum locus Gap Separation Value.
+    short-hint : |
+      Minimum locus Gap Separation Value.Default:50
+  disable_trimming :
+    ui-name : |
+      Disable Trimming at the ends of the assembled transcripts
+    short-hint : |
+      Disable Trimming at the ends of the assembled transcripts
+  ballgown_mode :
+    ui-name : |
+      Enable Ballgown Input table files
+    short-hint : |
+      With this option StringTie can be used as a direct replacement of the tablemaker program included with the Ballgown distribution. 
+  skip_reads_with_no_ref :
+    ui-name : |
+      Skip Reads with no Reference Transcript
+    short-hint : |
+      Skip Reads with no Reference Transcript.
+  merge :
+    ui-name : |
+      Transcript merge mode
+    short-hint : |
+      Transcript merge mode.                                                    
+    
+description : |
+    <p>This method assembles transcripts for a given sample or a sample set using Cufflinks so that you can view the relative abundances of the assembled transcripts in a histogram, obtained as output from Cufflinks. </p>
+    <p>It accepts aligned RNA-seq reads from Bowtie2 or TopHat and assembles the alignments into a parsimonious set of transcripts. It then estimates the relative abundances of these transcripts based on how many reads support each one, taking into account biases in library preparation protocols.</p>
+    <p>The Cufflinks output object contains GTF and FPKM files. The GTF file contains annotated transcripts assembled by Cufflinks whereas the FPKM file gives the normalized abundance of each transcript expressed in fragments per kilobase of exon per million fragments mapped (FPKM). The Cuffdiff Table Histogram tab displays the abundance of normalized gene expression value log2(FPKM+1).</p>
+
+    <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
+    Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Vivek Kumar</p>
+    
+publications :
+    -
+        display-text: |
+            Trapnell C, Roberts A, Goff L, Pertea G, Kim D, Kelley DR, Pimentel H, Salzberg SL, Rinn JL, Pachter, L (2012) Differential gene and transcript expression analysis of RNA-seq experiments with TopHat and Cufflinks. Nature Protocols, 7(3), 562–578.
+        link: http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3334321/
+    -
+        display-text: |
+            Trapnell C, Pachter L, Salzberg SL. (2009) TopHat: discovering splice junctions with RNA-Seq. Bioinformatics. Vol 25, 9:1105-1111.
+        link: http://bioinformatics.oxfordjournals.org/content/25/9/1105.abstract
+    -
+        display-text: |
+            Kim D, Pertea G, Trapnell C, Pimentel H, Kelley R, Salzberg SL (2013) TopHat2: accurate alignment of transcriptomes in the presence of insertions, deletions and gene fusions. Genome Biology. 14:R36
+        link: http://www.genomebiology.com/2013/14/4/R36/abstract
+    -    
+        display-text: |
+            Langmead B, Trapnell C, Pop M, Salzberg SL (2009) Ultrafast and memory-efficient alignment of short DNA sequences to the human genome. Genome Biology 10:R25.
+        link: http://www.ncbi.nlm.nih.gov/pmc/articles/PMC2690996/
