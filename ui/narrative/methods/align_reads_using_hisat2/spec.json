@@ -83,8 +83,8 @@
     }
   }, {
     "id": "no_spliced_alignment",
-    "optional":false,
-    "advanced":false,
+    "optional":true,
+    "advanced":true,
     "allow_multiple":false,
     "default_values":[""],
     "field_type" : "checkbox",
@@ -94,8 +94,8 @@
     }
   }, {
     "id": "transcriptome_mapping_only",
-    "optional":false,
-    "advanced":false,
+    "optional":true,
+    "advanced":true,
     "allow_multiple":false,
     "default_values":[""],
     "field_type" : "checkbox",
@@ -105,8 +105,8 @@
     }
   }, {
     "id" : "tailor_alignments",
-    "optional" : true,
-    "advanced" : true,
+    "optional" : false,
+    "advanced" : false,
     "allow_multiple" : false,
     "default_values" : [ "dta-cufflinks" ],
     "field_type" : "dropdown",

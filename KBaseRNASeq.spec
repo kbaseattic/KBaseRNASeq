@@ -211,7 +211,7 @@
 
  /*
     Object for the RNASeq Alignment bam file
-    @optional aligner_opts aligner_version aligned_using replicate_id platform size mapped_sample_id sampleset_id alignment_stats 
+    @optional aligner_opts aligner_version aligned_using replicate_id platform size mapped_sample_id sampleset_id alignment_stats bowtie2_index 
     @metadata ws aligned_using
     @metadata ws aligner_version
     @metadata ws genome_id
@@ -254,7 +254,7 @@
 
 /*
   Set object for RNASeqAlignment objects
-  @optional condition sample_alignments
+  @optional condition sample_alignments bowtie2_index
 */
 
   typedef structure {

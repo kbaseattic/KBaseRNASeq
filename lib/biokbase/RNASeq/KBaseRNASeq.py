@@ -73,6 +73,8 @@ async_run_methods['KBaseRNASeq.Hisat2Call_async'] = ['KBaseRNASeq', 'Hisat2Call'
 async_check_methods['KBaseRNASeq.Hisat2Call_check'] = ['KBaseRNASeq', 'Hisat2Call']
 async_run_methods['KBaseRNASeq.TophatCall_async'] = ['KBaseRNASeq', 'TophatCall']
 async_check_methods['KBaseRNASeq.TophatCall_check'] = ['KBaseRNASeq', 'TophatCall']
+async_run_methods['KBaseRNASeq.StringTieCall_async'] = ['KBaseRNASeq', 'StringTieCall']
+async_check_methods['KBaseRNASeq.StringTieCall_check'] = ['KBaseRNASeq', 'StringTieCall']
 async_run_methods['KBaseRNASeq.CufflinksCall_async'] = ['KBaseRNASeq', 'CufflinksCall']
 async_check_methods['KBaseRNASeq.CufflinksCall_check'] = ['KBaseRNASeq', 'CufflinksCall']
 async_run_methods['KBaseRNASeq.CuffdiffCall_async'] = ['KBaseRNASeq', 'CuffdiffCall']
@@ -372,6 +374,10 @@ class Application(object):
                              name='KBaseRNASeq.TophatCall',
                              types=[dict])
         self.method_authentication['KBaseRNASeq.TophatCall'] = 'required'
+        self.rpc_service.add(impl_KBaseRNASeq.StringTieCall,
+                             name='KBaseRNASeq.StringTieCall',
+                             types=[dict])
+        self.method_authentication['KBaseRNASeq.StringTieCall'] = 'required'
         self.rpc_service.add(impl_KBaseRNASeq.CufflinksCall,
                              name='KBaseRNASeq.CufflinksCall',
                              types=[dict])

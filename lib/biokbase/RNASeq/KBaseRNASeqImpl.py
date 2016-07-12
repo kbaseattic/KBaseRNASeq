@@ -16,6 +16,7 @@ from collections import OrderedDict
 from pprint import pprint,pformat
 import parallel_tools as parallel
 import script_util
+import call_hisat2
 import contig_id_mapping as c_mapping
 from biokbase.workspace.client import Workspace
 import handler_utils as handler_util
@@ -92,7 +93,7 @@ class KBaseRNASeq:
     #########################################
     VERSION = "0.0.1"
     GIT_URL = "https://github.com/sjyoo/KBaseRNASeq"
-    GIT_COMMIT_HASH = "37528ecbee0bc7fd22a55d49ede6deafb97d870e"
+    GIT_COMMIT_HASH = "007e020397c7a05bb81cca9e0874f157d923db61"
     
     #BEGIN_CLASS_HEADER
     __TEMP_DIR = 'temp'
@@ -606,6 +607,20 @@ class KBaseRNASeq:
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN Hisat2Call
+	user_token=ctx['token']
+        ws_client=Workspace(url=self.__WS_URL, token=user_token)
+        hs = HandleService(url=self.__HS_URL, token=user_token)
+	try:
+		if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
+            	hisat2_dir = os.path.join(self.__SCRATCH,"tmp")
+            	handler_util.setupWorkingDir(self.__LOGGER,hisat2_dir)
+		returnVal = call_hisat2.runMethod(self.__LOGGER,user_token,ws_client,hs,self.__SERVICES,hisat2_dir,params)
+		#returnVal = call_hisat2.runMethod(self.__LOGGER,user_token,ws_client,hs,params)
+        except Exception,e:
+                 self.__LOGGER.exception("".join(traceback.format_exc()))
+                 raise KBaseRNASeqException("Error Running Hisat2Call")
+	finally:
+                 handler_util.cleanup(self.__LOGGER,hisat2_dir)
         #END Hisat2Call
 
         # At some point might do deeper type checking...
@@ -761,6 +776,19 @@ class KBaseRNASeq:
         # At some point might do deeper type checking...
         if not isinstance(returnVal, dict):
             raise ValueError('Method TophatCall return value ' +
+                             'returnVal is not type dict as required.')
+        # return the results
+        return [returnVal]
+
+    def StringTieCall(self, ctx, params):
+        # ctx is the context object
+        # return variables are: returnVal
+        #BEGIN StringTieCall
+        #END StringTieCall
+
+        # At some point might do deeper type checking...
+        if not isinstance(returnVal, dict):
+            raise ValueError('Method StringTieCall return value ' +
                              'returnVal is not type dict as required.')
         # return the results
         return [returnVal]

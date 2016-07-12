@@ -140,7 +140,9 @@ def create_RNASeq_AlignmentSet_and_build_report(logger,ws_client,ws_id,sample_li
 	 results =  [ ret for ret in results if not ret is None ]
 	 if len(results) < 2:
 	  	raise ValueError("Not enough alignments got created for a AlignmentSet obj")
-	 set_obj = { 'sampleset_id' :sampleset_id ,'genome_id' : genome_id,'bowtie2_index' : bowtie2index_id }
+	 set_obj = { 'sampleset_id' :sampleset_id ,'genome_id' : genome_id}
+	 if not bowtie2index_id is None:
+		set_obj['bowtie2_index'] = bowtie2index_id
          sids=[]
          m_alignments = []
          alignments = []

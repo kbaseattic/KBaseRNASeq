@@ -307,6 +307,28 @@ class KBaseRNASeq(object):
             if job_state['finished']:
                 return job_state['result'][0]
   
+    def StringTieCall_async(self, params, json_rpc_context = None):
+        if json_rpc_context and type(json_rpc_context) is not dict:
+            raise ValueError('Method StringTieCall: argument json_rpc_context is not type dict as required.')
+        if self.async_version:
+            if not json_rpc_context:
+                json_rpc_context = {}
+            json_rpc_context['service_ver'] = self.async_version
+        return self._call('KBaseRNASeq.StringTieCall_async',
+                          [params], json_rpc_context)[0]
+
+    def StringTieCall_check(self, job_id):
+        resp = self._call('KBaseRNASeq.StringTieCall_check', [job_id])
+        return resp[0]
+
+    def StringTieCall(self, params, json_rpc_context = None):
+        job_id = self.StringTieCall_async(params, json_rpc_context)
+        while True:
+            time.sleep(self.async_job_check_time)
+            job_state = self.StringTieCall_check(job_id)
+            if job_state['finished']:
+                return job_state['result'][0]
+  
     def CufflinksCall_async(self, params, json_rpc_context = None):
         if json_rpc_context and type(json_rpc_context) is not dict:
             raise ValueError('Method CufflinksCall: argument json_rpc_context is not type dict as required.')

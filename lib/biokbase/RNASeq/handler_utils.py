@@ -9,7 +9,24 @@ import shutil
 import subprocess
 import base64
 import simplejson
+import logging 
 
+def create_logger(log_dir,name):
+    """Create a logger
+
+    args: name (str): name of logger
+
+    returns: logger (obj): logging.Logger instance
+    """
+    logger = logging.getLogger(name)
+    fmt = logging.Formatter('%(asctime)s - %(process)d - %(name)s - '
+                            ' %(levelname)s -%(message)s')
+    hdl = logging.FileHandler(os.path.join(log_dir,name+'.log'))
+    hdl.setFormatter(fmt)
+
+    logger.addHandler(hdl)
+
+    return logger
 
 def cleanup(logger=None, directory=None):
     """
