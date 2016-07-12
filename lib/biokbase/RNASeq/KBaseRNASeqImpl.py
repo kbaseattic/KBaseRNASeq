@@ -17,6 +17,7 @@ from pprint import pprint,pformat
 import parallel_tools as parallel
 import script_util
 import call_hisat2
+import call_stringtie
 import contig_id_mapping as c_mapping
 from biokbase.workspace.client import Workspace
 import handler_utils as handler_util
@@ -93,7 +94,7 @@ class KBaseRNASeq:
     #########################################
     VERSION = "0.0.1"
     GIT_URL = "https://github.com/sjyoo/KBaseRNASeq"
-    GIT_COMMIT_HASH = "007e020397c7a05bb81cca9e0874f157d923db61"
+    GIT_COMMIT_HASH = "c0926f430ef58b3c9b1d2be1eefec1f474a4f106"
     
     #BEGIN_CLASS_HEADER
     __TEMP_DIR = 'temp'
@@ -784,6 +785,19 @@ class KBaseRNASeq:
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN StringTieCall
+        user_token=ctx['token']
+        ws_client=Workspace(url=self.__WS_URL, token=user_token)
+        hs = HandleService(url=self.__HS_URL, token=user_token)
+        try:
+                if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
+                stringtie_dir = os.path.join(self.__SCRATCH,"tmp")
+                handler_util.setupWorkingDir(self.__LOGGER,stringtie_dir)
+                returnVal = call_stringtie.runMethod(self.__LOGGER,user_token,ws_client,hs,self.__SERVICES,stringtie_dir,params)
+	except Exception,e:
+                 self.__LOGGER.exception("".join(traceback.format_exc()))
+                 raise KBaseRNASeqException("Error Running StringTieCall")
+        #finally:
+                 #handler_util.cleanup(self.__LOGGER,stringtie_dir)
         #END StringTieCall
 
         # At some point might do deeper type checking...

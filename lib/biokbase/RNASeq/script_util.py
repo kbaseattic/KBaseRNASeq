@@ -893,14 +893,20 @@ def histogram(iterable, low, high, bins):
 
 
 
-def parse_FPKMtracking(filename):
+def parse_FPKMtracking(filename,tool,metric):
     result={}
+    pos1= 0
+    if tool == 'StringTie':
+	if metric == 'FPKM': pos2 = 7
+	if metric == 'TPM': pos2 = 8
+    if tool == 'Cufflinks':
+	pos2 = 9
     with open(filename) as f:
 	next(f)
     	for line in f:
 		larr = line.split("\t")
-		if larr[0] != "":
-			result[larr[0]] = math.log(float(larr[9])+1,2)
+		if larr[pos1] != "":
+			result[larr[pos1]] = math.log(float(larr[pos2])+1,2)
     return result
 
 def get_end(start,leng,strand):

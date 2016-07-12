@@ -321,7 +321,7 @@ def _CallCufflinks(logger,services,ws_client,hs,ws_id,num_threads,s_alignment,gt
                         #print line
 
         	##Parse output files
-        	exp_dict = script_util.parse_FPKMtracking(os.path.join(output_dir,"genes.fpkm_tracking"))
+        	exp_dict = script_util.parse_FPKMtracking(os.path.join(output_dir,"genes.fpkm_tracking"),'Cufflinks','FPKM')
         	##  compress and upload to shock
         	try:
                 	logger.info("Zipping Cufflinks output")
