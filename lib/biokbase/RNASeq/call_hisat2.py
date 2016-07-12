@@ -207,7 +207,7 @@ def runMethod(logger,token,ws_client,hs,services,hisat2_dir,params):
             num_threads = int(params['num_threads'])
         else:
             num_threads = 2
-            num_cores = mp.cpu_count()
+        num_cores = mp.cpu_count()
         logger.info("Number of available cores : {0}".format(num_cores))
         b_tasks =[]
         if sample_type == 'KBaseRNASeq.RNASeqSampleSet':

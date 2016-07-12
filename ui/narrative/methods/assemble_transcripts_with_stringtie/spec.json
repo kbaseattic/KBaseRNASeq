@@ -97,8 +97,8 @@
     }
   }, {
     "id" : "disable_trimming",
-    "optional":false,
-    "advanced":false,
+    "optional":true,
+    "advanced":true,
     "allow_multiple":false,
     "default_values":[""],
     "field_type" : "checkbox",
@@ -119,8 +119,8 @@
     }  
  }, {
     "id" : "skip_reads_with_no_ref",
-    "optional":false,
-    "advanced":false,
+    "optional": true,
+    "advanced":true,
     "allow_multiple":false,
     "default_values":[""],
     "field_type" : "checkbox",
@@ -130,8 +130,8 @@
     }
  }, {
     "id" : "merge",
-    "optional":false,
-    "advanced":false,
+    "optional":true,
+    "advanced":true,
     "allow_multiple":false,
     "default_values":[""],
     "field_type" : "checkbox",
@@ -144,7 +144,7 @@
     "service-mapping" : {
       "url" : "",
       "name" : "KBaseRNASeq",
-      "method" : "CufflinksCall",
+      "method" : "StringTieCall",
       "input_mapping" : [
         {
           "narrative_system_variable": "workspace",

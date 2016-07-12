@@ -1,14 +1,12 @@
 #
 # Define basic display information
 #
-name     : Assemble Transcripts using Cufflinks
+name     : Assemble Transcripts using StringTie
 
 tooltip  : |
-    Assemble the transcripts from RNA-seq reads using Cufflinks. 
+    Assemble the transcripts from RNA-seq reads using StringTie
 screenshots :
     []
-
-icon: cufflinks-yellow.png
 
 #
 # Define the set of other narrative methods that should be suggested to the user.
@@ -17,8 +15,7 @@ method-suggestions :
     related :
         []
     next :
-        [merge_transcripts_using_cuffmerge]
-
+        [identify_differential_expression_using_cuffdiff]
 
 #
 # Configure the display and description of the parameters
