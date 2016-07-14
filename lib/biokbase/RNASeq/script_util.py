@@ -193,11 +193,13 @@ def create_RNASeq_AlignmentSet_and_build_report(logger,ws_client,ws_id,sample_li
                      }
 	 return reportObj
 
-def create_RNASeq_ExpressionSet_and_build_report(logger,ws_client,ws_id,alignment_list,alignmentset_id,genome_id,sampleset_id,results,expressionSet_name):
+def create_RNASeq_ExpressionSet_and_build_report(logger,ws_client,tool_used, tool_version,tool_opts,ws_id,alignment_list,alignmentset_id,genome_id,sampleset_id,results,expressionSet_name):
 	 results =  [ ret for ret in results if not ret is None ]
 	 if len(results) < 2:
 	  	raise ValueError("Not enough expression results to create a ExpressionSet object")
-	 set_obj = { 'alignmentSet_id' : alignmentset_id ,'genome_id' : genome_id,'sampleset_id' : sampleset_id }
+	 set_obj = { 'tool_used': tool_used, 'tool_version': tool_version,'alignmentSet_id' : alignmentset_id ,'genome_id' : genome_id,'sampleset_id' : sampleset_id }
+	 if not tool_opts is None:
+		set_obj['tool_opts'] = tool_opts
          sids=[]
          condition = []
 	 expr_ids = []

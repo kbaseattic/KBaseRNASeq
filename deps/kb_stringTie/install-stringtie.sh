@@ -15,3 +15,5 @@ cd stringtie-${VERSION}.Linux_x86_64
 cp `find . -maxdepth 1 -perm -111 -type f` ${dest}
 cd ../
 rm -rf stringtie-${VERSION}.Linux_x86_64
+ver=`stringtie --version`
+echo "${ver} is successfully installed"

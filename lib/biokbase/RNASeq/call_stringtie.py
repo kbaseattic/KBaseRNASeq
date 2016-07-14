@@ -17,6 +17,10 @@ from doekbase.data_api.annotation.genome_annotation.api import GenomeAnnotationA
 from doekbase.data_api.sequence.assembly.api import AssemblyAPI , AssemblyClientAPI
 import requests.packages.urllib3
 requests.packages.urllib3.disable_warnings()
+
+TOOL_USED = 'StringTie'
+TOOL_VERSION = '1.2.3'
+
 try:
     from biokbase.HandleService.Client import HandleService
 except:
@@ -69,6 +73,7 @@ def _CallStringtie(logger,services,ws_client,hs,ws_id,num_threads,s_alignment,gt
 
                 input_file = os.path.join(input_dir,"accepted_hits.bam")
                 ### Adding advanced options to tophat command
+		tool_opts = { k:str(v) for k,v in params.iteritems() if not k in ('ws_id','alignmentset_id', 'num-threads') and v is not None  }
                 stringtie_command = (' -p '+str(num_threads))
                 if 'label' in params and params['label'] is not None:
                      stringtie_command += (' -l '+str(params['label']))
@@ -98,6 +103,7 @@ def _CallStringtie(logger,services,ws_client,hs,ws_id,num_threads,s_alignment,gt
                 ##Parse output files
 		try:
                 	exp_dict = script_util.parse_FPKMtracking(g_output_file,'StringTie','FPKM')
+                	tpm_exp_dict = script_util.parse_FPKMtracking(g_output_file,'StringTie','TPM')
 		except Exception,e:
                         logger.exception("".join(traceback.format_exc()))
                         raise Exception("Error parsing FPKMtracking")
@@ -122,13 +128,15 @@ def _CallStringtie(logger,services,ws_client,hs,ws_id,num_threads,s_alignment,gt
                                 'type' : 'RNA-Seq',
                                 'numerical_interpretation' : 'FPKM',
                                 'expression_levels' : exp_dict,
+                                'tpm_expression_levels' : tpm_exp_dict,
                                 'processing_comments' : "log2 Normalized",
                                 'genome_id' : genome_id,
                                 'annotation_id' : annotation_id,
                                 'condition' : condition,
                                 'mapped_rnaseq_alignment' : { sample_id : s_alignment },
-                                'tool_used' : "Stringtie",
-                                'tool_version' : "version",
+                                'tool_used' : TOOL_USED,
+                                'tool_version' : TOOL_VERSION,
+                                'tool_opts' : tool_opts,
                                 'file' : handle
                                 }
 
@@ -175,6 +183,7 @@ def runMethod(logger,token,ws_client,hs,services,stringtie_dir,params):
             gtf_annotation_id = str(gtf_info[6]) + '/' + str(gtf_info[0]) + '/' + str(gtf_info[4])
             gtf_id=gtf_obj['data']['handle']['id']
             gtf_name=gtf_obj['data']['handle']['file_name']
+	    tool_opts = { k:str(v) for k,v in params.iteritems() if not k in ('ws_id','alignmentset_id', 'num-threads') and v is not None  }
             try:
                      script_util.download_file_from_shock(logger, shock_service_url=services['shock_service_url'], shock_id=gtf_id,filename=gtf_name, directory=stringtie_dir,token=token)
                      gtf_file = os.path.join(stringtie_dir,gtf_name)
@@ -220,8 +229,8 @@ def runMethod(logger,token,ws_client,hs,services,stringtie_dir,params):
                 def run_stringtie_in_parallel(tasks):
                   pass
                 results=run_stringtie_in_parallel(b_tasks)
-                expressionSet_name = params['alignmentset_id']+"_ExpressionSet"
-                reportObj=script_util.create_RNASeq_ExpressionSet_and_build_report(logger,ws_client,params['ws_id'],align_names,alignmentset_id,annotation_id,sampleset_id,results,expressionSet_name)
+                expressionSet_name = params['alignmentset_id']+"_StringTie_ExpressionSet"
+                reportObj=script_util.create_RNASeq_ExpressionSet_and_build_report(logger,ws_client,TOOL_USED, TOOL_VERSION,tool_opts,params['ws_id'],align_names,alignmentset_id,annotation_id,sampleset_id,results,expressionSet_name)
             else:
                 try:
                     pool_size=1

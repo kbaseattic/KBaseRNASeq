@@ -236,7 +236,7 @@
 	string platform;
         ws_genome_annotation_id genome_id;
         ws_bowtieIndex_id bowtie2_index;
-	list<mapping<string opt_name, string opt_value>> aligner_opts;
+	mapping<string opt_name, string opt_value> aligner_opts;
         mapping<string condition,mapping<string sample_id , string replicate_id>> mapped_sample_id;
 	ws_Sampleset_id sampleset_id;
 	Handle file;
@@ -254,10 +254,16 @@
 
 /*
   Set object for RNASeqAlignment objects
-  @optional condition sample_alignments bowtie2_index
+  @optional condition sample_alignments bowtie2_index aligned_using aligner_version aligner_opts
+  @metadata ws aligned_using
+  @metadata ws aligner_version
+  @metadata ws sampleset_id
 */
 
   typedef structure {
+	string aligned_using;
+	string aligner_version;
+	mapping<string opt_name, string opt_value> aligner_opts;
 	ws_Sampleset_id sampleset_id;
 	ws_genome_annotation_id genome_id;
 	ws_bowtieIndex_id bowtie2_index;
@@ -278,7 +284,7 @@
 
 /*
   The workspace object for a RNASeqExpression
-  @optional description platform tool_opts data_quality_level original_median external_source_date source file processing_comments mapped_sample_id
+  @optional description platform tool_opts data_quality_level original_median external_source_date source file processing_comments mapped_sample_id tpm_expression_levels
   @metadata ws type
   @metadata ws numerical_interpretation
   @metadata ws description
@@ -295,6 +301,7 @@
         float original_median;
         string external_source_date;
         mapping<string feature_id,float feature_value> expression_levels; 
+        mapping<string feature_id,float feature_value> tpm_expression_levels;
         ws_genome_annotation_id genome_id; 
         ws_referenceAnnotation_id annotation_id;
 	string condition;
@@ -306,7 +313,7 @@
         string processing_comments;
         string tool_used;
         string tool_version;
-	list<mapping<string opt_name, string opt_value>> tool_opts; 
+	mapping<string opt_name, string opt_value> tool_opts; 
     }RNASeqExpression;
 
 /*
@@ -318,10 +325,16 @@
 
 /*
   Set object for RNASeqExpression objects
-  @optional sample_ids condition 
+  @optional sample_ids condition tool_used tool_version tool_opts
+  @metadata ws tool_used
+  @metadata ws tool_version
+  @metadata ws alignmentSet_id 
 */
 
   typedef structure {
+        string tool_used;
+        string tool_version;
+	mapping<string opt_name, string opt_value> tool_opts;
 	ws_alignmentSet_id alignmentSet_id;
         ws_Sampleset_id sampleset_id;
         ws_genome_annotation_id genome_id;

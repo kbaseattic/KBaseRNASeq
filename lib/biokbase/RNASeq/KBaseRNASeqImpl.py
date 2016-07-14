@@ -94,7 +94,7 @@ class KBaseRNASeq:
     #########################################
     VERSION = "0.0.1"
     GIT_URL = "https://github.com/sjyoo/KBaseRNASeq"
-    GIT_COMMIT_HASH = "c0926f430ef58b3c9b1d2be1eefec1f474a4f106"
+    GIT_COMMIT_HASH = "92294af95f017484be698807f237304557ead55b"
     
     #BEGIN_CLASS_HEADER
     __TEMP_DIR = 'temp'
@@ -796,8 +796,8 @@ class KBaseRNASeq:
 	except Exception,e:
                  self.__LOGGER.exception("".join(traceback.format_exc()))
                  raise KBaseRNASeqException("Error Running StringTieCall")
-        #finally:
-                 #handler_util.cleanup(self.__LOGGER,stringtie_dir)
+        finally:
+                 handler_util.cleanup(self.__LOGGER,stringtie_dir)
         #END StringTieCall
 
         # At some point might do deeper type checking...
@@ -896,7 +896,7 @@ class KBaseRNASeq:
                   pass
                 results=run_cufflinks_in_parallel(b_tasks)
 		expressionSet_name = params['alignmentset_id']+"_ExpressionSet"
-		reportObj=script_util.create_RNASeq_ExpressionSet_and_build_report(self.__LOGGER,ws_client,params['ws_id'],align_names,alignmentset_id,annotation_id,sampleset_id,results,expressionSet_name)
+		reportObj=script_util.create_RNASeq_ExpressionSet_and_build_report(self.__LOGGER,ws_client,"Cufflinks","2.2.1",None,params['ws_id'],align_names,alignmentset_id,annotation_id,sampleset_id,results,expressionSet_name)
             else:
                 try:
                     pool_size=1
