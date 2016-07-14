@@ -33,7 +33,7 @@ parameters :
     ui-name : |
       Number of  Threads
     short-hint : |
-      Number of computational threads to assemble transcriptomes. The default is 1.
+      Number of computational threads to assemble transcriptomes. The default is 2.
   min-intron-length :
     ui-name : |
       Minimum Intron Length

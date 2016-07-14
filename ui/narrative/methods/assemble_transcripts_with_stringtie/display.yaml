@@ -25,12 +25,12 @@ parameters :
     ui-name : |
         RNA-seq Alignment or Alignment Set 
     short-hint : |
-        Select the RNA-seq alignment or alignment set created by Bowtie2 or TopHat.
+        Select the RNA-seq alignment or alignment set created by HISAT2, TopHat or Bowtie2.
   num-threads :
     ui-name : |
       Number of  Threads
     short-hint : |
-      Number of computational threads to assemble transcriptomes. The default is 1.
+      Number of computational threads to assemble transcriptomes. The default is 2.
   label :
     ui-name : |
       label
@@ -88,9 +88,9 @@ parameters :
       Transcript merge mode.                                                    
     
 description : |
-    <p>This method assembles transcripts for a given sample or a sample set using Cufflinks so that you can view the relative abundances of the assembled transcripts in a histogram, obtained as output from Cufflinks. </p>
-    <p>It accepts aligned RNA-seq reads from Bowtie2 or TopHat and assembles the alignments into a parsimonious set of transcripts. It then estimates the relative abundances of these transcripts based on how many reads support each one, taking into account biases in library preparation protocols.</p>
-    <p>The Cufflinks output object contains GTF and FPKM files. The GTF file contains annotated transcripts assembled by Cufflinks whereas the FPKM file gives the normalized abundance of each transcript expressed in fragments per kilobase of exon per million fragments mapped (FPKM). The Cuffdiff Table Histogram tab displays the abundance of normalized gene expression value log2(FPKM+1).</p>
+    <p>This method assembles transcripts for a given sample or a sample set using StringTie so that you can view the relative abundances of the assembled transcripts in a histogram. </p>
+    <p>STringTie is a successor of Cufflinks that is faster and provides more accurate reconstruction of genes and expression level. It accepts aligned RNA-seq reads from HISAT2, TopHat or Bowtie2 and assembles the alignments into a parsimonious set of transcripts. It then estimates the relative abundances of these transcripts based on how many reads support each one, taking into account biases in library preparation protocols.</p>
+    <p>The StringTie output object contains GTF and FPKM files. The GTF file contains annotated transcripts assembled by StringTie whereas the FPKM file gives the normalized abundance of each transcript expressed in fragments per kilobase of exon per million fragments mapped (FPKM). The StringTie Table Histogram tab displays the abundance of normalized gene expression value log2(FPKM+1).</p>
 
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
     Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Vivek Kumar</p>
@@ -98,17 +98,22 @@ description : |
 publications :
     -
         display-text: |
+            Pertea M, Pertea GM, Antonescu CM, Chang TC, Mendell JT & Salzberg SL. StringTie enables improved reconstruction of a transcriptome from RNA-seq reads Nature Biotechnology 2015
+        link: http://www.nature.com/nbt/journal/v33/n3/full/nbt.3122.html
+    -
+        display-text: |
+            Kim D, Langmead B and Salzberg SL (2015). HISAT: a fast spliced aligner with low memory requirements. Nature Methods 2015
+        link: http://www.nature.com/nmeth/journal/v12/n4/full/nmeth.3317.html
+
+        display-text: |
+            Kim D, Pertea G, Trapnell C, Pimentel H, Kelley R, Salzberg SL (2013) TopHat2: accurate alignment of transcriptomes in the presence of insertions, deletions and gene fusions. Genome Biology. 14:R36
+        link: http://www.genomebiology.com/2013/14/4/R36/abstract
+    -    
+            display-text: |
             Trapnell C, Roberts A, Goff L, Pertea G, Kim D, Kelley DR, Pimentel H, Salzberg SL, Rinn JL, Pachter, L (2012) Differential gene and transcript expression analysis of RNA-seq experiments with TopHat and Cufflinks. Nature Protocols, 7(3), 562–578.
         link: http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3334321/
     -
         display-text: |
             Trapnell C, Pachter L, Salzberg SL. (2009) TopHat: discovering splice junctions with RNA-Seq. Bioinformatics. Vol 25, 9:1105-1111.
         link: http://bioinformatics.oxfordjournals.org/content/25/9/1105.abstract
-    -
-        display-text: |
-            Kim D, Pertea G, Trapnell C, Pimentel H, Kelley R, Salzberg SL (2013) TopHat2: accurate alignment of transcriptomes in the presence of insertions, deletions and gene fusions. Genome Biology. 14:R36
-        link: http://www.genomebiology.com/2013/14/4/R36/abstract
-    -    
-        display-text: |
-            Langmead B, Trapnell C, Pop M, Salzberg SL (2009) Ultrafast and memory-efficient alignment of short DNA sequences to the human genome. Genome Biology 10:R25.
-        link: http://www.ncbi.nlm.nih.gov/pmc/articles/PMC2690996/
+

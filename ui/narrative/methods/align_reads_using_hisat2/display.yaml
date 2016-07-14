@@ -1,9 +1,9 @@
 #
 # Define basic display information
 #
-name     : Align Reads using Hisat2
+name     : Align Reads using HISAT2
 tooltip  : |
-    Align sequencing reads to long reference sequences using Hisat2
+    Align sequencing reads to long reference sequences using HISAT2
 screenshots :
     []
 
@@ -75,27 +75,27 @@ parameters :
         ui-name : |
             Minimum Intron Length
         short-hint : |
-            Hisat2 will ignore donor/acceptor pairs closer than this many bases apart.
+            HISAT2 will ignore donor/acceptor pairs closer than this many bases apart.
     max_intron_length :
         ui-name : |
             Maximum Intron Length
         short-hint : |
-            Hisat2 will ignore donor/acceptor pairs farther than this many bases apart.
+            HISAT2 will ignore donor/acceptor pairs farther than this many bases apart.
     no_spliced_alignment :
         ui-name : |
             Disable Splice Alignment
         short-hint : |
-            Hisat2 will disable splice alignment.
+            HISAT2 will disable splice alignment.
     tailor_alignments :
         ui-name : |
             Tailor Alignments for different Tools 
         short-hint : |
-            Hisat2 will report alignments tailored for transcript assemblers including StringTie or Cufflinks based on the selected option.
+            HISAT2 will report alignments tailored for transcript assemblers including StringTie or Cufflinks based on the selected option.
     transcriptome_mapping_only :
         ui-name : |
             Transcriptome Mapping Only
         short-hint : |
-            Hisat2 will report only those alignments within known transcripts.
+            HISAT2 will report only those alignments within known transcripts.
     minins :
         ui-name : |
             Minimum Fragment Length For Paired-end Alignments
@@ -119,11 +119,12 @@ parameters :
             By default, fr is used. 
             
 description : |
-    <p>This method aligns the sequencing reads for a set of two or more samples to long reference sequences of a prokaryotic genome using Bowtie2 and outputs a set of alignments for the given sample set in BAM format. Alternatively, if the user has only a single sample of reads, this method will take single-end or paired-end library object instead of a sample set.</p> 
+    <p>This method aligns the sequencing reads for a set of two or more samples to long reference sequences of a genome using HISAT2 and outputs a set of alignments for the given sample set in BAM format. Alternatively, if the user has only a single sample of reads, this method will take single-end or paired-end library object instead of a sample set.</p> 
     
     <p>In addition, it outputs the alignment statistics such as total reads, mapped and unmapped reads, singletons, multiple alignments, and alignment rate in the table format.</p>
     
-    <p>Bowtie2 supports end-to-end read alignment mode by default. In this mode, it searches for alignments involving all of the read characters. This is also called an "untrimmed" or "unclipped" alignment. The method also supports "local" alignment mode, which produces alignments that might be "trimmed" (or "soft clipped") at one or both extremes in a way that optimizes the alignment score.</p>
+    <p>HISAT2 is essentially a successor of TopHat2 and is relatively faster and more sensitive while still maintaining low memory requirements. The HISAT2 index is based on the FM Index of Ferragina and Manzini, which in turn is based on the Burrows-Wheeler transform. The algorithm used to build the index is based on the blockwise algorithm of Karkkainen.
+
     <p><strong>NOTE:</strong> This method is one of the steps of the <a href= "http://kbase.us/rna-seq/"> KBase RNA-seq Pipeline </a>, however it can also be run standalone for one or more RNA-seq samples.</p>
   
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
@@ -132,9 +133,5 @@ description : |
 publications :
     -
         display-text: |
-            Langmead B, Salzberg SL (2012) Fast gapped-read alignment with Bowtie 2. Nature Methods. 9 (4):357–359.
-        link: http://www.ncbi.nlm.nih.gov/pubmed/22388286
-    -    
-        display-text: |
-            Langmead B, Trapnell C, Pop M, Salzberg SL (2009) Ultrafast and memory-efficient alignment of short DNA sequences to the human genome. Genome Biology. 10:R25.
-        link: http://www.ncbi.nlm.nih.gov/pmc/articles/PMC2690996/
+            Kim D, Langmead B and Salzberg SL (2015). HISAT: a fast spliced aligner with low memory requirements. Nature Methods 2015
+        link: http://www.nature.com/nmeth/journal/v12/n4/full/nmeth.3317.html
