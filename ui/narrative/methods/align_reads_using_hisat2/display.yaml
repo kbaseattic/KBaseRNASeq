@@ -133,9 +133,5 @@ description : |
 publications :
     -
         display-text: |
-            Langmead B, Salzberg SL (2012) Fast gapped-read alignment with Bowtie 2. Nature Methods. 9 (4):357–359.
-        link: http://www.ncbi.nlm.nih.gov/pubmed/22388286
-    -    
-        display-text: |
-            Langmead B, Trapnell C, Pop M, Salzberg SL (2009) Ultrafast and memory-efficient alignment of short DNA sequences to the human genome. Genome Biology. 10:R25.
-        link: http://www.ncbi.nlm.nih.gov/pmc/articles/PMC2690996/
+            Kim D, Langmead B and Salzberg SL (2015). HISAT: a fast spliced aligner with low memory requirements. Nature Methods 2015
+        link: http://www.nature.com/nmeth/journal/v12/n4/full/nmeth.3317.html
