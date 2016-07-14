@@ -25,12 +25,12 @@ parameters :
     ui-name : |
         RNA-seq Alignment or Alignment Set 
     short-hint : |
-        Select the RNA-seq alignment or alignment set created by Bowtie2 or TopHat.
+        Select the RNA-seq alignment or alignment set created by HISAT2, TopHat or Bowtie2.
   num-threads :
     ui-name : |
       Number of  Threads
     short-hint : |
-      Number of computational threads to assemble transcriptomes. The default is 1.
+      Number of computational threads to assemble transcriptomes. The default is 2.
   label :
     ui-name : |
       label
@@ -88,9 +88,9 @@ parameters :
       Transcript merge mode.                                                    
     
 description : |
-    <p>This method assembles transcripts for a given sample or a sample set using Cufflinks so that you can view the relative abundances of the assembled transcripts in a histogram, obtained as output from Cufflinks. </p>
-    <p>It accepts aligned RNA-seq reads from Bowtie2 or TopHat and assembles the alignments into a parsimonious set of transcripts. It then estimates the relative abundances of these transcripts based on how many reads support each one, taking into account biases in library preparation protocols.</p>
-    <p>The Cufflinks output object contains GTF and FPKM files. The GTF file contains annotated transcripts assembled by Cufflinks whereas the FPKM file gives the normalized abundance of each transcript expressed in fragments per kilobase of exon per million fragments mapped (FPKM). The Cuffdiff Table Histogram tab displays the abundance of normalized gene expression value log2(FPKM+1).</p>
+    <p>This method assembles transcripts for a given sample or a sample set using StringTie so that you can view the relative abundances of the assembled transcripts in a histogram. </p>
+    <p>STringTie is a successor of Cufflinks that is faster and provides more accurate reconstruction of genes and expression level. It accepts aligned RNA-seq reads from HISAT2, TopHat or Bowtie2 and assembles the alignments into a parsimonious set of transcripts. It then estimates the relative abundances of these transcripts based on how many reads support each one, taking into account biases in library preparation protocols.</p>
+    <p>The StringTie output object contains GTF and FPKM files. The GTF file contains annotated transcripts assembled by Cufflinks whereas the FPKM file gives the normalized abundance of each transcript expressed in fragments per kilobase of exon per million fragments mapped (FPKM). The StringTie Table Histogram tab displays the abundance of normalized gene expression value log2(FPKM+1).</p>
 
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
     Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Vivek Kumar</p>
