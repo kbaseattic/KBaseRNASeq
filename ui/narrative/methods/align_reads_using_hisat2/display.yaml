@@ -1,9 +1,9 @@
 #
 # Define basic display information
 #
-name     : Align Reads using Hisat2
+name     : Align Reads using HISAT2
 tooltip  : |
-    Align sequencing reads to long reference sequences using Hisat2
+    Align sequencing reads to long reference sequences using HISAT2
 screenshots :
     []
 
@@ -75,27 +75,27 @@ parameters :
         ui-name : |
             Minimum Intron Length
         short-hint : |
-            Hisat2 will ignore donor/acceptor pairs closer than this many bases apart.
+            HISAT2 will ignore donor/acceptor pairs closer than this many bases apart.
     max_intron_length :
         ui-name : |
             Maximum Intron Length
         short-hint : |
-            Hisat2 will ignore donor/acceptor pairs farther than this many bases apart.
+            HISAT2 will ignore donor/acceptor pairs farther than this many bases apart.
     no_spliced_alignment :
         ui-name : |
             Disable Splice Alignment
         short-hint : |
-            Hisat2 will disable splice alignment.
+            HISAT2 will disable splice alignment.
     tailor_alignments :
         ui-name : |
             Tailor Alignments for different Tools 
         short-hint : |
-            Hisat2 will report alignments tailored for transcript assemblers including StringTie or Cufflinks based on the selected option.
+            HISAT2 will report alignments tailored for transcript assemblers including StringTie or Cufflinks based on the selected option.
     transcriptome_mapping_only :
         ui-name : |
             Transcriptome Mapping Only
         short-hint : |
-            Hisat2 will report only those alignments within known transcripts.
+            HISAT2 will report only those alignments within known transcripts.
     minins :
         ui-name : |
             Minimum Fragment Length For Paired-end Alignments
@@ -123,7 +123,7 @@ description : |
     
     <p>In addition, it outputs the alignment statistics such as total reads, mapped and unmapped reads, singletons, multiple alignments, and alignment rate in the table format.</p>
     
-    <p>HISAT2 is essentially the next version of TopHat2 and is relatively faster and more sensitive while still maintaining low memory requirements. The HISAT2 index is based on the FM Index of Ferragina and Manzini, which in turn is based on the Burrows-Wheeler transform. The algorithm used to build the index is based on the blockwise algorithm of Karkkainen.
+    <p>HISAT2 is essentially a successor of TopHat2 and is relatively faster and more sensitive while still maintaining low memory requirements. The HISAT2 index is based on the FM Index of Ferragina and Manzini, which in turn is based on the Burrows-Wheeler transform. The algorithm used to build the index is based on the blockwise algorithm of Karkkainen.
 
     <p><strong>NOTE:</strong> This method is one of the steps of the <a href= "http://kbase.us/rna-seq/"> KBase RNA-seq Pipeline </a>, however it can also be run standalone for one or more RNA-seq samples.</p>
   
