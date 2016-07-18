@@ -19,7 +19,7 @@
       "valid_ws_types" : ["KBaseRNASeq.RNASeqAlignmentSet" , "KBaseRNASeq.RNASeqAlignment" ]
     }
   }, {
-   "id" : "num-threads",
+   "id" : "num_threads",
     "optional" : true,
     "advanced" : true,
     "allow_multiple" : false,
@@ -29,7 +29,7 @@
       "validate_as": "int"
     }
   }, {
-   "id" : "min-intron-length",
+   "id" : "min_intron_length",
     "optional" : true,
     "advanced" : true,
     "allow_multiple" : false,
@@ -39,7 +39,7 @@
       "validate_as": "int"
     }
   }, {
-    "id" : "max-intron-length",
+    "id" : "max_intron_length",
     "optional" : true,
     "advanced" : true,
     "allow_multiple" : false,
@@ -49,7 +49,7 @@
       "validate_as": "int"
     }
   }, {
-    "id" : "overhang-tolerance",
+    "id" : "overhang_tolerance",
     "optional" : true,
     "advanced" : true,
     "allow_multiple" : false,
@@ -74,20 +74,20 @@
           "target_property" : "alignmentset_id"
         },
         {
-          "input_parameter" : "num-threads",
-          "target_property" : "num-threads"
+          "input_parameter" : "num_threads",
+          "target_property" : "num_threads"
         },
         {
-          "input_parameter" : "min-intron-length",
-          "target_property" : "min-intron-length"
+          "input_parameter" : "min_intron_length",
+          "target_property" : "min_intron_length"
         },
         {
-          "input_parameter" : "max-intron-length",
-          "target_property" : "max-intron-length"
+          "input_parameter" : "max_intron_length",
+          "target_property" : "max_intron_length"
         },
         {
-          "input_parameter" : "overhang-tolerance",
-          "target_property" : "overhang-tolerance"
+          "input_parameter" : "overhang_tolerance",
+          "target_property" : "overhang_tolerance"
       }],
       "output_mapping" : [
 	{

@@ -19,7 +19,7 @@
       "valid_ws_types" : ["KBaseRNASeq.RNASeqAlignmentSet" , "KBaseRNASeq.RNASeqAlignment" ]
     }
   }, {
-   "id" : "num-threads",
+   "id" : "num_threads",
     "optional" : true,
     "advanced" : true,
     "allow_multiple" : false,
@@ -155,8 +155,8 @@
           "target_property" : "alignmentset_id"
         },
         {
-          "input_parameter" : "num-threads",
-          "target_property" : "num-threads"
+          "input_parameter" : "num_threads",
+          "target_property" : "num_threads"
         },
 	{
           "input_parameter" : "label",

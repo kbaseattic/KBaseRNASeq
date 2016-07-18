@@ -177,6 +177,7 @@ def _CallTophat(logger,services,ws_client,hs,ws_id,sample_type,num_threads,read_
 		tophat_cmd = (' -p '+str(num_threads))
             	if('max_intron_length' in params and params['max_intron_length'] is not None ) : tophat_cmd += (' -I '+str(params['max_intron_length']))
             	if('min_intron_length' in params and params['min_intron_length'] is not None ): tophat_cmd += (' -i '+str(params['min_intron_length']))
+            	if('min_anchor_length' in params and params['min_anchor_length'] is not None ): tophat_cmd += (' -a '+str(params['min_anchor_length']))
             	if('read_edit_dist' in params and params['read_edit_dist'] is not None ) : tophat_cmd += (' --read-edit-dist '+str(params['read_edit_dist']))
             	if('read_gap_length' in params and params['read_gap_length'] is not None) : tophat_cmd += (' --read-gap-length '+str(params['read_gap_length']))
             	if('read_mismatches' in params and params['read_mismatches'] is not None) : tophat_cmd += (' -N '+str(params['read_mismatches']))
@@ -293,12 +294,12 @@ def _CallCufflinks(logger,services,ws_client,hs,ws_id,num_threads,s_alignment,gt
 		input_file = os.path.join(input_dir,"accepted_hits.bam")
 		### Adding advanced options to tophat command
 		cufflinks_command = (' -p '+str(num_threads))
-		if 'max-intron-length' in params and params['max-intron-length'] is not None:
-                     cufflinks_command += (' --max-intron-length '+str(params['max-intron-length']))
-                if 'min-intron-length' in params and params['min-intron-length'] is not None:
-                     cufflinks_command += (' --min-intron-length '+str(params['min-intron-length']))
-                if 'overhang-tolerance' in params  and params['overhang-tolerance'] is not None:
-                     cufflinks_command += (' --overhang-tolerance '+str(params['overhang-tolerance']))
+		if 'max_intron_length' in params and params['max_intron_length'] is not None:
+                     cufflinks_command += (' --max-intron-length '+str(params['max_intron_length']))
+                if 'min_intron_length' in params and params['min_intron_length'] is not None:
+                     cufflinks_command += (' --min-intron-length '+str(params['min_intron_length']))
+                if 'overhang_tolerance' in params  and params['overhang_tolerance'] is not None:
+                     cufflinks_command += (' --overhang-tolerance '+str(params['overhang_tolerance']))
 
                 cufflinks_command += " -o {0} -G {1} {2}".format(output_dir,gtf_file,input_file)
 		logger.info("Executing: cufflinks {0}".format(cufflinks_command))
@@ -389,11 +390,11 @@ def call_cuffmerge_and_cuffdiff(logger,ws_client,hs,ws_id,num_threads,list_file,
 	 ## Adding Advanced options for cuffdiff command
        	 output_dir = os.path.join(directory,params['output_obj_name']) 
 	 cuffdiff_command = (' -p '+str(num_threads))
-         if('time-series' in params and params['time-series'] != 0) : cuffdiff_command += (' -T ')
-         if('min-alignment-count' in params and params['min-alignment-count'] is not None ) : cuffdiff_command += (' -c '+str(params['min-alignment-count']))
-         if('multi-read-correct' in params and params['multi-read-correct'] != 0 ): cuffdiff_command += (' --multi-read-correct ')
-         if('library-type' in params and params['library-type'] is not None ) : cuffdiff_command += ( ' --library-type '+params['library-type'])
-         if('library-norm-method' in params and params['library-norm-method'] is not None ) : cuffdiff_command += ( ' --library-norm-method '+params['library-norm-method'])
+         if('time_series' in params and params['time_series'] != 0) : cuffdiff_command += (' -T ')
+         if('min_alignment_count' in params and params['min_alignment_count'] is not None ) : cuffdiff_command += (' -c '+str(params['min_alignment_count']))
+         if('multi_read_correct' in params and params['multi_read_correct'] != 0 ): cuffdiff_command += (' --multi_read_correct ')
+         if('library_type' in params and params['library_type'] is not None ) : cuffdiff_command += ( ' --library-type '+params['library_type'])
+         if('library_norm_method' in params and params['library_norm_method'] is not None ) : cuffdiff_command += ( ' --library-norm-method '+params['library_norm_method'])
 	 try:
          	cuffdiff_command += " -o {0} -L {1} -u {2} {3}".format(output_dir,t_labels,gtf_file,bam_files)
                 logger.info("Executing: cuffdiff {0}".format(cuffdiff_command))

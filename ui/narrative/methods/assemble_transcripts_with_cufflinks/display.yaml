@@ -29,22 +29,22 @@ parameters :
         RNA-seq Alignment or Alignment Set 
     short-hint : |
         Select the RNA-seq alignment or alignment set created by Bowtie2 or TopHat.
-  num-threads :
+  num_threads :
     ui-name : |
       Number of  Threads
     short-hint : |
       Number of computational threads to assemble transcriptomes. The default is 2.
-  min-intron-length :
+  min_intron_length :
     ui-name : |
       Minimum Intron Length
     short-hint : |
       Minimum size of intron allowed in a genome. The default is 50bp.
-  max-intron-length :
+  max_intron_length :
     ui-name : |
       Maximum lntron Length
     short-hint : |
       Cufflinks will not report transcripts with introns longer than this. The default is 300,000bp. 
-  overhang-tolerance :
+  overhang_tolerance :
     ui-name : |
       Overhang Tolerance
     short-hint : |

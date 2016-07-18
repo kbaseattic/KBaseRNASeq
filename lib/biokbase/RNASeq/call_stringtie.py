@@ -73,7 +73,7 @@ def _CallStringtie(logger,services,ws_client,hs,ws_id,num_threads,s_alignment,gt
 
                 input_file = os.path.join(input_dir,"accepted_hits.bam")
                 ### Adding advanced options to tophat command
-		tool_opts = { k:str(v) for k,v in params.iteritems() if not k in ('ws_id','alignmentset_id', 'num-threads') and v is not None  }
+		tool_opts = { k:str(v) for k,v in params.iteritems() if not k in ('ws_id','alignmentset_id', 'num_threads') and v is not None  }
                 stringtie_command = (' -p '+str(num_threads))
                 if 'label' in params and params['label'] is not None:
                      stringtie_command += (' -l '+str(params['label']))
@@ -183,7 +183,7 @@ def runMethod(logger,token,ws_client,hs,services,stringtie_dir,params):
             gtf_annotation_id = str(gtf_info[6]) + '/' + str(gtf_info[0]) + '/' + str(gtf_info[4])
             gtf_id=gtf_obj['data']['handle']['id']
             gtf_name=gtf_obj['data']['handle']['file_name']
-	    tool_opts = { k:str(v) for k,v in params.iteritems() if not k in ('ws_id','alignmentset_id', 'num-threads') and v is not None  }
+	    tool_opts = { k:str(v) for k,v in params.iteritems() if not k in ('ws_id','alignmentset_id', 'num_threads') and v is not None  }
             try:
                      script_util.download_file_from_shock(logger, shock_service_url=services['shock_service_url'], shock_id=gtf_id,filename=gtf_name, directory=stringtie_dir,token=token)
                      gtf_file = os.path.join(stringtie_dir,gtf_name)

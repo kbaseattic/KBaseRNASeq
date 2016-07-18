@@ -34,22 +34,22 @@ parameters :
       Cuffdiff Output
     short-hint : |
       Provide the name of Cuffdiff output
-  num-threads :
+  num_threads :
     ui-name : |
       Number of Threads
     short-hint : |
       Number of  computational threads to align reads. The default is 2.
-  min-alignment-count :
+  min_alignment_count :
     ui-name : |
       Minimum Alignments
     short-hint : |
       The minimum number of fragment alignments in a locus needed for a significance test on changes in that locus observed between samples. The default is 10. 
-  time-series :
+  time_series :
     ui-name : |
       Time Series
     short-hint : |
        Analyze the provided samples as a time series, rather than testing for differences between all pairs of samples. 
-  multi-read-correct :
+  multi_read_correct :
     ui-name : |
       Multi Read Correct
     short-hint : |
@@ -59,12 +59,12 @@ parameters :
       Treatment Labels
     short-hint : |
       Specify a label for each sample that will be included in various Cuffdiff output files.
-  library-type  :
+  library_type  :
     ui-name : |
       Library Types
     short-hint : |
       Select the direction of the reads with respect to the original mRNA when the library was prepared. The default is Standard Illumina.
-  library-norm-method :
+  library_norm_method :
     ui-name : |
       Library Normalization Method
     short-hint : |

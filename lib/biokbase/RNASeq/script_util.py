@@ -112,7 +112,7 @@ def create_gtf_annotation(logger,ws_client,hs_client,internal_services,ws_id,gen
                 generate_gff(logger,internal_services,token,genome_ref,directory,genome_id,tmp_file)
                 c_mapping.replace_gff_contig_ids(tmp_file, mapping_filename, to_modified=True)
                 gtf_path = os.path.join(directory,genome_id+"_GTF.gtf")
-                gtf_cmd = " -E {0} -T -o- > {1}".format(tmp_file,gtf_path)
+                gtf_cmd = " -E {0} -T -o {1}".format(tmp_file,gtf_path)
                 try:
                    logger.info("Executing: gffread {0}".format(gtf_cmd))
                    cmdline_output = runProgram(None,"gffread",gtf_cmd,None,directory)
