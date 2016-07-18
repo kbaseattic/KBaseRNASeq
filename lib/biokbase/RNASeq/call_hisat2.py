@@ -66,7 +66,7 @@ def _CallHisat2(logger,services,ws_client,hs,ws_id,sample_type,num_threads,read_
                 if('np' in params and params['np'] is not None): hisat2_cmd += ( ' --np '+str(params['np']))
                 if('minins' in params and params['minins'] is not None): hisat2_cmd += ( ' --minins '+str(params['minins']))
                 if('maxins' in params and params['maxins'] is not None): hisat2_cmd += ( ' --maxins '+str(params['maxins']))
-                if('orientation' in params and params['orientation'] is not None): hisat2_cmd += ( ' --'+params['orientation'])
+                #if('orientation' in params and params['orientation'] is not None): hisat2_cmd += ( ' --'+params['orientation'])
                 if('min_intron_length' in params and params['min_intron_length'] is not None): hisat2_cmd += ( ' --min-intronlen '+params['min_intron_length'])
                 if('max_intron_length' in params and params['max_intron_length'] is not None): hisat2_cmd += ( ' --max-intronlen '+params['max_intron_length'])
                 if('no_spliced_alignment' in params and params['no_spliced_alignment'] != 0): hisat2_cmd += ( ' --no-spliced-alignment')
@@ -86,6 +86,7 @@ def _CallHisat2(logger,services,ws_client,hs,ws_id,sample_type,num_threads,read_
                                 raise Exception( "Unable to download shock file , {0}".format(read_name))
                 if sample_type == 'KBaseAssembly.PairedEndLibrary':
                         lib_type = 'PairedEnd'
+                	if('orientation' in params and params['orientation'] is not None): hisat2_cmd += ( ' --'+params['orientation'])
                         read1_id = r_sample['data']['handle_1']['id']
                         read1_name = r_sample['data']['handle_1']['file_name']
                         read2_id = r_sample['data']['handle_2']['id']

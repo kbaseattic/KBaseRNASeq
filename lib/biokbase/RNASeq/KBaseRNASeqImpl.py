@@ -94,7 +94,7 @@ class KBaseRNASeq:
     #########################################
     VERSION = "0.0.1"
     GIT_URL = "https://github.com/sjyoo/KBaseRNASeq"
-    GIT_COMMIT_HASH = "92294af95f017484be698807f237304557ead55b"
+    GIT_COMMIT_HASH = "5b282f93b7dcc631dfe31f875b4d5cc8a5f04fd7"
     
     #BEGIN_CLASS_HEADER
     __TEMP_DIR = 'temp'
@@ -169,7 +169,7 @@ class KBaseRNASeq:
 	hs = HandleService(url=self.__HS_URL, token=user_token)
 	try:
 	    ### Create the working dir for the method; change it to a function call
-	    out_obj = { k:v for k,v in params.iteritems() if not k in ('ws_id', 'se_sample_ids', 'pe_sample_ids')}  	
+	    out_obj = { k:v for k,v in params.iteritems() if not k in ('ws_id')}  	
 	    sample_ids = params["sample_ids"]
 	    out_obj['num_samples'] = len(sample_ids)
 	    ## Validation to check if the Set contains more than one samples
@@ -196,6 +196,7 @@ class KBaseRNASeq:
             provenance[0]['input_ws_objects']=[ params['ws_id']+'/'+sample for sample in sample_ids]
 	    
 	    #Saving RNASeqSampleSet to Workspace
+	    print out_obj
 	    self.__LOGGER.info("Saving {0} object to workspace".format(params['sampleset_id']))
 	    res= ws_client.save_objects(
                                 {"workspace":params['ws_id'],
