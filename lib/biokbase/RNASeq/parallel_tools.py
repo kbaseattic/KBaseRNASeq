@@ -392,7 +392,7 @@ def call_cuffmerge_and_cuffdiff(logger,ws_client,hs,ws_id,num_threads,list_file,
 	 cuffdiff_command = (' -p '+str(num_threads))
          if('time_series' in params and params['time_series'] != 0) : cuffdiff_command += (' -T ')
          if('min_alignment_count' in params and params['min_alignment_count'] is not None ) : cuffdiff_command += (' -c '+str(params['min_alignment_count']))
-         if('multi_read_correct' in params and params['multi_read_correct'] != 0 ): cuffdiff_command += (' --multi_read_correct ')
+         if('multi_read_correct' in params and params['multi_read_correct'] != 0 ): cuffdiff_command += (' --multi-read-correct ')
          if('library_type' in params and params['library_type'] is not None ) : cuffdiff_command += ( ' --library-type '+params['library_type'])
          if('library_norm_method' in params and params['library_norm_method'] is not None ) : cuffdiff_command += ( ' --library-norm-method '+params['library_norm_method'])
 	 try:
