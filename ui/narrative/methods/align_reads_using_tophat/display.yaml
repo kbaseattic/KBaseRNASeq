@@ -59,7 +59,7 @@ parameters :
             Maximum Intron Length
         short-hint : |
             TopHat will ignore donor/acceptor pairs farther than this many bases apart.
-    min-anchor-length :
+    min_anchor_length :
         ui-name : |
             Minimum Anchor Length
         short-hint : |

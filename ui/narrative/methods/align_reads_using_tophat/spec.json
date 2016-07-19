@@ -225,7 +225,7 @@
         },
        	{
           "input_parameter" : "min_anchor_length",
-          "target_property" : "min-anchor-length"
+          "target_property" : "min_anchor_length"
         },
         {
           "input_parameter" : "num_threads",

@@ -18,8 +18,6 @@ RUN \
   cd /kb/dev_container/modules && \
   rm -rf data_api && \
   git clone https://github.com/kbase/data_api -b develop && \
-  #virtualenv venv && \
-  #. venv/bin/activate && \
   pip install --upgrade /kb/dev_container/modules/data_api
 RUN \
   . /kb/dev_container/user-env.sh && \
@@ -41,8 +39,8 @@ COPY ./deps /kb/deps
 RUN \
   sh /kb/deps/kb_tophat/install-tophat.sh && \
   sh /kb/deps/kb_bowtie/install-bowtie2.sh && \
-  sh /kb/deps/kb_cufflinks/install-cufflinks.sh && \
   sh /kb/deps/kb_hisat2/install-hisat.sh && \
+  sh /kb/deps/kb_cufflinks/install-cufflinks.sh && \
   sh /kb/deps/kb_stringTie/install-stringtie.sh
 
 COPY ./ /kb/module
