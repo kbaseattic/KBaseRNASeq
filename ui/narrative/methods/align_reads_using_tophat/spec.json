@@ -79,7 +79,7 @@
       "validate_as" : "int"
     }
   }, {
-      "id" : "min-anchor-length",
+      "id" : "min_anchor_length",
     "optional" : true,
     "advanced" : true,
     "allow_multiple" : false,
@@ -221,11 +221,11 @@
         },
         {
           "input_parameter" : "max_intron_length",
-          "target_property" : "maxi_intron_length"
+          "target_property" : "max_intron_length"
         },
        	{
-          "input_parameter" : "min-anchor-length",
-          "target_property" : "min-anchor-length"
+          "input_parameter" : "min_anchor_length",
+          "target_property" : "min_anchor_length"
         },
         {
           "input_parameter" : "num_threads",
