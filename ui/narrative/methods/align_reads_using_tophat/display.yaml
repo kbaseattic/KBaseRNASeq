@@ -1,7 +1,7 @@
 #
 # Define basic display information
 #
-name     : Align Reads using TopHat
+name     : Align Reads using TopHat2
 tooltip  : |
     Align sequencing reads to a genome using TopHat to identify exon-exon splice junctions.
 
