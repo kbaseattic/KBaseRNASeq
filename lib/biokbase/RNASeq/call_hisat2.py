@@ -67,8 +67,8 @@ def _CallHisat2(logger,services,ws_client,hs,ws_id,sample_type,num_threads,read_
                 if('minins' in params and params['minins'] is not None): hisat2_cmd += ( ' --minins '+str(params['minins']))
                 if('maxins' in params and params['maxins'] is not None): hisat2_cmd += ( ' --maxins '+str(params['maxins']))
                 #if('orientation' in params and params['orientation'] is not None): hisat2_cmd += ( ' --'+params['orientation'])
-                if('min_intron_length' in params and params['min_intron_length'] is not None): hisat2_cmd += ( ' --min-intronlen '+params['min_intron_length'])
-                if('max_intron_length' in params and params['max_intron_length'] is not None): hisat2_cmd += ( ' --max-intronlen '+params['max_intron_length'])
+                if('min_intron_length' in params and params['min_intron_length'] is not None): hisat2_cmd += ( ' --min-intronlen '+str(params['min_intron_length']))
+                if('max_intron_length' in params and params['max_intron_length'] is not None): hisat2_cmd += ( ' --max-intronlen '+str(params['max_intron_length']))
                 if('no_spliced_alignment' in params and params['no_spliced_alignment'] != 0): hisat2_cmd += ( ' --no-spliced-alignment')
                 if('transcriptome_mapping_only' in params and params['transcriptome_mapping_only'] != 0): hisat2_cmd += ( ' --transcriptome-mapping-only')
                 if('tailor_alignments' in params and params['tailor_alignments'] is not None): 
