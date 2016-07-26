@@ -1,6 +1,4 @@
 #include <KBaseAssembly.spec>
-#include <KBaseExpression.spec>
-#include <MAK.spec>
 
  module KBaseRNASeq{
 
