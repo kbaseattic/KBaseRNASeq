@@ -67,7 +67,8 @@ def generate_fasta(logger,internal_services,token,ref,output_dir,obj_name):
     	try:
         	ga.get_assembly().get_fasta().to_file(fasta_file)
 	except Exception as e:
-		raise Exception("Unable to Create FASTA file from Genome Annotation : {0}".format(obj_name))
+		#raise Exception("Unable to Create FASTA file from Genome Annotation : {0}".format(obj_name))
+		raise Exception("Unable to Create FASTA file from Genome Annotation : {0}".format("".join(traceback.format_exc())))
 	finally:
 		fasta_file.close()
     	fasta_end = datetime.datetime.utcnow()
@@ -93,7 +94,8 @@ def generate_gff(logger,internal_services,token,ref,output_dir,obj_name,output_f
 	try:
         	ga.get_gff().to_file(gff_file)
 	except Exception as e:
-                raise Exception("Unable to Create GFF  file from Genome Annotation : {0}: {1}".format(obj_name,e))
+                #raise Exception("Unable to Create GFF  file from Genome Annotation : {0}: {1}".format(obj_name,e))
+                raise Exception("Unable to Create GFF  file from Genome Annotation : {0}: {1}".format(obj_name,"".join(traceback.format_exc())))
         finally:
     		gff_file.close()
 	gff_end = datetime.datetime.utcnow()
