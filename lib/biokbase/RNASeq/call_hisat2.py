@@ -233,13 +233,14 @@ def runMethod(logger,token,ws_client,hs,services,hisat2_dir,params):
                         pass
                 results=run_hisat2_in_parallel(b_tasks)
 		alignmentSet_name = params['sampleset_id']+"_hisat2_AlignmentSet"
+                logger.info(" Creating AlignmentSet for the Alignments {0}".format(alignmentSet_name))
                 reportObj=script_util.create_RNASeq_AlignmentSet_and_build_report(logger,ws_client,params['ws_id'],reads,sampleset_id,annotation_id,None,results,alignmentSet_name)
         else:
                 try:
                     pool_size=1
                     num_threads = num_cores
                     logger.info(" Number of threads used by each process {0}".format(num_threads))
-                    results = parallel._CallHisat2(logger,services,ws_client,hs,params['ws_id'],sample_type,num_threads,params['sampleset_id'],'Single-Sample',hisat2_dir,annotation_id,None,params,token)
+                    results = _CallHisat2(logger,services,ws_client,hs,params['ws_id'],sample_type,num_threads,params['sampleset_id'],'Single-Sample',hisat2_dir,annotation_id,None,params,token)
                 except Exception,e:
                      raise
                 single_read, single_alignment = results
