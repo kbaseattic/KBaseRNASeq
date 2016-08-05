@@ -215,6 +215,7 @@ def runMethod(logger,token,ws_client,hs,services,hisat2_dir,params):
                 num_samples =  len(reads)
                 if num_cores != 1:
                         pool_size,num_threads=handler_util.optimize_parallel_run(num_samples,num_threads,num_cores)
+			pool_size = 2
 	 	else:
                    	pool_size = 1
                    	num_threads = 1
