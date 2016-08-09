@@ -22,7 +22,7 @@ try:
 except:
     from biokbase.AbstractHandle.Client import AbstractHandle as HandleService
 
-def parallelize(function,num_processors):
+def parallelize1(function,num_processors):
        def temp(_):
          def apply(args):
              final_result = []
@@ -79,11 +79,11 @@ def _CallHisat2(logger,services,ws_client,hs,ws_id,sample_type,num_threads,read_
                         read_id = r_sample['data']['handle']['id']
                         read_name =  r_sample['data']['handle']['file_name']
                         try:
-                                script_util.download_file_from_shock(logger, shock_service_url=services['shock_service_url'], shock_id=read_id,filename=read_name, directory=directory,token=token)
-                                hisat2_cmd += " -U {0} -x {1} -S {2}".format(os.path.join(directory,read_name),hisat2_base,out_file)
+                                script_util.download_file_from_shock(logger, shock_service_url=services['shock_service_url'], shock_id=read_id,filename=read_name, directory=output_dir,token=token)
+                                hisat2_cmd += " -U {0} -x {1} -S {2}".format(os.path.join(output_dir,read_name),hisat2_base,out_file)
                         except Exception,e:
-                                #logger.exception( "Unable to download shock file , {0}".format(read_name))
-                                raise Exception( "Unable to download shock file , {0}".format(read_name))
+                                logger.exception( "Unable to download shock file , {0}".format(read_name))
+                                #raise Exception( "Unable to download shock file , {0}".format(read_name))
                 if sample_type == 'KBaseAssembly.PairedEndLibrary':
                         lib_type = 'PairedEnd'
                 	if('orientation' in params and params['orientation'] is not None): hisat2_cmd += ( ' --'+params['orientation'])
@@ -92,9 +92,9 @@ def _CallHisat2(logger,services,ws_client,hs,ws_id,sample_type,num_threads,read_
                         read2_id = r_sample['data']['handle_2']['id']
                         read2_name = r_sample['data']['handle_2']['file_name']
                         try:
-                                script_util.download_file_from_shock(logger, shock_service_url=services['shock_service_url'], shock_id=read1_id,filename=read1_name, directory=directory,token=token)
-                                script_util.download_file_from_shock(logger, shock_service_url=services['shock_service_url'], shock_id=read2_id,filename=read2_name, directory=directory,token=token)
-                                hisat2_cmd += " -1 {0} -2 {1} -x {2} -S {3}".format(os.path.join(directory,read1_name),os.path.join(directory,read2_name),hisat2_base,out_file)
+                                script_util.download_file_from_shock(logger, shock_service_url=services['shock_service_url'], shock_id=read1_id,filename=read1_name, directory=output_dir,token=token)
+                                script_util.download_file_from_shock(logger, shock_service_url=services['shock_service_url'], shock_id=read2_id,filename=read2_name, directory=output_dir,token=token)
+                                hisat2_cmd += " -1 {0} -2 {1} -x {2} -S {3}".format(os.path.join(output_dir,read1_name),os.path.join(output_dir,read2_name),hisat2_base,out_file)
                         except Exception,e:
                                 #logger.Exception( "Unable to download shock file , {0} or {1}".format(read1_name,read2_name))
                                 raise Exception( "Unable to download shock file , {0} or {1}".format(read1_name,read2_name))
@@ -103,6 +103,7 @@ def _CallHisat2(logger,services,ws_client,hs,ws_id,sample_type,num_threads,read_
                         cmdline_output = script_util.runProgram(logger,"hisat2",hisat2_cmd,None,directory)
   		except Exception,e:
                         raise Exception("Failed to run command {0}".format(hisat2_cmd))
+                        #logger.exception("Failed to run command {0}".format(hisat2_cmd))
                 try:
                         stats_data = {}
                         stats_data = script_util.extractAlignmentStatsInfo(logger,"bowtie2",ws_client,ws_id,None,cmdline_output['stderr'],None)
@@ -116,6 +117,7 @@ def _CallHisat2(logger,services,ws_client,hs,ws_id,sample_type,num_threads,read_
                         script_util.runProgram(logger,"samtools",sort_bam_cmd,None,directory)
                 except Exception,e:
                         raise Exception("Error Running the hisat2 command {0},{1} {2}".format(hisat2_cmd,directory," ".join(traceback.print_exc())))
+                        #logger.exception("Error Running the hisat2 command {0},{1} {2}".format(hisat2_cmd,directory," ".join(traceback.print_exc())))
 
                 # Zip tophat folder
                 try:
@@ -124,11 +126,13 @@ def _CallHisat2(logger,services,ws_client,hs,ws_id,sample_type,num_threads,read_
                         script_util.zip_files(logger, output_dir,out_file_path)
                 except Exception, e:
                         raise Exception("Failed to compress the index: {0}".format(out_file_path))
+                        #logger.exception("Failed to compress the index: {0}".format(out_file_path))
                 ## Upload the file using handle service
                 try:
                         hisat2_handle = hs.upload(out_file_path)
                 except Exception, e:
-                        logger.exception("Failed to upload zipped output file".format(out_file_path))
+                        raise Exception("Failed to upload zipped output file".format(out_file_path))
+                        #logger.exception("Failed to upload zipped output file".format(out_file_path))
                 #### Replace version with get_version command#####
                 hisat2_out = { "file" : hisat2_handle ,"size" : os.path.getsize(out_file_path), "aligned_using" : "hisat2" , "aligner_version" : "2.2.6" , 'library_type' : lib_type , 'condition' : condition ,'read_sample_id': read_sample, 'genome_id' : genome_id , "alignment_stats" : stats_data }
                 if not sampleset_id is None: hisat2_out['sampleset_id'] = sampleset_id
@@ -152,8 +156,8 @@ def _CallHisat2(logger,services,ws_client,hs,ws_id,sample_type,num_threads,read_
                 ret = script_util.if_obj_exists(None,ws_client,ws_id,"KBaseRNASeq.RNASeqAlignment",[output_name])
                 if not ret is None:
                     return (read_sample,output_name)
-                else:
-                    return None
+                #else:
+        return None
     	
 def runMethod(logger,token,ws_client,hs,services,hisat2_dir,params):
 	try:
@@ -229,10 +233,11 @@ def runMethod(logger,token,ws_client,hs,services,hisat2_dir,params):
                         except Exception,e:
                                 raise
 
-                @parallelize(CallHisat2_helper,pool_size)
+                @parallelize1(CallHisat2_helper,pool_size)
                 def run_hisat2_in_parallel(tasks):
                         pass
                 results=run_hisat2_in_parallel(b_tasks)
+		print results
 		alignmentSet_name = params['sampleset_id']+"_hisat2_AlignmentSet"
                 logger.info(" Creating AlignmentSet for the Alignments {0}".format(alignmentSet_name))
                 reportObj=script_util.create_RNASeq_AlignmentSet_and_build_report(logger,ws_client,params['ws_id'],reads,sampleset_id,annotation_id,None,results,alignmentSet_name)
