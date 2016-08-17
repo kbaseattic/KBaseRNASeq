@@ -25,7 +25,7 @@ parameters :
     ui-name : |
         RNA-seq Alignment or Alignment Set 
     short-hint : |
-        Select the RNA-seq alignment or alignment set created by HISAT2, TopHat or Bowtie2.
+        Select the RNA-seq alignment or alignment set created by HISAT2, TopHat2 or Bowtie2.
   num_threads :
     ui-name : |
       Number of  Threads
