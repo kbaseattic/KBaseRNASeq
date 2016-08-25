@@ -52,6 +52,8 @@ def _CallHisat2(logger,services,ws_client,hs,ws_id,sample_type,num_threads,read_
                                         [{ 'name' : read_sample, 'workspace' : ws_id}])[0]
                 r_sample_info = ws_client.get_object_info_new({"objects": [{'name': read_sample, 'workspace': ws_id}]})[0]
                 sample_type = r_sample_info[2].split('-')[0]
+                input_direc = os.path.join(directory,read_sample.split('.')[0]+"_hisat2_input")
+                if not os.path.exists(input_direc): os.mkdir(input_direc)
                 output_name = read_sample.split('.')[0]+"_hisat2_alignment"
                 output_dir = os.path.join(directory,output_name)
                 if not os.path.exists(output_dir): os.mkdir(output_dir)
@@ -79,11 +81,11 @@ def _CallHisat2(logger,services,ws_client,hs,ws_id,sample_type,num_threads,read_
                         read_id = r_sample['data']['handle']['id']
                         read_name =  r_sample['data']['handle']['file_name']
                         try:
-                                script_util.download_file_from_shock(logger, shock_service_url=services['shock_service_url'], shock_id=read_id,filename=read_name, directory=output_dir,token=token)
-                                hisat2_cmd += " -U {0} -x {1} -S {2}".format(os.path.join(output_dir,read_name),hisat2_base,out_file)
+                                script_util.download_file_from_shock(logger, shock_service_url=services['shock_service_url'], shock_id=read_id,filename=read_name, directory=input_direc,token=token)
+                                hisat2_cmd += " -U {0} -x {1} -S {2}".format(os.path.join(input_direc,read_name),hisat2_base,out_file)
                         except Exception,e:
-                                logger.exception( "Unable to download shock file , {0}".format(read_name))
-                                #raise Exception( "Unable to download shock file , {0}".format(read_name))
+                                #logger.exception( "Unable to download shock file , {0}".format(read_name))
+                                raise Exception( "Unable to download shock file , {0}".format(read_name))
                 if sample_type == 'KBaseAssembly.PairedEndLibrary':
                         lib_type = 'PairedEnd'
                 	if('orientation' in params and params['orientation'] is not None): hisat2_cmd += ( ' --'+params['orientation'])
@@ -92,9 +94,9 @@ def _CallHisat2(logger,services,ws_client,hs,ws_id,sample_type,num_threads,read_
                         read2_id = r_sample['data']['handle_2']['id']
                         read2_name = r_sample['data']['handle_2']['file_name']
                         try:
-                                script_util.download_file_from_shock(logger, shock_service_url=services['shock_service_url'], shock_id=read1_id,filename=read1_name, directory=output_dir,token=token)
-                                script_util.download_file_from_shock(logger, shock_service_url=services['shock_service_url'], shock_id=read2_id,filename=read2_name, directory=output_dir,token=token)
-                                hisat2_cmd += " -1 {0} -2 {1} -x {2} -S {3}".format(os.path.join(output_dir,read1_name),os.path.join(output_dir,read2_name),hisat2_base,out_file)
+                                script_util.download_file_from_shock(logger, shock_service_url=services['shock_service_url'], shock_id=read1_id,filename=read1_name, directory=input_direc,token=token)
+                                script_util.download_file_from_shock(logger, shock_service_url=services['shock_service_url'], shock_id=read2_id,filename=read2_name, directory=input_direc,token=token)
+                                hisat2_cmd += " -1 {0} -2 {1} -x {2} -S {3}".format(os.path.join(input_direc,read1_name),os.path.join(output_dir,read2_name),hisat2_base,out_file)
                         except Exception,e:
                                 #logger.Exception( "Unable to download shock file , {0} or {1}".format(read1_name,read2_name))
                                 raise Exception( "Unable to download shock file , {0} or {1}".format(read1_name,read2_name))
@@ -151,6 +153,7 @@ def _CallHisat2(logger,services,ws_client,hs,ws_id,sample_type,num_threads,read_
                         #logger.exception("Failed to create hisat2 Alignment {0}".format(" ".join(traceback.print_exc())))
                         raise Exception("Failed to create hisat2 Alignment {0}".format(" ".join(traceback.print_exc())))
         finally:
+                if os.path.exists(input_direc): shutil.rmtree(input_direc)
                 if os.path.exists(out_file_path): os.remove(out_file_path)
                 if os.path.exists(output_dir): shutil.rmtree(output_dir)
                 ret = script_util.if_obj_exists(None,ws_client,ws_id,"KBaseRNASeq.RNASeqAlignment",[output_name])
@@ -176,6 +179,19 @@ def runMethod(logger,token,ws_client,hs,services,hisat2_dir,params):
         sampleset_id = str(sampleset_info[6]) + '/' + str(sampleset_info[0]) + '/' + str(sampleset_info[4])
         annotation_id = str(annotation_info[6]) + '/' + str(annotation_info[0]) + '/' + str(annotation_info[4])
 	sample_type = sampleset_info[2].split('-')[0]
+	### Check if the Library objects exist in the same workspace
+	logger.info("Check if the Library objects do exist in the current workspace")
+        if sample_type == 'KBaseRNASeq.RNASeqSampleSet':
+        	reads = sample['data']['sample_ids']
+        	reads_type= sample['data']['Library_type']
+        	if reads_type == 'PairedEnd': r_type = 'KBaseAssembly.PairedEndLibrary'
+        	else: r_type = 'KBaseAssembly.SingleEndLibrary'
+        	e_ws_objs = script_util.if_ws_obj_exists(None,ws_client,params['ws_id'],r_type,reads)
+        	missing_objs = [i for i in reads if not i in e_ws_objs]
+        	if len(e_ws_objs) != len(reads):
+            		raise Exception('Missing Library objects {0} in the {1}. please copy them and run this method'.format(",".join(missing_objs),params['ws_id']))
+
+	### Build Hisat2 index
 	fasta_file = script_util.generate_fasta(logger,services,token,annotation_id,hisat2_dir,params['genome_id'])
         logger.info("Sanitizing the fasta file to correct id names {}".format(datetime.datetime.utcnow()))
         mapping_filename = c_mapping.create_sanitized_contig_ids(fasta_file)
@@ -198,7 +214,7 @@ def runMethod(logger,token,ws_client,hs,services,hisat2_dir,params):
             gtf_id=gtf_obj['data']['handle']['id']
             gtf_name=gtf_obj['data']['handle']['file_name']
  	    try:
-                     script_util.download_file_from_shock(logger, shock_service_url=self.__SHOCK_URL, shock_id=gtf_id,filename=gtf_name, directory=hisat2_dir,token=token)
+                     script_util.download_file_from_shock(logger, shock_service_url=services['shock_service_url'], shock_id=gtf_id,filename=gtf_name, directory=hisat2_dir,token=token)
                      gtf_file = os.path.join(hisat2_dir,gtf_name)
             except Exception,e:
                         raise Exception( "Unable to download shock file, {0}".format(gtf_name))

@@ -7,6 +7,7 @@ from pprint import pprint , pformat
 import parallel_tools as parallel
 from mpipe import OrderedStage , Pipeline
 import contig_id_mapping as c_mapping
+import numpy
 import script_util
 import handler_utils as handler_util
 from biokbase.workspace.client import Workspace
@@ -53,6 +54,8 @@ def _CallStringtie(logger,services,ws_client,hs,ws_id,num_threads,s_alignment,gt
         try:
                 alignment = ws_client.get_objects(
                                         [{ 'ref' : s_alignment }])[0]
+                input_direc = os.path.join(directory,alignment_name.split('_alignment')[0]+"_stringtie_input")
+                if not os.path.exists(input_direc) : os.mkdir(input_direc)
                 output_name = alignment_name.split('_alignment')[0]+"_stringtie_expression"
                 output_dir = os.path.join(directory,output_name)
                 #Download Alignment from shock
@@ -60,13 +63,13 @@ def _CallStringtie(logger,services,ws_client,hs,ws_id,num_threads,s_alignment,gt
                 a_filename = alignment['data']['file']['file_name']
                 condition = alignment['data']['condition']
                 try:
-                     script_util.download_file_from_shock(logger, shock_service_url=services['shock_service_url'], shock_id=a_file_id,filename=a_filename,directory=directory,token=token)
+                     script_util.download_file_from_shock(logger, shock_service_url=services['shock_service_url'], shock_id=a_file_id,filename=a_filename,directory=input_direc,token=token)
                 except Exception,e:
-                        raise Exception( "Unable to download shock file, {0}".format(i_name))
+                        raise Exception( "Unable to download shock file, {0},{1}".format(a_filename,"".join.tracback.format_exc()))
                 try:
-                    input_dir = os.path.join(directory,alignment_name)
+                    input_dir = os.path.join(input_direc,alignment_name)
                     if not os.path.exists(input_dir): os.mkdir(input_dir)
-                    script_util.unzip_files(logger,os.path.join(directory,a_filename), input_dir)
+                    script_util.unzip_files(logger,os.path.join(input_direc,a_filename), input_dir)
                 except Exception, e:
                        logger.error("".join(traceback.format_exc()))
                        raise Exception("Unzip alignment files  error: Please contact help@kbase.us")
@@ -157,6 +160,7 @@ def _CallStringtie(logger,services,ws_client,hs,ws_id,num_threads,s_alignment,gt
         finally:
                 if os.path.exists(out_file_path): os.remove(out_file_path)
                 if os.path.exists(output_dir): shutil.rmtree(output_dir)
+                if os.path.exists(input_direc): shutil.rmtree(input_direc)
                 ret = script_util.if_obj_exists(None,ws_client,ws_id,"KBaseRNASeq.RNASeqExpression",[output_name])
                 if not ret is None:
                     return (alignment_name, output_name )
@@ -174,22 +178,42 @@ def runMethod(logger,token,ws_client,hs,services,stringtie_dir,params):
             a_sample_info = ws_client.get_object_info_new({"objects": [{'name': params['alignmentset_id'], 'workspace': params['ws_id']}]})[0]
             a_sample_type = a_sample_info[2].split('-')[0]
             alignmentset_id = str(a_sample_info[6]) + '/' + str(a_sample_info[0]) + '/' + str(a_sample_info[4])
+	    ## Check if the Alignment objects exist in the same workspace
+	    logger.info("Check if the Alignment objects do exist in the current workspace")
+            if a_sample_type == 'KBaseRNASeq.RNASeqAlignmentSet':
+                a_names = list(numpy.array([ i.values() for i in a_sample['data']['mapped_rnaseq_alignments']]).flatten())
+                a_type = 'KBaseRNASeq.RNASeqAlignment'
+                e_ws_objs = script_util.if_ws_obj_exists(None,ws_client,params['ws_id'],a_type,a_names)
+                missing_objs = [i for i in a_names if not i in e_ws_objs]
+                if len(e_ws_objs) != len(a_names):
+                   raise ValueError('Missing Alignment objects {0} in the {1}. please copy them and run this method'.format(",".join(missing_objs),params['ws_id']))
+
             ### Check if the gtf file exists in the workspace. if exists download the file from that
             annotation_id = a_sample['data']['genome_id']
             annotation_name = ws_client.get_object_info([{"ref" :annotation_id}],includeMetadata=None)[0][1]
             gtf_obj_name = annotation_name+"_GTF_Annotation"
-            gtf_obj= ws_client.get_objects([{'name' : gtf_obj_name,'workspace' : params['ws_id']}])[0]
-            gtf_info = ws_client.get_object_info_new({"objects": [{'name': gtf_obj_name, 'workspace': params['ws_id']}]})[0]
-            gtf_annotation_id = str(gtf_info[6]) + '/' + str(gtf_info[0]) + '/' + str(gtf_info[4])
-            gtf_id=gtf_obj['data']['handle']['id']
-            gtf_name=gtf_obj['data']['handle']['file_name']
-	    tool_opts = { k:str(v) for k,v in params.iteritems() if not k in ('ws_id','alignmentset_id', 'num_threads') and v is not None  }
-            try:
-                     script_util.download_file_from_shock(logger, shock_service_url=services['shock_service_url'], shock_id=gtf_id,filename=gtf_name, directory=stringtie_dir,token=token)
+            ret = script_util.if_obj_exists(None,ws_client,params['ws_id'],"KBaseRNASeq.GFFAnnotation",[gtf_obj_name])
+            if not ret is None:
+                logger.info("GFF Annotation Exist for Genome Annotation {0}.... Skipping step ".format(annotation_name))
+                gtf_obj= ws_client.get_objects([{'name' : gtf_obj_name,'workspace' : params['ws_id']}])[0]
+                gtf_info = ws_client.get_object_info_new({"objects": [{'name': gtf_obj_name, 'workspace': params['ws_id']}]})[0]
+                gtf_annotation_id = str(gtf_info[6]) + '/' + str(gtf_info[0]) + '/' + str(gtf_info[4])
+                gtf_id=gtf_obj['data']['handle']['id']
+                gtf_name=gtf_obj['data']['handle']['file_name']
+                try:
+                     script_util.download_file_from_shock(logger, shock_service_url=services['shock_service_url'], shock_id=gtf_id,filename=gtf_name, directory=stringtie_dir,token=user_token)
                      gtf_file = os.path.join(stringtie_dir,gtf_name)
-            except Exception,e:
-                        raise Exception( "Unable to download shock file, {0}".format(gtf_name))
-
+                except Exception,e:
+                     raise Exception( "Unable to download shock file, {0}".format(gtf_name))
+            else:
+                fasta_file= script_util.generate_fasta(logger,services,user_token,annotation_id,stringtie_dir,annotation_name)
+                logger.info("Sanitizing the fasta file to correct id names {}".format(datetime.datetime.utcnow()))
+                mapping_filename = c_mapping.create_sanitized_contig_ids(fasta_file)
+                c_mapping.replace_fasta_contig_ids(fasta_file, mapping_filename, to_modified=True)
+                logger.info("Generating FASTA file completed successfully : {}".format(datetime.datetime.utcnow()))
+                gtf_file = script_util.create_gtf_annotation(logger,ws_client,hs,services['shock_service_url'],params['ws_id'],annotation_id,gtf_obj_name,fasta_file,stringtie_dir,user_token)
+	    #Identify the tool options used
+	    tool_opts = { k:str(v) for k,v in params.iteritems() if not k in ('ws_id','alignmentset_id', 'num_threads') and v is not None  }
             # Determine the num_threads provided by the user otherwise default the number of threads to 2
             if('num_threads' in params and params['num_threads'] is not None):
                         num_threads = int(params['num_threads'])

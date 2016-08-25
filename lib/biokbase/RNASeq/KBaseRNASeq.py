@@ -79,6 +79,8 @@ async_run_methods['KBaseRNASeq.CufflinksCall_async'] = ['KBaseRNASeq', 'Cufflink
 async_check_methods['KBaseRNASeq.CufflinksCall_check'] = ['KBaseRNASeq', 'CufflinksCall']
 async_run_methods['KBaseRNASeq.CuffdiffCall_async'] = ['KBaseRNASeq', 'CuffdiffCall']
 async_check_methods['KBaseRNASeq.CuffdiffCall_check'] = ['KBaseRNASeq', 'CuffdiffCall']
+async_run_methods['KBaseRNASeq.DiffExpCallforBallgown_async'] = ['KBaseRNASeq', 'DiffExpCallforBallgown']
+async_check_methods['KBaseRNASeq.DiffExpCallforBallgown_check'] = ['KBaseRNASeq', 'DiffExpCallforBallgown']
 
 class AsyncJobServiceClient(object):
 
@@ -386,6 +388,10 @@ class Application(object):
                              name='KBaseRNASeq.CuffdiffCall',
                              types=[dict])
         self.method_authentication['KBaseRNASeq.CuffdiffCall'] = 'required'
+        self.rpc_service.add(impl_KBaseRNASeq.DiffExpCallforBallgown,
+                             name='KBaseRNASeq.DiffExpCallforBallgown',
+                             types=[dict])
+        self.method_authentication['KBaseRNASeq.DiffExpCallforBallgown'] = 'required'
         self.rpc_service.add(impl_KBaseRNASeq.status,
                              name='KBaseRNASeq.status',
                              types=[dict])

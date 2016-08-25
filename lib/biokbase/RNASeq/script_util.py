@@ -42,6 +42,17 @@ def if_obj_exists(logger,ws_client,ws_id,o_type,obj_l):
 	obj_ids =[ (str(k[1]) , (str(k[6]) + '/' + str(k[0]) + '/' + str(k[4])) ) for k in e_infos]
     return obj_ids
 
+def if_ws_obj_exists(logger,ws_client,ws_id,o_type,obj_l):
+    existing_names = None
+    obj_list = ws_client.list_objects( {"workspaces" : [ws_id ] ,"type" : o_type,'showHidden' : 1})
+    obj_names = [i[1] for i in obj_list]
+    existing_names = [i for i in obj_l if i in obj_names]
+    #if len(existing_names) != len(obj_l):
+        #e_queries = [{'name' : j , 'workspace' : ws_id } for j in existing_names]
+        #e_inddfos = ws_client.get_object_info_new({"objects": e_queries })
+        #obj_ids =[ (str(k[1]) , (str(k[6]) + '/' + str(k[0]) + '/' + str(k[4])) ) for k in e_infos]
+    return existing_names
+
 def find_read_objects(logger,ex_reads_alignments,suffix1,suffix2):
     #try:
     if len(ex_reads_alignments) != 0:

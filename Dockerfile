@@ -34,7 +34,8 @@ RUN \
   sh /kb/deps/kb_bowtie/install-bowtie2.sh && \
   sh /kb/deps/kb_hisat2/install-hisat.sh && \
   sh /kb/deps/kb_cufflinks/install-cufflinks.sh && \
-  sh /kb/deps/kb_stringTie/install-stringtie.sh
+  sh /kb/deps/kb_stringTie/install-stringtie.sh && \
+  sh /kb/deps/kb_tableMaker/install-tablemaker.sh
 
 COPY ./ /kb/module
 RUN \

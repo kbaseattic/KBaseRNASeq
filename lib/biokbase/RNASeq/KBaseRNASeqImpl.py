@@ -7,6 +7,7 @@ import ast
 import glob
 import json
 import uuid
+import numpy
 import logging
 import time
 import subprocess
@@ -94,7 +95,7 @@ class KBaseRNASeq:
     #########################################
     VERSION = "0.0.1"
     GIT_URL = "https://github.com/sjyoo/KBaseRNASeq"
-    GIT_COMMIT_HASH = "5b282f93b7dcc631dfe31f875b4d5cc8a5f04fd7"
+    GIT_COMMIT_HASH = "f7971e064257aba438a1c67dcb3414234a869631"
     
     #BEGIN_CLASS_HEADER
     __TEMP_DIR = 'temp'
@@ -196,7 +197,6 @@ class KBaseRNASeq:
             provenance[0]['input_ws_objects']=[ params['ws_id']+'/'+sample for sample in sample_ids]
 	    
 	    #Saving RNASeqSampleSet to Workspace
-	    print out_obj
 	    self.__LOGGER.info("Saving {0} object to workspace".format(params['sampleset_id']))
 	    res= ws_client.save_objects(
                                 {"workspace":params['ws_id'],
@@ -224,8 +224,6 @@ class KBaseRNASeq:
         # return variables are: returnVal
         #BEGIN BuildBowtie2Index
 	user_token=ctx['token']
-   	#pprint(params) 
-        #svc_token = Token(user_id=self.__SVC_USER, password=self.__SVC_PASS).token
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
 	hs = HandleService(url=self.__HS_URL, token=user_token)
 	try:
@@ -244,9 +242,7 @@ class KBaseRNASeq:
                 self.__LOGGER.info( "Generating FASTA from Genome Annotation")
                 outfile_ref_name = params['reference']+".fasta"
                 try:
-			#generate_fasta(logger,internal_services,token,genome_ref,directory,genome_id)
                     	output_file = script_util.generate_fasta(self.__LOGGER,self.__SERVICES,user_token,genome_id,bowtie_dir,params['reference'])
-                    	#output_file = script_util.generate_fasta(self.__LOGGER,self.__SERVICES,user_token,params['ws_id'],bowtie_dir,params['reference'])
 			self.__LOGGER.info("Sanitizing the fasta file to correct id names {}".format(datetime.datetime.utcnow()))
         		mapping_filename = c_mapping.create_sanitized_contig_ids(output_file)
         		c_mapping.replace_fasta_contig_ids(output_file, mapping_filename, to_modified=True)
@@ -461,7 +457,6 @@ class KBaseRNASeq:
         try:
 	    if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
             bowtie2_dir = os.path.join(self.__SCRATCH,"tmp")
-	    #print bowtie2_dir
             handler_util.setupWorkingDir(self.__LOGGER,bowtie2_dir)
             self.__LOGGER.info("Downloading Bowtie2Indexes and GFF annotation objects")
 	    try:
@@ -471,17 +466,29 @@ class KBaseRNASeq:
             except Exception,e:
                  self.__LOGGER.exception("".join(traceback.format_exc()))
                  raise KBaseRNASeqException(" Error Downloading objects from the workspace ")
+	    
+	    #### Getting Samples info
+            sample_info = ws_client.get_object_info_new({"objects": [{'name': params['sampleset_id'], 'workspace': params['ws_id']}]})[0]
+            sample_type = sample_info[2].split('-')[0]
+	    #### Check  if the library objects in the RNASeqSampleSet exist in the workspace
+            self.__LOGGER.info("Check if the Library objects do exist in the current workspace")
+	    if sample_type == 'KBaseRNASeq.RNASeqSampleSet':
+                reads_type= sample['data']['Library_type']
+                if reads_type == 'PairedEnd': r_type = 'KBaseAssembly.PairedEndLibrary'
+                else: r_type = 'KBaseAssembly.SingleEndLibrary'
+                e_ws_objs = script_util.if_ws_obj_exists(None,ws_client,params['ws_id'],r_type, sample['data']['sample_ids'])
+                missing_objs = [i for i in sample['data']['sample_ids'] if not i in e_ws_objs]
+                if len(e_ws_objs) != len(sample['data']['sample_ids']):
+                   raise ValueError('FAILED : Missing Library objects {0} in the {1} workspace. please copy them and run this method'.format(",".join(missing_objs),params['ws_id']))
 	    ### Get obejct IDs
 	    bowtie2_index_info,sampleset_info = ws_client.get_object_info_new({"objects": [{'name': params['bowtie_index'], 'workspace': params['ws_id']},{'name': params['sampleset_id'], 'workspace': params['ws_id']}]})
             bowtie2index_id = str(bowtie2_index_info[6]) + '/' + str(bowtie2_index_info[0]) + '/' + str(bowtie2_index_info[4]) 	
             sampleset_id = str(sampleset_info[6]) + '/' + str(sampleset_info[0]) + '/' + str(sampleset_info[4]) 	
-#	    #annotation_name =  annotation['data']['handle']['file_name']
 	    bw_id = bowtie_index['data']['handle']['id'] 
 	    bw_name =  bowtie_index['data']['handle']['file_name']
             genome_id = bowtie_index['data']['genome_id']
 	    annotation_gtf = ws_client.get_object_info([{"ref" :genome_id}],includeMetadata=None)[0][1]
 	    shared_files={}
-	    #shared_files[annotation_name] : annotation_id
 	    shared_files[bw_name] = bw_id
 	    script_util.download_shock_files(self.__LOGGER,self.__SHOCK_URL,bowtie2_dir,shared_files,user_token)
 	    try:
@@ -497,7 +504,6 @@ class KBaseRNASeq:
 	    bowtie2base =os.path.join(bowtie2_dir,handler_util.get_file_with_suffix(bowtie2_dir,".rev.1.bt2"))
 	    ws_gtf = annotation_gtf+self.__GTF_SUFFIX
 	    ret = script_util.if_obj_exists(None,ws_client,params['ws_id'],"KBaseRNASeq.GFFAnnotation",[ws_gtf])
-            print ret 
 	    if not ret is None:
                 self.__LOGGER.info("GFF Annotation Exist for Genome Annotation {0}.... Skipping step ".format(annotation_gtf))
 		annot_name,annot_id = ret[0]
@@ -511,9 +517,6 @@ class KBaseRNASeq:
                         raise Exception( "Unable to download shock file, {0}".format(gtf_name))  
  	    else:		
 	    	script_util.create_gtf_annotation(self.__LOGGER,ws_client,hs,self.__SERVICES,params['ws_id'],genome_id,annotation_gtf,fasta_file,bowtie2_dir,user_token)
-	    #### Getting Samples info
-	    sample_info = ws_client.get_object_info_new({"objects": [{'name': params['sampleset_id'], 'workspace': params['ws_id']}]})[0]
-            sample_type = sample_info[2].split('-')[0]
             shared_files = {}
 	    # Determine the num_threads provided by the user otherwise default the number of threads to 2
 	    if('num_threads' in params and params['num_threads'] is not None): 
@@ -572,7 +575,6 @@ class KBaseRNASeq:
                                                  'description' : "RNA-seq Alignment for reads Sample: {0}".format(single_read)}],
                                                  'text_message': "RNA-seq Alignment for reads Sample: {0}".format(single_read)}         
             #### Save to report object #######
-                #returnVal = single_align_obj   
 	    reportName = 'Align_Reads_using_Bowtie2_'+str(hex(uuid.getnode()))
             report_info = ws_client.save_objects({
                                                 'id':sampleset_info[6],
@@ -612,17 +614,16 @@ class KBaseRNASeq:
 	user_token=ctx['token']
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
         hs = HandleService(url=self.__HS_URL, token=user_token)
-	try:
-		if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
-            	hisat2_dir = os.path.join(self.__SCRATCH,"tmp")
-            	handler_util.setupWorkingDir(self.__LOGGER,hisat2_dir)
-		returnVal = call_hisat2.runMethod(self.__LOGGER,user_token,ws_client,hs,self.__SERVICES,hisat2_dir,params)
-		#returnVal = call_hisat2.runMethod(self.__LOGGER,user_token,ws_client,hs,params)
-        except Exception,e:
-                 self.__LOGGER.exception("".join(traceback.format_exc()))
-                 raise KBaseRNASeqException("Error Running Hisat2Call")
-	finally:
-                 handler_util.cleanup(self.__LOGGER,hisat2_dir)
+	if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
+        hisat2_dir = os.path.join(self.__SCRATCH,"tmp")
+        handler_util.setupWorkingDir(self.__LOGGER,hisat2_dir) 
+        returnVal = call_hisat2.runMethod(self.__LOGGER,user_token,ws_client,hs,self.__SERVICES,hisat2_dir,params)
+	#returnVal = call_hisat2.runMethod(self.__LOGGER,user_token,ws_client,hs,params)
+        #except Exception,e:
+        #         self.__LOGGER.exception("".join(traceback.format_exc()))
+        #        raise KBaseRNASeqException("Error Running Hisat2Call")
+	#finally:
+        handler_util.cleanup(self.__LOGGER,hisat2_dir)
         #END Hisat2Call
 
         # At some point might do deeper type checking...
@@ -651,7 +652,20 @@ class KBaseRNASeq:
             except Exception,e:
 		 self.__LOGGER.exception("".join(traceback.format_exc()))
 		 raise KBaseRNASeqException("Error Downloading objects from the workspace ") 
-                     
+            #### Getting Samples info
+            sample_info = ws_client.get_object_info_new({"objects": [{'name': params['sampleset_id'], 'workspace': params['ws_id']}]})[0]
+            sample_type = sample_info[2].split('-')[0]
+            self.__LOGGER.info("Check if the Library objects do exist in the current workspace")
+            if sample_type == 'KBaseRNASeq.RNASeqSampleSet':
+                reads = sample['data']['sample_ids']
+                reads_type= sample['data']['Library_type']
+                if reads_type == 'PairedEnd': r_type = 'KBaseAssembly.PairedEndLibrary'
+                else: r_type = 'KBaseAssembly.SingleEndLibrary'
+                e_ws_objs = script_util.if_ws_obj_exists(None,ws_client,params['ws_id'],r_type,reads)
+                missing_objs = [i for i in reads if not i in e_ws_objs]
+                if len(e_ws_objs) != len(reads):
+                   raise ValueError('Missing Library objects {0} in the {1}. please copy them and run this method'.format(",".join(missing_objs),params['ws_id']))
+ 
 	    ### Get obejct IDs
             bowtie2_index_info,sampleset_info = ws_client.get_object_info_new({"objects": [{'name': params['bowtie_index'], 'workspace': params['ws_id']},{'name': params['sampleset_id'], 'workspace': params['ws_id']}]})
             bowtie2index_id = str(bowtie2_index_info[6]) + '/' + str(bowtie2_index_info[0]) + '/' + str(bowtie2_index_info[4])  
@@ -693,9 +707,6 @@ class KBaseRNASeq:
                         raise Exception( "Unable to download shock file, {0}".format(gtf_name))  
  	    else:		
             	gtf_file = script_util.create_gtf_annotation(self.__LOGGER,ws_client,hs,self.__SERVICES,params['ws_id'],genome_id,annotation_gtf,fasta_file,tophat_dir,user_token)
-  	    #### Getting Samples info
-            sample_info = ws_client.get_object_info_new({"objects": [{'name': params['sampleset_id'], 'workspace': params['ws_id']}]})[0]
-            sample_type = sample_info[2].split('-')[0]
             shared_files = {}
 	    # Determine the num_threads provided by the user otherwise default the number of threads to 2
             if('num_threads' in params and params['num_threads'] is not None): 
@@ -789,16 +800,16 @@ class KBaseRNASeq:
         user_token=ctx['token']
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
         hs = HandleService(url=self.__HS_URL, token=user_token)
-        try:
-                if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
-                stringtie_dir = os.path.join(self.__SCRATCH,"tmp")
-                handler_util.setupWorkingDir(self.__LOGGER,stringtie_dir)
-                returnVal = call_stringtie.runMethod(self.__LOGGER,user_token,ws_client,hs,self.__SERVICES,stringtie_dir,params)
-	except Exception,e:
-                 self.__LOGGER.exception("".join(traceback.format_exc()))
-                 raise KBaseRNASeqException("Error Running StringTieCall")
-        finally:
-                 handler_util.cleanup(self.__LOGGER,stringtie_dir)
+        #try:
+        if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
+        stringtie_dir = os.path.join(self.__SCRATCH,"tmp")
+        handler_util.setupWorkingDir(self.__LOGGER,stringtie_dir)
+        returnVal = call_stringtie.runMethod(self.__LOGGER,user_token,ws_client,hs,self.__SERVICES,stringtie_dir,params)
+	#except Exception,e:
+        #         self.__LOGGER.exception("".join(traceback.format_exc()))
+         #        raise KBaseRNASeqException("Error Running StringTieCall")
+        #finally:
+        handler_util.cleanup(self.__LOGGER,stringtie_dir)
         #END StringTieCall
 
         # At some point might do deeper type checking...
@@ -833,8 +844,14 @@ class KBaseRNASeq:
 	    a_sample_info = ws_client.get_object_info_new({"objects": [{'name': params['alignmentset_id'], 'workspace': params['ws_id']}]})[0]
             a_sample_type = a_sample_info[2].split('-')[0] 		
             alignmentset_id = str(a_sample_info[6]) + '/' + str(a_sample_info[0]) + '/' + str(a_sample_info[4])		
-            #shared_files = {}
-
+            self.__LOGGER.info("Check if the Alignment objects do exist in the current workspace")
+            if a_sample_type == 'KBaseRNASeq.RNASeqAlignmentSet':
+                a_names = list(numpy.array([ i.values() for i in a_sample['data']['mapped_rnaseq_alignments']]).flatten())
+		a_type = 'KBaseRNASeq.RNASeqAlignment'
+                e_ws_objs = script_util.if_ws_obj_exists(None,ws_client,params['ws_id'],a_type,a_names)
+                missing_objs = [i for i in a_names if not i in e_ws_objs]
+                if len(e_ws_objs) != len(a_names):
+                   raise ValueError('Missing Alignment objects {0} in the {1}. please copy them and run this method'.format(",".join(missing_objs),params['ws_id']))
 	    ### Check if there are existing cufflinks run on the alignments,
 	    ### if exists : skip cufflinks run, 
 		### get existing ids for set obj,
@@ -842,21 +859,33 @@ class KBaseRNASeq:
 	    ###  else : run on all alignments
 	
 	    ### Check if the gtf file exists in the workspace. if exists download the file from that
+	                ### Check if GTF annotation object exist or skip this step
+            ### Check if the gtf object exists in the workspace
+            ### Only run create_gtf_annotation if object doesnt exist
 	    annotation_id = a_sample['data']['genome_id']
 	    annotation_name = ws_client.get_object_info([{"ref" :annotation_id}],includeMetadata=None)[0][1]
-	    gtf_obj_name = annotation_name+"_GTF_Annotation"
-	    gtf_obj= ws_client.get_objects([{'name' : gtf_obj_name,'workspace' : params['ws_id']}])[0]
-	    gtf_info = ws_client.get_object_info_new({"objects": [{'name': gtf_obj_name, 'workspace': params['ws_id']}]})[0]
-            gtf_annotation_id = str(gtf_info[6]) + '/' + str(gtf_info[0]) + '/' + str(gtf_info[4])
-            gtf_id=gtf_obj['data']['handle']['id']
-            gtf_name=gtf_obj['data']['handle']['file_name']
-            try:
+	    gtf_obj_name = annotation_name+self.__GTF_SUFFIX
+	    ret = script_util.if_obj_exists(None,ws_client,params['ws_id'],"KBaseRNASeq.GFFAnnotation",[gtf_obj_name])
+            if not ret is None:
+                self.__LOGGER.info("GFF Annotation Exist for Genome Annotation {0}.... Skipping step ".format(annotation_name))
+	    	gtf_obj= ws_client.get_objects([{'name' : gtf_obj_name,'workspace' : params['ws_id']}])[0]
+	    	gtf_info = ws_client.get_object_info_new({"objects": [{'name': gtf_obj_name, 'workspace': params['ws_id']}]})[0]
+            	gtf_annotation_id = str(gtf_info[6]) + '/' + str(gtf_info[0]) + '/' + str(gtf_info[4])
+            	gtf_id=gtf_obj['data']['handle']['id']
+            	gtf_name=gtf_obj['data']['handle']['file_name']
+            	try:
                      script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=gtf_id,filename=gtf_name, directory=cufflinks_dir,token=user_token)
                      gtf_file = os.path.join(cufflinks_dir,gtf_name)
-            except Exception,e:
-                        raise Exception( "Unable to download shock file, {0}".format(gtf_name))  
+            	except Exception,e:
+                     raise Exception( "Unable to download shock file, {0}".format(gtf_name))  
+	    else:
+		fasta_file= script_util.generate_fasta(self.__LOGGER,self.__SERVICES,user_token,annotation_id,cufflinks_dir,annotation_name)
+                self.__LOGGER.info("Sanitizing the fasta file to correct id names {}".format(datetime.datetime.utcnow()))
+                mapping_filename = c_mapping.create_sanitized_contig_ids(fasta_file)
+                c_mapping.replace_fasta_contig_ids(fasta_file, mapping_filename, to_modified=True)
+                self.__LOGGER.info("Generating FASTA file completed successfully : {}".format(datetime.datetime.utcnow()))
+                gtf_file = script_util.create_gtf_annotation(self.__LOGGER,ws_client,hs,self.__SERVICES,params['ws_id'],annotation_id,gtf_obj_name,fasta_file,cufflinks_dir,user_token)
 
-	
 	    # Determine the num_threads provided by the user otherwise default the number of threads to 2
             if('num_threads' in params and params['num_threads'] is not None): 
                         num_threads = int(params['num_threads']) 
@@ -980,16 +1009,26 @@ class KBaseRNASeq:
             annotation_id = e_set['data']['genome_id']
             annotation_name = ws_client.get_object_info([{"ref" :annotation_id}],includeMetadata=None)[0][1]
             gtf_obj_name = annotation_name+"_GTF_Annotation"
-            gtf_obj= ws_client.get_objects([{'name' : gtf_obj_name,'workspace' : params['ws_id']}])[0]
-            gtf_info = ws_client.get_object_info_new({"objects": [{'name': gtf_obj_name, 'workspace': params['ws_id']}]})[0]
-            gtf_annotation_id = str(gtf_info[6]) + '/' + str(gtf_info[0]) + '/' + str(gtf_info[4])
-            gtf_id=gtf_obj['data']['handle']['id']
-            gtf_name=gtf_obj['data']['handle']['file_name']
-            try:
+            ret = script_util.if_obj_exists(None,ws_client,params['ws_id'],"KBaseRNASeq.GFFAnnotation",[gtf_obj_name])
+            if not ret is None:
+                self.__LOGGER.info("GFF Annotation Exist for Genome Annotation {0}.... Skipping step ".format(annotation_name))
+                gtf_obj= ws_client.get_objects([{'name' : gtf_obj_name,'workspace' : params['ws_id']}])[0]
+                gtf_info = ws_client.get_object_info_new({"objects": [{'name': gtf_obj_name, 'workspace': params['ws_id']}]})[0]
+                gtf_annotation_id = str(gtf_info[6]) + '/' + str(gtf_info[0]) + '/' + str(gtf_info[4])
+                gtf_id=gtf_obj['data']['handle']['id']
+                gtf_name=gtf_obj['data']['handle']['file_name']
+                try:
                      script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=gtf_id,filename=gtf_name, directory=cuffdiff_dir,token=user_token)
                      gtf_file = os.path.join(cuffdiff_dir,gtf_name)
-            except Exception,e:
-                        raise Exception( "Unable to download shock file, {0}".format(gtf_name))
+                except Exception,e:
+                     raise Exception( "Unable to download shock file, {0}".format(gtf_name))
+            else:
+                fasta_file= script_util.generate_fasta(self.__LOGGER,self.__SERVICES,user_token,annotation_id,cuffdiff_dir,annotation_name)
+                self.__LOGGER.info("Sanitizing the fasta file to correct id names {}".format(datetime.datetime.utcnow()))
+                mapping_filename = c_mapping.create_sanitized_contig_ids(fasta_file)
+                c_mapping.replace_fasta_contig_ids(fasta_file, mapping_filename, to_modified=True)
+                self.__LOGGER.info("Generating FASTA file completed successfully : {}".format(datetime.datetime.utcnow()))
+                gtf_file = script_util.create_gtf_annotation(self.__LOGGER,ws_client,hs,self.__SERVICES,params['ws_id'],annotation_id,gtf_obj_name,fasta_file,cuffdiff_dir,user_token)
             #### Getting the alignments and expression from the alignment set and expression set 
 	    m_expr_ids = e_set['data']['mapped_expression_ids']
 	    
@@ -1045,103 +1084,6 @@ class KBaseRNASeq:
 	    results = parallel.call_cuffmerge_and_cuffdiff(self.__LOGGER,ws_client,hs,params['ws_id'],num_threads,assembly_file,gtf_file,bam_files,t_labels,annotation_id,expressionset_id,alignmentset_id,sampleset_id,params,cuffdiff_dir,user_token)
 	    expr_id, cuffdiff_obj = results
 	    returnVal = { 'output'  : cuffdiff_obj ,'workspace' : params['ws_id']}
-# 
-#	   		merged_gtf = analysis['data']['transcriptome_id']
-#	    		try:
-#                		transcriptome = ws_client.get_objects([{ 'ref' : merged_gtf }])[0]
-#            		except Exception,e:
-#                 		self.__LOGGER.exception("".join(traceback.format_exc()))
-#                 		raise KBaseRNASeqException("Error Downloading merged transcriptome ") 
-#	    		t_url = transcriptome['data']['file']['url']
-#	    		t_id = transcriptome['data']['file']['id']
-#	    		t_name = transcriptome['data']['file']['file_name']
-#	    		try:
-#                 		script_util.download_file_from_shock(self.__LOGGER, shock_service_url=t_url, shock_id=t_id,filename=t_name, directory=cuffdiff_dir,token=user_token)
-#
-#            		except Exception,e:
-#                 		raise Exception( "Unable to download transcriptome shock file, {0}".format(e))
-#            		try:
-#                 		script_util.unzip_files(self.__LOGGER,os.path.join(cuffdiff_dir,t_name),cuffdiff_dir)
-#            		except Exception, e:
-#                 		raise Exception("Unzip transcriptome zip file  error: Please contact help@kbase.us")
-#            		gtf_file = os.path.join(cuffdiff_dir,"merged.gtf")
-#	   
-#            		### Adding advanced options
-#	    		num_p = multiprocessing.cpu_count()
-#            		#print 'processors count is ' +  str(num_p)
-#	    		cuffdiff_command = (' -p '+str(num_p))
-#            		#if('num-threads' in params and params['num-threads'] is not None) : cuffdiff_command += (' -p '+str(params['num-threads']))
-#	    		if('time-series' in params and params['time-series'] != 0) : cuffdiff_command += (' -T ')
-#	    		if('min-alignment-count' in params and params['min-alignment-count'] is not None ) : cuffdiff_command += (' -c '+str(params['min-alignment-count']))
-#	    		if('multi-read-correct' in params and params['multi-read-correct'] != 0 ): cuffdiff_command += (' --multi-read-correct ')
-#	    		if('library-type' in params and params['library-type'] is not None ) : cuffdiff_command += ( ' --library-type '+params['library-type'])
-#	    		if('library-norm-method' in params and params['library-norm-method'] is not None ) : cuffdiff_command += ( ' --library-norm-method '+params['library-norm-method'])
-# 
-#	    		try:
-#                		# TODO: add reference GTF later, seems googledoc command looks wrong
-#                		cuffdiff_command += " -o {0} -L {1} -u {2} {3}".format(output_dir,labels,gtf_file,bam_files)
-#				self.__LOGGER.info("Executing: cuffdiff {0}".format(cuffdiff_command))
-#                		ret = script_util.runProgram(None,"cuffdiff",cuffdiff_command,None,cuffdiff_dir)
-#				result = ret["result"]
-#                		for line in result.splitlines(False):
-#                    			self.__LOGGER.info(line)
-#					stderr = ret["stderr"]
-#                			prev_value = ''
-#                			for line in stderr.splitlines(False):
-#                    				if line.startswith('> Processing Locus'):
-#                        				words = line.split()
-#                        				cur_value = words[len(words) - 1]
-#                        				if prev_value != cur_value:
-#                            					prev_value = cur_value
-#                            					self.__LOGGER.info(line)
-#                    				else:
-#                        				prev_value = ''
-#                        				self.__LOGGER.info(line)
-#        		except Exception,e:
-#                		raise KBaseRNASeqException("Error executing cuffdiff {0},{1},{2}".format(cuffdiff_command,cuffdiff_dir,e))
-#
-#            		##  compress and upload to shock
-#            		try:
-#                		self.__LOGGER.info("Zipping Cuffdiff output")
-#				out_file_path = os.path.join(self.__SCRATCH,"{0}.zip".format(params['output_obj_name']))
-#                		script_util.zip_files(self.__LOGGER,output_dir,out_file_path)
-#                		#handle = hs.upload("{0}.zip".format(params['output_obj_name']))
-#            		except Exception,e:
-#                		raise KBaseRNASeqException("Error executing cuffdiff {0},{1}".format(os.getcwd(),e))
-#            		try:
-#				#out_file_path = os.path.join("{0}.zip".format(params['output_obj_name']))
-#                		handle = hs.upload(out_file_path)
-#            		except Exception, e:
-#                		raise KBaseRNASeqException("Failed to upload the Cuffdiff output files: {0}".format(e))
-#			
-#            		## Save object to workspace
-#            		try:
-#				self.__LOGGER.info("Saving Cuffdiff object to workspace")
-#                		cm_obj = { 'file' : handle,
-#                           		   'analysis' : analysis['data']
-#                	  		 }
-#                		res1= ws_client.save_objects(
-#                                        		{"workspace":params['ws_id'],
-#                                         		 "objects": [{
-#                                         				"type":"KBaseRNASeq.RNASeqCuffdiffdifferentialExpression",
-#                                         				"data":cm_obj,
-#                                         				"name":params['output_obj_name']}
-#                                        			]})	
-#		
-#                		analysis['data']['cuffdiff_diff_exp_id'] = "{0}/{1}".format(params['ws_id'],params['output_obj_name'])
-#				res= ws_client.save_objects(
-#                                        		{"workspace":params['ws_id'],
-#                                         		 "objects": [{
-#                                         		 "type":"KBaseRNASeq.RNASeqAnalysis",
-#                                         		 "data":analysis['data'],
-#                                         		 "name":params['rnaseq_exp_details']}
-#                                        		]})
-#            		except Exception, e:
-#                		raise KBaseRNASeqException("Failed to upload the KBaseRNASeq.RNASeqCuffdiffdifferentialExpression and KBaseRNASeq.RNASeqAnalysis : {0}".format(e))
-#		else:
-#                        raise ValueError("Please run the methods 'Align Reads using Tophat/bowtie2' , 'Assemble Transcripts using Cufflinks' for all the RNASeqSamples. Also run the method 'Merge Trancripts using Cuffmerge' before running this step. The RNASeqAnalysis object has either of the missing tags 'alignments' , 'expression_values' , 'transcriptome_id' ");
-#
-#		returnVal = analysis['data']
         except KBaseRNASeqException,e:
                  self.__LOGGER.exception("".join(traceback.format_exc()))
                  raise
@@ -1152,6 +1094,19 @@ class KBaseRNASeq:
         # At some point might do deeper type checking...
         if not isinstance(returnVal, dict):
             raise ValueError('Method CuffdiffCall return value ' +
+                             'returnVal is not type dict as required.')
+        # return the results
+        return [returnVal]
+
+    def DiffExpCallforBallgown(self, ctx, params):
+        # ctx is the context object
+        # return variables are: returnVal
+        #BEGIN DiffExpCallforBallgown
+        #END DiffExpCallforBallgown
+
+        # At some point might do deeper type checking...
+        if not isinstance(returnVal, dict):
+            raise ValueError('Method DiffExpCallforBallgown return value ' +
                              'returnVal is not type dict as required.')
         # return the results
         return [returnVal]
