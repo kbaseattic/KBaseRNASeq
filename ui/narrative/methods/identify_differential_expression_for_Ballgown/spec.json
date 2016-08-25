@@ -1,0 +1,82 @@
+{
+  "ver" : "1.0.0",
+  "authors" : [ ],
+  "contact" : "help@kbase.us",
+  "visible" : true,
+  "categories" : ["active","expression"],
+  "widgets" : {
+    "input" : null,
+    "output" : "kbaseRNASeqAnalysisNew"
+  },
+   "parameters" : [ {
+    "id" : "expressionset_id",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : ["KBaseRNASeq.RNASeqExpressionSet" ]
+    }
+  },{
+    "id" : "output_obj_name",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : ["KBaseRNASeq.RNASeqDifferentialExpression"],
+      "is_output_name": true
+    }
+  }, {
+    "id" : "num_threads",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "2" ],    
+    "field_type" : "text",
+    "text_options" : {
+      "validate_as": "int"
+    }
+ } ],
+  "behavior" : {
+    "service-mapping" : {
+      "url" : "",
+      "name" : "KBaseRNASeq",
+      "method" : "DiffExpCallforBallgown",
+      "input_mapping" : [
+        {
+          "narrative_system_variable": "workspace",
+          "target_property" : "ws_id"
+        },
+        {
+          "input_parameter" : "expressionset_id",
+          "target_property" : "expressionset_id"
+        },
+        {
+          "input_parameter" : "output_obj_name",
+          "target_property" : "output_obj_name"
+        },
+        {
+          "input_parameter" : "num_threads",
+          "target_property" : "num_threads"
+        }],
+      "output_mapping" : [
+	{
+          "narrative_system_variable": "workspace",
+          "target_property" : "workspace"
+        },
+	{
+          "input_parameter" : "output_obj_name",
+          "target_property" : "output"
+        },
+	{
+      	 "service_method_output_path": [0],
+	 "target_property": "DiffExpCallforBallgown"
+	}
+      ]
+    }
+  },
+  "job_id_output_field" : "docker"
+}

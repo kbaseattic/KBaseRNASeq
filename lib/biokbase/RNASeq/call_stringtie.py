@@ -201,17 +201,17 @@ def runMethod(logger,token,ws_client,hs,services,stringtie_dir,params):
                 gtf_id=gtf_obj['data']['handle']['id']
                 gtf_name=gtf_obj['data']['handle']['file_name']
                 try:
-                     script_util.download_file_from_shock(logger, shock_service_url=services['shock_service_url'], shock_id=gtf_id,filename=gtf_name, directory=stringtie_dir,token=user_token)
+                     script_util.download_file_from_shock(logger, shock_service_url=services['shock_service_url'], shock_id=gtf_id,filename=gtf_name, directory=stringtie_dir,token=token)
                      gtf_file = os.path.join(stringtie_dir,gtf_name)
                 except Exception,e:
                      raise Exception( "Unable to download shock file, {0}".format(gtf_name))
             else:
-                fasta_file= script_util.generate_fasta(logger,services,user_token,annotation_id,stringtie_dir,annotation_name)
+                fasta_file= script_util.generate_fasta(logger,services,token,annotation_id,stringtie_dir,annotation_name)
                 logger.info("Sanitizing the fasta file to correct id names {}".format(datetime.datetime.utcnow()))
                 mapping_filename = c_mapping.create_sanitized_contig_ids(fasta_file)
                 c_mapping.replace_fasta_contig_ids(fasta_file, mapping_filename, to_modified=True)
                 logger.info("Generating FASTA file completed successfully : {}".format(datetime.datetime.utcnow()))
-                gtf_file = script_util.create_gtf_annotation(logger,ws_client,hs,services['shock_service_url'],params['ws_id'],annotation_id,gtf_obj_name,fasta_file,stringtie_dir,user_token)
+                gtf_file = script_util.create_gtf_annotation(logger,ws_client,hs,services['shock_service_url'],params['ws_id'],annotation_id,gtf_obj_name,fasta_file,stringtie_dir,token)
 	    #Identify the tool options used
 	    tool_opts = { k:str(v) for k,v in params.iteritems() if not k in ('ws_id','alignmentset_id', 'num_threads') and v is not None  }
             # Determine the num_threads provided by the user otherwise default the number of threads to 2

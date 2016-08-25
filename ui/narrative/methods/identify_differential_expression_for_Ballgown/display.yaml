@@ -1,0 +1,69 @@
+#
+# Define basic display information
+#
+name     : Identify Differential Expression for Ballgown
+
+tooltip  : |
+    Identify significant changes in the gene and transcript expression level for Ballgown
+screenshots :
+    []
+
+#
+# Define the set of other narrative methods that should be suggested to the user.
+#
+method-suggestions :
+    related :
+        []
+    next :
+        []
+
+
+#
+# Configure the display and description of the parameters
+#
+parameters :
+  expressionset_id :
+    ui-name : |
+      RNA-seq Expression Set
+    short-hint : |
+      Select the RNA-seq expression set associated with transcripts assembled by Cufflinks.
+  output_obj_name :
+    ui-name : |
+      Differential Expression Output Name
+    short-hint : |
+      Provide the name of the differential expression analysis output
+  num_threads :
+    ui-name : |
+      Number of Threads
+    short-hint : |
+      Number of  computational threads to align reads. The default is 2.
+
+description : |
+    <p>This method uses the Cufflinks transcripts for two or more samples to calculate gene and transcript levels in more than one condition and finds significant changes in the expression levels.</p>
+    <p>Internally, it uses Cuffmerge to merge multiple Cufflinks generated annotation files. If more than two BAM files are provided, Cuffdiff tests for differential expression between all pairs of samples.</p> 
+    
+    <p>Cuffdiff calculates the FPKM value of each transcript, primary transcript and gene in each sample and produces a number of output files zipped in Cuffdiff output object.</p>
+    <p>The Cuffdiff output can be further analyzed and visualized using methods such as 'Create Expression Matrix from Cuffdiff' and 'View CummeRbund Plots'.</p> 
+
+    <p><strong>WARNING:</strong> This method is one of the steps of the <a href= "http://kbase.us/rna-seq/"> KBase RNA-seq Pipeline </a> and is not intended to run standalone.</p>
+  
+    <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
+    Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Vivek Kumar</p>
+    
+publications :
+    -
+        display-text: |
+            Trapnell C, Roberts A, Goff L, Pertea G, Kim D, Kelley DR, Pimentel H, Salzberg SL, Rinn JL, Pachter, L (2012) Differential gene and transcript expression analysis of RNA-seq experiments with TopHat and Cufflinks. Nature Protocols, 7(3), 562–578.
+        link: http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3334321/
+    -
+        display-text: |
+            Trapnell C, Pachter L, Salzberg SL. (2009) TopHat: discovering splice junctions with RNA-Seq. Bioinformatics. Vol 25, 9:1105-1111.
+        link: http://bioinformatics.oxfordjournals.org/content/25/9/1105.abstract
+    -
+        display-text: |
+            Kim D, Pertea G, Trapnell C, Pimentel H, Kelley R, Salzberg SL (2013) TopHat2: accurate alignment of transcriptomes in the presence of insertions, deletions and gene fusions. Genome Biology. 14:R36
+        link: http://www.genomebiology.com/2013/14/4/R36/abstract
+    -    
+        display-text: |
+            Langmead B, Trapnell C, Pop M, Salzberg SL (2009) Ultrafast and memory-efficient alignment of short DNA sequences to the human genome. Genome Biology 10:R25.
+        link: http://www.ncbi.nlm.nih.gov/pmc/articles/PMC2690996/
