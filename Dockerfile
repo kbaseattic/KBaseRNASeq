@@ -17,7 +17,7 @@ RUN \
   . /kb/dev_container/user-env.sh && \
   cd /kb/dev_container/modules && \
   rm -rf data_api && \
-  git clone https://github.com/kbase/data_api -b develop && \
+  git clone https://github.com/kbase/data_api -b 0.4.0-dev && \
   pip install --upgrade /kb/dev_container/modules/data_api
 ####END OF KBASE #############################
 #apt-get update && apt-get install -y ant && \
