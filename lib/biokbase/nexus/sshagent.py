@@ -66,7 +66,7 @@ class Agent2( Agent ):
             # no agent support
             return
             
-        ptype, result = self._send_message((SSH2_AGENTC_REQUEST_CIDENTITIES))
+        ptype, result = self._send_message((cSSH2_AGENTC_REQUEST_IDENTITIES))
         if ptype != SSH2_AGENT_IDENTITIES_ANSWER:
             raise SSHException('could not get keys from ssh-agent')
         for i in range(result.get_int()):
