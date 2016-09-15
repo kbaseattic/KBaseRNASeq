@@ -192,6 +192,7 @@ def create_RNASeq_AlignmentSet_and_build_report(logger,ws_client,ws_id,sample_li
                                                                 
                 output_objs.append({'ref': str(res[6]) + '/' + str(res[0]) + '/' + str(res[4]),'description' : "Set of Alignments for Sampleset : {0}".format(sampleset_id)})
 	 except Exception as e:
+                    logger.exception(e)
                     raise Exception("Failed Saving AlignmentSet to Workspace") 
 	 ### Build Report obj ###
 	 report = []

@@ -1,1 +1,1 @@
-pip install requests_toolbelt filemagic ftputil bunch requests
+pip install requests_toolbelt filemagic ftputil bunch requests pathos

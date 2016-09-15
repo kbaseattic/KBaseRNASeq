@@ -37,6 +37,8 @@ try:
 except:
     from biokbase.AbstractHandle.Client import AbstractHandle as HandleService
 
+from biokbase.RNASeq.HiSat2SampleSet import HiSat2SampleSet
+
 
 _KBaseRNASeq__DATA_VERSION = "0.2"
 
@@ -94,8 +96,8 @@ class KBaseRNASeq:
     # the latter method is running.
     #########################################
     VERSION = "0.0.1"
-    GIT_URL = "https://github.com/sjyoo/KBaseRNASeq"
-    GIT_COMMIT_HASH = "f7971e064257aba438a1c67dcb3414234a869631"
+    GIT_URL = "https://github.com/kbase/KBaseRNASeq"
+    GIT_COMMIT_HASH = "9f2a3d59d8b76a0773aef4ef3cca9dc758a0f04d"
     
     #BEGIN_CLASS_HEADER
     __TEMP_DIR = 'temp'
@@ -611,17 +613,20 @@ class KBaseRNASeq:
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN Hisat2Call
-	user_token=ctx['token']
-        ws_client=Workspace(url=self.__WS_URL, token=user_token)
-        hs = HandleService(url=self.__HS_URL, token=user_token)
 	if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
         hisat2_dir = os.path.join(self.__SCRATCH,"tmp")
         handler_util.setupWorkingDir(self.__LOGGER,hisat2_dir) 
-        returnVal = call_hisat2.runMethod(self.__LOGGER,user_token,ws_client,hs,self.__SERVICES,hisat2_dir,params)
-	#returnVal = call_hisat2.runMethod(self.__LOGGER,user_token,ws_client,hs,params)
-        #except Exception,e:
-        #         self.__LOGGER.exception("".join(traceback.format_exc()))
-        #        raise KBaseRNASeqException("Error Running Hisat2Call")
+
+        hs2ss = HiSat2SampleSet(self.__LOGGER, hisat2_dir, self.__SERVICES)
+
+        common_params = {'ws_client' : Workspace(url=self.__WS_URL, token=ctx['token']),
+                         'hs_client' : HandleService(url=self.__HS_URL, token=ctx['token']),
+                         'user_token' : ctx['token']
+                        }
+        if 'num_threads' in params and params['num_threads'] is not None:
+            common_params['num_threads'] = params['num_threads']
+      
+        returnVal = hs2ss.run(common_params, params)
 	#finally:
         handler_util.cleanup(self.__LOGGER,hisat2_dir)
         #END Hisat2Call
