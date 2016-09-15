@@ -135,3 +135,7 @@ publications :
         display-text: |
             Kim D, Langmead B and Salzberg SL (2015). HISAT: a fast spliced aligner with low memory requirements. Nature Methods 2015
         link: http://www.nature.com/nmeth/journal/v12/n4/full/nmeth.3317.html
+    -
+        display-text: |
+            Kim D, Pertea G, Trapnell C, Pimentel H, Kelley R, Salzberg SL (2013) TopHat2: accurate alignment of transcriptomes in the presence of insertions, deletions and gene fusions. Genome Biology. 14:R36
+        link: http://www.genomebiology.com/2013/14/4/R36/abstract

@@ -19,6 +19,7 @@ import parallel_tools as parallel
 import script_util
 import call_hisat2
 import call_stringtie
+import call_diffExpCallforBallgown
 import contig_id_mapping as c_mapping
 from biokbase.workspace.client import Workspace
 import handler_utils as handler_util
@@ -1085,7 +1086,6 @@ class KBaseRNASeq:
             t_labels = ",".join(labels)
 	   
 	    num_threads = multiprocessing.cpu_count()
-
 	    results = parallel.call_cuffmerge_and_cuffdiff(self.__LOGGER,ws_client,hs,params['ws_id'],num_threads,assembly_file,gtf_file,bam_files,t_labels,annotation_id,expressionset_id,alignmentset_id,sampleset_id,params,cuffdiff_dir,user_token)
 	    expr_id, cuffdiff_obj = results
 	    returnVal = { 'output'  : cuffdiff_obj ,'workspace' : params['ws_id']}
@@ -1107,6 +1107,20 @@ class KBaseRNASeq:
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN DiffExpCallforBallgown
+	user_token=ctx['token']
+        ws_client=Workspace(url=self.__WS_URL, token=user_token)
+        hs = HandleService(url=self.__HS_URL, token=user_token)
+        #try:
+        if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
+        diffexp_dir = os.path.join(self.__SCRATCH,"tmp")
+        handler_util.setupWorkingDir(self.__LOGGER,diffexp_dir)
+        returnVal = call_diffExpCallforBallgown.runMethod(self.__LOGGER,user_token,ws_client,hs,self.__SERVICES,diffexp_dir,params)
+	print returnVal
+        #except Exception,e:
+        #         self.__LOGGER.exception("".join(traceback.format_exc()))
+         #        raise KBaseRNASeqException("Error Running StringTieCall")
+        #finally:
+        handler_util.cleanup(self.__LOGGER,stringtie_dir)
         #END DiffExpCallforBallgown
 
         # At some point might do deeper type checking...

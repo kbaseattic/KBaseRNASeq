@@ -5,6 +5,7 @@ import subprocess, threading,traceback
 from collections import OrderedDict
 from pprint import pprint , pformat
 import parallel_tools as parallel
+import itertools
 from mpipe import OrderedStage , Pipeline
 import contig_id_mapping as c_mapping
 import script_util
@@ -22,7 +23,7 @@ TOOL1_USED = 'StringTie'
 TOOL2_USED = 'TableMaker'
 TOOL1_VERSION = '1.2.3'
 TOOL2_VERSION = '2.1.1'
-
+ASSEMBLY_GTF_FN='assembly_GTF_list.txt'
 try:
     from biokbase.HandleService.Client import HandleService
 except:
@@ -44,169 +45,95 @@ def parallelize(function,num_processors):
 
 ## Helper Function for Parallel call 
 def CalldiffExpCallforBallgown_helper(x):
-        logger,services,ws_client,hs,ws_id,num_threads,s_expression,gtf_file,directory,genome_id,annotation_id,sample_id,expressionset_id,params,token = x
-        return  _CalldiffExpCallforBallgown(logger,services,ws_client,hs,ws_id,num_threads,s_expression,gtf_file,directory,genome_id,annotation_id,sample_id,expressionset_id,params,token)
+        logger,services,ws_client,hs,ws_id,num_threads,alignment_file,transcripts_gtf,list_file,used_tool,directory,gtf_file = x
+        return  _CalldiffExpCallforBallgown(logger,services,ws_client,hs,ws_id,num_threads,alignment_file,transcripts_gtf,list_file,used_tool,directory,gtf_file)
 
-def call_cuffmerge(cuffmerge_dir,num_threads,gtf_file,list_file):
+def call_cuffmerge(directory,num_threads,gtf_file,list_file):
 	 #cuffmerge_dir = os.path.join(directory,"cuffmerge")
-         cuffmerge_command = " -p {0} -o {1} -g {2} {3}".format(str(num_threads),cuffmerge_dir,gtf_file,list_file)
-         try:
+         cuffmerge_command = " -p {0} -o {1} -g {2} {3}".format(str(num_threads),directory,gtf_file,list_file)
+         merged_gtf = None
+	 try:
                 logger.info("Executing: cuffmerge {0}".format(cuffmerge_command))
                 script_util.runProgram(logger,"cuffmerge",cuffmerge_command,None,directory)
-                if os.path.exists(cuffmerge_dir+"/merged.gtf") : merged_gtf = os.path.join(cuffmerge_dir,"merged.gtf")
+                if os.path.exists(cuffmerge_dir+"/merged.gtf") : merged_gtf = os.path.join(directory,"merged.gtf")
          except Exception,e:
-                raise Exception("Error executing cuffmerge {0},{1}".format(cuffmerge_command,cuffmerge_dir))
+                raise Exception("Error executing cuffmerge {0},{1}".format(cuffmerge_command,directory))
 	 return merged_gtf
 
-def call_stringtiemerge(strmerge_dir,num_threads,gtf_file,list_files):
-         #cuffmerge_dir = os.path.join(directory,"cuffmerge")
-         strmerge_command = " -p {0} -o {1} --merge -G {2} {3}".format(str(num_threads),cuffmerge_dir,gtf_file," ".join(list_files))
+def call_stringtiemerge(directory,num_threads,gtf_file,list_file):
+         #directory = os.path.join(directory,"cuffmerge")
+         strmerge_command = " -p {0} -o {1} --merge -G {2} {3}".format(str(num_threads),directory,gtf_file,list_file)
+         merged_gtf = None
          try:
                 logger.info("Executing: stringtie {0}".format(strmerge_command))
                 script_util.runProgram(logger,"stringtie",strmerge_command,None,directory)
-                if os.path.exists(strmerge_dir+"/merged.gtf") : merged_gtf = os.path.join(strmerge_dir,"merged.gtf")
+                if os.path.exists(directory+"/merged.gtf") : merged_gtf = os.path.join(directory,"merged.gtf")
          except Exception,e:
-                raise Exception("Error executing cuffmerge {0},{1}".format(cuffmerge_command,strmerge_dir))
+                raise Exception("Error executing StringTie merge {0},{1}".format(strmerge_command,directory))
          return merged_gtf
 
-def call_tablemaker(tablemaker_dir,num_threads,m_gtf_file,alignment_file):
+def call_tablemaker(directory,num_threads,m_gtf_file,alignment_file):
          #cuffmerge_dir = os.path.join(directory,"cuffmerge")
-         tm_command = " -p {0} -o {1} -q -W -G {2} {3}".format(str(num_threads),tablemaker_dir,m_gtf_file,alignment_file)
+         tm_command = " -p {0} -o {1} -q -W -G {2} {3}".format(str(num_threads),directory,m_gtf_file,alignment_file)
          try:
                 logger.info("Executing: tablemaker {0}".format(tm_command))
                 script_util.runProgram(logger,"tablemaker",tm_command,None,directory)
-                #if os.path.exists(strmerge_dir+"/merged.gtf") : merged_gtf = os.path.join(strmerge_dir,"merged.gtf")
          except Exception,e:
-                raise Exception("Error executing cuffmerge {0},{1}".format(cuffmerge_command,strmerge_dir))
-         return merged_gtf
+                raise Exception("Error executing tablemaker {0},{1}".format(tm_command,directory))
+         return directory
 
 
-def call_stringtieBall(strdiff_dir,num_threads,gtf_file,list_files):
-         #cuffmerge_dir = os.path.join(directory,"cuffmerge")
-         strdiff_command = " -p {0} -o {1} --merge -G {2} {3}".format(str(num_threads),cuffmerge_dir,gtf_file," ".join(list_files))
+def call_stringtieBall(directory,num_threads,m_gtf_file,alignment_file):
+         #directory = os.path.join(directory,"cuffmerge")
+         strdiff_command = " -p {0} -o {1} -e -B -G {2} {3}".format(str(num_threads),directory,m_gtf_file,alignment_file)
          try:
-                logger.info("Executing: stringtie {0}".format(strmerge_command))
-                script_util.runProgram(logger,"stringtie",strmerge_command,None,directory)
-                if os.path.exists(strmerge_dir+"/merged.gtf") : merged_gtf = os.path.join(strmerge_dir,"merged.gtf")
+                logger.info("Executing: stringtie {0}".format(strdiff_command))
+                script_util.runProgram(logger,"stringtie",strdiff_command,None,directory)
          except Exception,e:
-                raise Exception("Error executing cuffmerge {0},{1}".format(cuffmerge_command,strmerge_dir))
-         return merged_gtf
+                raise Exception("Error executing StringTie differential expression {0},{1}".format(strdiff_command,directory))
+         return directory
 
-def _CalldiffExpCallforBallgown(logger,services,ws_client,hs,ws_id,num_threads,s_expression,gtf_file,directory,genome_id,annotation_id,sample_id,expressionset_id,params,token):
-        print "Downloading Read Sample{0}".format(s_expression)
-        exp_name = ws_client.get_object_info([{"ref" :s_expression}],includeMetadata=None)[0][1]
+def _CalldiffExpCallforBallgown(logger,services,ws_client,hs,ws_id,num_threads,alignment_file,transcripts_gtf,list_file,used_tool,directory,gtf_file):
+	### Create output directory name as ballgown/RNASeq_sample_name/ under diffexp_dir
+	### Get i as  alignment_file
+	### Get j as expression file
+	### If tool is 'StringTie: Then call function call_stringtiemerge ; return ballgown/RNASeq_sample_name/merged.gtf ; Call function call_stringtieBall
+        ### else if tool is 'TableMaker'; Then call function call_cuffmerge; return ballgown/RNASeq_sample_name/merged.gtf ; Call function call_tablemaker
+	### return the  j and created paths. 
+        print "Running Differential Expression steps for {0}".format(transcripts_gtf)
         if not logger:
-                logger = handler_util.create_logger(directory,"run_diffExpCallforBallgown_"+exp_name)
+                logger = handler_util.create_logger(directory,"run_diffExpCallforBallgown_"+str(hex(uuid.getnode())))
         try:
-                expression = ws_client.get_objects(
-                                        [{ 'ref' : s_expression }])[0]
-                output_name = exp_name.split('_expression')[0]+"_stringtie_expression"
-                output_dir = os.path.join(directory,output_name)
+		merge_dir = os.path.join(directory,"merge") 
+		if not os.path.exists(merge_dir): os.mkdir(merge_dir)
+		print merge_dir
+		ballgown_dir = os.path.join(directory,"ballgown")
+		if not os.path.exists(ballgown_dir): os.mkdir(ballgown_dir)
+		print ballgown_dir
+		output_name = transcripts_gtf.split("_expression")[0]		
+                output_dir = os.path.join(ballgown_dir,output_name)
+		if not os.path.exists(output_dir): os.mkdir(output_dir)
+		print output_dir
                 #Download Alignment from shock
-                e_file_id = expression['data']['file']['id']
-                e_filename = expression['data']['file']['file_name']
-                condition = expression['data']['condition']
-                try:
-                     script_util.download_file_from_shock(logger, shock_service_url=services['shock_service_url'], shock_id=e_file_id,filename=e_filename,directory=directory,token=token)
-                except Exception,e:
-                        raise Exception( "Unable to download shock file, {0}".format(i_name))
-                try:
-                    input_dir = os.path.join(directory,exp_name)
-                    if not os.path.exists(input_dir): os.mkdir(input_dir)
-                    script_util.unzip_files(logger,os.path.join(directory,e_filename), input_dir)
-                except Exception, e:
-                       logger.error("".join(traceback.format_exc()))
-                       raise Exception("Unzip expression files  error: Please contact help@kbase.us")
-
-                input_file = os.path.join(input_dir,"accepted_hits.bam")
-                ### Adding advanced options to tophat command
-		tool_opts = { k:str(v) for k,v in params.iteritems() if not k in ('ws_id','expressionset_id', 'num_threads') and v is not None  }
-                stringtie_command = (' -p '+str(num_threads))
-                if 'label' in params and params['label'] is not None:
-                     stringtie_command += (' -l '+str(params['label']))
-                if 'min_isoform_abundance' in params and params['min_isoform_abundance'] is not None:
-                     stringtie_command += (' -f '+str(params['min_isoform_abundance']))
-                if 'min_length' in params  and params['min_length'] is not None:
-                     stringtie_command += (' -m '+str(params['min_length']))
-                if 'a_juncs' in params  and params['a_juncs'] is not None:
-                     stringtie_command += (' -a '+str(params['a_juncs']))
-                if 'j_min_reads' in params  and params['j_min_reads'] is not None:
-                     stringtie_command += (' -j '+str(params['j_min_reads']))
-                if 'c_min_read_coverage' in params  and params['c_min_read_coverage'] is not None:
-                     stringtie_command += (' -c '+str(params['c_min_read_coverage']))
-                if 'gap_sep_value' in params  and params['gap_sep_value'] is not None:
-                     stringtie_command += (' -g '+str(params['gap_sep_value']))
-                if 'disable_trimming' in params  and params['disable_trimming'] != 0:
-                     stringtie_command += (' -t ')
-                if 'ballgown_mode' in params  and params['ballgown_mode'] != 0:
-                     stringtie_command += (' -B ')
-                if 'skip_reads_with_no_ref' in params  and params['skip_reads_with_no_ref'] != 0:
-                     stringtie_command += (' -e ')
-                t_file_name = os.path.join(output_dir,"transcripts.gtf")
-		g_output_file = os.path.join(output_dir,"genes.fpkm_tracking")
-                stringtie_command += " -o {0} -A {1} -G {2} {3}".format(t_file_name,g_output_file,gtf_file,input_file)
-                logger.info("Executing: stringtie {0}".format(stringtie_command))
-                ret = script_util.runProgram(None,"stringtie",stringtie_command,None,directory)
-                ##Parse output files
-		try:
-                	exp_dict = script_util.parse_FPKMtracking(g_output_file,'StringTie','FPKM')
-                	tpm_exp_dict = script_util.parse_FPKMtracking(g_output_file,'StringTie','TPM')
-		except Exception,e:
-                        logger.exception("".join(traceback.format_exc()))
-                        raise Exception("Error parsing FPKMtracking")
-
-                ##  compress and upload to shock
-                try:
-                        logger.info("Zipping diffExpCallforBallgown output")
-                        out_file_path = os.path.join(directory,"%s.zip" % output_name)
-                        script_util.zip_files(logger,output_dir,out_file_path)
-                except Exception,e:
-                        logger.exception("".join(traceback.format_exc()))
-                        raise Exception("Error executing stringtie")
-                try:
-			handle = hs.upload(out_file_path)
-                except Exception, e:
-                        logger.exception("".join(traceback.format_exc()))
-                        raise Exception("Error while zipping the output objects: {0}".format(out_file_path))
-                ## Save object to workspace
-                try:
-                        logger.info("Saving diffExpCallforBallgown object to workspace")
-                        es_obj = { 'id' : output_name,
-                                'type' : 'RNA-Seq',
-                                'numerical_interpretation' : 'FPKM',
-                                'expression_levels' : exp_dict,
-                                'tpm_expression_levels' : tpm_exp_dict,
-                                'processing_comments' : "log2 Normalized",
-                                'genome_id' : genome_id,
-                                'annotation_id' : annotation_id,
-                                'condition' : condition,
-                                'mapped_rnaseq_expression' : { sample_id : s_expression },
-                                'tool_used' : TOOL_USED,
-                                'tool_version' : TOOL_VERSION,
-                                'tool_opts' : tool_opts,
-                                'file' : handle
-                                }
-
-                        res= ws_client.save_objects(
-                                   {"workspace":ws_id,
-                                    "objects": [{
-                                    "type":"KBaseRNASeq.RNASeqExpression",
-                                    "data":es_obj,
-                                    "name":output_name}
-                                     ]})[0]
-                        expr_id = str(res[6]) + '/' + str(res[0]) + '/' + str(res[4])
-                except Exception, e:
-                        logger.exception("".join(traceback.format_exc()))
-                        raise Exception("Failed to upload the ExpressionSample: {0}".format(output_name))
+                #condition = expression['data']['condition']
+		if used_tool == 'StringTie':
+			print "Entering StringTie"
+			merged_gtf = call_stringtiemerge(merge_dir,num_threads,gtf_file,list_file)
+			call_stringtieBall(ballgown_dir,num_threads,merged_gtf,alignment_file)
+                elif used_tool == 'Cufflinks':
+			print "Entering Tablemaker"
+			merged_gtf = call_cuffmerge(merge_dir,num_threads,gtf_file,list_file)	
+			call_tablemaker(ballgown_dir,num_threads,m_gtf_file,alignment_file)
+		if os.path.exists(ballgown_dir+"/t_data.ctab") :
+			logger.info("Running Differential Expression for Sample {0} completed successfully".format(transcripts_gtf))
+			print("Running Differential Expression for Sample {0} completed successfully".format(transcripts_gtf))
         except Exception,e:
                 logger.exception("".join(traceback.format_exc()))
                 raise Exception("Error executing stringtie {0},{1}".format(cufflinks_command,directory))
         finally:
-                if os.path.exists(out_file_path): os.remove(out_file_path)
                 if os.path.exists(output_dir): shutil.rmtree(output_dir)
-                ret = script_util.if_obj_exists(None,ws_client,ws_id,"KBaseRNASeq.RNASeqExpression",[output_name])
                 if not ret is None:
-                    return (exp_name, output_name )
+                    return (transcripts_gtf, output_dir )
                 else:
                     return None
 
@@ -217,42 +144,47 @@ def runMethod(logger,token,ws_client,hs,services,diffexp_dir,params):
             except Exception,e:
                 logger.exception("".join(traceback.format_exc()))
                 raise Exception("Error Downloading objects from the workspace ")
-            ## Get the Input object type ##
+            ## Get the Input object type and info #
             e_sample_info = ws_client.get_object_info_new({"objects": [{'name': params['expressionset_id'], 'workspace': params['ws_id']}]})[0]
-            e_sample_type = a_sample_info[2].split('-')[0]
-            expressionset_id = str(a_sample_info[6]) + '/' + str(a_sample_info[0]) + '/' + str(a_sample_info[4])
+            e_sample_type = e_sample_info[2].split('-')[0]
+            expressionset_id = str(e_sample_info[6]) + '/' + str(e_sample_info[0]) + '/' + str(e_sample_info[4])
+	    alignmentset_id = e_sample['data']['alignmentSet_id'] 
+	    sampleset_id = e_sample['data']['sampleset_id']
+            expression_ids = e_sample['data']['sample_expression_ids']
+            num_samples = len(expression_ids)
+            if num_samples < 2:
+               raise ValueError("Please ensure you have atleast 2 expressions to run diffExpCallforBallgown in Set mode")
             ### Check if the gtf file exists in the workspace. if exists download the file from that
-            annotation_id = a_sample['data']['genome_id']
+            annotation_id = e_sample['data']['genome_id']
+            logger.info("Check if the gtf file exists in the workspace".format(annotation_id))
             annotation_name = ws_client.get_object_info([{"ref" :annotation_id}],includeMetadata=None)[0][1]
             gtf_obj_name = annotation_name+"_GTF_Annotation"
-            gtf_obj= ws_client.get_objects([{'name' : gtf_obj_name,'workspace' : params['ws_id']}])[0]
-            gtf_info = ws_client.get_object_info_new({"objects": [{'name': gtf_obj_name, 'workspace': params['ws_id']}]})[0]
-            gtf_annotation_id = str(gtf_info[6]) + '/' + str(gtf_info[0]) + '/' + str(gtf_info[4])
-            gtf_id=gtf_obj['data']['handle']['id']
-            gtf_name=gtf_obj['data']['handle']['file_name']
-	    #tool_opts = { k:str(v) for k,v in params.iteritems() if not k in ('ws_id','expressionset_id', 'num_threads') and v is not None  }
-            try:
+            ret = script_util.if_obj_exists(None,ws_client,params['ws_id'],"KBaseRNASeq.GFFAnnotation",[gtf_obj_name])
+            if not ret is None:
+                logger.info("GFF Annotation Exist for Genome Annotation {0}.... Skipping step ".format(annotation_name))
+                gtf_obj= ws_client.get_objects([{'name' : gtf_obj_name,'workspace' : params['ws_id']}])[0]
+                gtf_info = ws_client.get_object_info_new({"objects": [{'name': gtf_obj_name, 'workspace': params['ws_id']}]})[0]
+                gtf_annotation_id = str(gtf_info[6]) + '/' + str(gtf_info[0]) + '/' + str(gtf_info[4])
+                gtf_id=gtf_obj['data']['handle']['id']
+                gtf_name=gtf_obj['data']['handle']['file_name']
+                try:
                      script_util.download_file_from_shock(logger, shock_service_url=services['shock_service_url'], shock_id=gtf_id,filename=gtf_name, directory=diffexp_dir,token=token)
                      gtf_file = os.path.join(diffexp_dir,gtf_name)
-            except Exception,e:
-                        raise Exception( "Unable to download shock file, {0}".format(gtf_name))
-
-            # Determine the num_threads provided by the user otherwise default the number of threads to 2
-            if('num_threads' in params and params['num_threads'] is not None):
-                        num_threads = int(params['num_threads'])
+                except Exception,e:
+                     raise Exception( "Unable to download shock file, {0}".format(gtf_name))
             else:
-                        num_threads = 2
-            num_cores = mp.cpu_count()
-            logger.info("Number of available cores : {0}".format(num_cores))
-            b_tasks =[]
-            m_expr_ids = e_set['data']['mapped_expression_ids']
-
-            if len(m_expr_ids)  < 2:
-                raise ValueError("Error the ExpressionSet object has less than 2 expression samples. Kindly check your reads files and repeat the previous step (Cufflinks/StringTie)")
+                fasta_file= script_util.generate_fasta(logger,services,token,annotation_id,diffexp_dir,annotation_name)
+                logger.info("Sanitizing the fasta file to correct id names {}".format(datetime.datetime.utcnow()))
+                mapping_filename = c_mapping.create_sanitized_contig_ids(fasta_file)
+                c_mapping.replace_fasta_contig_ids(fasta_file, mapping_filename, to_modified=True)
+                logger.info("Generating FASTA file completed successfully : {}".format(datetime.datetime.utcnow()))
+                gtf_file = script_util.create_gtf_annotation(logger,ws_client,hs,services,params['ws_id'],annotation_id,gtf_obj_name,fasta_file,diffexp_dir,token)
+            m_expr_ids = e_sample['data']['mapped_expression_ids']
+	    m_align_exp = []
             labels = []
             expressions = []
             counter = 0
-            assembly_file = os.path.join(diffexp_dir,self.__ASSEMBLY_GTF_FN)
+            assembly_file = os.path.join(diffexp_dir,ASSEMBLY_GTF_FN)
             list_file = open(assembly_file,'w')
             for i in m_expr_ids:
                 for a_id ,e_id in i.items():
@@ -267,89 +199,110 @@ def runMethod(logger,token,ws_client,hs,services,diffexp_dir,params):
                         files[e_obj['data']['file']['file_name']] = e_obj['data']['file']['id']
                         if not condition in labels: labels.append(condition)
                         else :  counter += 1 #### comment it when replicate_id is available from methods
-                        #print condition
-                        s_path = os.path.join(cuffdiff_dir,condition+"/"+str(counter)) ### Comment this line when replicate_id is available from the methods
-                        #s_path = os.path.join(cuffdiff_dir,condition+"/"+replicate_id)
+                        s_path = os.path.join(diffexp_dir,condition+"/"+str(counter)) ### Comment this line when replicate_id is available from the methods
                         if not os.path.exists(s_path): os.makedirs(s_path)
                         try:
-                                script_util.download_shock_files(self.__LOGGER,self.__SHOCK_URL,s_path,files,user_token)
+                                script_util.download_shock_files(logger,services['shock_service_url'],s_path,files,token)
                         except Exception,e:
                                 raise Exception( "Unable to download shock file, {0}".format(e))
                         try:
-                                script_util.unzip_files(self.__LOGGER,os.path.join(s_path,a_obj['data']['file']['file_name']),s_path)
-                                script_util.unzip_files(self.__LOGGER,os.path.join(s_path,e_obj['data']['file']['file_name']),s_path)
+                                script_util.unzip_files(logger,os.path.join(s_path,a_obj['data']['file']['file_name']),s_path)
+                                script_util.unzip_files(logger,os.path.join(s_path,e_obj['data']['file']['file_name']),s_path)
                                 e_file_path =  os.path.join(s_path,"transcripts.gtf")
                                 a_file_path = os.path.join(s_path,"accepted_hits.bam")
                                 if os.path.exists(a_file_path) : print a_file_path
-                                if os.path.exists(e_file_path) : list_file.write("{0}\n".format(e_file_path))
+                                if os.path.exists(e_file_path) : 
+					print e_file_path 
+					list_file.write("{0}\n".format(e_file_path))
                         except Exception, e:
-                                self.__LOGGER.exception("".join(traceback.format_exc()))
+                                logger.exception("".join(traceback.format_exc()))
                                 raise Exception("Unzip file error: Please contact help@kbase.us")
-
-                expression_ids = a_sample['data']['sample_expressions']
-                m_exp_names = a_sample['data']['mapped_rnaseq_expressions']
-                sampleset_id =   a_sample['data']['sampleset_id']
-                ### Get List of Alignments Names
-                align_names = []
-                for d_align in m_exp_names:
-                        for i , j  in d_align.items():
-                                align_names.append(j)
-
-                m_expression_ids = a_sample['data']['mapped_expressions_ids']
-                num_samples =  len(expression_ids)
-                if num_samples < 2:
-                        raise ValueError("Please ensure you have atleast 2 expressions to run diffExpCallforBallgown in Set mode")
-                if num_cores != 1:
-                        pool_size,num_threads=handler_util.optimize_parallel_run(num_samples,num_threads,num_cores)
-                else:
-                   pool_size = 1
-                   num_threads = 1
-                logger.info(" Number of threads used by each process {0}".format(num_threads))
-                for d_align in m_expression_ids:
-                  for s_name,a_id in d_align.items():
-                        try:
-                                b_tasks.append((None,services,ws_client,hs,params['ws_id'],num_threads,a_id,gtf_file,diffexp_dir,annotation_id,gtf_annotation_id,s_name,expressionset_id,params,token))
-                        except Exception,e:
-                                raise
-
-                @parallelize(CalldiffExpCallforBallgown_helper,pool_size)
-                def run_stringtie_in_parallel(tasks):
-                  pass
-                results=run_stringtie_in_parallel(b_tasks)
-                expressionSet_name = params['expressionset_id']+"_StringTie_ExpressionSet"
-                reportObj=script_util.create_RNASeq_ExpressionSet_and_build_report(logger,ws_client,TOOL_USED, TOOL_VERSION,tool_opts,params['ws_id'],align_names,expressionset_id,annotation_id,sampleset_id,results,expressionSet_name)
+	    list_file.close()
+	    print labels
+            #output_dir = os.path.join(cuffdiff_dir, params['output_obj_name'])
+            for l in labels:
+                  #rep_files=",".join([ os.path.join(diffexp_dir+'/'+l,sub+'/accepted_hits.bam') for sub in os.listdir(os.path.join(diffexp_dir,l)) if os.path.isdir(os.path.join(diffexp_dir,l+'/'+sub))])
+                  rep_files=[ (os.path.join(diffexp_dir+'/'+l,sub+'/accepted_hits.bam'), os.path.join(diffexp_dir+'/'+l,sub+'/transcripts.gtf')) for sub in os.listdir(os.path.join(diffexp_dir,l)) if os.path.isdir(os.path.join(diffexp_dir,l+'/'+sub))]
+                  #itertools.chain(m_align_exp,rep_files)
+		  m_align_exp += rep_files
+	    print m_align_exp
+	    #print "list of alignments and expression {0}".format(",".join(m_align_exp))
+	    ### Get the tool_used from expressionset_obj
+	    used_tool = e_sample['data']['tool_used']
+	    if used_tool == 'StringTie':
+		run_tool =  TOOL1_USED
+		tool_version = TOOL1_VERSION
+	    elif used_tool == 'Cufflinks':
+		run_tool = TOOL2_USED
+		tool_version = TOOL2_VERSION
+            # Determine the num_threads provided by the user otherwise default the number of threads to 2
+            if('num_threads' in params and params['num_threads'] is not None):
+                        num_threads = int(params['num_threads'])
             else:
-                try:
-                    pool_size=1
-                    num_threads = num_cores
-                    single_a_id = expressionset_id
-                    logger.info(" Number of threads used by each process {0}".format(num_threads))
-                    results = _CalldiffExpCallforBallgown(None,services,ws_client,hs,params['ws_id'],num_threads,single_a_id,gtf_file,diffexp_dir,annotation_id,gtf_annotation_id,params['expressionset_id'],None,params,token)
-                except Exception,e:
-                     raise
-                single_expression, single_expression = results
-                single_expr_obj = ws_client.get_objects(
-                                        [{ 'name' : single_expression, 'workspace' : params['ws_id']}])[0]['data']
-                e_ref = ws_client.get_object_info_new({"objects": [{'name':single_expression, 'workspace': params['ws_id']}]})[0]
-                reportObj = {'objects_created':[{'ref' :str(e_ref[6]) + '/' + str(e_ref[0]) + '/' + str(e_ref[4]),
-                                                 'description' : "RNA-seq Alignment for reads Sample: {0}".format(single_expression)}],
-                                                 'text_message': "RNA-seq Alignment for reads Sample: {0}".format(single_expression)}
-            #### Save to report object #######
-                #returnVal = single_align_obj   
-            reportName = 'Identify_Differential_Using_diffExpCallforBallgown_'+str(hex(uuid.getnode()))
-            report_info = ws_client.save_objects({
-                                                'id':a_sample_info[6],
-                                                'objects':[
-                                                {
-                                                'type':'KBaseReport.Report',
-                                                'data':reportObj,
-                                                'name':reportName,
-                                                'meta':{},
-                                                'hidden':1, # important!  make sure the report is hidden
-                                                #'provenance':provenance
-                                                }
-                                                ]
-                                                })[0]
+                        num_threads = 2
+            num_cores = mp.cpu_count()
+            logger.info("Number of available cores : {0}".format(num_cores))
+            b_tasks =[]
+            if num_cores != 1:
+                pool_size,num_threads=handler_util.optimize_parallel_run(num_samples,num_threads,num_cores)
+            else:
+                pool_size = 1
+                num_threads = 1
+            count = 0
+            logger.info(" Number of threads used by each process {0}".format(num_threads))
+            for i,j in m_align_exp:
+                        #try:
+			print "Adding task {0} , {1} to task list".format(i,j)
+                        b_tasks.append((None,services,ws_client,hs,params['ws_id'],num_threads,i,j,assembly_file,used_tool,diffexp_dir,gtf_file))
+		
 
-            returnVal = { "report_name" : reportName,"report_ref" : str(report_info[6]) + '/' + str(report_info[0]) + '/' + str(report_info[4]) }
+            @parallelize(CalldiffExpCallforBallgown_helper,pool_size)
+            def run_diffexp_for_ballgown_in_parallel(tasks):
+               pass
+            results=run_diffexp_for_ballgown_in_parallel(b_tasks)
+	    expr_file, single_ballgown_dir = results
+	    #### Check if all the jobs passed
+            ballgownobject_name = params['expressionset_id']+"_DifferentialExpression_Ballgown"
+            ballgown_dir = os.path.join(diffexp_dir,"ballgown")
+            #reportObj=script_util.create_RNASeq_ExpressionSet_and_build_report(logger,ws_client,TOOL_USED, TOOL_VERSION,tool_opts,params['ws_id'],align_names,expressionset_id,annotation_id,sampleset_id,results,expressionSet_name)
+	    ### Save Ballgown differential Expression object to workspace
+	    #except Exception,e:
+            #    raise Exception("Error executing diffexp {0},{1}".format(cuffdiff_command,directory))
+
+            ##  compress and upload to shock
+            try:
+                 logger.info("Zipping differential expression output for ballgown")
+                 out_file_path = os.path.join(diffexp_dir,"{0}.zip".format(params['output_obj_name']))
+                 script_util.zip_files(logger,ballgown_dir,out_file_path)
+            except Exception,e:
+                 raise Exception("Error zipping dir {0}".format(ballgown_dir)) 
+            try:
+                 handle = hs.upload(out_file_path)
+            except Exception, e:
+                 print " ".join(traceback.print_exc())
+                 raise Exception("Failed to upload the diffexp output files: {0}".format(out_file_path))
+            output_name = params['output_obj_name']
+            ## Save object to workspace
+            try:
+                 logger.info("Saving diffexp object to workspace")
+                 cm_obj = { "tool_used" : run_tool,
+                            "tool_version" : tool_version,
+                            "condition" : condition,
+                            "genome_id" : genome_id,
+                            "expressionSet_id" : expressionset_id,
+                            "alignmentSet_id":alignmentset_id,
+                            "sampleset_id" : sampleset_id,
+                            "file" : handle
+                           }
+                 print cm_obj
+                 res1= ws_client.save_objects(
+                                             {"workspace":params['ws_id'],
+                                               "objects": [{
+                                               "type":"KBaseRNASeq.RNASeqDifferentialExpression",
+                                               "data":cm_obj,
+                                               "name":output_name}]})
+            except Exception, e:
+                 raise Exception("Failed to upload the KBaseRNASeq.RNASeqDifferentialExpression : {0}".format(output_name))
+
+	    returnVal = { 'output'  : cuffdiff_obj ,'workspace' : params['ws_id']}
 	    return returnVal
