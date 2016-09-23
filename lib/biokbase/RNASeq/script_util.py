@@ -26,6 +26,8 @@ except:
     from biokbase.AbstractHandle.Client import AbstractHandle as HandleService
 
 from biokbase.workspace.client import Workspace
+from AssemblyUtil.AssemblyUtilClient import AssemblyUtil
+from GenomeFileUtil.GenomeFileUtilClient import GenomeFileUtil
 import doekbase.data_api
 from doekbase.data_api.annotation.genome_annotation.api import GenomeAnnotationAPI, GenomeAnnotationClientAPI
 from doekbase.data_api.sequence.assembly.api import AssemblyAPI, AssemblyClientAPI
@@ -64,6 +66,24 @@ def find_read_objects(logger,ex_reads_alignments,suffix1,suffix2):
     else:
             return None
 
+def get_fasta_from_genome(logger,ws_client,urls,genome_id):
+    
+    ref = ws_client.get_object_subset(
+                                     [{ 'ref' : genome_id ,'included': ['contigset_ref']}])
+    contig_id = ref[0]['data']['contigset_ref']
+    logger.info( "Generating FASTA from Genome")
+    try:
+         ## get the FASTA
+         assembly = AssemblyUtil(urls['callback_url'])
+         ret = assembly.get_assembly_as_fasta({'ref':contig_id})
+         output_file = ret['path']
+         fasta_file = os.path.basename(output_file)
+    	 return fasta_file
+    except Exception, e:
+	 raise Exception(e)
+	 raise Exception("Unable to Create FASTA file from Genome : {0}".format(genome_id))
+    return None
+	
 def generate_fasta(logger,internal_services,token,ref,output_dir,obj_name):
 	try:
 		ga = GenomeAnnotationAPI(internal_services,
@@ -113,6 +133,40 @@ def generate_gff(logger,internal_services,token,ref,output_dir,obj_name,output_f
     	logger.info("Generating GFF for {} took {}".format(obj_name, gff_end - gff_start))
         ## Additional Step for sanitizing contig id
         #logger.info("Sanitizing the gff file to correct id names {}".format(datetime.datetime.utcnow()))
+
+def create_gtf_annotation_from_genome(logger,ws_client,hs_client,urls,ws_id,genome_ref,genome_id,fasta_file,directory,token):
+        try:
+		#tmp_file = os.path.join(directory,genome_id + "_GFF.gff")
+                ## get the GFF
+		genome = GenomeFileUtil(urls['callback_url'])
+		ret = genome.genome_to_gff({'genome_ref':genome_ref})
+		file_path = ret['file_path']
+		gtf_ext = ".gtf"
+		if not file_path.endswith(gtf_ext): 
+               		gtf_path = os.path.join(directory,genome_id+".gtf")
+                	gtf_cmd = " -E {0} -T -o {1}".format(file_path,gtf_path)
+                	try:
+                   		logger.info("Executing: gffread {0}".format(gtf_cmd))
+                   		cmdline_output = runProgram(None,"gffread",gtf_cmd,None,directory)
+                	except Exception as e:
+                   		raise Exception("Error Converting the GFF file to GTF using gffread {0},{1}".format(gtf_cmd,"".join(traceback.format_exc())))
+		else:
+			gtf_path = file_path
+                if os.path.exists(gtf_path):
+                               annotation_handle = hs_client.upload(gtf_path)
+                               a_handle = { "handle" : annotation_handle ,"size" : os.path.getsize(gtf_path), 'genome_id' : genome_ref}
+                ##Saving GFF/GTF annotation to the workspace
+                res= ws_client.save_objects(
+                                        {"workspace":ws_id,
+                                         "objects": [{
+                                         "type":"KBaseRNASeq.GFFAnnotation",
+                                         "data":a_handle,
+                                         "name":genome_id+"_GTF_Annotation",
+                                        "hidden":1}
+                                        ]})
+        except Exception as e:
+                raise ValueError("Generating GTF file from Genome Annotation object Failed :  {}".format("".join(traceback.format_exc())))
+	return gtf_path
 
 def create_gtf_annotation(logger,ws_client,hs_client,internal_services,ws_id,genome_ref,genome_id,fasta_file,directory,token):
         try:
@@ -393,7 +447,7 @@ def extractAlignmentStatsInfo(logger,tool_used,ws_client,ws_id,sample_id,result,
                        "unmapped_reads": unmapped_r,
                        "mapped_reads": mapped_r
                        }
-	print stats_data
+	#print stats_data
 	return stats_data
         ## Save object to workspace
         #logger.info( "Saving Alignment Statistics to the Workspace")
@@ -527,14 +581,12 @@ def download_file_from_shock(logger,
 
     metadata_response = requests.get("{0}/node/{1}?verbosity=metadata".format(shock_service_url, shock_id), headers=header, stream=True, verify=True)
     shock_metadata = metadata_response.json()['data']
-    #print "shock metadata is {0}".format(shock_metadata)
     if shock_metadata is not None:
     	shockFileName = shock_metadata['file']['name']
     	shockFileSize = shock_metadata['file']['size']
     metadata_response.close()
         
     download_url = "{0}/node/{1}?download_raw".format(shock_service_url, shock_id)
-    #print "download_url is {0}".format(download_url)
     try: 
     	data = requests.get(download_url, headers=header, stream=True, verify=True)
     except Exception,e:
@@ -585,7 +637,6 @@ def query_shock_node(logger,
     header["Authorization"] = "Oauth {0}".format(token)
 
     query_str = urllib.urlencode(condition)
-    #print query_str
     
     logger.info("Querying shock node {0}/node/?query&{1}".format(shock_service_url,query_str))
 
@@ -774,9 +825,7 @@ def get_obj_info(logger,ws_url,objects,ws_id,token):
     for obj in  objects:
     	try:
             obj_infos = ws_client.get_object_info_new({"objects": [{'name': obj, 'workspace': ws_id}]})
-            #print obj_infos
             ret.append("{0}/{1}/{2}".format(obj_infos[0][6],obj_infos[0][0],obj_infos[0][4]))
-            #print ret
         except Exception, e:
                      logger.error("Couldn't retrieve %s:%s from the workspace , %s " %(ws_id,obj,e))
     return ret

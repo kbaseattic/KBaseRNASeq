@@ -71,7 +71,8 @@
    	typedef structure {
        		Handle handle;
                 int size;	
-       		ws_genome_annotation_id genome_id;
+       		/*ws_genome_annotation_id genome_id;*/
+       		string genome_id;
 		string genome_scientific_name;
    	} GFFAnnotation;
 
@@ -93,7 +94,8 @@
         typedef structure {
                 Handle handle;
 		int size;
-                ws_genome_annotation_id genome_id;
+                /*ws_genome_annotation_id genome_id;*/
+                string genome_id;
 		string ftp_url;
 		string genome_scientific_name;
         }Bowtie2Indexes;
@@ -232,7 +234,8 @@
 	string replicate_id;
 	string condition;
 	string platform;
-        ws_genome_annotation_id genome_id;
+        /*ws_genome_annotation_id genome_id;*/
+        string genome_id;
         ws_bowtieIndex_id bowtie2_index;
 	mapping<string opt_name, string opt_value> aligner_opts;
         mapping<string condition,mapping<string sample_id , string replicate_id>> mapped_sample_id;
@@ -263,7 +266,8 @@
 	string aligner_version;
 	mapping<string opt_name, string opt_value> aligner_opts;
 	ws_Sampleset_id sampleset_id;
-	ws_genome_annotation_id genome_id;
+	/*ws_genome_annotation_id genome_id;*/
+	string genome_id;
 	ws_bowtieIndex_id bowtie2_index;
 	list<string> read_sample_ids;
 	list<string> condition;
@@ -300,7 +304,8 @@
         string external_source_date;
         mapping<string feature_id,float feature_value> expression_levels; 
         mapping<string feature_id,float feature_value> tpm_expression_levels;
-        ws_genome_annotation_id genome_id; 
+        /*ws_genome_annotation_id genome_id;*/
+	string genome_id;
         ws_referenceAnnotation_id annotation_id;
 	string condition;
 	mapping<string sample_id,ws_samplealignment_id alignment_id> mapped_rnaseq_alignment;
@@ -335,7 +340,8 @@
 	mapping<string opt_name, string opt_value> tool_opts;
 	ws_alignmentSet_id alignmentSet_id;
         ws_Sampleset_id sampleset_id;
-        ws_genome_annotation_id genome_id;
+        /*ws_genome_annotation_id genome_id;*/
+	string genome_id;
         list<string> sample_ids;
         list<string> condition;
         list<ws_expression_sample_id> sample_expression_ids;
@@ -359,7 +365,8 @@
       	Handle file;
         list<string> sample_ids;
 	list<string> condition;
-        ws_genome_annotation_id genome_id;
+        /*ws_genome_annotation_id genome_id;*/
+	string genome_id;
 	ws_expressionSet_id expressionSet_id;
 	ws_alignmentSet_id alignmentSet_id;
         ws_Sampleset_id sampleset_id;
@@ -459,7 +466,8 @@
 
    typedef structure{
         string ws_id;
-        ws_genome_annotation_id reference;
+        /*ws_genome_annotation_id reference;*/
+	string reference;
         string output_obj_name;
         }GetFeaturesToGTFParams;
 

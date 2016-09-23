@@ -49,7 +49,7 @@ class ExecutionBase(object):
         self.method_params = None
         self.num_threads = None
         self.num_jobs = None
-
+	#self.callback_url = os.environ['SDK_CALLBACK_URL']
         # default parameters
         self.num_cores = mp.cpu_count()
 
@@ -127,7 +127,6 @@ class ExecutionBase(object):
         else:
             pool_size = 1
             self.num_threads = 1
-
         # sanity check
         if self.num_jobs is None:
             raise ExecutionBaseException("Need to define num_jobs during prepare()")
@@ -142,7 +141,6 @@ class ExecutionBase(object):
         self.collect()
         self.writeReport()
 
-        #self._clearCommonParams()
         # clean-ups
         self.num_jobs = None
         self.task_list = []
@@ -153,7 +151,8 @@ class ExecutionBase(object):
 
     # individual file processing code
     def runEach(self, task_params):
-        raise NotImplementedMethod() 
+	raise NotImplementedMethod() 
+	
 
     # collect parallel execution results
     # (optionally) it may call writeReport

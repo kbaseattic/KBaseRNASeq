@@ -21,24 +21,21 @@ try:
     from biokbase.HandleService.Client import HandleService
 except:
     from biokbase.AbstractHandle.Client import AbstractHandle as HandleService
-from biokbase.RNASeq.HiSat2 import HiSat2
 from AssemblyUtil.AssemblyUtilClient import AssemblyUtil
 from GenomeFileUtil.GenomeFileUtilClient import GenomeFileUtil
-#import ExecutionBase.ExecutionBase as ExecutionBase
+from biokbase.RNASeq.HiSat2 import HiSat2
 
-class HiSat2SampleSetException(Exception):
+class HiSat2SampleException(Exception):
     pass
 
-class HiSat2SampleSet(HiSat2): 
+class HiSat2Sample(HiSat2): 
 
     def __init__(self, logger, directory, urls):
-        super(HiSat2SampleSet, self).__init__(logger, directory, urls)
-
+        super(HiSat2Sample, self).__init__(logger, directory, urls)
         # user defined shared variables across methods
-        self.sample = None
-        self.sampleset_info = None
-        #self.num_threads = None
-
+        self.sample_info = None
+        #self.sampleset_info = None
+        self.num_threads = 1
 
     def prepare(self): 
         # for quick testing, we recover parameters here
@@ -53,39 +50,30 @@ class HiSat2SampleSet(HiSat2):
                sample,annotation_name = ws_client.get_objects(
                                         [{ 'name' : params['sampleset_id'], 'workspace' : params['ws_id']},
                                         { 'name' : params['genome_id'], 'workspace' : params['ws_id']}])
-               self.sample = sample
+               self.sample =sample 
         except Exception,e:
                logger.exception("".join(traceback.format_exc()))
                raise ValueError(" Error Downloading objects from the workspace ")
             ### Get obejct IDs
-        sampleset_info,annotation_info = ws_client.get_object_info_new({"objects": [
+        sample_info,annotation_info = ws_client.get_object_info_new({"objects": [
                                            {'name': params['sampleset_id'], 'workspace': params['ws_id']},
                                            {'name': params['genome_id'], 'workspace': params['ws_id']}
                                            ]})
-        self.sampleset_info = sampleset_info
+        self.sample_info = sample_info
         ### Get the workspace object ids for the objects ###
-        sampleset_id = str(sampleset_info[6]) + '/' + str(sampleset_info[0]) + '/' + str(sampleset_info[4])
+        sample_id = str(sample_info[6]) + '/' + str(sample_info[0]) + '/' + str(sample_info[4])
         annotation_id = str(annotation_info[6]) + '/' + str(annotation_info[0]) + '/' + str(annotation_info[4])
-        sample_type = sampleset_info[2].split('-')[0]
-
+        sample_type = sample_info[2].split('-')[0]
+	lib_types = ['KBaseAssembly.SingleEndLibrary', 'KBaseAssembly.PairedEndLibrary']
         ### Check if the Library objects exist in the same workspace
-        if sample_type != 'KBaseRNASeq.RNASeqSampleSet':
-            raise HiSat2SampleSetException('RNASeqSampleSet is required')
-        logger.info("Check if the Library objects do exist in the current workspace")
-        reads = sample['data']['sample_ids']
-        r_label = sample['data']['condition']
-        reads_type= sample['data']['Library_type']
-        if reads_type == 'PairedEnd': r_type = 'KBaseAssembly.PairedEndLibrary'
-        else: r_type = 'KBaseAssembly.SingleEndLibrary'
-        e_ws_objs = script_util.if_ws_obj_exists(None,ws_client,params['ws_id'],r_type,reads)
-        missing_objs = [i for i in reads if not i in e_ws_objs]
-        if len(e_ws_objs) != len(reads):
-            raise HiSat2SampleSetException('Missing Library objects {0} in the {1}. please copy them and run this method'.format(",".join(missing_objs),params['ws_id']))
- 
-        self.num_jobs = len(reads)
+        if not sample_type in lib_types: #'KBaseAssembly.SingleEndLibrary' or sample_type != 'KBaseAssembly.PairedEndLibrary':
+            raise HiSat2SampleException('Either of the Library typed objects SingleEndLibrary or PairedEndLibrary is required')
+        r_label = 'Single'
+        self.num_jobs = 1
 	ref_info = ws_client.get_object_info_new({"objects": [{'name': params['genome_id'], 'workspace': params['ws_id']}]})[0]
         ref_id = str(ref_info[6]) + '/' + str(ref_info[0]) + '/' + str(ref_info[4])
         fasta_file = script_util.get_fasta_from_genome(logger,ws_client,self.urls,ref_id)
+	## TODO Remove the below commented lines of code to complete get rid of genome annotation and data_api calls
 	#fasta_file = script_util.generate_fasta(logger,self.urls,token,annotation_id,hisat2_dir,params['genome_id'])
         #logger.info("Sanitizing the fasta file to correct id names {}".format(datetime.datetime.utcnow()))
         #mapping_filename = c_mapping.create_sanitized_contig_ids(fasta_file)
@@ -112,38 +100,34 @@ class HiSat2SampleSet(HiSat2):
             except Exception,e:
                         raise Exception( "Unable to download shock file, {0}".format(gtf_name))
         else:
-	     script_util.create_gtf_annotation_from_genome(logger,ws_client,hs,self.urls,params['ws_id'],ref_id,params['genome_id'],fasta_file,hisat2_dir,token)
-             #script_util.create_gtf_annotation(logger,ws_client,hs,self.urls,params['ws_id'],annotation_id,params['genome_id'],fasta_file,hisat2_dir,token)
+             script_util.create_gtf_annotation_from_genome(logger,ws_client,hs,self.urls,params['ws_id'],ref_id,params['genome_id'],fasta_file,hisat2_dir,token)
 	# Determine the num_threads provided by the user otherwise default the number of threads to 2
  
-        count = 0
         logger.info(" Number of threads used by each process {0}".format(self.num_threads))
-        for i in reads:
-            try:
-                    label = r_label[count]
-                    task_param = {'job_id' : i,
-                                  'label' : r_label[count],
-                                  'ws_id' : params['ws_id'],
-                                  'reads_type' : reads_type,
-                                  'hisat2_dir' : self.directory,
-                                  'annotation_id': ref_id, # Changed annotation_id to ref_id for genome object 
-                                  'sampleset_id' : sampleset_id
-                                 }
-                    self.task_list.append(task_param)
-                    count = count + 1
-            except Exception,e:
-                    raise
-
-
+	task_param = {'job_id' : params['sampleset_id'],
+                      'label' : r_label,
+                      'ws_id' : params['ws_id'],
+                      'reads_type' : sample_type,
+                      'hisat2_dir' : self.directory,
+                      'annotation_id': ref_id,
+                      'sampleset_id' : None
+                      }
+	self.task_list.append(task_param)
+	
+		
     def collect(self) :
         # do with 
-        alignmentSet_name = self.method_params['sampleset_id']+"_hisat2_AlignmentSet"
-        self.logger.info(" Creating AlignmentSet for the Alignments {0}".format(alignmentSet_name))
+        alignment_name = self.method_params['sampleset_id']+"_hisat2_AlignmentSet"
+        self.logger.info(" Creating Report for Alignment {0}".format(alignment_name))
+	single_alignment , single_read = self.results[0]
         # TODO: Split alignment set and report method
-        reportObj=script_util.create_RNASeq_AlignmentSet_and_build_report(self.logger,self.common_params['ws_client'],self.method_params['ws_id'],self.sample['data']['sample_ids'],self.task_list[0]['sampleset_id'],self.task_list[0]['annotation_id'],None,self.results,alignmentSet_name)
-        reportName = 'Align_Reads_using_Hisat2_'+str(hex(uuid.getnode()))
+	sref = self.common_params['ws_client'].get_object_info_new({"objects": [{'name':single_alignment, 'workspace': self.method_params['ws_id']}]})[0]
+        reportObj = {'objects_created':[{'ref' :str(sref[6]) + '/' + str(sref[0]) + '/' + str(sref[4]),
+                                                 'description' : "RNA-seq Alignment for reads Sample: {0}".format(single_read)}],
+                                                 'text_message': "RNA-seq Alignment for reads Sample: {0}".format(single_read)}
+	reportName = 'Align_Reads_using_Hisat2_'+str(hex(uuid.getnode()))
         report_info = self.common_params['ws_client'].save_objects({
-                                                'id':self.sampleset_info[6],
+                                                'id':self.sample_info[6],
                                                 'objects':[
                                                 {
                                                 'type':'KBaseReport.Report',

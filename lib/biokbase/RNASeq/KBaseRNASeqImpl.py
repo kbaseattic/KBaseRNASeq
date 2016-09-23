@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #BEGIN_HEADER
 import simplejson
 import sys
@@ -30,6 +31,8 @@ import re
 import doekbase.data_api
 from doekbase.data_api.annotation.genome_annotation.api import GenomeAnnotationAPI , GenomeAnnotationClientAPI
 from doekbase.data_api.sequence.assembly.api import AssemblyAPI , AssemblyClientAPI
+from AssemblyUtil.AssemblyUtilClient import AssemblyUtil
+from GenomeFileUtil.GenomeFileUtilClient import GenomeFileUtil
 import datetime
 import requests.packages.urllib3
 requests.packages.urllib3.disable_warnings()
@@ -39,7 +42,7 @@ except:
     from biokbase.AbstractHandle.Client import AbstractHandle as HandleService
 
 from biokbase.RNASeq.HiSat2SampleSet import HiSat2SampleSet
-
+from biokbase.RNASeq.HiSat2Sample import HiSat2Sample
 
 _KBaseRNASeq__DATA_VERSION = "0.2"
 
@@ -49,7 +52,6 @@ class KBaseRNASeqException(BaseException):
 	def __str__(self):
 		return repr(self.msg)
     
-
 def parallelize(function,num_processors):
        def temp(_):
          def apply(args):
@@ -98,7 +100,7 @@ class KBaseRNASeq:
     #########################################
     VERSION = "0.0.1"
     GIT_URL = "https://github.com/kbase/KBaseRNASeq"
-    GIT_COMMIT_HASH = "9f2a3d59d8b76a0773aef4ef3cca9dc758a0f04d"
+    GIT_COMMIT_HASH = "13e98933aea51ffac6b401451d8aebb874958614"
     
     #BEGIN_CLASS_HEADER
     __TEMP_DIR = 'temp'
@@ -139,13 +141,17 @@ class KBaseRNASeq:
 	      self.__SCRIPTS_DIR = config['scripts_dir']
 	if 'force_shock_node_2b_public' in config: # expect 'true' or 'false' string
 	      self.__PUBLIC_SHOCK_NODE = config['force_shock_node_2b_public']
+	self.__CALLBACK_URL = os.environ['SDK_CALLBACK_URL']	
+	#### TODO CHANGE THIS PART WHEN COMMITING THE FILE
+	#self.__CALLBACK_URL = 'http://172.17.0.1:54375'	
 	
-	self.__SCRIPT_TYPE = { 'ContigSet_to_fasta' : 'ContigSet_to_fasta.py',
+        self.__SCRIPT_TYPE = { 'ContigSet_to_fasta' : 'ContigSet_to_fasta.py',
 			     } 
 
 	self.__SERVICES = { 'workspace_service_url' : self.__WS_URL,
 			    'shock_service_url' : self.__SHOCK_URL,
-			    'handle_service_url' : self.__HS_URL }
+			    'handle_service_url' : self.__HS_URL, 
+			    'callback_url' : self.__CALLBACK_URL }
         # logging
         self.__LOGGER = logging.getLogger('KBaseRNASeq')
         if 'log_level' in config:
@@ -164,6 +170,30 @@ class KBaseRNASeq:
     
 
     def CreateRNASeqSampleSet(self, ctx, params):
+        """
+        :param params: instance of type "CreateRNASeqSampleSetParams"
+           (FUNCTIONS used in the service) -> structure: parameter "ws_id" of
+           String, parameter "sampleset_id" of String, parameter
+           "sampleset_desc" of String, parameter "domain" of String,
+           parameter "platform" of String, parameter "sample_ids" of list of
+           String, parameter "condition" of list of String, parameter
+           "source" of String, parameter "Library_type" of String, parameter
+           "publication_id" of String, parameter "external_source_date" of
+           String
+        :returns: instance of type "RNASeqSampleSet" (Object to Describe the
+           RNASeq SampleSet @optional platform num_replicates source
+           publication_Id external_source_date sample_ids @metadata ws
+           sampleset_id @metadata ws platform @metadata ws num_samples
+           @metadata ws num_replicates @metadata ws length(condition)) ->
+           structure: parameter "sampleset_id" of String, parameter
+           "sampleset_desc" of String, parameter "domain" of String,
+           parameter "platform" of String, parameter "num_samples" of Long,
+           parameter "num_replicates" of Long, parameter "sample_ids" of list
+           of String, parameter "condition" of list of String, parameter
+           "source" of String, parameter "Library_type" of String, parameter
+           "publication_Id" of String, parameter "external_source_date" of
+           String
+        """
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN CreateRNASeqSampleSet
@@ -223,6 +253,14 @@ class KBaseRNASeq:
         return [returnVal]
 
     def BuildBowtie2Index(self, ctx, params):
+        """
+        :param params: instance of type "Bowtie2IndexParams" -> structure:
+           parameter "ws_id" of String, parameter "reference" of String,
+           parameter "output_obj_name" of String
+        :returns: instance of type "ResultsToReport" (Object for Report type)
+           -> structure: parameter "report_name" of String, parameter
+           "report_ref" of String
+        """
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN BuildBowtie2Index
@@ -241,15 +279,37 @@ class KBaseRNASeq:
         	provenance[0]['input_ws_objects']=[params['ws_id']+'/'+params['reference']]
 		
 		ref_info = ws_client.get_object_info_new({"objects": [{'name': params['reference'], 'workspace': params['ws_id']}]})[0]
-		genome_id = str(ref_info[6]) + '/' + str(ref_info[0]) + '/' + str(ref_info[4])
+		#ref = ws_client.get_objects({"objects": [{'name': params['reference'], 'workspace': params['ws_id']}]})[0]
+                ref = ws_client.get_object_subset(
+                                        [{ 'name' : params['reference'], 'workspace' : params['ws_id'],'included': ['contigset_ref']}])
+		#genome_id = None
+		#if 'contigset_ref' in ref['data']:
+		#genome_id = ref[0]['contigset_ref']
+		print ref
+		genome_id = ref[0]['data']['contigset_ref']
+		print genome_id 
+		#genome_id = str(ref_info[6]) + '/' + str(ref_info[0]) + '/' + str(ref_info[4])
                 self.__LOGGER.info( "Generating FASTA from Genome Annotation")
                 outfile_ref_name = params['reference']+".fasta"
                 try:
-                    	output_file = script_util.generate_fasta(self.__LOGGER,self.__SERVICES,user_token,genome_id,bowtie_dir,params['reference'])
-			self.__LOGGER.info("Sanitizing the fasta file to correct id names {}".format(datetime.datetime.utcnow()))
-        		mapping_filename = c_mapping.create_sanitized_contig_ids(output_file)
-        		c_mapping.replace_fasta_contig_ids(output_file, mapping_filename, to_modified=True)
-        		self.__LOGGER.info("Generating FASTA file completed successfully : {}".format(datetime.datetime.utcnow()))	
+			#self.callback_url = os.environ['SDK_CALLBACK_URL']
+
+			## get the FASTA
+			assembly = AssemblyUtil(self.__SERVICES['callback_url'])
+			ret = assembly.get_assembly_as_fasta({'ref':genome_id})
+			output_file = ret['path']
+			outfile_ref_name = os.path.basename(output_file)
+			print outfile_ref_name
+			## get the GFF
+			#genome = GenomeFileUtil(self.callback_url)
+			#ret = genome.genome_to_gff({'genome_ref':'123/124/1'})
+			#file_path = ret['gff_file']
+
+                    	#output_file = script_util.generate_fasta(self.__LOGGER,self.__SERVICES,user_token,genome_id,bowtie_dir,params['reference'])
+			#self.__LOGGER.info("Sanitizing the fasta file to correct id names {}".format(datetime.datetime.utcnow()))
+        		#mapping_filename = c_mapping.create_sanitized_contig_ids(output_file)
+        		#c_mapping.replace_fasta_contig_ids(output_file, mapping_filename, to_modified=True)
+        		#self.__LOGGER.info("Generating FASTA file completed successfully : {}".format(datetime.datetime.utcnow()))	
                 except Exception, e:
 			self.__LOGGER.exception("".join(traceback.format_exc()))
                         raise ValueError('Unable to get FASTA for object {}'.format("".join(traceback.format_exc())))
@@ -330,6 +390,14 @@ class KBaseRNASeq:
         return [returnVal]
 
     def GetFeaturesToGTF(self, ctx, params):
+        """
+        :param params: instance of type "GetFeaturesToGTFParams" ->
+           structure: parameter "ws_id" of String, parameter "reference" of
+           String, parameter "output_obj_name" of String
+        :returns: instance of type "ResultsToReport" (Object for Report type)
+           -> structure: parameter "report_name" of String, parameter
+           "report_ref" of String
+        """
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN GetFeaturesToGTF
@@ -451,6 +519,21 @@ class KBaseRNASeq:
         return [returnVal]
 
     def Bowtie2Call(self, ctx, params):
+        """
+        :param params: instance of type "Bowtie2Params" -> structure:
+           parameter "ws_id" of String, parameter "sampleset_id" of String,
+           parameter "genome_id" of String, parameter "bowtie_index" of
+           String, parameter "phred33" of String, parameter "phred64" of
+           String, parameter "local" of String, parameter "very-fast" of
+           String, parameter "fast" of String, parameter "very-sensitive" of
+           String, parameter "sensitive" of String, parameter
+           "very-fast-local" of String, parameter "very-sensitive-local" of
+           String, parameter "fast-local" of String, parameter
+           "fast-sensitive" of String
+        :returns: instance of type "ResultsToReport" (Object for Report type)
+           -> structure: parameter "report_name" of String, parameter
+           "report_ref" of String
+        """
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN Bowtie2Call
@@ -611,25 +694,54 @@ class KBaseRNASeq:
         return [returnVal]
 
     def Hisat2Call(self, ctx, params):
+        """
+        :param params: instance of type "Hisat2Params" -> structure:
+           parameter "ws_id" of String, parameter "sampleset_id" of String,
+           parameter "genome_id" of String, parameter "num_threads" of Long,
+           parameter "quality_score" of String, parameter "skip" of Long,
+           parameter "trim3" of Long, parameter "trim5" of Long, parameter
+           "np" of Long, parameter "minins" of Long, parameter "maxins" of
+           Long, parameter "orientation" of String, parameter
+           "min_intron_length" of Long, parameter "max_intron_length" of
+           Long, parameter "no_spliced_alignment" of type "bool" (indicates
+           true or false values, false <= 0, true >=1), parameter
+           "transcriptome_mapping_only" of type "bool" (indicates true or
+           false values, false <= 0, true >=1), parameter "tailor_alignments"
+           of String
+        :returns: instance of type "ResultsToReport" (Object for Report type)
+           -> structure: parameter "report_name" of String, parameter
+           "report_ref" of String
+        """
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN Hisat2Call
+	pprint(self.__SERVICES)
 	if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
         hisat2_dir = os.path.join(self.__SCRATCH,"tmp")
         handler_util.setupWorkingDir(self.__LOGGER,hisat2_dir) 
-
-        hs2ss = HiSat2SampleSet(self.__LOGGER, hisat2_dir, self.__SERVICES)
-
-        common_params = {'ws_client' : Workspace(url=self.__WS_URL, token=ctx['token']),
+	# Set the common Params
+	common_params = {'ws_client' : Workspace(url=self.__WS_URL, token=ctx['token']),
                          'hs_client' : HandleService(url=self.__HS_URL, token=ctx['token']),
                          'user_token' : ctx['token']
                         }
+	# Set the Number of threads if specified 
+
         if 'num_threads' in params and params['num_threads'] is not None:
             common_params['num_threads'] = params['num_threads']
-      
-        returnVal = hs2ss.run(common_params, params)
+
+	# Check to Call HiSat2 in Set mode or Single mode
+	wsc = common_params['ws_client']
+	readsobj_info = wsc.get_object_info_new({"objects": [{'name': params['sampleset_id'], 'workspace': params['ws_id']}]})
+        readsobj_type = readsobj_info[0][2].split('-')[0]
+	if readsobj_type == 'KBaseRNASeq.RNASeqSampleSet':	
+		self.__LOGGER.info("HiSat2 SampleSet Case")
+        	hs2ss = HiSat2SampleSet(self.__LOGGER, hisat2_dir, self.__SERVICES)
+        	returnVal = hs2ss.run(common_params, params)
+	else:
+		hs2ss = HiSat2Sample(self.__LOGGER, hisat2_dir, self.__SERVICES)
+		returnVal = hs2ss.run(common_params,params)
 	#finally:
-        handler_util.cleanup(self.__LOGGER,hisat2_dir)
+        #handler_util.cleanup(self.__LOGGER,hisat2_dir)
         #END Hisat2Call
 
         # At some point might do deeper type checking...
@@ -640,6 +752,23 @@ class KBaseRNASeq:
         return [returnVal]
 
     def TophatCall(self, ctx, params):
+        """
+        :param params: instance of type "TophatParams" -> structure:
+           parameter "ws_id" of String, parameter "read_sample" of String,
+           parameter "genome_id" of String, parameter "bowtie2_index" of
+           String, parameter "read_mismatches" of Long, parameter
+           "read_gap_length" of Long, parameter "read_edit_dist" of Long,
+           parameter "min_intron_length" of Long, parameter
+           "max_intron_length" of Long, parameter "num_threads" of Long,
+           parameter "report_secondary_alignments" of String, parameter
+           "no_coverage_search" of String, parameter "library_type" of
+           String, parameter "annotation_gtf" of type
+           "ws_referenceAnnotation_id" (Id for KBaseRNASeq.GFFAnnotation @id
+           ws KBaseRNASeq.GFFAnnotation)
+        :returns: instance of type "ResultsToReport" (Object for Report type)
+           -> structure: parameter "report_name" of String, parameter
+           "report_ref" of String
+        """
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN TophatCall
@@ -800,6 +929,23 @@ class KBaseRNASeq:
         return [returnVal]
 
     def StringTieCall(self, ctx, params):
+        """
+        :param params: instance of type "StringTieParams" -> structure:
+           parameter "ws_id" of String, parameter "sample_alignment" of
+           String, parameter "num-threads" of Long, parameter "label" of
+           String, parameter "min_isoform_abundance" of Double, parameter
+           "a_juncs" of Long, parameter "min_length" of Long, parameter
+           "j_min_reads" of Double, parameter "c_min_read_coverage" of
+           Double, parameter "gap_sep_value" of Long, parameter
+           "disable_trimming" of type "bool" (indicates true or false values,
+           false <= 0, true >=1), parameter "ballgown_mode" of type "bool"
+           (indicates true or false values, false <= 0, true >=1), parameter
+           "skip_reads_with_no_ref" of type "bool" (indicates true or false
+           values, false <= 0, true >=1), parameter "merge" of String
+        :returns: instance of type "ResultsToReport" (Object for Report type)
+           -> structure: parameter "report_name" of String, parameter
+           "report_ref" of String
+        """
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN StringTieCall
@@ -826,6 +972,16 @@ class KBaseRNASeq:
         return [returnVal]
 
     def CufflinksCall(self, ctx, params):
+        """
+        :param params: instance of type "CufflinksParams" -> structure:
+           parameter "ws_id" of String, parameter "sample_alignment" of
+           String, parameter "num_threads" of Long, parameter
+           "min-intron-length" of Long, parameter "max-intron-length" of
+           Long, parameter "overhang-tolerance" of Long
+        :returns: instance of type "ResultsToReport" (Object for Report type)
+           -> structure: parameter "report_name" of String, parameter
+           "report_ref" of String
+        """
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN CufflinksCall
@@ -983,6 +1139,51 @@ class KBaseRNASeq:
         return [returnVal]
 
     def CuffdiffCall(self, ctx, params):
+        """
+        :param params: instance of type "CuffdiffParams" -> structure:
+           parameter "ws_id" of String, parameter "rnaseq_exp_details" of
+           type "RNASeqSampleSet" (Object to Describe the RNASeq SampleSet
+           @optional platform num_replicates source publication_Id
+           external_source_date sample_ids @metadata ws sampleset_id
+           @metadata ws platform @metadata ws num_samples @metadata ws
+           num_replicates @metadata ws length(condition)) -> structure:
+           parameter "sampleset_id" of String, parameter "sampleset_desc" of
+           String, parameter "domain" of String, parameter "platform" of
+           String, parameter "num_samples" of Long, parameter
+           "num_replicates" of Long, parameter "sample_ids" of list of
+           String, parameter "condition" of list of String, parameter
+           "source" of String, parameter "Library_type" of String, parameter
+           "publication_Id" of String, parameter "external_source_date" of
+           String, parameter "output_obj_name" of String, parameter
+           "time-series" of String, parameter "library-type" of String,
+           parameter "library-norm-method" of String, parameter
+           "multi-read-correct" of String, parameter "min-alignment-count" of
+           Long, parameter "dispersion-method" of String, parameter
+           "no-js-tests" of String, parameter "frag-len-mean" of Long,
+           parameter "frag-len-std-dev" of Long, parameter
+           "max-mle-iterations" of Long, parameter "compatible-hits-norm" of
+           String, parameter "no-length-correction" of String
+        :returns: instance of type "RNASeqDifferentialExpression" (Object
+           RNASeqDifferentialExpression file structure @optional tool_opts
+           tool_version sample_ids comments) -> structure: parameter
+           "tool_used" of String, parameter "tool_version" of String,
+           parameter "tool_opts" of list of mapping from String to String,
+           parameter "file" of type "Handle" (@optional hid file_name type
+           url remote_md5 remote_sha1) -> structure: parameter "hid" of type
+           "HandleId" (Id for the handle object @id handle), parameter
+           "file_name" of String, parameter "id" of String, parameter "type"
+           of String, parameter "url" of String, parameter "remote_md5" of
+           String, parameter "remote_sha1" of String, parameter "sample_ids"
+           of list of String, parameter "condition" of list of String,
+           parameter "genome_id" of String, parameter "expressionSet_id" of
+           type "ws_expressionSet_id" (Id for expression sample set @id ws
+           KBaseRNASeq.RNASeqExpressionSet), parameter "alignmentSet_id" of
+           type "ws_alignmentSet_id" (The workspace id for a
+           RNASeqAlignmentSet object @id ws KBaseRNASeq.RNASeqAlignmentSet),
+           parameter "sampleset_id" of type "ws_Sampleset_id" (Id for
+           KBaseRNASeq.RNASeqSampleSet @id ws KBaseRNASeq.RNASeqSampleSet),
+           parameter "comments" of String
+        """
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN CuffdiffCall
@@ -1104,6 +1305,49 @@ class KBaseRNASeq:
         return [returnVal]
 
     def DiffExpCallforBallgown(self, ctx, params):
+        """
+        :param params: instance of type "DifferentialExpParams" -> structure:
+           parameter "ws_id" of String, parameter "expressionset_id" of type
+           "RNASeqExpressionSet" (Set object for RNASeqExpression objects
+           @optional sample_ids condition tool_used tool_version tool_opts
+           @metadata ws tool_used @metadata ws tool_version @metadata ws
+           alignmentSet_id) -> structure: parameter "tool_used" of String,
+           parameter "tool_version" of String, parameter "tool_opts" of
+           mapping from String to String, parameter "alignmentSet_id" of type
+           "ws_alignmentSet_id" (The workspace id for a RNASeqAlignmentSet
+           object @id ws KBaseRNASeq.RNASeqAlignmentSet), parameter
+           "sampleset_id" of type "ws_Sampleset_id" (Id for
+           KBaseRNASeq.RNASeqSampleSet @id ws KBaseRNASeq.RNASeqSampleSet),
+           parameter "genome_id" of String, parameter "sample_ids" of list of
+           String, parameter "condition" of list of String, parameter
+           "sample_expression_ids" of list of type "ws_expression_sample_id"
+           (Id for expression sample @id ws KBaseRNASeq.RNASeqExpression),
+           parameter "mapped_expression_objects" of list of mapping from
+           String to String, parameter "mapped_expression_ids" of list of
+           mapping from String to type "ws_expression_sample_id" (Id for
+           expression sample @id ws KBaseRNASeq.RNASeqExpression), parameter
+           "output_obj_name" of String, parameter "num_threads" of Long
+        :returns: instance of type "RNASeqDifferentialExpression" (Object
+           RNASeqDifferentialExpression file structure @optional tool_opts
+           tool_version sample_ids comments) -> structure: parameter
+           "tool_used" of String, parameter "tool_version" of String,
+           parameter "tool_opts" of list of mapping from String to String,
+           parameter "file" of type "Handle" (@optional hid file_name type
+           url remote_md5 remote_sha1) -> structure: parameter "hid" of type
+           "HandleId" (Id for the handle object @id handle), parameter
+           "file_name" of String, parameter "id" of String, parameter "type"
+           of String, parameter "url" of String, parameter "remote_md5" of
+           String, parameter "remote_sha1" of String, parameter "sample_ids"
+           of list of String, parameter "condition" of list of String,
+           parameter "genome_id" of String, parameter "expressionSet_id" of
+           type "ws_expressionSet_id" (Id for expression sample set @id ws
+           KBaseRNASeq.RNASeqExpressionSet), parameter "alignmentSet_id" of
+           type "ws_alignmentSet_id" (The workspace id for a
+           RNASeqAlignmentSet object @id ws KBaseRNASeq.RNASeqAlignmentSet),
+           parameter "sampleset_id" of type "ws_Sampleset_id" (Id for
+           KBaseRNASeq.RNASeqSampleSet @id ws KBaseRNASeq.RNASeqSampleSet),
+           parameter "comments" of String
+        """
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN DiffExpCallforBallgown
