@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #BEGIN_HEADER
 import simplejson
 import sys
@@ -96,7 +97,7 @@ class KBaseRNASeq:
     #########################################
     VERSION = "0.0.1"
     GIT_URL = "https://github.com/sjyoo/KBaseRNASeq"
-    GIT_COMMIT_HASH = "e3ca3977e74cbfd9bcd3e5480b8ac34d7ed09daa"
+    GIT_COMMIT_HASH = "c16cf497efbdbbbf982d928015fc6d70a2ba1d33"
     
     #BEGIN_CLASS_HEADER
     __TEMP_DIR = 'temp'
@@ -162,6 +163,30 @@ class KBaseRNASeq:
     
 
     def CreateRNASeqSampleSet(self, ctx, params):
+        """
+        :param params: instance of type "CreateRNASeqSampleSetParams"
+           (FUNCTIONS used in the service) -> structure: parameter "ws_id" of
+           String, parameter "sampleset_id" of String, parameter
+           "sampleset_desc" of String, parameter "domain" of String,
+           parameter "platform" of String, parameter "sample_ids" of list of
+           String, parameter "condition" of list of String, parameter
+           "source" of String, parameter "Library_type" of String, parameter
+           "publication_id" of String, parameter "external_source_date" of
+           String
+        :returns: instance of type "RNASeqSampleSet" (Object to Describe the
+           RNASeq SampleSet @optional platform num_replicates source
+           publication_Id external_source_date sample_ids @metadata ws
+           sampleset_id @metadata ws platform @metadata ws num_samples
+           @metadata ws num_replicates @metadata ws length(condition)) ->
+           structure: parameter "sampleset_id" of String, parameter
+           "sampleset_desc" of String, parameter "domain" of String,
+           parameter "platform" of String, parameter "num_samples" of Long,
+           parameter "num_replicates" of Long, parameter "sample_ids" of list
+           of String, parameter "condition" of list of String, parameter
+           "source" of String, parameter "Library_type" of String, parameter
+           "publication_Id" of String, parameter "external_source_date" of
+           String
+        """
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN CreateRNASeqSampleSet
@@ -221,6 +246,14 @@ class KBaseRNASeq:
         return [returnVal]
 
     def BuildBowtie2Index(self, ctx, params):
+        """
+        :param params: instance of type "Bowtie2IndexParams" -> structure:
+           parameter "ws_id" of String, parameter "reference" of String,
+           parameter "output_obj_name" of String
+        :returns: instance of type "ResultsToReport" (Object for Report type)
+           -> structure: parameter "report_name" of String, parameter
+           "report_ref" of String
+        """
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN BuildBowtie2Index
@@ -328,6 +361,17 @@ class KBaseRNASeq:
         return [returnVal]
 
     def GetFeaturesToGTF(self, ctx, params):
+        """
+        :param params: instance of type "GetFeaturesToGTFParams" ->
+           structure: parameter "ws_id" of String, parameter "reference" of
+           type "ws_genome_annotation_id" (reference genome annotation id for
+           mapping the RNA-Seq fastq file @id ws
+           KBaseGenomeAnnotations.GenomeAnnotation), parameter
+           "output_obj_name" of String
+        :returns: instance of type "ResultsToReport" (Object for Report type)
+           -> structure: parameter "report_name" of String, parameter
+           "report_ref" of String
+        """
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN GetFeaturesToGTF
@@ -449,6 +493,21 @@ class KBaseRNASeq:
         return [returnVal]
 
     def Bowtie2Call(self, ctx, params):
+        """
+        :param params: instance of type "Bowtie2Params" -> structure:
+           parameter "ws_id" of String, parameter "sampleset_id" of String,
+           parameter "genome_id" of String, parameter "bowtie_index" of
+           String, parameter "phred33" of String, parameter "phred64" of
+           String, parameter "local" of String, parameter "very-fast" of
+           String, parameter "fast" of String, parameter "very-sensitive" of
+           String, parameter "sensitive" of String, parameter
+           "very-fast-local" of String, parameter "very-sensitive-local" of
+           String, parameter "fast-local" of String, parameter
+           "fast-sensitive" of String
+        :returns: instance of type "ResultsToReport" (Object for Report type)
+           -> structure: parameter "report_name" of String, parameter
+           "report_ref" of String
+        """
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN Bowtie2Call
@@ -609,6 +668,24 @@ class KBaseRNASeq:
         return [returnVal]
 
     def Hisat2Call(self, ctx, params):
+        """
+        :param params: instance of type "Hisat2Params" -> structure:
+           parameter "ws_id" of String, parameter "sampleset_id" of String,
+           parameter "genome_id" of String, parameter "num_threads" of Long,
+           parameter "quality_score" of String, parameter "skip" of Long,
+           parameter "trim3" of Long, parameter "trim5" of Long, parameter
+           "np" of Long, parameter "minins" of Long, parameter "maxins" of
+           Long, parameter "orientation" of String, parameter
+           "min_intron_length" of Long, parameter "max_intron_length" of
+           Long, parameter "no_spliced_alignment" of type "bool" (indicates
+           true or false values, false <= 0, true >=1), parameter
+           "transcriptome_mapping_only" of type "bool" (indicates true or
+           false values, false <= 0, true >=1), parameter "tailor_alignments"
+           of String
+        :returns: instance of type "ResultsToReport" (Object for Report type)
+           -> structure: parameter "report_name" of String, parameter
+           "report_ref" of String
+        """
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN Hisat2Call
@@ -635,6 +712,23 @@ class KBaseRNASeq:
         return [returnVal]
 
     def TophatCall(self, ctx, params):
+        """
+        :param params: instance of type "TophatParams" -> structure:
+           parameter "ws_id" of String, parameter "read_sample" of String,
+           parameter "genome_id" of String, parameter "bowtie2_index" of
+           String, parameter "read_mismatches" of Long, parameter
+           "read_gap_length" of Long, parameter "read_edit_dist" of Long,
+           parameter "min_intron_length" of Long, parameter
+           "max_intron_length" of Long, parameter "num_threads" of Long,
+           parameter "report_secondary_alignments" of String, parameter
+           "no_coverage_search" of String, parameter "library_type" of
+           String, parameter "annotation_gtf" of type
+           "ws_referenceAnnotation_id" (Id for KBaseRNASeq.GFFAnnotation @id
+           ws KBaseRNASeq.GFFAnnotation)
+        :returns: instance of type "ResultsToReport" (Object for Report type)
+           -> structure: parameter "report_name" of String, parameter
+           "report_ref" of String
+        """
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN TophatCall
@@ -795,6 +889,23 @@ class KBaseRNASeq:
         return [returnVal]
 
     def StringTieCall(self, ctx, params):
+        """
+        :param params: instance of type "StringTieParams" -> structure:
+           parameter "ws_id" of String, parameter "sample_alignment" of
+           String, parameter "num-threads" of Long, parameter "label" of
+           String, parameter "min_isoform_abundance" of Double, parameter
+           "a_juncs" of Long, parameter "min_length" of Long, parameter
+           "j_min_reads" of Double, parameter "c_min_read_coverage" of
+           Double, parameter "gap_sep_value" of Long, parameter
+           "disable_trimming" of type "bool" (indicates true or false values,
+           false <= 0, true >=1), parameter "ballgown_mode" of type "bool"
+           (indicates true or false values, false <= 0, true >=1), parameter
+           "skip_reads_with_no_ref" of type "bool" (indicates true or false
+           values, false <= 0, true >=1), parameter "merge" of String
+        :returns: instance of type "ResultsToReport" (Object for Report type)
+           -> structure: parameter "report_name" of String, parameter
+           "report_ref" of String
+        """
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN StringTieCall
@@ -821,6 +932,16 @@ class KBaseRNASeq:
         return [returnVal]
 
     def CufflinksCall(self, ctx, params):
+        """
+        :param params: instance of type "CufflinksParams" -> structure:
+           parameter "ws_id" of String, parameter "sample_alignment" of
+           String, parameter "num_threads" of Long, parameter
+           "min-intron-length" of Long, parameter "max-intron-length" of
+           Long, parameter "overhang-tolerance" of Long
+        :returns: instance of type "ResultsToReport" (Object for Report type)
+           -> structure: parameter "report_name" of String, parameter
+           "report_ref" of String
+        """
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN CufflinksCall
@@ -978,6 +1099,53 @@ class KBaseRNASeq:
         return [returnVal]
 
     def CuffdiffCall(self, ctx, params):
+        """
+        :param params: instance of type "CuffdiffParams" -> structure:
+           parameter "ws_id" of String, parameter "rnaseq_exp_details" of
+           type "RNASeqSampleSet" (Object to Describe the RNASeq SampleSet
+           @optional platform num_replicates source publication_Id
+           external_source_date sample_ids @metadata ws sampleset_id
+           @metadata ws platform @metadata ws num_samples @metadata ws
+           num_replicates @metadata ws length(condition)) -> structure:
+           parameter "sampleset_id" of String, parameter "sampleset_desc" of
+           String, parameter "domain" of String, parameter "platform" of
+           String, parameter "num_samples" of Long, parameter
+           "num_replicates" of Long, parameter "sample_ids" of list of
+           String, parameter "condition" of list of String, parameter
+           "source" of String, parameter "Library_type" of String, parameter
+           "publication_Id" of String, parameter "external_source_date" of
+           String, parameter "output_obj_name" of String, parameter
+           "time-series" of String, parameter "library-type" of String,
+           parameter "library-norm-method" of String, parameter
+           "multi-read-correct" of String, parameter "min-alignment-count" of
+           Long, parameter "dispersion-method" of String, parameter
+           "no-js-tests" of String, parameter "frag-len-mean" of Long,
+           parameter "frag-len-std-dev" of Long, parameter
+           "max-mle-iterations" of Long, parameter "compatible-hits-norm" of
+           String, parameter "no-length-correction" of String
+        :returns: instance of type "RNASeqDifferentialExpression" (Object
+           RNASeqDifferentialExpression file structure @optional tool_opts
+           tool_version sample_ids comments) -> structure: parameter
+           "tool_used" of String, parameter "tool_version" of String,
+           parameter "tool_opts" of list of mapping from String to String,
+           parameter "file" of type "Handle" (@optional hid file_name type
+           url remote_md5 remote_sha1) -> structure: parameter "hid" of type
+           "HandleId" (Id for the handle object @id handle), parameter
+           "file_name" of String, parameter "id" of String, parameter "type"
+           of String, parameter "url" of String, parameter "remote_md5" of
+           String, parameter "remote_sha1" of String, parameter "sample_ids"
+           of list of String, parameter "condition" of list of String,
+           parameter "genome_id" of type "ws_genome_annotation_id" (reference
+           genome annotation id for mapping the RNA-Seq fastq file @id ws
+           KBaseGenomeAnnotations.GenomeAnnotation), parameter
+           "expressionSet_id" of type "ws_expressionSet_id" (Id for
+           expression sample set @id ws KBaseRNASeq.RNASeqExpressionSet),
+           parameter "alignmentSet_id" of type "ws_alignmentSet_id" (The
+           workspace id for a RNASeqAlignmentSet object @id ws
+           KBaseRNASeq.RNASeqAlignmentSet), parameter "sampleset_id" of type
+           "ws_Sampleset_id" (Id for KBaseRNASeq.RNASeqSampleSet @id ws
+           KBaseRNASeq.RNASeqSampleSet), parameter "comments" of String
+        """
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN CuffdiffCall
@@ -1099,6 +1267,54 @@ class KBaseRNASeq:
         return [returnVal]
 
     def DiffExpCallforBallgown(self, ctx, params):
+        """
+        :param params: instance of type "DifferentialExpParams" -> structure:
+           parameter "ws_id" of String, parameter "expressionset_id" of type
+           "RNASeqExpressionSet" (Set object for RNASeqExpression objects
+           @optional sample_ids condition tool_used tool_version tool_opts
+           @metadata ws tool_used @metadata ws tool_version @metadata ws
+           alignmentSet_id) -> structure: parameter "tool_used" of String,
+           parameter "tool_version" of String, parameter "tool_opts" of
+           mapping from String to String, parameter "alignmentSet_id" of type
+           "ws_alignmentSet_id" (The workspace id for a RNASeqAlignmentSet
+           object @id ws KBaseRNASeq.RNASeqAlignmentSet), parameter
+           "sampleset_id" of type "ws_Sampleset_id" (Id for
+           KBaseRNASeq.RNASeqSampleSet @id ws KBaseRNASeq.RNASeqSampleSet),
+           parameter "genome_id" of type "ws_genome_annotation_id" (reference
+           genome annotation id for mapping the RNA-Seq fastq file @id ws
+           KBaseGenomeAnnotations.GenomeAnnotation), parameter "sample_ids"
+           of list of String, parameter "condition" of list of String,
+           parameter "sample_expression_ids" of list of type
+           "ws_expression_sample_id" (Id for expression sample @id ws
+           KBaseRNASeq.RNASeqExpression), parameter
+           "mapped_expression_objects" of list of mapping from String to
+           String, parameter "mapped_expression_ids" of list of mapping from
+           String to type "ws_expression_sample_id" (Id for expression sample
+           @id ws KBaseRNASeq.RNASeqExpression), parameter "output_obj_name"
+           of String, parameter "num_threads" of Long
+        :returns: instance of type "RNASeqDifferentialExpression" (Object
+           RNASeqDifferentialExpression file structure @optional tool_opts
+           tool_version sample_ids comments) -> structure: parameter
+           "tool_used" of String, parameter "tool_version" of String,
+           parameter "tool_opts" of list of mapping from String to String,
+           parameter "file" of type "Handle" (@optional hid file_name type
+           url remote_md5 remote_sha1) -> structure: parameter "hid" of type
+           "HandleId" (Id for the handle object @id handle), parameter
+           "file_name" of String, parameter "id" of String, parameter "type"
+           of String, parameter "url" of String, parameter "remote_md5" of
+           String, parameter "remote_sha1" of String, parameter "sample_ids"
+           of list of String, parameter "condition" of list of String,
+           parameter "genome_id" of type "ws_genome_annotation_id" (reference
+           genome annotation id for mapping the RNA-Seq fastq file @id ws
+           KBaseGenomeAnnotations.GenomeAnnotation), parameter
+           "expressionSet_id" of type "ws_expressionSet_id" (Id for
+           expression sample set @id ws KBaseRNASeq.RNASeqExpressionSet),
+           parameter "alignmentSet_id" of type "ws_alignmentSet_id" (The
+           workspace id for a RNASeqAlignmentSet object @id ws
+           KBaseRNASeq.RNASeqAlignmentSet), parameter "sampleset_id" of type
+           "ws_Sampleset_id" (Id for KBaseRNASeq.RNASeqSampleSet @id ws
+           KBaseRNASeq.RNASeqSampleSet), parameter "comments" of String
+        """
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN DiffExpCallforBallgown
