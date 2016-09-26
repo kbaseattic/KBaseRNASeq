@@ -208,8 +208,11 @@ def _CallTophat(logger,services,ws_client,hs,ws_id,sample_type,num_threads,read_
                         	raise Exception( "Unable to download shock file , {0} or {1}".format(read1_name,read2_name))
 		try:
                 	
-                        script_util.runProgram(logger,"tophat",tophat_cmd,None,directory)	
+                        eres , estrr = script_util.runProgram(logger,"tophat",tophat_cmd,None,directory)
+			print eres
+			print estrr
             	except Exception,e:
+			raise Exception(e)
                 	raise Exception("Error Running the tophat command {0},{1} {2}".format(tophat_cmd,directory," ".join(traceback.print_exc())))
 	 	try:
                 	bam_file = output_dir+"/accepted_hits.bam"

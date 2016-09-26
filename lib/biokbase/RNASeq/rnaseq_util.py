@@ -12,7 +12,7 @@ from doekbase.data_api.annotation.genome_annotation.api import GenomeAnnotationA
 from doekbase.data_api.sequence.assembly.api import AssemblyAPI, AssemblyClientAPI
 
 
-def get_fasta_from_genome(logger,ws_client,urls,genome_id):
+def get_fasta_from_genome(logger,ws_client,urls,genome_id,fasta_file):
     
     ref = ws_client.get_object_subset(
                                      [{ 'ref' : genome_id ,'included': ['contigset_ref']}])
@@ -23,23 +23,38 @@ def get_fasta_from_genome(logger,ws_client,urls,genome_id):
          assembly = AssemblyUtil(urls['callback_url'])
          ret = assembly.get_assembly_as_fasta({'ref':contig_id})
          output_file = ret['path']
-         fasta_file = os.path.basename(output_file)
+	 logger.info("Sanitizing the fasta file to correct id names {}".format(datetime.datetime.utcnow()))
+         mapping_filename = c_mapping.create_sanitized_contig_ids(output_file)
+         c_mapping.replace_fasta_contig_ids(output_file, mapping_filename, to_modified=True)
+         logger.info("Generating FASTA file completed successfully : {}".format(datetime.datetime.utcnow()))
+	 print "getting here before rename {0} ".format(output_file)
+	 os.rename(output_file,fasta_file)
+         fasta_file = os.path.basename(fasta_file)
     	 return fasta_file
     except Exception, e:
 	 raise Exception(e)
 	 raise Exception("Unable to Create FASTA file from Genome : {0}".format(genome_id))
     return None
 
-def create_gtf_annotation_from_genome(logger,ws_client,hs_client,urls,ws_id,genome_ref,genome_id,fasta_file,directory,token):
-        try:
-		#tmp_file = os.path.join(directory,genome_id + "_GFF.gff")
+def create_gtf_annotation_from_genome(logger,ws_client,hs_client,urls,ws_id,genome_ref,genome_name,directory,token):
+    ref = ws_client.get_object_subset(
+                                     [{ 'ref' : genome_ref ,'included': ['contigset_ref']}])
+    contig_id = ref[0]['data']['contigset_ref']
+    logger.info( "Generating GFF file from Genome")
+    try:
+         	assembly = AssemblyUtil(urls['callback_url'])
+         	ret = assembly.get_assembly_as_fasta({'ref':contig_id})
+         	output_file = ret['path']
+         	mapping_filename = c_mapping.create_sanitized_contig_ids(output_file)
+		os.remove(output_file)
                 ## get the GFF
 		genome = GenomeFileUtil(urls['callback_url'])
 		ret = genome.genome_to_gff({'genome_ref':genome_ref})
 		file_path = ret['file_path']
+		c_mapping.replace_gff_contig_ids(file_path, mapping_filename, to_modified=True)
 		gtf_ext = ".gtf"
 		if not file_path.endswith(gtf_ext): 
-               		gtf_path = os.path.join(directory,genome_id+".gtf")
+               		gtf_path = os.path.join(directory,genome_name+".gtf")
                 	gtf_cmd = " -E {0} -T -o {1}".format(file_path,gtf_path)
                 	try:
                    		logger.info("Executing: gffread {0}".format(gtf_cmd))
@@ -57,12 +72,12 @@ def create_gtf_annotation_from_genome(logger,ws_client,hs_client,urls,ws_id,geno
                                          "objects": [{
                                          "type":"KBaseRNASeq.GFFAnnotation",
                                          "data":a_handle,
-                                         "name":genome_id+"_GTF_Annotation",
+                                         "name":genome_name+"_GTF_Annotation",
                                         "hidden":1}
                                         ]})
-        except Exception as e:
+    except Exception as e:
                 raise ValueError("Generating GTF file from Genome Annotation object Failed :  {}".format("".join(traceback.format_exc())))
-	return gtf_path
+    return gtf_path
 
 def create_RNASeq_AlignmentSet_and_build_report(logger,ws_client,ws_id,sample_list,sampleset_id,genome_id,bowtie2index_id,results,alignmentSet_name):
 	 results =  [ ret for ret in results if not ret is None ]

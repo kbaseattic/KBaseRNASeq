@@ -12,6 +12,7 @@ import handler_utils as handler_util
 from biokbase.workspace.client import Workspace
 from biokbase.auth import Token
 import multiprocessing as mp
+from biokbase.RNASeq import rnaseq_util
 import doekbase.data_api
 from doekbase.data_api.annotation.genome_annotation.api import GenomeAnnotationAPI , GenomeAnnotationClientAPI
 from doekbase.data_api.sequence.assembly.api import AssemblyAPI , AssemblyClientAPI
@@ -85,13 +86,14 @@ class HiSat2SampleSet(HiSat2):
         self.num_jobs = len(reads)
 	ref_info = ws_client.get_object_info_new({"objects": [{'name': params['genome_id'], 'workspace': params['ws_id']}]})[0]
         ref_id = str(ref_info[6]) + '/' + str(ref_info[0]) + '/' + str(ref_info[4])
-        fasta_file = script_util.get_fasta_from_genome(logger,ws_client,self.urls,ref_id)
+	fasta_file =  os.path.join(hisat2_dir,params['genome_id'] + ".fa")
+        fasta_file = rnaseq_util.get_fasta_from_genome(logger,ws_client,self.urls,ref_id,fasta_file)	
 	#fasta_file = script_util.generate_fasta(logger,self.urls,token,annotation_id,hisat2_dir,params['genome_id'])
         #logger.info("Sanitizing the fasta file to correct id names {}".format(datetime.datetime.utcnow()))
         #mapping_filename = c_mapping.create_sanitized_contig_ids(fasta_file)
         #c_mapping.replace_fasta_contig_ids(fasta_file, mapping_filename, to_modified=True)
         #logger.info("Generating FASTA file completed successfully : {}".format(datetime.datetime.utcnow()))
-        hisat2base =os.path.join(hisat2_dir,handler_util.get_file_with_suffix(hisat2_dir,".fasta"))
+        hisat2base =os.path.join(hisat2_dir,handler_util.get_file_with_suffix(hisat2_dir,".fa"))
         hisat2base_cmd = '{0} {1}'.format(fasta_file,hisat2base)
 	try:
             logger.info("Building Index for Hisat2 {0}".format(hisat2base_cmd))
@@ -112,7 +114,8 @@ class HiSat2SampleSet(HiSat2):
             except Exception,e:
                         raise Exception( "Unable to download shock file, {0}".format(gtf_name))
         else:
-	     script_util.create_gtf_annotation_from_genome(logger,ws_client,hs,self.urls,params['ws_id'],ref_id,params['genome_id'],fasta_file,hisat2_dir,token)
+	     rnaseq_util.create_gtf_annotation_from_genome(logger,ws_client,hs,self.urls,params['ws_id'],ref_id,params['genome_id'],hisat2_dir,token)
+	     #script_util.create_gtf_annotation_from_genome(logger,ws_client,hs,self.urls,params['ws_id'],ref_id,params['genome_id'],fasta_file,hisat2_dir,token)
              #script_util.create_gtf_annotation(logger,ws_client,hs,self.urls,params['ws_id'],annotation_id,params['genome_id'],fasta_file,hisat2_dir,token)
 	# Determine the num_threads provided by the user otherwise default the number of threads to 2
  

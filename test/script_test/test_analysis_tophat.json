@@ -4,11 +4,9 @@
 	"context": null,
 	"params":[
 	{
-	 "ws_id" : "srividya22:1462808114124",
-	 "sample_id" : "ath_hy5_demo_Reads_RNASeqSample" ,
-	 "output_obj_name" : "Arabidopsis_wt_tophat" ,
-	 "bowtie_index" : "Arabidopsis_3702_Ensembl_bw_Indexes",
-	 "annotation_gtf" : "Arabidopsis_3702_Ensembl_annotations",
+	 "ws_id" : "srividya22:1474862362136",
+	 "sampleset_id" : "rna_test_to_new_genome" ,
+	 "bowtie_index" : "Escherichia_coli_K12_bw_index",
 	 "read_mismatches" : null,
 	 "read_gap_length" : null,
          "min_intron_length" : null,

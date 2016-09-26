@@ -3,7 +3,7 @@
 	"method":"KBaseRNASeq.BuildBowtie2Index",
 	"context": null,
 	"params":[
-	{"ws_id" : "test_New_RNASeq",
-	 "output_obj_name" :"Ecoli_bowtie_indexed" ,
-	 "reference" : "Ecoli_Genome_Annotation" } ]
+	{"ws_id" : "srividya22:1474862362136",
+	 "output_obj_name" :"Escherichia_coli_K12_bw_index" ,
+	 "reference" : "Escherichia_coli_K12" } ]
 }

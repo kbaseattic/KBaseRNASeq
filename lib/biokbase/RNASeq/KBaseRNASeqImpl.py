@@ -18,6 +18,7 @@ from collections import OrderedDict
 from pprint import pprint,pformat
 import parallel_tools as parallel
 import script_util
+from biokbase.RNASeq import rnaseq_util
 import call_hisat2
 import call_stringtie
 import call_diffExpCallforBallgown
@@ -280,26 +281,29 @@ class KBaseRNASeq:
 		
 		ref_info = ws_client.get_object_info_new({"objects": [{'name': params['reference'], 'workspace': params['ws_id']}]})[0]
 		#ref = ws_client.get_objects({"objects": [{'name': params['reference'], 'workspace': params['ws_id']}]})[0]
-                ref = ws_client.get_object_subset(
-                                        [{ 'name' : params['reference'], 'workspace' : params['ws_id'],'included': ['contigset_ref']}])
+                ref_id = str(ref_info[6]) + '/' + str(ref_info[0]) + '/' + str(ref_info[4])
+		print ref_id
+		#ref = ws_client.get_object_subset(
+                #                        [{ 'name' : params['reference'], 'workspace' : params['ws_id'],'included': ['contigset_ref']}])
 		#genome_id = None
 		#if 'contigset_ref' in ref['data']:
 		#genome_id = ref[0]['contigset_ref']
-		print ref
-		genome_id = ref[0]['data']['contigset_ref']
-		print genome_id 
+		#print ref
+		#genome_id = ref[0]['data']['contigset_ref']
+		#print genome_id 
 		#genome_id = str(ref_info[6]) + '/' + str(ref_info[0]) + '/' + str(ref_info[4])
-                self.__LOGGER.info( "Generating FASTA from Genome Annotation")
-                outfile_ref_name = params['reference']+".fasta"
-                try:
+                #self.__LOGGER.info( "Generating FASTA from Genome Annotation")
+                outfile_ref_name = os.path.join(bowtie_dir,params['reference']+".fa")
+                print outfile_ref_name
+		try:
 			#self.callback_url = os.environ['SDK_CALLBACK_URL']
-
+			outfile_ref_name = rnaseq_util.get_fasta_from_genome(self.__LOGGER,ws_client,self.__SERVICES,ref_id,outfile_ref_name)
 			## get the FASTA
-			assembly = AssemblyUtil(self.__SERVICES['callback_url'])
-			ret = assembly.get_assembly_as_fasta({'ref':genome_id})
-			output_file = ret['path']
-			outfile_ref_name = os.path.basename(output_file)
-			print outfile_ref_name
+			#assembly = AssemblyUtil(self.__SERVICES['callback_url'])
+			#ret = assembly.get_assembly_as_fasta({'ref':genome_id})
+			#output_file = ret['path']
+			#outfile_ref_name = os.path.basename(output_file)
+			#print outfile_ref_name
 			## get the GFF
 			#genome = GenomeFileUtil(self.callback_url)
 			#ret = genome.genome_to_gff({'genome_ref':'123/124/1'})
@@ -337,7 +341,7 @@ class KBaseRNASeq:
 			bowtie_handle = hs.upload(out_file_path)
 		except Exception, e:
 			raise KBaseRNASeqException("Failed to upload the Zipped Bowtie2Indexes file: {0}".format(e))
-	    	bowtie2index = { "handle" : bowtie_handle ,"size" : os.path.getsize(out_file_path),'genome_id' : genome_id}   
+	    	bowtie2index = { "handle" : bowtie_handle ,"size" : os.path.getsize(out_file_path),'genome_id' : ref_id}   
 
 	     ## Save object to workspace
 	   	self.__LOGGER.info( "Saving bowtie indexes object to  workspace")
@@ -586,7 +590,7 @@ class KBaseRNASeq:
             except Exception, e:
                    self.__LOGGER.error("".join(traceback.format_exc()))
                    raise Exception("Unzip indexfile error: Please contact help@kbase.us")
-	    fasta_file =os.path.join(bowtie2_dir,(handler_util.get_file_with_suffix(bowtie2_dir,".fasta")+".fasta"))
+	    fasta_file =os.path.join(bowtie2_dir,(handler_util.get_file_with_suffix(bowtie2_dir,".fa")+".fa"))
 	    bowtie2base =os.path.join(bowtie2_dir,handler_util.get_file_with_suffix(bowtie2_dir,".rev.1.bt2"))
 	    ws_gtf = annotation_gtf+self.__GTF_SUFFIX
 	    ret = script_util.if_obj_exists(None,ws_client,params['ws_id'],"KBaseRNASeq.GFFAnnotation",[ws_gtf])
@@ -601,8 +605,10 @@ class KBaseRNASeq:
 	     	     gtf_file = os.path.join(bowtie2_dir,gtf_name)
             	except Exception,e:
                         raise Exception( "Unable to download shock file, {0}".format(gtf_name))  
- 	    else:		
-	    	script_util.create_gtf_annotation(self.__LOGGER,ws_client,hs,self.__SERVICES,params['ws_id'],genome_id,annotation_gtf,fasta_file,bowtie2_dir,user_token)
+ 	    else:
+		print "genome_id is  {0} and annotation_gtf is  {1} ".format(genome_id,annotation_gtf)
+		rnaseq_util.create_gtf_annotation_from_genome(self.__LOGGER,ws_client,hs,self.__SERVICES,params['ws_id'],genome_id,annotation_gtf,bowtie2_dir,user_token)		
+	    	#script_util.create_gtf_annotation(self.__LOGGER,ws_client,hs,self.__SERVICES,params['ws_id'],genome_id,annotation_gtf,fasta_file,bowtie2_dir,user_token)
             shared_files = {}
 	    # Determine the num_threads provided by the user otherwise default the number of threads to 2
 	    if('num_threads' in params and params['num_threads'] is not None): 
@@ -821,7 +827,7 @@ class KBaseRNASeq:
             except Exception, e:
                    self.__LOGGER.error("".join(traceback.format_exc()))
                    raise Exception("Unzip indexfile error: Please contact help@kbase.us")
-            fasta_file =os.path.join(tophat_dir,(handler_util.get_file_with_suffix(tophat_dir,".fasta")+".fasta"))
+            fasta_file =os.path.join(tophat_dir,(handler_util.get_file_with_suffix(tophat_dir,".fa")+".fa"))
             bowtie2base =os.path.join(tophat_dir,handler_util.get_file_with_suffix(tophat_dir,".rev.1.bt2"))
 
 	    ### Check if GTF annotation object exist or skip this step
@@ -841,7 +847,8 @@ class KBaseRNASeq:
             	except Exception,e:
                         raise Exception( "Unable to download shock file, {0}".format(gtf_name))  
  	    else:		
-            	gtf_file = script_util.create_gtf_annotation(self.__LOGGER,ws_client,hs,self.__SERVICES,params['ws_id'],genome_id,annotation_gtf,fasta_file,tophat_dir,user_token)
+		gtf_file =rnaseq_util.create_gtf_annotation_from_genome(self.__LOGGER,ws_client,hs,self.__SERVICES,params['ws_id'],genome_id,annotation_gtf,tophat_dir,user_token)		
+		#script_util.create_gtf_annotation(self.__LOGGER,ws_client,hs,self.__SERVICES,params['ws_id'],genome_id,annotation_gtf,fasta_file,tophat_dir,user_token)
             shared_files = {}
 	    # Determine the num_threads provided by the user otherwise default the number of threads to 2
             if('num_threads' in params and params['num_threads'] is not None): 
@@ -871,7 +878,8 @@ class KBaseRNASeq:
                                 ### Call multiprocessing of bowtie2 function
                                 #CallBowtie2(self.__LOGGER,self.__services,ws_client,params['ws_id'],params['Library_type'],i,tophat_dir,bowtie2_base,options,output_name,user_token)     
                         except Exception,e:
-                                raise
+                 		self.__LOGGER.exception("".join(traceback.format_exc()))
+                                raise Exception(e)
 
                 @parallelize(CallTophat_helper,pool_size)
                 def run_tophat_in_parallel(tasks):
@@ -915,8 +923,9 @@ class KBaseRNASeq:
         except Exception,e:
                  self.__LOGGER.exception("".join(traceback.format_exc()))
                  raise KBaseRNASeqException("Error Running TophatCall")
-        finally:
-                 handler_util.cleanup(self.__LOGGER,tophat_dir)
+        #finally:
+                 
+		 #handler_util.cleanup(self.__LOGGER,tophat_dir)
                  #if os.path.exists(out_file_path): os.remove(out_file_path)
         
         #END TophatCall
@@ -1041,12 +1050,13 @@ class KBaseRNASeq:
             	except Exception,e:
                      raise Exception( "Unable to download shock file, {0}".format(gtf_name))  
 	    else:
-		fasta_file= script_util.generate_fasta(self.__LOGGER,self.__SERVICES,user_token,annotation_id,cufflinks_dir,annotation_name)
-                self.__LOGGER.info("Sanitizing the fasta file to correct id names {}".format(datetime.datetime.utcnow()))
-                mapping_filename = c_mapping.create_sanitized_contig_ids(fasta_file)
-                c_mapping.replace_fasta_contig_ids(fasta_file, mapping_filename, to_modified=True)
-                self.__LOGGER.info("Generating FASTA file completed successfully : {}".format(datetime.datetime.utcnow()))
-                gtf_file = script_util.create_gtf_annotation(self.__LOGGER,ws_client,hs,self.__SERVICES,params['ws_id'],annotation_id,gtf_obj_name,fasta_file,cufflinks_dir,user_token)
+		gtf_file =rnaseq_util.create_gtf_annotation_from_genome(self.__LOGGER,ws_client,hs,self.__SERVICES,params['ws_id'],annotation_id,annotation_name,cufflinks_dir,user_token)		
+		#fasta_file= script_util.generate_fasta(self.__LOGGER,self.__SERVICES,user_token,annotation_id,cufflinks_dir,annotation_name)
+                #self.__LOGGER.info("Sanitizing the fasta file to correct id names {}".format(datetime.datetime.utcnow()))
+                #mapping_filename = c_mapping.create_sanitized_contig_ids(fasta_file)
+                #c_mapping.replace_fasta_contig_ids(fasta_file, mapping_filename, to_modified=True)
+                #self.__LOGGER.info("Generating FASTA file completed successfully : {}".format(datetime.datetime.utcnow()))
+                #gtf_file = script_util.create_gtf_annotation(self.__LOGGER,ws_client,hs,self.__SERVICES,params['ws_id'],annotation_id,gtf_obj_name,fasta_file,cufflinks_dir,user_token)
 
 	    # Determine the num_threads provided by the user otherwise default the number of threads to 2
             if('num_threads' in params and params['num_threads'] is not None): 
@@ -1230,12 +1240,14 @@ class KBaseRNASeq:
                 except Exception,e:
                      raise Exception( "Unable to download shock file, {0}".format(gtf_name))
             else:
-                fasta_file= script_util.generate_fasta(self.__LOGGER,self.__SERVICES,user_token,annotation_id,cuffdiff_dir,annotation_name)
-                self.__LOGGER.info("Sanitizing the fasta file to correct id names {}".format(datetime.datetime.utcnow()))
-                mapping_filename = c_mapping.create_sanitized_contig_ids(fasta_file)
-                c_mapping.replace_fasta_contig_ids(fasta_file, mapping_filename, to_modified=True)
-                self.__LOGGER.info("Generating FASTA file completed successfully : {}".format(datetime.datetime.utcnow()))
-                gtf_file = script_util.create_gtf_annotation(self.__LOGGER,ws_client,hs,self.__SERVICES,params['ws_id'],annotation_id,gtf_obj_name,fasta_file,cuffdiff_dir,user_token)
+		gtf_file =rnaseq_util.create_gtf_annotation_from_genome(self.__LOGGER,ws_client,hs,self.__SERVICES,params['ws_id'],annotation_id,annotation_name,cuffdiff_dir,user_token)		
+		
+                #fasta_file= script_util.generate_fasta(self.__LOGGER,self.__SERVICES,user_token,annotation_id,cuffdiff_dir,annotation_name)
+                #self.__LOGGER.info("Sanitizing the fasta file to correct id names {}".format(datetime.datetime.utcnow()))
+                #mapping_filename = c_mapping.create_sanitized_contig_ids(fasta_file)
+                #c_mapping.replace_fasta_contig_ids(fasta_file, mapping_filename, to_modified=True)
+                #self.__LOGGER.info("Generating FASTA file completed successfully : {}".format(datetime.datetime.utcnow()))
+                #gtf_file = script_util.create_gtf_annotation(self.__LOGGER,ws_client,hs,self.__SERVICES,params['ws_id'],annotation_id,gtf_obj_name,fasta_file,cuffdiff_dir,user_token)
             #### Getting the alignments and expression from the alignment set and expression set 
 	    m_expr_ids = e_set['data']['mapped_expression_ids']
 	    
