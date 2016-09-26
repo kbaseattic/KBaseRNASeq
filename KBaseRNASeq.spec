@@ -474,39 +474,6 @@
   async funcdef GetFeaturesToGTF(GetFeaturesToGTFParams params)
      returns(ResultsToReport) authentication required;   
    
-   typedef structure{
-	int skip;
-	int upto;
-	int trim5;
-	int trim3;
-	string phred33;
-	string phred64;
-	string int-quals;
-	string local;
-	string end-to-end;
-	string very-fast;
-	string fast;
-	string very-sensitive;
-	string sensitive;
-	string very-fast-local;
-	string very-sensitive-local;
-	string fast-local;
-	string fast-sensitive;
-	int N;
-	int L;
-	int dpad;
-	int gbar;
-	int ma;
-	int mp;
-	int np;
-	int threads;
-	int offrate;
-	string qc-filter;
-	string seed;
-	string non-deterministic;
-	}b_opts;
-
-   typedef mapping<string Bowtie2_opts,b_opts opts_bowtie2> b_opts_str;
 	
    typedef structure{
 	string ws_id;
@@ -552,50 +519,6 @@
   async funcdef Hisat2Call(Hisat2Params params)
      returns(ResultsToReport) authentication required;
 
-typedef structure{
-     string read-mismatches;
-     string read-gap-length;
-     int read-edit-dist;
-     int read-realign-edit-dist;
-     string bowtie1;
-     string output-dir;
-     int mate-inner-dist;
-     int mate-std-dev;
-     int min-anchor-length;
-     int splice-mismatches;
-     int min-intron-length;
-     int max-intron-length;
-     int max-insertion-length;
-     int num-threads;
-     int max-multihits;
-     string report-secondary-alignments;
-     string no-discordant;
-     string no-mixed;
-     string no-coverage-search;
-     string coverage-search;
-     string microexon-search;
-     string library-type;
-     int segment-mismatches;
-     int segment-length;
-     int min-segment-intron;
-     int max-segment-intron;
-     int min-coverage-intron;
-     int max-coverage-intron;
-     string b2-very-fast;
-     string b2-fast;
-     string b2-sensitive;
-     string b2-very-sensitive;
-     string fusion-search;
-     int fusion-anchor-length;
-     int fusion-min-dist;
-     int fusion-read-mismatches;
-     int fusion-multireads;
-     int fusion-multipairs;
-     string fusion-ignore-chromosomes;
-     }t_opts;
-
-typedef mapping<string Tophat_opts,t_opts opts_tophat> t_opts_str;
-
  typedef structure{
      string ws_id;
      string read_sample; 
@@ -635,33 +558,6 @@ typedef mapping<string Tophat_opts,t_opts opts_tophat> t_opts_str;
 
 async funcdef StringTieCall(StringTieParams params)
     returns (ResultsToReport) authentication required;
-
- typedef structure{
-        int num_threads;
-        string library-type;
-        string library-norm-method;
-        int frag-len-mean;
-        int frag-len-std-dev;
-        string upper-quartile-norm;
-        string total-hits-norm;
-        string compatible-hits-norm;
-        int max-mle-iterations;
-        int max-bundle-frags;
-        string no-effective-length-correction;
-        string no-length-correction;
-        float min-isoform-fraction;
-        float pre-mrna-fraction;
-        int max-intron-length;
-        float junc-alpha;
-        string small-anchor-fraction;
-        int min-frags-per-transfrag;
-        int overhang-tolerance;
-        int max-bundle-length;
-        int min-intron-length;
-        int trim-3-avgcov-thresh;
-        int trim-3-dropoff-frac;
-        float max-multiread-fraction;
-        }opts_cufflinks;
 
 typedef structure{
 	string ws_id;
