@@ -71,16 +71,20 @@ class HiSat2Sample(HiSat2):
             raise HiSat2SampleException('Either of the Library typed objects SingleEndLibrary or PairedEndLibrary is required')
         r_label = 'Single'
         self.num_jobs = 1
-	ref_info = ws_client.get_object_info_new({"objects": [{'name': params['genome_id'], 'workspace': params['ws_id']}]})[0]
-        ref_id = str(ref_info[6]) + '/' + str(ref_info[0]) + '/' + str(ref_info[4])
-	fasta_file =  os.path.join(hisat2_dir,params['genome_id'] + ".fa")
-        fasta_file = rnaseq_util.get_fasta_from_genome(logger,ws_client,self.urls,ref_id,fasta_file)
+	### Get the Genome Id for the genome selected and get fasta file
+	ref_id , fasta_file =  rnaseq_util.get_fa_from_genome(logger,ws_client,self.urls,params['ws_id'],hisat2_dir,params['genome_id'])
+	#ref_info = ws_client.get_object_info_new({"objects": [{'name': params['genome_id'], 'workspace': params['ws_id']}]})[0]
+        #ref_id = str(ref_info[6]) + '/' + str(ref_info[0]) + '/' + str(ref_info[4])
+	#fasta_file =  os.path.join(hisat2_dir,params['genome_id'] + ".fa")
+        #fasta_file = rnaseq_util.get_fasta_from_genome(logger,ws_client,self.urls,ref_id,fasta_file)
 	## TODO Remove the below commented lines of code to complete get rid of genome annotation and data_api calls
 	#fasta_file = script_util.generate_fasta(logger,self.urls,token,annotation_id,hisat2_dir,params['genome_id'])
         #logger.info("Sanitizing the fasta file to correct id names {}".format(datetime.datetime.utcnow()))
         #mapping_filename = c_mapping.create_sanitized_contig_ids(fasta_file)
         #c_mapping.replace_fasta_contig_ids(fasta_file, mapping_filename, to_modified=True)
         #logger.info("Generating FASTA file completed successfully : {}".format(datetime.datetime.utcnow()))
+
+	### Build Index for the fasta file 
         hisat2base =os.path.join(hisat2_dir,handler_util.get_file_with_suffix(hisat2_dir,".fa"))
         hisat2base_cmd = '{0} {1}'.format(fasta_file,hisat2base)
 	try:
@@ -88,23 +92,25 @@ class HiSat2Sample(HiSat2):
             cmdline_output = script_util.runProgram(logger,"hisat2-build",hisat2base_cmd,None,hisat2_dir)
         except Exception,e:
             raise Exception("Failed to run command {0}".format(hisat2base_cmd))
-        ws_gtf = params['genome_id']+"_GTF"
-        ret = script_util.if_obj_exists(None,ws_client,params['ws_id'],"KBaseRNASeq.GFFAnnotation",[ws_gtf])
-        if not ret is None:
-            logger.info("GFF Annotation Exist for Genome Annotation {0}.... Skipping step ".format(params['genome_id']))
-            annot_name,annot_id = ret[0]
-            gtf_obj=ws_client.get_objects([{'ref' : annot_id}])[0]
-            gtf_id=gtf_obj['data']['handle']['id']
-            gtf_name=gtf_obj['data']['handle']['file_name']
- 	    try:
-                     script_util.download_file_from_shock(logger, shock_service_url=self.urls['shock_service_url'], shock_id=gtf_id,filename=gtf_name, directory=hisat2_dir,token=token)
-                     gtf_file = os.path.join(hisat2_dir,gtf_name)
-            except Exception,e:
-                        raise Exception( "Unable to download shock file, {0}".format(gtf_name))
-        else:
+        ### Check if GTF object exists in the workspace pull the gtf
+	ws_gtf = params['genome_id']+"_GTF"
+	gtf_file = script_util.check_and_download_existing_handle_obj(logger,ws_client,self.urls,params['ws_id'],ws_gtf,"KBaseRNASeq.GFFAnnotation",hisat2_dir)
+        #ret = script_util.if_obj_exists(None,ws_client,params['ws_id'],"KBaseRNASeq.GFFAnnotation",[ws_gtf])
+        #if not ret is None:
+	    ### TODO automate to pull existing gtf object
+        #    logger.info("GFF Annotation Exist for Genome Annotation {0}.... Skipping step ".format(params['genome_id']))
+        #    annot_name,annot_id = ret[0]
+        #    gtf_obj=ws_client.get_objects([{'ref' : annot_id}])[0]
+        #    gtf_id=gtf_obj['data']['handle']['id']
+        #    gtf_name=gtf_obj['data']['handle']['file_name']
+ 	#    try:
+        #             script_util.download_file_from_shock(logger, shock_service_url=self.urls['shock_service_url'], shock_id=gtf_id,filename=gtf_name, directory=hisat2_dir,token=token)
+        #             gtf_file = os.path.join(hisat2_dir,gtf_name)
+        #    except Exception,e:
+        #                raise Exception( "Unable to download shock file, {0}".format(gtf_name))
+        if gtf_file is None:
              rnaseq_util.create_gtf_annotation_from_genome(logger,ws_client,hs,self.urls,params['ws_id'],ref_id,params['genome_id'],hisat2_dir,token)
 	# Determine the num_threads provided by the user otherwise default the number of threads to 2
- 
         logger.info(" Number of threads used by each process {0}".format(self.num_threads))
 	task_param = {'job_id' : params['sampleset_id'],
                       'label' : r_label,

@@ -84,10 +84,11 @@ class HiSat2SampleSet(HiSat2):
             raise HiSat2SampleSetException('Missing Library objects {0} in the {1}. please copy them and run this method'.format(",".join(missing_objs),params['ws_id']))
  
         self.num_jobs = len(reads)
-	ref_info = ws_client.get_object_info_new({"objects": [{'name': params['genome_id'], 'workspace': params['ws_id']}]})[0]
-        ref_id = str(ref_info[6]) + '/' + str(ref_info[0]) + '/' + str(ref_info[4])
-	fasta_file =  os.path.join(hisat2_dir,params['genome_id'] + ".fa")
-        fasta_file = rnaseq_util.get_fasta_from_genome(logger,ws_client,self.urls,ref_id,fasta_file)	
+	ref_id , fasta_file =  rnaseq_util.get_fa_from_genome(logger,ws_client,self.urls,params['ws_id'],hisat2_dir,params['genome_id'])
+	#ref_info = ws_client.get_object_info_new({"objects": [{'name': params['genome_id'], 'workspace': params['ws_id']}]})[0]
+        #ref_id = str(ref_info[6]) + '/' + str(ref_info[0]) + '/' + str(ref_info[4])
+	#fasta_file =  os.path.join(hisat2_dir,params['genome_id'] + ".fa")
+        #fasta_file = rnaseq_util.get_fasta_from_genome(logger,ws_client,self.urls,ref_id,fasta_file)	
 	#fasta_file = script_util.generate_fasta(logger,self.urls,token,annotation_id,hisat2_dir,params['genome_id'])
         #logger.info("Sanitizing the fasta file to correct id names {}".format(datetime.datetime.utcnow()))
         #mapping_filename = c_mapping.create_sanitized_contig_ids(fasta_file)
@@ -101,19 +102,20 @@ class HiSat2SampleSet(HiSat2):
         except Exception,e:
             raise Exception("Failed to run command {0}".format(hisat2base_cmd))
         ws_gtf = params['genome_id']+"_GTF"
-        ret = script_util.if_obj_exists(None,ws_client,params['ws_id'],"KBaseRNASeq.GFFAnnotation",[ws_gtf])
-        if not ret is None:
-            logger.info("GFF Annotation Exist for Genome Annotation {0}.... Skipping step ".format(params['genome_id']))
-            annot_name,annot_id = ret[0]
-            gtf_obj=ws_client.get_objects([{'ref' : annot_id}])[0]
-            gtf_id=gtf_obj['data']['handle']['id']
-            gtf_name=gtf_obj['data']['handle']['file_name']
- 	    try:
-                     script_util.download_file_from_shock(logger, shock_service_url=self.urls['shock_service_url'], shock_id=gtf_id,filename=gtf_name, directory=hisat2_dir,token=token)
-                     gtf_file = os.path.join(hisat2_dir,gtf_name)
-            except Exception,e:
-                        raise Exception( "Unable to download shock file, {0}".format(gtf_name))
-        else:
+        gtf_file = script_util.check_and_download_existing_handle_obj(logger,ws_client,self.urls,params['ws_id'],ws_gtf,"KBaseRNASeq.GFFAnnotation",hisat2_dir)
+	#ret = script_util.if_obj_exists(None,ws_client,params['ws_id'],"KBaseRNASeq.GFFAnnotation",[ws_gtf])
+        #if not ret is None:
+        #    logger.info("GFF Annotation Exist for Genome Annotation {0}.... Skipping step ".format(params['genome_id']))
+        #    annot_name,annot_id = ret[0]
+        #    gtf_obj=ws_client.get_objects([{'ref' : annot_id}])[0]
+        #    gtf_id=gtf_obj['data']['handle']['id']
+        #    gtf_name=gtf_obj['data']['handle']['file_name']
+ 	#    try:
+        #             script_util.download_file_from_shock(logger, shock_service_url=self.urls['shock_service_url'], shock_id=gtf_id,filename=gtf_name, directory=hisat2_dir,token=token)
+        #             gtf_file = os.path.join(hisat2_dir,gtf_name)
+        #    except Exception,e:
+        #                raise Exception( "Unable to download shock file, {0}".format(gtf_name))
+        if gtf_file is None:
 	     rnaseq_util.create_gtf_annotation_from_genome(logger,ws_client,hs,self.urls,params['ws_id'],ref_id,params['genome_id'],hisat2_dir,token)
 	     #script_util.create_gtf_annotation_from_genome(logger,ws_client,hs,self.urls,params['ws_id'],ref_id,params['genome_id'],fasta_file,hisat2_dir,token)
              #script_util.create_gtf_annotation(logger,ws_client,hs,self.urls,params['ws_id'],annotation_id,params['genome_id'],fasta_file,hisat2_dir,token)

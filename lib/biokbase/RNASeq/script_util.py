@@ -44,15 +44,28 @@ def if_obj_exists(logger,ws_client,ws_id,o_type,obj_l):
 	obj_ids =[ (str(k[1]) , (str(k[6]) + '/' + str(k[0]) + '/' + str(k[4])) ) for k in e_infos]
     return obj_ids
 
+def check_and_download_existing_handle_obj(logger,ws_client,urls,ws_id,ws_object_name,ws_obj_type,directory,token):
+	ret = if_obj_exists(logger,ws_client,ws_id,ws_object_type,[ws_object_name])
+        if not ret is None:
+            logger.info("Object {0} exists in the workspace  {1}".format(ws_object_name,ws_id))
+            obj_name,obj_id = ret[0]
+            obj_info=ws_client.get_objects([{'ref' : obj_id}])[0]
+            handle_id=obj_info['data']['handle']['id']
+            handle_name=obj_info['data']['handle']['file_name']
+            try:
+                     download_file_from_shock(logger, shock_service_url=urls['shock_service_url'], shock_id=handle_id,filename=handle_name,directory=directory,token=token)
+                     file_path = os.path.join(directory,handle_name)
+            except Exception,e:
+                        raise Exception( "Unable to download shock file, {0}".format(handle_name))
+	else:
+	     return None
+	return file_path
+
 def if_ws_obj_exists(logger,ws_client,ws_id,o_type,obj_l):
     existing_names = None
     obj_list = ws_client.list_objects( {"workspaces" : [ws_id ] ,"type" : o_type,'showHidden' : 1})
     obj_names = [i[1] for i in obj_list]
     existing_names = [i for i in obj_l if i in obj_names]
-    #if len(existing_names) != len(obj_l):
-        #e_queries = [{'name' : j , 'workspace' : ws_id } for j in existing_names]
-        #e_inddfos = ws_client.get_object_info_new({"objects": e_queries })
-        #obj_ids =[ (str(k[1]) , (str(k[6]) + '/' + str(k[0]) + '/' + str(k[4])) ) for k in e_infos]
     return existing_names
 
 def find_read_objects(logger,ex_reads_alignments,suffix1,suffix2):
@@ -65,7 +78,7 @@ def find_read_objects(logger,ex_reads_alignments,suffix1,suffix2):
             return objects
     else:
             return None
-
+### TODO Remove this function from script_util , already moved to rnaseq_util
 def get_fasta_from_genome(logger,ws_client,urls,genome_id):
     
     ref = ws_client.get_object_subset(
@@ -84,6 +97,7 @@ def get_fasta_from_genome(logger,ws_client,urls,genome_id):
 	 raise Exception("Unable to Create FASTA file from Genome : {0}".format(genome_id))
     return None
 	
+### TODO Remove this function from script_util , already moved to rnaseq_util
 def generate_fasta(logger,internal_services,token,ref,output_dir,obj_name):
 	try:
 		ga = GenomeAnnotationAPI(internal_services,
@@ -111,6 +125,7 @@ def generate_fasta(logger,internal_services,token,ref,output_dir,obj_name):
     	#c_mapping.replace_fasta_contig_ids(output_file, mapping_filename, to_modified=True)
 	#logger.info("Generating FASTA file completed successfully : {}".format(datetime.datetime.utcnow()))
 
+### TODO Remove this function from script_util , already moved to rnaseq_util
 def generate_gff(logger,internal_services,token,ref,output_dir,obj_name,output_file):
         try:
                 ga = GenomeAnnotationAPI(internal_services,
@@ -134,6 +149,7 @@ def generate_gff(logger,internal_services,token,ref,output_dir,obj_name,output_f
         ## Additional Step for sanitizing contig id
         #logger.info("Sanitizing the gff file to correct id names {}".format(datetime.datetime.utcnow()))
 
+### TODO Remove this function from script_util , already moved to rnaseq_util
 def create_gtf_annotation_from_genome(logger,ws_client,hs_client,urls,ws_id,genome_ref,genome_id,fasta_file,directory,token):
         try:
 		#tmp_file = os.path.join(directory,genome_id + "_GFF.gff")
@@ -168,6 +184,7 @@ def create_gtf_annotation_from_genome(logger,ws_client,hs_client,urls,ws_id,geno
                 raise ValueError("Generating GTF file from Genome Annotation object Failed :  {}".format("".join(traceback.format_exc())))
 	return gtf_path
 
+### TODO Remove this function from script_util , already moved to rnaseq_util
 def create_gtf_annotation(logger,ws_client,hs_client,internal_services,ws_id,genome_ref,genome_id,fasta_file,directory,token):
         try:
 		tmp_file = os.path.join(directory,genome_id + "_GFF.gff")
@@ -203,6 +220,7 @@ def create_gtf_annotation(logger,ws_client,hs_client,internal_services,ws_id,gen
 	return gtf_path
 	
 
+### TODO Remove this function from script_util , already moved to rnaseq_util
 def create_RNASeq_AlignmentSet_and_build_report(logger,ws_client,ws_id,sample_list,sampleset_id,genome_id,bowtie2index_id,results,alignmentSet_name):
 	 results =  [ ret for ret in results if not ret is None ]
 	 if len(results) < 2:
@@ -261,6 +279,7 @@ def create_RNASeq_AlignmentSet_and_build_report(logger,ws_client,ws_id,sample_li
                      }
 	 return reportObj
 
+### TODO Remove this function from script_util , already moved to rnaseq_util
 def create_RNASeq_ExpressionSet_and_build_report(logger,ws_client,tool_used, tool_version,tool_opts,ws_id,alignment_list,alignmentset_id,genome_id,sampleset_id,results,expressionSet_name):
 	 results =  [ ret for ret in results if not ret is None ]
 	 if len(results) < 2:
@@ -318,6 +337,7 @@ def create_RNASeq_ExpressionSet_and_build_report(logger,ws_client,tool_used, too
 	 return reportObj
 
 		   	
+### TODO Remove this function from script_util , already moved to rnaseq_util
 def updateAnalysisTO(logger, ws_client, field, map_key, map_value, anal_ref, ws_id, objid):
     
         analysis = ws_client.get_objects([{'ref' : anal_ref}])[0]
@@ -336,6 +356,7 @@ def updateAnalysisTO(logger, ws_client, field, map_key, map_value, anal_ref, ws_
                             ]})
 
 
+### TODO Remove this function from script_util , already moved to rnaseq_util
 def extractStatsInfo(logger,ws_client,ws_id,sample_id,result,stats_obj_name):
 	lines = result.splitlines()
         if  len(lines) != 11:
@@ -386,6 +407,7 @@ def extractStatsInfo(logger,ws_client,ws_id,sample_id,result,stats_obj_name):
         except Exception, e:
                 raise Exception("get Alignment Statistics failed: {0}".format(e))
 
+### TODO Remove this function from script_util , already moved to rnaseq_util
 def extractAlignmentStatsInfo(logger,tool_used,ws_client,ws_id,sample_id,result,stats_obj_name):
         lines = result.splitlines()
 	if tool_used == 'samtools':

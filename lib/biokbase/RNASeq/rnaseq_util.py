@@ -12,6 +12,34 @@ from doekbase.data_api.annotation.genome_annotation.api import GenomeAnnotationA
 from doekbase.data_api.sequence.assembly.api import AssemblyAPI, AssemblyClientAPI
 
 
+def get_fa_from_genome(logger,ws_client,urls,ws_id,directory,genome_name):
+    ref_info = ws_client.get_object_info_new({"objects": [{'name': genome_name, 'workspace': ws_id}]})[0]
+    genome_id = str(ref_info[6]) + '/' + str(ref_info[0]) + '/' + str(ref_info[4])
+    fasta_file =  os.path.join(directory,genome_name+ ".fa")
+    fasta_file = rnaseq_util.get_fasta_from_genome(logger,ws_client,self.urls,ref_id,fasta_file)
+    ref = ws_client.get_object_subset(
+                                     [{ 'ref' : genome_id ,'included': ['contigset_ref']}])
+    contig_id = ref[0]['data']['contigset_ref']
+    logger.info( "Generating FASTA from Genome")
+    try:
+         ## get the FASTA
+         assembly = AssemblyUtil(urls['callback_url'])
+         ret = assembly.get_assembly_as_fasta({'ref':contig_id})
+         output_file = ret['path']
+	 logger.info("Sanitizing the fasta file to correct id names {}".format(datetime.datetime.utcnow()))
+         mapping_filename = c_mapping.create_sanitized_contig_ids(output_file)
+         c_mapping.replace_fasta_contig_ids(output_file, mapping_filename, to_modified=True)
+         logger.info("Generating FASTA file completed successfully : {}".format(datetime.datetime.utcnow()))
+	 print "getting here before rename {0} ".format(output_file)
+	 os.rename(output_file,fasta_file)
+         fasta_file = os.path.basename(fasta_file)
+    	 return (genome_id, fasta_file)
+    except Exception, e:
+	 raise Exception(e)
+	 raise Exception("Unable to Create FASTA file from Genome : {0}".format(genome_name))
+    return None
+
+#### TODO Deprecate this function
 def get_fasta_from_genome(logger,ws_client,urls,genome_id,fasta_file):
     
     ref = ws_client.get_object_subset(
