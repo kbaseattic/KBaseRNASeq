@@ -52,7 +52,7 @@ parameters :
 
 description : |
     <p>This method assembles transcripts for a given sample or a sample set using Cufflinks so that you can view the relative abundances of the assembled transcripts in a histogram, obtained as output from Cufflinks. </p>
-    <p>It accepts aligned RNA-seq reads from Bowtie2 or TopHat and assembles the alignments into a parsimonious set of transcripts. It then estimates the relative abundances of these transcripts based on how many reads support each one, taking into account biases in library preparation protocols.</p>
+    <p>It can accept aligned RNA-seq reads from any one of these aligner tools (Bowtie2 or TopHat2 or HISAT2) and assembles the alignments into a parsimonious set of transcripts. It then estimates the relative abundances of these transcripts based on how many reads support each one, taking into account biases in library preparation protocols.</p>
     <p>The Cufflinks output object contains GTF and FPKM files. The GTF file contains annotated transcripts assembled by Cufflinks whereas the FPKM file gives the normalized abundance of each transcript expressed in fragments per kilobase of exon per million fragments mapped (FPKM). The Cuffdiff Table Histogram tab displays the abundance of normalized gene expression value log2(FPKM+1).</p>
 
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
