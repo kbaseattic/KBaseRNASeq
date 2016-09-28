@@ -14,7 +14,7 @@ method-suggestions :
     related :
         []
     next :
-        [assemble_transcripts_using_cufflinks]
+        [assemble_transcripts_using_cufflinks], [assemble_transcripts_with_stringtie]
 
 
 #
@@ -28,9 +28,9 @@ parameters :
             Select the RNA-seq read sample set associated with the RNA-seq experiment. Alternatively, if you have only one sample of RNA-seq reads, select the corresponding library object.
     genome_id :
         ui-name : |
-            Genome Annotation
+            Genome
         short-hint : |
-            Select the Genome Annotation to align the reads
+            Select the Genome to align the reads
     quality_score :
         ui-name : |
             Alignment Quality Score Type
