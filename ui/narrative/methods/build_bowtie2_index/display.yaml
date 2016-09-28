@@ -34,7 +34,7 @@ suggestions :
 parameters :
     input_genome:
         ui-name : |
-            Genome Annotation
+            Genome
         short-hint : |
             The input genome to be indexed 
 
