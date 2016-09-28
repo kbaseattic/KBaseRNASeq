@@ -14,7 +14,7 @@ method-suggestions :
     related :
         []
     next :
-        [assemble_transcripts_using_cufflinks], [assemble_transcripts_with_stringtie]
+        [assemble_transcripts_using_cufflinks,assemble_transcripts_with_stringtie]
 
 
 #
