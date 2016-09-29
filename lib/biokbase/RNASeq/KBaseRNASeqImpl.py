@@ -282,11 +282,12 @@ class KBaseRNASeq:
         	# add additional info to provenance here, in this case the input data object reference
         	provenance[0]['input_ws_objects']=[params['ws_id']+'/'+params['reference']]
 		
-		ref_info = ws_client.get_object_info_new({"objects": [{'name': params['reference'], 'workspace': params['ws_id']}]})[0]
-                ref_id = str(ref_info[6]) + '/' + str(ref_info[0]) + '/' + str(ref_info[4])
-                outfile_ref_name = os.path.join(bowtie_dir,params['reference']+".fa")
+		#ref_info = ws_client.get_object_info_new({"objects": [{'name': params['reference'], 'workspace': params['ws_id']}]})[0]
+                #ref_id = str(ref_info[6]) + '/' + str(ref_info[0]) + '/' + str(ref_info[4])
+                #outfile_ref_name = os.path.join(bowtie_dir,params['reference']+".fa")
 		try:
-			outfile_ref_name = rnaseq_util.get_fasta_from_genome(self.__LOGGER,ws_client,self.__SERVICES,ref_id,outfile_ref_name)
+			ref_id, outfile_ref_name = rnaseq_util.get_fa_from_genome(self.__LOGGER,ws_client,self.__SERVICES,params['ws_id'],bowtie_dir,params['reference'])
+			#outfile_ref_name = rnaseq_util.get_fa_from_genome(self.__LOGGER,ws_client,self.__SERVICES,ref_id,outfile_ref_name)
                 except Exception, e:
 			self.__LOGGER.exception("".join(traceback.format_exc()))
                         raise ValueError('Unable to get FASTA for object {}'.format("".join(traceback.format_exc())))

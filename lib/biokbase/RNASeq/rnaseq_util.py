@@ -17,11 +17,14 @@ def get_fa_from_genome(logger,ws_client,urls,ws_id,directory,genome_name):
     genome_id = str(ref_info[6]) + '/' + str(ref_info[0]) + '/' + str(ref_info[4])
     fasta_file =  os.path.join(directory,genome_name+ ".fa")
     ref = ws_client.get_object_subset(
-                                     [{ 'ref' : genome_id ,'included': ['contigset_ref']}])
+                                     [{ 'ref' : genome_id ,'included': ['contigset_ref','assembly_ref']}])
     if 'contigset_ref' in ref[0]['data']:
     	contig_id = ref[0]['data']['contigset_ref']
-    else:
+    elif 'assembly_ref' in ref[0]['data']:
 	contig_id = ref[0]['data']['assembly_ref']
+    if contig_id is None:
+	raise ValueError("Genome {0} object does not have reference to the assembly object".format(genome_name))
+    print contig_id
     logger.info( "Generating FASTA from Genome")
     try:
          ## get the FASTA
