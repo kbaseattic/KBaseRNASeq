@@ -74,8 +74,9 @@ class HiSat2Sample(HiSat2):
 	### Get the Genome Id for the genome selected and get fasta file
 	ref_id , fasta_file =  rnaseq_util.get_fa_from_genome(logger,ws_client,self.urls,params['ws_id'],hisat2_dir,params['genome_id'])
 
-	### Build Index for the fasta file 
-        hisat2base =os.path.join(hisat2_dir,handler_util.get_file_with_suffix(hisat2_dir,".fa"))
+	### Build Index for the fasta file
+	hisat2base = os.path.basename(fasta_file) 
+        #hisat2base =os.path.join(hisat2_dir,handler_util.get_file_with_suffix(hisat2_dir,".fa"))
         hisat2base_cmd = '{0} {1}'.format(fasta_file,hisat2base)
 	try:
             logger.info("Building Index for Hisat2 {0}".format(hisat2base_cmd))

@@ -31,26 +31,35 @@ def get_fa_from_genome(logger,ws_client,urls,ws_id,directory,genome_name):
          assembly = AssemblyUtil(urls['callback_url'])
          ret = assembly.get_assembly_as_fasta({'ref':contig_id})
          output_file = ret['path']
-	 logger.info("Sanitizing the fasta file to correct id names {}".format(datetime.datetime.utcnow()))
-         mapping_filename = c_mapping.create_sanitized_contig_ids(output_file)
-         c_mapping.replace_fasta_contig_ids(output_file, mapping_filename, to_modified=True)
-         logger.info("Generating FASTA file completed successfully : {}".format(datetime.datetime.utcnow()))
 	 os.rename(output_file,fasta_file)
-         fasta_file = os.path.basename(fasta_file)
-    	 return (genome_id, fasta_file)
+	 logger.info("Sanitizing the fasta file to correct id names {}".format(datetime.datetime.utcnow()))
+         mapping_filename = c_mapping.create_sanitized_contig_ids(fasta_file)
+         c_mapping.replace_fasta_contig_ids(fasta_file, mapping_filename, to_modified=True)
+         logger.info("Generating FASTA file completed successfully : {}".format(datetime.datetime.utcnow()))
+         #fasta_file = os.path.basename(fasta_file)
+    	 #return (genome_id, fasta_file)
     except Exception, e:
 	 raise Exception(e)
 	 raise Exception("Unable to Create FASTA file from Genome : {0}".format(genome_name))
     finally:
-	 if os.path.exists(output_file): os.remove(output_file)
+	 #if os.path.exists(output_file): os.remove(output_file)
 	 temp_fa = os.path.join(directory,handler_util.get_file_with_suffix(directory,"_temp.fa")+"._temp.fa")
+	 print temp_fa
 	 if os.path.exists(temp_fa): os.remove(temp_fa)
+	  
+    	 return (genome_id, fasta_file)
     return None
 
 def create_gtf_annotation_from_genome(logger,ws_client,hs_client,urls,ws_id,genome_ref,genome_name,directory,token):
     ref = ws_client.get_object_subset(
-                                     [{ 'ref' : genome_ref ,'included': ['contigset_ref']}])
-    contig_id = ref[0]['data']['contigset_ref']
+                                     [{ 'ref' : genome_ref ,'included': ['contigset_ref', 'assembly_ref']}])	
+    if 'contigset_ref' in ref[0]['data']:
+        contig_id = ref[0]['data']['contigset_ref']
+    elif 'assembly_ref' in ref[0]['data']:
+        contig_id = ref[0]['data']['assembly_ref']
+    if contig_id is None:
+        raise ValueError("Genome {0} object does not have reference to the assembly object".format(genome_name))
+    print contig_id
     logger.info( "Generating GFF file from Genome")
     try:
          	assembly = AssemblyUtil(urls['callback_url'])
