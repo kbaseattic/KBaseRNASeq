@@ -11,6 +11,7 @@ import doekbase.data_api
 from doekbase.data_api.annotation.genome_annotation.api import GenomeAnnotationAPI, GenomeAnnotationClientAPI
 from doekbase.data_api.sequence.assembly.api import AssemblyAPI, AssemblyClientAPI
 from biokbase.RNASeq import handler_utils as handler_util
+from biokbase.RNASeq import script_util
 
 def get_fa_from_genome(logger,ws_client,urls,ws_id,directory,genome_name):
     ref_info = ws_client.get_object_info_new({"objects": [{'name': genome_name, 'workspace': ws_id}]})[0]
@@ -78,7 +79,7 @@ def create_gtf_annotation_from_genome(logger,ws_client,hs_client,urls,ws_id,geno
                 	gtf_cmd = " -E {0} -T -o {1}".format(file_path,gtf_path)
                 	try:
                    		logger.info("Executing: gffread {0}".format(gtf_cmd))
-                   		cmdline_output = runProgram(None,"gffread",gtf_cmd,None,directory)
+                   		cmdline_output = script_util.runProgram(None,"gffread",gtf_cmd,None,directory)
                 	except Exception as e:
                    		raise Exception("Error Converting the GFF file to GTF using gffread {0},{1}".format(gtf_cmd,"".join(traceback.format_exc())))
 		else:
@@ -301,8 +302,71 @@ def get_end(start,leng,strand):
 	stop = start - ( leng + 1)
     return stop
     
-
-### TODO Function related to the Genome Annotation Changes and hence needs to be removed	
+def get_details_for_diff_exp(logger,ws_client,hs,ws_id,urls,directory,expressionset_id,token):
+        try:
+           expression_set = ws_client.get_objects(
+                                        [{'name' : expressionset_id,'workspace' : ws_id}])[0]
+        except Exception,e:
+           raise Exception("".join(traceback.format_exc()))
+        ### Getting all the set ids and genome_id
+	output_obj = {}
+        expression_set_info = ws_client.get_object_info_new({"objects": [{'name' : expressionset_id, 'workspace': ws_id}]})[0] 
+        output_obj['expressionset_id'] =  str(expression_set_info[6]) + '/' + str(expression_set_info[0]) + '/' + str(expression_set_info[4])
+        output_obj['sampleset_id'] =  expression_set['data']['sampleset_id']
+        output_obj['alignmentset_id'] = expression_set['data']['alignmentSet_id'] 
+        output_obj['genome_id'] = expression_set['data']['genome_id']
+        output_obj['genome_name'] = ws_client.get_object_info([{"ref" :genome_id}],includeMetadata=None)[0][1]
+        ws_gtf = genome_name+"_GTF_Annotation"
+    
+        ### Check if GTF object exists in the workspace pull the gtf
+        ws_gtf = genome_name+"_GTF"
+        gtf_file = script_util.check_and_download_existing_handle_obj(logger,ws_client,urls,ws_id,ws_gtf,"KBaseRNASeq.GFFAnnotation",directory,token)
+        if gtf_file is None:
+             rnaseq_util.create_gtf_annotation_from_genome(logger,ws_client,hs,urls,ws_id,output_obj['genome_id'],output_obj['genome_name'],directory,token)
+        output_obj['gtf_file'] = gtf_file
+	### Getting the expression objects and alignment objects
+        m_expr_ids = expression_set['data']['mapped_expression_ids']
+        if len(m_expr_ids)  < 2:
+           raise ValueError("Error the ExpressionSet object has less than 2 expression samples. Kindly check your reads files and repeat the previous step (Cufflinks)")
+        output_obj['labels'] = []
+        output_obj['alignments'] = []   
+	counter = 0
+        assembly_file = os.path.join(directory,"assembly_gtf.txt")
+        list_file = open(assembly_file,'w')
+        for i in m_expr_ids:
+            for a_id ,e_id in i.items():
+                   files = {}
+                   a_obj,e_obj = ws_client.get_objects(
+                                        [{'ref' : a_id},{'ref': e_id}])
+                   ### Get the condition name, replicate_id , shock_id and shock_filename
+                   condition = a_obj['data']['condition']
+                   if 'replicate_id' in a_obj['data'] : replicate_id = a_obj['data']['replicate_id']
+                   files[a_obj['data']['file']['file_name']] = a_obj['data']['file']['id']
+                   files[e_obj['data']['file']['file_name']] = e_obj['data']['file']['id']
+                   if not condition in labels: output_obj['labels'].append(condition)
+                   else :  counter += 1 #### comment it when replicate_id is available from methods
+                   s_path = os.path.join(directory,condition+"/"+str(counter)) ### Comment this line when replicate_id is available from the methods
+                   if not os.path.exists(s_path): os.makedirs(s_path)
+                   try:
+                       script_util.download_shock_files(logger,urls['shock_service_url'],s_path,files,token)
+                   except Exception,e:
+                       raise Exception( "Unable to download shock file, {0}".format(e))
+                   try:
+                       script_util.unzip_files(logger,os.path.join(s_path,a_obj['data']['file']['file_name']),s_path)
+                       script_util.unzip_files(logger,os.path.join(s_path,e_obj['data']['file']['file_name']),s_path)
+                       e_file_path =  os.path.join(s_path,"transcripts.gtf")
+                       a_file_path = os.path.join(s_path,"accepted_hits.bam")
+		       if os.path.exists(a_file_path) : 
+				print a_file_path
+				output_obj['alignments'].append(a_file_path)
+                       if os.path.exists(e_file_path) : list_file.write("{0}\n".format(e_file_path))
+                   except Exception, e:
+                       raise Exception("".join(traceback.format_exc()))
+        list_file.close()
+ 	output_obj['gtf_list_file'] = os.path(assembly_file)
+        return output_obj	
+	
+### TODO Function related to th Genome Annotation Changes and hence needs to be removed	
 def generate_fasta(logger,internal_services,token,ref,output_dir,obj_name):
 	try:
 		ga = GenomeAnnotationAPI(internal_services,
@@ -360,7 +424,7 @@ def create_gtf_annotation(logger,ws_client,hs_client,internal_services,ws_id,gen
                 gtf_cmd = " -E {0} -T -o {1}".format(tmp_file,gtf_path)
                 try:
                    logger.info("Executing: gffread {0}".format(gtf_cmd))
-                   cmdline_output = runProgram(None,"gffread",gtf_cmd,None,directory)
+                   cmdline_output = script_util.runProgram(None,"gffread",gtf_cmd,None,directory)
                 except Exception as e:
                    raise Exception("Error Converting the GFF file to GTF using gffread {0},{1}".format(gtf_cmd,"".join(traceback.format_exc())))
 		#if os.path.exists(tmp_file): os.remove(tmp_file)
