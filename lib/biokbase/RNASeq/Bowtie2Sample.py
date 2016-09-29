@@ -24,15 +24,16 @@ except:
     from biokbase.AbstractHandle.Client import AbstractHandle as HandleService
 from AssemblyUtil.AssemblyUtilClient import AssemblyUtil
 from GenomeFileUtil.GenomeFileUtilClient import GenomeFileUtil
-from biokbase.RNASeq.HiSat2 import HiSat2
+from biokbase.RNASeq.Bowtie2 import Bowtie2
 
-class HiSat2SampleException(Exception):
+class Bowtie2SampleException(Exception):
     pass
 
-class HiSat2Sample(HiSat2): 
+class Bowtie2Sample(Bowtie2): 
 
     def __init__(self, logger, directory, urls):
-        super(HiSat2Sample, self).__init__(logger, directory, urls)
+        #super(Bowtie2Sample, self).__init__(logger, directory, urls)
+        super(self.__class__ , self).__init__(logger, directory, urls)
         # user defined shared variables across methods
         self.sample_info = None
         #self.sampleset_info = None
@@ -45,55 +46,67 @@ class HiSat2Sample(HiSat2):
         params = self.method_params
         logger = self.logger
         token = self.common_params['user_token']
-        hisat2_dir = self.directory
+        bowtie2_dir = self.directory
 
         try:
-               sample,annotation_name = ws_client.get_objects(
+               sample,bowtie_index = ws_client.get_objects(
                                         [{ 'name' : params['sampleset_id'], 'workspace' : params['ws_id']},
-                                        { 'name' : params['genome_id'], 'workspace' : params['ws_id']}])
-               self.sample =sample 
+                                        { 'name' : params['bowtie_index'], 'workspace' : params['ws_id']}])
+               self.sample =sample
         except Exception,e:
                logger.exception("".join(traceback.format_exc()))
                raise ValueError(" Error Downloading objects from the workspace ")
-        ### Get object Info and  IDs
-        sample_info,annotation_info = ws_client.get_object_info_new({"objects": [
+            ### Get obejct IDs
+        sample_info,bowtie_index_info = ws_client.get_object_info_new({"objects": [
                                            {'name': params['sampleset_id'], 'workspace': params['ws_id']},
-                                           {'name': params['genome_id'], 'workspace': params['ws_id']}
+                                           {'name': params['bowtie_index'], 'workspace': params['ws_id']}
                                            ]})
         self.sample_info = sample_info
         ### Get the workspace object ids for the objects ###
         sample_id = str(sample_info[6]) + '/' + str(sample_info[0]) + '/' + str(sample_info[4])
-        annotation_id = str(annotation_info[6]) + '/' + str(annotation_info[0]) + '/' + str(annotation_info[4])
+        bowtie_index_id = str(bowtie_index_info[6]) + '/' + str(bowtie_index_info[0]) + '/' + str(bowtie_index_info[4])
         sample_type = sample_info[2].split('-')[0]
 	lib_types = ['KBaseAssembly.SingleEndLibrary', 'KBaseAssembly.PairedEndLibrary']
         ### Check if the Library objects exist in the same workspace
         if not sample_type in lib_types: #'KBaseAssembly.SingleEndLibrary' or sample_type != 'KBaseAssembly.PairedEndLibrary':
-            raise HiSat2SampleException('Either of the Library typed objects SingleEndLibrary or PairedEndLibrary is required')
+            raise Bowtie2SampleException('Either of the Library typed objects SingleEndLibrary or PairedEndLibrary is required')
         r_label = 'Single'
-        self.num_jobs = 1
-	### Get the Genome Id for the genome selected and get fasta file
-	ref_id , fasta_file =  rnaseq_util.get_fa_from_genome(logger,ws_client,self.urls,params['ws_id'],hisat2_dir,params['genome_id'])
-
-	### Build Index for the fasta file 
-        hisat2base =os.path.join(hisat2_dir,handler_util.get_file_with_suffix(hisat2_dir,".fa"))
-        hisat2base_cmd = '{0} {1}'.format(fasta_file,hisat2base)
+	### Get the Bw index file
+	
+	bw_index_files = script_util.check_and_download_existing_handle_obj(logger,ws_client,self.urls,params['ws_id'],params['bowtie_index'],"KBaseRNASeq.Bowtie2Indexes",bowtie2_dir,token)
 	try:
-            logger.info("Building Index for Hisat2 {0}".format(hisat2base_cmd))
-            cmdline_output = script_util.runProgram(logger,"hisat2-build",hisat2base_cmd,None,hisat2_dir)
+                logger.info("Unzipping Bowtie2 Indices")
+                script_util.unzip_files(logger,os.path.join(bowtie2_dir,bw_index_files),bowtie2_dir)
+                mv_dir= handler_util.get_dir(bowtie2_dir)
+                if mv_dir is not None:
+                        script_util.move_files(logger,mv_dir,bowtie2_dir)
+        except Exception, e:
+                logger.error("".join(traceback.format_exc()))
+                raise Exception("Unzip indexfile error: Please contact help@kbase.us")
+	### Build Index for the fasta file 
+        fasta_file =os.path.join(bowtie2_dir,handler_util.get_file_with_suffix(bowtie2_dir,".fa")+".fa")
+        bowtie2base =os.path.join(bowtie2_dir,handler_util.get_file_with_suffix(bowtie2_dir,".fa"))
+        bowtie2base_cmd = '{0} {1}'.format(fasta_file,bowtie2base)
+	try:
+            logger.info("Building Index for Hisat2 {0}".format(bowtie2base_cmd))
+            cmdline_output = script_util.runProgram(logger,"bowtie2-build",bowtie2base_cmd,None,bowtie2_dir)
         except Exception,e:
-            raise Exception("Failed to run command {0}".format(hisat2base_cmd))
+            raise Exception("Failed to run command {0}".format(bowtie2base_cmd))
         ### Check if GTF object exists in the workspace pull the gtf
-	ws_gtf = params['genome_id']+"_GTF"
-	gtf_file = script_util.check_and_download_existing_handle_obj(logger,ws_client,self.urls,params['ws_id'],ws_gtf,"KBaseRNASeq.GFFAnnotation",hisat2_dir,token)
+        ref_id = bowtie_index['data']['genome_id']
+        genome_name = ws_client.get_object_info_new({"objects": [{'ref' : ref_id }] })[0][1]
+	ws_gtf = genome_name+"_GTF"
+	gtf_file = script_util.check_and_download_existing_handle_obj(logger,ws_client,self.urls,params['ws_id'],ws_gtf,"KBaseRNASeq.GFFAnnotation",bowtie2_dir,token)
         if gtf_file is None:
-             rnaseq_util.create_gtf_annotation_from_genome(logger,ws_client,hs,self.urls,params['ws_id'],ref_id,params['genome_id'],hisat2_dir,token)
+             rnaseq_util.create_gtf_annotation_from_genome(logger,ws_client,hs,self.urls,params['ws_id'],ref_id,genome_name,bowtie2_dir,token)
 	# Determine the num_threads provided by the user otherwise default the number of threads to 2
+        self.num_jobs = 1
         logger.info(" Number of threads used by each process {0}".format(self.num_threads))
 	task_param = {'job_id' : params['sampleset_id'],
                       'label' : r_label,
                       'ws_id' : params['ws_id'],
                       'reads_type' : sample_type,
-                      'hisat2_dir' : self.directory,
+                      'bowtie2_dir' : self.directory,
                       'annotation_id': ref_id,
                       'sampleset_id' : None
                       }
@@ -102,7 +115,7 @@ class HiSat2Sample(HiSat2):
 		
     def collect(self) :
         # do with 
-        alignment_name = self.method_params['sampleset_id']+"_hisat2_AlignmentSet"
+        alignment_name = self.method_params['sampleset_id']+"_bowtie2_AlignmentSet"
         self.logger.info(" Creating Report for Alignment {0}".format(alignment_name))
 	single_alignment , single_read = self.results[0]
         # TODO: Split alignment set and report method

@@ -45,7 +45,7 @@ def if_obj_exists(logger,ws_client,ws_id,o_type,obj_l):
     return obj_ids
 
 def check_and_download_existing_handle_obj(logger,ws_client,urls,ws_id,ws_object_name,ws_obj_type,directory,token):
-	ret = if_obj_exists(logger,ws_client,ws_id,ws_object_type,[ws_object_name])
+	ret = if_obj_exists(logger,ws_client,ws_id,ws_obj_type,[ws_object_name])
         if not ret is None:
             logger.info("Object {0} exists in the workspace  {1}".format(ws_object_name,ws_id))
             obj_name,obj_id = ret[0]

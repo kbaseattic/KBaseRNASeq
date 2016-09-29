@@ -4,9 +4,9 @@
 	"context": null,
 	"params":[
 	{
-	 "ws_id" : "srividya22:1474317595261",
-	 "sampleset_id" : "Ecoli_test_3_sampleset" ,
-	 "bowtie_index" : "Escherichia_coli_K12_new_bw_index",
+	 "ws_id" : "srividya22:1475121460798",
+	 "sampleset_id" : "test_bowtie2_refactoring_sampleset" ,
+	 "bowtie_index" : "Escherichia_coli_K12_bw_index",
 	 "alignment_type" : null,
 	 "quality_score" : null,
          "preset_options" : null } ]
