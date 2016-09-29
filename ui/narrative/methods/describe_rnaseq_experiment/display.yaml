@@ -17,7 +17,7 @@ method-suggestions :
     related :
         []
     next :
-        [align_reads_using_bowtie2,align_reads_using_tophat]
+        [align_reads_using_bowtie2,align_reads_using_tophat,align_reads_using_HISAT2]
 
 
 #
