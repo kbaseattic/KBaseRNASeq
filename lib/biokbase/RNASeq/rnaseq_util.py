@@ -315,14 +315,15 @@ def get_details_for_diff_exp(logger,ws_client,hs,ws_id,urls,directory,expression
         output_obj['sampleset_id'] =  expression_set['data']['sampleset_id']
         output_obj['alignmentset_id'] = expression_set['data']['alignmentSet_id'] 
         output_obj['genome_id'] = expression_set['data']['genome_id']
-        output_obj['genome_name'] = ws_client.get_object_info([{"ref" :genome_id}],includeMetadata=None)[0][1]
-        ws_gtf = genome_name+"_GTF_Annotation"
+        output_obj['genome_name'] = ws_client.get_object_info([{"ref" :output_obj['genome_id']}],includeMetadata=None)[0][1]
+        ws_gtf = output_obj['genome_name']+"_GTF_Annotation"
     
         ### Check if GTF object exists in the workspace pull the gtf
-        ws_gtf = genome_name+"_GTF"
+        #ws_gtf = output_obj['genome_name']+"_GTF"
         gtf_file = script_util.check_and_download_existing_handle_obj(logger,ws_client,urls,ws_id,ws_gtf,"KBaseRNASeq.GFFAnnotation",directory,token)
+	print 'GTF file is  ' +  gtf_file
         if gtf_file is None:
-             rnaseq_util.create_gtf_annotation_from_genome(logger,ws_client,hs,urls,ws_id,output_obj['genome_id'],output_obj['genome_name'],directory,token)
+             create_gtf_annotation_from_genome(logger,ws_client,hs,urls,ws_id,output_obj['genome_id'],output_obj['genome_name'],directory,token)
         output_obj['gtf_file'] = gtf_file
 	### Getting the expression objects and alignment objects
         m_expr_ids = expression_set['data']['mapped_expression_ids']
@@ -343,7 +344,7 @@ def get_details_for_diff_exp(logger,ws_client,hs,ws_id,urls,directory,expression
                    if 'replicate_id' in a_obj['data'] : replicate_id = a_obj['data']['replicate_id']
                    files[a_obj['data']['file']['file_name']] = a_obj['data']['file']['id']
                    files[e_obj['data']['file']['file_name']] = e_obj['data']['file']['id']
-                   if not condition in labels: output_obj['labels'].append(condition)
+                   if not condition in output_obj['labels']: output_obj['labels'].append(condition)
                    else :  counter += 1 #### comment it when replicate_id is available from methods
                    s_path = os.path.join(directory,condition+"/"+str(counter)) ### Comment this line when replicate_id is available from the methods
                    if not os.path.exists(s_path): os.makedirs(s_path)
@@ -363,9 +364,63 @@ def get_details_for_diff_exp(logger,ws_client,hs,ws_id,urls,directory,expression
                    except Exception, e:
                        raise Exception("".join(traceback.format_exc()))
         list_file.close()
- 	output_obj['gtf_list_file'] = os.path(assembly_file)
+ 	output_obj['gtf_list_file'] = assembly_file
+	print output_obj
         return output_obj	
-	
+
+def call_cuffmerge(working_dir,directory,num_threads,gtf_file,list_file):
+         #cuffmerge_dir = os.path.join(directory,"cuffmerge")
+         print "Entering cuffmerge"
+         print "Args passed {0},{1},{2},{3}".format(directory,num_threads,gtf_file,list_file)
+         cuffmerge_command = " -p {0} -o {1} -g {2} {3}".format(str(num_threads),directory,gtf_file,list_file)
+         merged_gtf = None
+         try:
+                #logger.info("Executing: cuffmerge {0}".format(cuffmerge_command))
+                print  "Executing: cuffmerge {0}".format(cuffmerge_command)
+                r,e = script_util.runProgram(None,"cuffmerge",cuffmerge_command,None,working_dir)
+                print r + "\n" + e
+                if os.path.exists(directory+"/merged.gtf") : merged_gtf = os.path.join(directory,"merged.gtf")
+         except Exception,e:
+                print "".join(traceback.format_exc())
+                raise Exception("Error executing cuffmerge {0},{1}".format(cuffmerge_command,"".join(traceback.format_exc())))
+         return merged_gtf
+
+def call_stringtiemerge(working_dir,directory,num_threads,gtf_file,list_file):
+         #directory = os.path.join(directory,"cuffmerge")
+         strmerge_command = " -p {0} -o {1} --merge -G {2} {3}".format(str(num_threads),directory,gtf_file,list_file)
+         merged_gtf = None
+         try:
+                print  "Executing: stringtie {0}".format(strmerge_command)
+                script_util.runProgram(None,"stringtie",strmerge_command,None,working_dir)
+                if os.path.exists(directory+"/merged.gtf") : merged_gtf = os.path.join(directory,"merged.gtf")
+         except Exception,e:
+                raise Exception("Error executing StringTie merge {0},{1}".format(strmerge_command,working_dir))
+         return merged_gtf
+
+def call_tablemaker(working_dir,directory,num_threads,m_gtf_file,alignment_file):
+         print "Inside Tablemaker"
+         print "Args passed : {0} , {1} , {2} , {3} , {4} ".format(working_dir,directory,num_threads,m_gtf_file,alignment_file)
+         #cuffmerge_dir = os.path.join(directory,"cuffmerge")
+         tm_command = " -p {0} -o {1} -q -W -G {2} {3}".format(str(num_threads),directory,m_gtf_file,alignment_file)
+         try:
+                print "Executing: tablemaker {0}".format(tm_command)
+                script_util.runProgram(None,"tablemaker",tm_command,None,working_dir)
+         except Exception,e:
+                logger.exception(e)
+                raise Exception("Error executing tablemaker {0},{1}".format(tm_command,working_dir))
+         return directory
+
+def call_stringtieBall(working_dir,directory,num_threads,m_gtf_file,alignment_file):
+         #directory = os.path.join(directory,"cuffmerge")
+         print "Inside stringtieBall"
+         strdiff_command = " -p {0} -o {1} -e -B -G {2} {3}".format(str(num_threads),directory,m_gtf_file,alignment_file)
+         try:
+                print "Executing: stringtie {0}".format(strdiff_command)
+                script_util.runProgram(None,"stringtie",strdiff_command,None,working_dir)
+         except Exception,e:
+                raise Exception("Error executing StringTie differential expression {0},{1}".format(strdiff_command,working_dir))
+         return directory	
+
 ### TODO Function related to th Genome Annotation Changes and hence needs to be removed	
 def generate_fasta(logger,internal_services,token,ref,output_dir,obj_name):
 	try:

@@ -4,8 +4,8 @@
 	"context": null,
 	"params":[ 	
 	{
-  	"ws_id": "srividya22:1475112793025",
-	"alignmentset_id" : "Ecoli_SE_8083_R1_hisat2_alignment",
+  	"ws_id": "srividya22:1475121460798",
+	"alignmentset_id" : "test_bowtie2_refactoring_sampleset_bowtie2_AlignmentSet",
 	"num_threads" : 2,
 	"label" : "STRG",
 	"ballgown_mode" : 2,
