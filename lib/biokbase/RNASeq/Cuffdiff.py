@@ -116,7 +116,7 @@ class Cuffdiff(ExecutionBase):
                  self.logger.info("Saving Cuffdiff object to workspace")
                  self.cm_obj = { "tool_used" : self.tool_used,
                             "tool_version" : self.tool_version,
-                            "condition" : self.details['labels'].split(","),
+                            "condition" : self.details['labels'],
                             "genome_id" : self.details['genome_id'],
                             "expressionSet_id" : self.details['expressionset_id'],
                             "alignmentSet_id": self.details['alignmentset_id'],
