@@ -115,7 +115,7 @@ class Cuffdiff(ExecutionBase):
 	 ## Save object to workspace
          try:
                  self.logger.info("Saving Cuffdiff object to workspace")
-                 self.cm_obj = { "tool_used" : self.tool_used,
+                 cm_obj = { "tool_used" : self.tool_used,
                             "tool_version" : self.tool_version,
                             "condition" : self.details['labels'],
                             "genome_id" : self.details['genome_id'],
@@ -124,17 +124,21 @@ class Cuffdiff(ExecutionBase):
                             "sampleset_id" : self.details['sampleset_id'],
                             "file" : handle
                            }
-                 print self.cm_obj
+                 print cm_obj
 	 except Exception , e:
 		raise Exception("Error Running Cuffdiff {0} ".format(e))
 		
+	 finally:
+		return cm_obj
 
     def collect(self) :
+	 if not self.results is None:
+		print self.results 
 	 output_name = self.method_params['output_obj_name']
 	 res1= self.common_params['ws_client'].save_objects(
                                      {"workspace":self.method_params['ws_id'],
                                       "objects": [{
                                       "type":"KBaseRNASeq.RNASeqDifferentialExpression",
-                                      "data":self.cm_obj,
+                                      "data":self.results[0],
                                       "name":output_name}]})
          returnVal = { 'output'  : output_name ,'workspace' : self.method_params['ws_id']}
