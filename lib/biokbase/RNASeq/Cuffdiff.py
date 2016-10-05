@@ -40,6 +40,7 @@ class Cuffdiff(ExecutionBase):
         self.num_threads = None
 	self.tool_used = "Cuffdiff"
 	self.tool_version = "1.2.3"
+	self.cm_obj = None
     
     def prepare(self):
         # for quick testing, we recover parameters here
