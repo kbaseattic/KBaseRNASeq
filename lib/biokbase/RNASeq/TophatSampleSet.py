@@ -116,7 +116,6 @@ class TophatSampleSet(Tophat):
                raise Exception( "Unable to download shock file, {0}".format(gtf_name))  
  	else:		
 	    gtf_file =rnaseq_util.create_gtf_annotation_from_genome(logger,ws_client,hs,self.urls,params['ws_id'],genome_id,annotation_gtf,tophat_dir,token)		
-	    #script_util.create_gtf_annotation(logger,ws_client,hs,self.__SERVICES,params['ws_id'],genome_id,annotation_gtf,fasta_file,tophat_dir,token)
 	# Determine the num_threads provided by the user otherwise default the number of threads to 2
         reads = sample['data']['sample_ids']
         reads_type= sample['data']['Library_type']
@@ -164,5 +163,5 @@ class TophatSampleSet(Tophat):
                                                 ]
                                                 })[0]
 
-        returnVal = { "report_name" : reportName,"report_ref" : str(report_info[6]) + '/' + str(report_info[0]) + '/' + str(report_info[4]) }
+        self.returnVal = { "report_name" : reportName,"report_ref" : str(report_info[6]) + '/' + str(report_info[0]) + '/' + str(report_info[4]) }
 

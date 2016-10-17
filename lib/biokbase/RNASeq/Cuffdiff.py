@@ -132,4 +132,4 @@ class Cuffdiff(ExecutionBase):
                                       "type":"KBaseRNASeq.RNASeqDifferentialExpression",
                                       "data":self.results[0],
                                       "name":output_name}]})
-         returnVal = { 'output'  : output_name ,'workspace' : self.method_params['ws_id']}
+         self.returnVal = { 'output'  : output_name ,'workspace' : self.method_params['ws_id']}

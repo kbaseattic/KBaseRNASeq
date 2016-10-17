@@ -139,5 +139,5 @@ class HiSat2SampleSet(HiSat2):
                                                 ]
                                                 })[0]
 
-        returnVal = { "report_name" : reportName,"report_ref" : str(report_info[6]) + '/' + str(report_info[0]) + '/' + str(report_info[4]) }
+        self.returnVal = { "report_name" : reportName,"report_ref" : str(report_info[6]) + '/' + str(report_info[0]) + '/' + str(report_info[4]) }
 

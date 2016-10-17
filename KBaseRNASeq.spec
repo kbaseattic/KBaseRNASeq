@@ -138,41 +138,6 @@
 
         typedef string ws_Sampleset_id;
 
-
-
-  /* Specification for the RNASeqFastq Metadata
-   
-    Object for the RNASeq Metadata
-    @optional library_type replicate_id platform custom*/
-   	
-    typedef structure {
-		string sample_id;
-       		string library_type;
-		string replicate_id;
-       		string platform;
-       		string condition;
-		string custom;
-    	}RNASeqSampleMetaData;
-
-/*
-     RNASeq fastq  object
-     @optional  singleend_sample pairedend_sample metadata 
-     @metadata ws singleend_sample.handle.file_name
-     @metadata ws pairedend_sample.handle_1.file_name
-     @metadata ws pairedend_sample.handle_2.file_name
-     @metadata ws metadata.replicate_id
-     @metadata ws metadata.library_type
-     @metadata ws metadata.platform
-     @metadata ws metadata.condition
-*/
-
-     typedef structure {
-	 KBaseAssembly.SingleEndLibrary singleend_sample;
-	 KBaseAssembly.PairedEndLibrary pairedend_sample;
-	 ws_rnaseq_sampleset_id  sampleset_id;
-	 RNASeqSampleMetaData metadata;  
-     }RNASeqSample;
-
 /*
   The workspace id of a RNASeqSample
   @id ws KBaseRNASeq.RNASeqSample   
@@ -463,17 +428,6 @@
 
   async funcdef BuildBowtie2Index(Bowtie2IndexParams params)
      returns(ResultsToReport) authentication required;
-
-   typedef structure{
-        string ws_id;
-        /*ws_genome_annotation_id reference;*/
-	string reference;
-        string output_obj_name;
-        }GetFeaturesToGTFParams;
-
-  async funcdef GetFeaturesToGTF(GetFeaturesToGTFParams params)
-     returns(ResultsToReport) authentication required;   
-   
 	
    typedef structure{
 	string ws_id;

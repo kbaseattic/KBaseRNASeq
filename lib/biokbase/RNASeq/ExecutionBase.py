@@ -146,7 +146,6 @@ class ExecutionBase(object):
         self.task_list = []
         self.common_params = None
         self.method_params = None
-
         return self.returnVal
 
     # individual file processing code

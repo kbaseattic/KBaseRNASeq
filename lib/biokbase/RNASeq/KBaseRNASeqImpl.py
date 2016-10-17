@@ -60,37 +60,7 @@ class KBaseRNASeqException(BaseException):
 		self.msg = msg
 	def __str__(self):
 		return repr(self.msg)
-    
-def parallelize(function,num_processors):
-       def temp(_):
-         def apply(args):
-             final_result = []
-             #num_processors=  mp.cpu_count()
-             print "Number of processors running parallel jobs {0} ".format(num_processors)
-             pool = mp.Pool(num_processors)
-             result = pool.map_async(function, args)
-             pool.close()
-             pool.join()
-             return result.get()
-         return apply
-       return temp
-
-## Helper Function for Parallel call 
-def CallBowtie2_helper(x):
-    logger,services,ws_client,hs,ws_id,sample_type,num_threads,read_sample,condition,directory,bowtie2index_id,genome_id,sampleset_id,params,token = x
-    return parallel._CallBowtie2(logger,services,ws_client,hs,ws_id,sample_type,num_threads,read_sample,condition,directory,bowtie2index_id,genome_id,sampleset_id,params,token)
-
-## Helper Function for Parallel call 
-def CallTophat_helper(x):
-	logger,services,ws_client,hs,ws_id,sample_type,num_threads,read_sample,gtf_file,condition,directory,bowtie2index_id,genome_id,sampleset_id,params,token = x
-	return parallel._CallTophat(logger,services,ws_client,hs,ws_id,sample_type,num_threads,read_sample,gtf_file,condition,directory,bowtie2index_id,genome_id,sampleset_id,params,token)
-
-## Helper Function for Parallel call 
-def CallCufflinks_helper(x):
-	logger,services,ws_client,hs,ws_id,num_threads,s_alignment,gtf_file,directory,genome_id,annotation_id,sample_id,alignmentset_id,params,token = x
-	return  parallel._CallCufflinks(logger,services,ws_client,hs,ws_id,num_threads,s_alignment,gtf_file,directory,genome_id,annotation_id,sample_id,alignmentset_id,params,token) 
 #END_HEADER
-
 
 class KBaseRNASeq:
     '''
@@ -151,12 +121,7 @@ class KBaseRNASeq:
 	if 'force_shock_node_2b_public' in config: # expect 'true' or 'false' string
 	      self.__PUBLIC_SHOCK_NODE = config['force_shock_node_2b_public']
 	self.__CALLBACK_URL = os.environ['SDK_CALLBACK_URL']	
-	#### TODO CHANGE THIS PART WHEN COMMITING THE FILE
-	#self.__CALLBACK_URL = 'http://172.17.0.1:54375'	
 	
-        self.__SCRIPT_TYPE = { 'ContigSet_to_fasta' : 'ContigSet_to_fasta.py',
-			     } 
-
 	self.__SERVICES = { 'workspace_service_url' : self.__WS_URL,
 			    'shock_service_url' : self.__SHOCK_URL,
 			    'handle_service_url' : self.__HS_URL, 
@@ -287,12 +252,8 @@ class KBaseRNASeq:
         	# add additional info to provenance here, in this case the input data object reference
         	provenance[0]['input_ws_objects']=[params['ws_id']+'/'+params['reference']]
 		
-		#ref_info = ws_client.get_object_info_new({"objects": [{'name': params['reference'], 'workspace': params['ws_id']}]})[0]
-                #ref_id = str(ref_info[6]) + '/' + str(ref_info[0]) + '/' + str(ref_info[4])
-                #outfile_ref_name = os.path.join(bowtie_dir,params['reference']+".fa")
 		try:
 			ref_id, outfile_ref_name = rnaseq_util.get_fa_from_genome(self.__LOGGER,ws_client,self.__SERVICES,params['ws_id'],bowtie_dir,params['reference'])
-			#outfile_ref_name = rnaseq_util.get_fa_from_genome(self.__LOGGER,ws_client,self.__SERVICES,ref_id,outfile_ref_name)
                 except Exception, e:
 			self.__LOGGER.exception("".join(traceback.format_exc()))
                         raise ValueError('Unable to get FASTA for object {}'.format("".join(traceback.format_exc())))
@@ -368,135 +329,6 @@ class KBaseRNASeq:
         # At some point might do deeper type checking...
         if not isinstance(returnVal, dict):
             raise ValueError('Method BuildBowtie2Index return value ' +
-                             'returnVal is not type dict as required.')
-        # return the results
-        return [returnVal]
-
-    def GetFeaturesToGTF(self, ctx, params):
-        """
-        :param params: instance of type "GetFeaturesToGTFParams" ->
-           structure: parameter "ws_id" of String, parameter "reference" of
-           String, parameter "output_obj_name" of String
-        :returns: instance of type "ResultsToReport" (Object for Report type)
-           -> structure: parameter "report_name" of String, parameter
-           "report_ref" of String
-        """
-        # ctx is the context object
-        # return variables are: returnVal
-        #BEGIN GetFeaturesToGTF
-        user_token=ctx['token']
-        #pprint(params)
-        ws_client=Workspace(url=self.__WS_URL, token=user_token)
-        hs = HandleService(url=self.__HS_URL, token=user_token)
-        try:
-                self.__LOGGER.info( "Downloading Genome object from workspace")
-            ## Check if the gtf_dir is present; remove files in gtf_dir if exists ; create a new dir if doesnt exists     
-		#if os.path.exists(self.__SCRATCH):
-                # 	handler_util.cleanup(self.__LOGGER,self.__SCRATCH)
-            	if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
-		gtf_dir = self.__SCRATCH+'/tmp'
-                if os.path.exists(gtf_dir):
-                        handler_util.cleanup(self.__LOGGER,gtf_dir)
-                if not os.path.exists(gtf_dir): os.makedirs(gtf_dir)
-                provenance = [{}]
-                if 'provenance' in ctx:
-                        provenance = ctx['provenance']
-                # add additional info to provenance here, in this case the input data object reference
-                provenance[0]['input_ws_objects']=[params['ws_id']+'/'+params['reference']]
-		ref_info = ws_client.get_object_info_new({"objects": [{'name': params['reference'], 'workspace': params['ws_id']}]})
-		#out_file_path = os.path.join(gtf_dir,params['output_obj_name']+'.gff')
-		#output = open(out_file_path,'w')
-		obj_type = ref_info[0][2].split('-')[0] 
-		if obj_type == 'KBaseGenomeAnnotations.GenomeAnnotation':
-			out_file_path = os.path.join(gtf_dir,params['output_obj_name']+'.gff')
-			try:
-				fasta_file= script_util.generate_fasta(self.__LOGGER,self.__SERVICES,user_token,params['ws_id'],gtf_dir,params['reference'])
-                                self.__LOGGER.info("Sanitizing the fasta file to correct id names {}".format(datetime.datetime.utcnow()))
-                                mapping_filename = c_mapping.create_sanitized_contig_ids(fasta_file)
-                                c_mapping.replace_fasta_contig_ids(fasta_file, mapping_filename, to_modified=True)
-                                self.__LOGGER.info("Generating FASTA file completed successfully : {}".format(datetime.datetime.utcnow()))
-				script_util.generate_gff(self.__LOGGER,self.__SERVICES,user_token,params['ws_id'],gtf_dir,params['reference'],out_file_path)
-				c_mapping.replace_gff_contig_ids(out_file_path, mapping_filename, to_modified=True) 
-			except Exception as e:
-				self.__LOGGER.exception("".join(traceback.format_exc()))
-				raise ValueError("Generating GFF file from Genome Annotation object Failed :  {}".format("".join(traceback.format_exc())))
-		elif obj_type == 'KBaseGenomes.Genome':
-		     try:
-                	reference = ws_client.get_object_subset(
-                                        [{ 'name' : params['reference'], 'workspace' : params['ws_id'],'included': ['features']}])
-                	#reference = ws_client.get_objects(
-                        #                [{ 'name' : params['reference'], 'workspace' : params['ws_id']}])
-			out_file_path = os.path.join(gtf_dir,params['output_obj_name']+'.gtf')
-                	output = open(out_file_path,'w')
-			ref =reference[0]['data']
-        		if "features" in ref:
-                  		for f in ref['features']:
-                     			if "type" in f and  f['type'] == 'CDS': f_type = f['type']
-                     			if "id" in f: f_id =  f['id']
-                     			if "location" in f:
-                        			for contig_id,f_start,f_strand,f_len  in f['location']:
-                                			f_end = script_util.get_end(int(f_start),int(f_len),f_strand)
-			        			output.write(contig_id + "\tKBase\t" + f_type + "\t" + str(f_start) + "\t" + str(f_end) + "\t.\t" + f_strand + "\t"+ str(0) + "\ttranscript_id " + f_id + "; gene_id " + f_id + ";\n")
-		     except Exception,e:
-			raise KBaseRNASeqException("Failed to create Reference Annotation File: {0}".format(e))	
-		     finally:
-			output.close()
-                try:
-			#out_file_path = os.path.join(params['output_obj_name']+'.gtf')
-                        gtf_handle = hs.upload(out_file_path)
-
-                except Exception, e:
-                        raise KBaseRNASeqException("Failed to create Reference Annotation: {0}".format(e))
-                gtfhandle = { "handle" : gtf_handle ,"size" : os.path.getsize(out_file_path)}
-
-             ## Save object to workspace
-                self.__LOGGER.info( "Saving Reference Annotation object to  workspace")
-                res= ws_client.save_objects(
-                                        {"workspace":params['ws_id'],
-                                         "objects": [{
-                                         "type":"KBaseRNASeq.ReferenceAnnotation",
-                                         "data":gtfhandle,
-                                         "name":params['output_obj_name']}
-                                        ]})
-                info = res[0]
-		report = "Extracting Features from {0}".format(params['reference'])
-             ## Create report object:
-                reportObj = {
-                                'objects_created':[{
-                                'ref':str(info[6]) + '/'+str(info[0])+'/'+str(info[4]),
-                                'description':'Create Reference Annotation'
-                                }],
-                                'text_message':report
-                            }
-                reportName = 'Create_Reference_Annotation_'+str(hex(uuid.getnode()))
-                report_info = ws_client.save_objects({
-                                                'id':info[6],
-                                                'objects':[
-                                                {
-                                                'type':'KBaseReport.Report',
-                                                'data':reportObj,
-                                                'name':reportName,
-                                                'meta':{},
-                                                'hidden':1, # important!  make sure the report is hidden
-                                                'provenance':provenance
-                                                }
-                                                ]
-                                                })[0]
-
-                #print('saved Report: '+pformat(report_info))
-
-		returnVal = { "report_name" : reportName,"report_ref" : str(report_info[6]) + '/' + str(report_info[0]) + '/' + str(report_info[4]) }
-        except Exception, e:
-                raise KBaseRNASeqException("Create Reference Annotation Failed: {0}".format(e))
-        finally:
-                handler_util.cleanup(self.__LOGGER,gtf_dir)
-		#if os.path.exists(out_file_path): os.remove(out_file_path)
-	
-        #END GetFeaturesToGTF
-
-        # At some point might do deeper type checking...
-        if not isinstance(returnVal, dict):
-            raise ValueError('Method GetFeaturesToGTF return value ' +
                              'returnVal is not type dict as required.')
         # return the results
         return [returnVal]
@@ -833,118 +665,8 @@ class KBaseRNASeq:
 	cuff = Cuffdiff(self.__LOGGER, cuffdiff_dir, self.__SERVICES)
         returnVal = cuff.run(common_params, params)
 
-
-
-#	user_token=ctx['token']
-#        self.__LOGGER.info("Started CuffdiffCall")
-#        ws_client=Workspace(url=self.__WS_URL, token=user_token)
-#        hs = HandleService(url=self.__HS_URL, token=user_token)
-#        try:
-#            if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
-#	    cuffdiff_dir = self.__SCRATCH +'/tmp'
-#	    handler_util.setupWorkingDir(self.__LOGGER,cuffdiff_dir)
-#            self.__LOGGER.info("Downloading ExpressionSet  file")
-#            try:
-#                e_set = ws_client.get_objects(
-#                                        [{'name' : params['expressionset_id'],'workspace' : params['ws_id']}])[0]
-#            except Exception,e:
-#                self.__LOGGER.exception("".join(traceback.format_exc()))
-#                raise KBaseRNASeqException("Error Downloading ExpressionSet from the workspace ")
-#	    ### Getting all the set ids and genome_id
-#	    e_set_info = ws_client.get_object_info_new({"objects": [{'name' : params['expressionset_id'], 'workspace': params['ws_id']}]})[0] 
-#	    alignmentset_id = e_set['data']['alignmentSet_id'] 
-#	    expressionset_id =  str(e_set_info[6]) + '/' + str(e_set_info[0]) + '/' + str(e_set_info[4])
-#            sampleset_id =  e_set['data']['sampleset_id'] 
-#	    ### Check if there are existing cufflinks run on the alignments,
-#            ### if exists : skip cufflinks run, 
-#                ### get existing ids for set obj,
-#                ### create new run list ,
-#            ###  else : run on all alignments
-#            ### Check if the gtf file exists in the workspace. if exists download the file from that
-#            annotation_id = e_set['data']['genome_id']
-#            annotation_name = ws_client.get_object_info([{"ref" :annotation_id}],includeMetadata=None)[0][1]
-#            gtf_obj_name = annotation_name+"_GTF_Annotation"
-#            ret = script_util.if_obj_exists(None,ws_client,params['ws_id'],"KBaseRNASeq.GFFAnnotation",[gtf_obj_name])
-#            if not ret is None:
-#                self.__LOGGER.info("GFF Annotation Exist for Genome Annotation {0}.... Skipping step ".format(annotation_name))
-#                gtf_obj= ws_client.get_objects([{'name' : gtf_obj_name,'workspace' : params['ws_id']}])[0]
-#                gtf_info = ws_client.get_object_info_new({"objects": [{'name': gtf_obj_name, 'workspace': params['ws_id']}]})[0]
-#                gtf_annotation_id = str(gtf_info[6]) + '/' + str(gtf_info[0]) + '/' + str(gtf_info[4])
-#                gtf_id=gtf_obj['data']['handle']['id']
-#                gtf_name=gtf_obj['data']['handle']['file_name']
-#                try:
-#                     script_util.download_file_from_shock(self.__LOGGER, shock_service_url=self.__SHOCK_URL, shock_id=gtf_id,filename=gtf_name, directory=cuffdiff_dir,token=user_token)
-#                     gtf_file = os.path.join(cuffdiff_dir,gtf_name)
-#                except Exception,e:
-#                     raise Exception( "Unable to download shock file, {0}".format(gtf_name))
-#            else:
-#		gtf_file =rnaseq_util.create_gtf_annotation_from_genome(self.__LOGGER,ws_client,hs,self.__SERVICES,params['ws_id'],annotation_id,annotation_name,cuffdiff_dir,user_token)		
-#		
-#                #fasta_file= script_util.generate_fasta(self.__LOGGER,self.__SERVICES,user_token,annotation_id,cuffdiff_dir,annotation_name)
-#                #self.__LOGGER.info("Sanitizing the fasta file to correct id names {}".format(datetime.datetime.utcnow()))
-#                #mapping_filename = c_mapping.create_sanitized_contig_ids(fasta_file)
-#                #c_mapping.replace_fasta_contig_ids(fasta_file, mapping_filename, to_modified=True)
-#                #self.__LOGGER.info("Generating FASTA file completed successfully : {}".format(datetime.datetime.utcnow()))
-#                #gtf_file = script_util.create_gtf_annotation(self.__LOGGER,ws_client,hs,self.__SERVICES,params['ws_id'],annotation_id,gtf_obj_name,fasta_file,cuffdiff_dir,user_token)
-#            #### Getting the alignments and expression from the alignment set and expression set 
-#	    m_expr_ids = e_set['data']['mapped_expression_ids']
-#	    
-#            if len(m_expr_ids)  < 2:
-#		raise ValueError("Error the ExpressionSet object has less than 2 expression samples. Kindly check your reads files and repeat the previous step (Cufflinks)")
-#	    labels = []
-#	    alignments = []
-#	    counter = 0
-#	    assembly_file = os.path.join(cuffdiff_dir,self.__ASSEMBLY_GTF_FN)
-#            list_file = open(assembly_file,'w')
-#	    for i in m_expr_ids:
-#	    	for a_id ,e_id in i.items():
-#			#print a_id  + ":" + e_id
-#			files = {}
-#			a_obj,e_obj = ws_client.get_objects(
-#                                        [{'ref' : a_id},{'ref': e_id}])
-#			### Get the condition name, replicate_id , shock_id and shock_filename
-#			condition = a_obj['data']['condition']
-#			if 'replicate_id' in a_obj['data'] : replicate_id = a_obj['data']['replicate_id']
-#			files[a_obj['data']['file']['file_name']] = a_obj['data']['file']['id']
-#			files[e_obj['data']['file']['file_name']] = e_obj['data']['file']['id']
-#                        if not condition in labels: labels.append(condition)
-#			else :  counter += 1 #### comment it when replicate_id is available from methods
-#			#print condition
-#			s_path = os.path.join(cuffdiff_dir,condition+"/"+str(counter)) ### Comment this line when replicate_id is available from the methods
-#			#s_path = os.path.join(cuffdiff_dir,condition+"/"+replicate_id)
-#            	        if not os.path.exists(s_path): os.makedirs(s_path)
-#		        try:
-#				script_util.download_shock_files(self.__LOGGER,self.__SHOCK_URL,s_path,files,user_token)
-#                        except Exception,e:
-#                                raise Exception( "Unable to download shock file, {0}".format(e))
-#                        try:
-#                                script_util.unzip_files(self.__LOGGER,os.path.join(s_path,a_obj['data']['file']['file_name']),s_path)
-#                                script_util.unzip_files(self.__LOGGER,os.path.join(s_path,e_obj['data']['file']['file_name']),s_path)
-#				e_file_path =  os.path.join(s_path,"transcripts.gtf")
-#				a_file_path = os.path.join(s_path,"accepted_hits.bam")
-#				if os.path.exists(a_file_path) : print a_file_path
-#				if os.path.exists(e_file_path) : list_file.write("{0}\n".format(e_file_path))				
-#                        except Exception, e:
-#				self.__LOGGER.exception("".join(traceback.format_exc()))
-#                                raise Exception("Unzip file error: Please contact help@kbase.us")
-#	    list_file.close()
-#	    #output_dir = os.path.join(cuffdiff_dir, params['output_obj_name'])
-#            for l in labels:
-#                  rep_files=",".join([ os.path.join(cuffdiff_dir+'/'+l,sub+'/accepted_hits.bam') for sub in os.listdir(os.path.join(cuffdiff_dir,l)) if os.path.isdir(os.path.join(cuffdiff_dir,l+'/'+sub))])
-#                  alignments.append(rep_files)
-#
-#            bam_files = " ".join([i for i in alignments])
-#            t_labels = ",".join(labels)
-#	   
-#	    num_threads = multiprocessing.cpu_count()
-#	    results = parallel.call_cuffmerge_and_cuffdiff(self.__LOGGER,ws_client,hs,params['ws_id'],num_threads,assembly_file,gtf_file,bam_files,t_labels,annotation_id,expressionset_id,alignmentset_id,sampleset_id,params,cuffdiff_dir,user_token)
-#	    expr_id, cuffdiff_obj = results
-#	    returnVal = { 'output'  : cuffdiff_obj ,'workspace' : params['ws_id']}
-#        except KBaseRNASeqException,e:
-#                 self.__LOGGER.exception("".join(traceback.format_exc()))
-#                 raise
 	#finally:
-        #         handler_util.cleanup(self.__LOGGER,cuffdiff_dir)
+        handler_util.cleanup(self.__LOGGER,cuffdiff_dir)
         #END CuffdiffCall
 
         # At some point might do deeper type checking...

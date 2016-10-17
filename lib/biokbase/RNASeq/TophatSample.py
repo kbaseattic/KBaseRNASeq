@@ -58,18 +58,6 @@ class TophatSample(Tophat):
         sample_info = ws_client.get_object_info_new({"objects": [{'name': params['sampleset_id'], 'workspace': params['ws_id']}]})[0]
         sample_type = sample_info[2].split('-')[0]
 
-        # SampleSet
-        #reads = sample['data']['sample_ids']
-        #reads_type= sample['data']['Library_type']
-        #if reads_type == 'PairedEnd': r_type = 'KBaseAssembly.PairedEndLibrary'
-        #else: r_type = 'KBaseAssembly.SingleEndLibrary'
-        #e_ws_objs = script_util.if_ws_obj_exists(None,ws_client,params['ws_id'],r_type,reads)
-        #missing_objs = [i for i in reads if not i in e_ws_objs]
-        #if len(e_ws_objs) != len(reads):
-        #   raise ValueError('Missing Library objects {0} in the {1}. please copy them and run this method'.format(",".join(missing_objs),params['ws_id']))
-
-
-
 	### Get obejct IDs
         bowtie2_index_info,sampleset_info = ws_client.get_object_info_new({"objects": [{'name': params['bowtie_index'], 'workspace': params['ws_id']},{'name': params['sampleset_id'], 'workspace': params['ws_id']}]})
         self.bowtie2index_id = str(bowtie2_index_info[6]) + '/' + str(bowtie2_index_info[0]) + '/' + str(bowtie2_index_info[4])  
@@ -112,7 +100,6 @@ class TophatSample(Tophat):
                raise Exception( "Unable to download shock file, {0}".format(gtf_name))  
  	else:		
 	    gtf_file =rnaseq_util.create_gtf_annotation_from_genome(logger,ws_client,hs,self.urls,params['ws_id'],genome_id,annotation_gtf,tophat_dir,token)		
-	    #script_util.create_gtf_annotation(logger,ws_client,hs,self.__SERVICES,params['ws_id'],genome_id,annotation_gtf,fasta_file,tophat_dir,token)
 	# Determine the num_threads provided by the user otherwise default the number of threads to 2
         self.num_jobs =  1
 
@@ -154,5 +141,5 @@ class TophatSample(Tophat):
                                                 ]
                                                 })[0]
 
-        returnVal = { "report_name" : reportName,"report_ref" : str(report_info[6]) + '/' + str(report_info[0]) + '/' + str(report_info[4]) }
+        self.returnVal = { "report_name" : reportName,"report_ref" : str(report_info[6]) + '/' + str(report_info[0]) + '/' + str(report_info[4]) }
 
