@@ -6,7 +6,7 @@
   "categories" : ["active","expression","sequence"],
   "widgets" : {
     "input" : null,
-    "output" : "no-display"
+    "output" : "kbaseRNASeqPieNew"
   },
    "parameters" : [ {
     "id" : "sampleset_id",
