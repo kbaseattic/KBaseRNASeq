@@ -124,20 +124,21 @@ class HiSat2SampleSet(HiSat2):
         self.logger.info(" Creating AlignmentSet for the Alignments {0}".format(alignmentSet_name))
         # TODO: Split alignment set and report method
         reportObj=rnaseq_util.create_RNASeq_AlignmentSet_and_build_report(self.logger,self.common_params['ws_client'],self.method_params['ws_id'],self.sample['data']['sample_ids'],self.task_list[0]['sampleset_id'],self.task_list[0]['annotation_id'],None,self.results,alignmentSet_name)
-        reportName = 'Align_Reads_using_Hisat2_'+str(hex(uuid.getnode()))
-        report_info = self.common_params['ws_client'].save_objects({
-                                                'id':self.sampleset_info[6],
-                                                'objects':[
-                                                {
-                                                'type':'KBaseReport.Report',
-                                                'data':reportObj,
-                                                'name':reportName,
-                                                'meta':{},
-                                                'hidden':1, # important!  make sure the report is hidden
-                                                #'provenance':provenance
-                                                }
-                                                ]
-                                                })[0]
-
-        self.returnVal = { "report_name" : reportName,"report_ref" : str(report_info[6]) + '/' + str(report_info[0]) + '/' + str(report_info[4]) }
-
+	self.returnVal = { 'output'  : alignmentSet_name ,'workspace' : self.method_params['ws_id']}
+#        reportName = 'Align_Reads_using_Hisat2_'+str(hex(uuid.getnode()))
+#        report_info = self.common_params['ws_client'].save_objects({
+#                                                'id':self.sampleset_info[6],
+#                                                'objects':[
+#                                                {
+#                                                'type':'KBaseReport.Report',
+#                                                'data':reportObj,
+#                                                'name':reportName,
+#                                                'meta':{},
+#                                                'hidden':1, # important!  make sure the report is hidden
+#                                                #'provenance':provenance
+#                                                }
+#                                                ]
+#                                                })[0]
+#
+#        self.returnVal = { "report_name" : reportName,"report_ref" : str(report_info[6]) + '/' + str(report_info[0]) + '/' + str(report_info[4]) }
+#
