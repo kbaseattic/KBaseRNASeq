@@ -78,8 +78,8 @@ class KBaseRNASeq:
     # the latter method is running.
     #########################################
     VERSION = "0.0.1"
-    GIT_URL = "https://github.com/kbase/KBaseRNASeq"
-    GIT_COMMIT_HASH = "13e98933aea51ffac6b401451d8aebb874958614"
+    GIT_URL = "https://github.com/sjyoo/KBaseRNASeq"
+    GIT_COMMIT_HASH = "c16cf497efbdbbbf982d928015fc6d70a2ba1d33"
     
     #BEGIN_CLASS_HEADER
     __TEMP_DIR = 'temp'
@@ -329,6 +329,138 @@ class KBaseRNASeq:
         # At some point might do deeper type checking...
         if not isinstance(returnVal, dict):
             raise ValueError('Method BuildBowtie2Index return value ' +
+                             'returnVal is not type dict as required.')
+        # return the results
+        return [returnVal]
+
+    def GetFeaturesToGTF(self, ctx, params):
+        """
+        :param params: instance of type "GetFeaturesToGTFParams" ->
+           structure: parameter "ws_id" of String, parameter "reference" of
+           type "ws_genome_annotation_id" (reference genome annotation id for
+           mapping the RNA-Seq fastq file @id ws
+           KBaseGenomeAnnotations.GenomeAnnotation), parameter
+           "output_obj_name" of String
+        :returns: instance of type "ResultsToReport" (Object for Report type)
+           -> structure: parameter "report_name" of String, parameter
+           "report_ref" of String
+        """
+        # ctx is the context object
+        # return variables are: returnVal
+        #BEGIN GetFeaturesToGTF
+        user_token=ctx['token']
+        #pprint(params)
+        ws_client=Workspace(url=self.__WS_URL, token=user_token)
+        hs = HandleService(url=self.__HS_URL, token=user_token)
+        try:
+                self.__LOGGER.info( "Downloading Genome object from workspace")
+            ## Check if the gtf_dir is present; remove files in gtf_dir if exists ; create a new dir if doesnt exists     
+		#if os.path.exists(self.__SCRATCH):
+                # 	handler_util.cleanup(self.__LOGGER,self.__SCRATCH)
+            	if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
+		gtf_dir = self.__SCRATCH+'/tmp'
+                if os.path.exists(gtf_dir):
+                        handler_util.cleanup(self.__LOGGER,gtf_dir)
+                if not os.path.exists(gtf_dir): os.makedirs(gtf_dir)
+                provenance = [{}]
+                if 'provenance' in ctx:
+                        provenance = ctx['provenance']
+                # add additional info to provenance here, in this case the input data object reference
+                provenance[0]['input_ws_objects']=[params['ws_id']+'/'+params['reference']]
+		ref_info = ws_client.get_object_info_new({"objects": [{'name': params['reference'], 'workspace': params['ws_id']}]})
+		#out_file_path = os.path.join(gtf_dir,params['output_obj_name']+'.gff')
+		#output = open(out_file_path,'w')
+		obj_type = ref_info[0][2].split('-')[0] 
+		if obj_type == 'KBaseGenomeAnnotations.GenomeAnnotation':
+			out_file_path = os.path.join(gtf_dir,params['output_obj_name']+'.gff')
+			try:
+				fasta_file= script_util.generate_fasta(self.__LOGGER,self.__SERVICES,user_token,params['ws_id'],gtf_dir,params['reference'])
+                                self.__LOGGER.info("Sanitizing the fasta file to correct id names {}".format(datetime.datetime.utcnow()))
+                                mapping_filename = c_mapping.create_sanitized_contig_ids(fasta_file)
+                                c_mapping.replace_fasta_contig_ids(fasta_file, mapping_filename, to_modified=True)
+                                self.__LOGGER.info("Generating FASTA file completed successfully : {}".format(datetime.datetime.utcnow()))
+				script_util.generate_gff(self.__LOGGER,self.__SERVICES,user_token,params['ws_id'],gtf_dir,params['reference'],out_file_path)
+				c_mapping.replace_gff_contig_ids(out_file_path, mapping_filename, to_modified=True) 
+			except Exception as e:
+				self.__LOGGER.exception("".join(traceback.format_exc()))
+				raise ValueError("Generating GFF file from Genome Annotation object Failed :  {}".format("".join(traceback.format_exc())))
+		elif obj_type == 'KBaseGenomes.Genome':
+		     try:
+                	reference = ws_client.get_object_subset(
+                                        [{ 'name' : params['reference'], 'workspace' : params['ws_id'],'included': ['features']}])
+                	#reference = ws_client.get_objects(
+                        #                [{ 'name' : params['reference'], 'workspace' : params['ws_id']}])
+			out_file_path = os.path.join(gtf_dir,params['output_obj_name']+'.gtf')
+                	output = open(out_file_path,'w')
+			ref =reference[0]['data']
+        		if "features" in ref:
+                  		for f in ref['features']:
+                     			if "type" in f and  f['type'] == 'CDS': f_type = f['type']
+                     			if "id" in f: f_id =  f['id']
+                     			if "location" in f:
+                        			for contig_id,f_start,f_strand,f_len  in f['location']:
+                                			f_end = script_util.get_end(int(f_start),int(f_len),f_strand)
+			        			output.write(contig_id + "\tKBase\t" + f_type + "\t" + str(f_start) + "\t" + str(f_end) + "\t.\t" + f_strand + "\t"+ str(0) + "\ttranscript_id " + f_id + "; gene_id " + f_id + ";\n")
+		     except Exception,e:
+			raise KBaseRNASeqException("Failed to create Reference Annotation File: {0}".format(e))	
+		     finally:
+			output.close()
+                try:
+			#out_file_path = os.path.join(params['output_obj_name']+'.gtf')
+                        gtf_handle = hs.upload(out_file_path)
+
+                except Exception, e:
+                        raise KBaseRNASeqException("Failed to create Reference Annotation: {0}".format(e))
+                gtfhandle = { "handle" : gtf_handle ,"size" : os.path.getsize(out_file_path)}
+
+             ## Save object to workspace
+                self.__LOGGER.info( "Saving Reference Annotation object to  workspace")
+                res= ws_client.save_objects(
+                                        {"workspace":params['ws_id'],
+                                         "objects": [{
+                                         "type":"KBaseRNASeq.ReferenceAnnotation",
+                                         "data":gtfhandle,
+                                         "name":params['output_obj_name']}
+                                        ]})
+                info = res[0]
+		report = "Extracting Features from {0}".format(params['reference'])
+             ## Create report object:
+                reportObj = {
+                                'objects_created':[{
+                                'ref':str(info[6]) + '/'+str(info[0])+'/'+str(info[4]),
+                                'description':'Create Reference Annotation'
+                                }],
+                                'text_message':report
+                            }
+                reportName = 'Create_Reference_Annotation_'+str(hex(uuid.getnode()))
+                report_info = ws_client.save_objects({
+                                                'id':info[6],
+                                                'objects':[
+                                                {
+                                                'type':'KBaseReport.Report',
+                                                'data':reportObj,
+                                                'name':reportName,
+                                                'meta':{},
+                                                'hidden':1, # important!  make sure the report is hidden
+                                                'provenance':provenance
+                                                }
+                                                ]
+                                                })[0]
+
+                #print('saved Report: '+pformat(report_info))
+
+		returnVal = { "report_name" : reportName,"report_ref" : str(report_info[6]) + '/' + str(report_info[0]) + '/' + str(report_info[4]) }
+        except Exception, e:
+                raise KBaseRNASeqException("Create Reference Annotation Failed: {0}".format(e))
+        finally:
+                handler_util.cleanup(self.__LOGGER,gtf_dir)
+		#if os.path.exists(out_file_path): os.remove(out_file_path)
+	
+        #END GetFeaturesToGTF
+
+        # At some point might do deeper type checking...
+        if not isinstance(returnVal, dict):
+            raise ValueError('Method GetFeaturesToGTF return value ' +
                              'returnVal is not type dict as required.')
         # return the results
         return [returnVal]
@@ -637,14 +769,16 @@ class KBaseRNASeq:
            of String, parameter "url" of String, parameter "remote_md5" of
            String, parameter "remote_sha1" of String, parameter "sample_ids"
            of list of String, parameter "condition" of list of String,
-           parameter "genome_id" of String, parameter "expressionSet_id" of
-           type "ws_expressionSet_id" (Id for expression sample set @id ws
-           KBaseRNASeq.RNASeqExpressionSet), parameter "alignmentSet_id" of
-           type "ws_alignmentSet_id" (The workspace id for a
-           RNASeqAlignmentSet object @id ws KBaseRNASeq.RNASeqAlignmentSet),
-           parameter "sampleset_id" of type "ws_Sampleset_id" (Id for
-           KBaseRNASeq.RNASeqSampleSet @id ws KBaseRNASeq.RNASeqSampleSet),
-           parameter "comments" of String
+           parameter "genome_id" of type "ws_genome_annotation_id" (reference
+           genome annotation id for mapping the RNA-Seq fastq file @id ws
+           KBaseGenomeAnnotations.GenomeAnnotation), parameter
+           "expressionSet_id" of type "ws_expressionSet_id" (Id for
+           expression sample set @id ws KBaseRNASeq.RNASeqExpressionSet),
+           parameter "alignmentSet_id" of type "ws_alignmentSet_id" (The
+           workspace id for a RNASeqAlignmentSet object @id ws
+           KBaseRNASeq.RNASeqAlignmentSet), parameter "sampleset_id" of type
+           "ws_Sampleset_id" (Id for KBaseRNASeq.RNASeqSampleSet @id ws
+           KBaseRNASeq.RNASeqSampleSet), parameter "comments" of String
         """
         # ctx is the context object
         # return variables are: returnVal
@@ -690,15 +824,18 @@ class KBaseRNASeq:
            object @id ws KBaseRNASeq.RNASeqAlignmentSet), parameter
            "sampleset_id" of type "ws_Sampleset_id" (Id for
            KBaseRNASeq.RNASeqSampleSet @id ws KBaseRNASeq.RNASeqSampleSet),
-           parameter "genome_id" of String, parameter "sample_ids" of list of
-           String, parameter "condition" of list of String, parameter
-           "sample_expression_ids" of list of type "ws_expression_sample_id"
-           (Id for expression sample @id ws KBaseRNASeq.RNASeqExpression),
-           parameter "mapped_expression_objects" of list of mapping from
-           String to String, parameter "mapped_expression_ids" of list of
-           mapping from String to type "ws_expression_sample_id" (Id for
-           expression sample @id ws KBaseRNASeq.RNASeqExpression), parameter
-           "output_obj_name" of String, parameter "num_threads" of Long
+           parameter "genome_id" of type "ws_genome_annotation_id" (reference
+           genome annotation id for mapping the RNA-Seq fastq file @id ws
+           KBaseGenomeAnnotations.GenomeAnnotation), parameter "sample_ids"
+           of list of String, parameter "condition" of list of String,
+           parameter "sample_expression_ids" of list of type
+           "ws_expression_sample_id" (Id for expression sample @id ws
+           KBaseRNASeq.RNASeqExpression), parameter
+           "mapped_expression_objects" of list of mapping from String to
+           String, parameter "mapped_expression_ids" of list of mapping from
+           String to type "ws_expression_sample_id" (Id for expression sample
+           @id ws KBaseRNASeq.RNASeqExpression), parameter "output_obj_name"
+           of String, parameter "num_threads" of Long
         :returns: instance of type "RNASeqDifferentialExpression" (Object
            RNASeqDifferentialExpression file structure @optional tool_opts
            tool_version sample_ids comments) -> structure: parameter
@@ -711,14 +848,16 @@ class KBaseRNASeq:
            of String, parameter "url" of String, parameter "remote_md5" of
            String, parameter "remote_sha1" of String, parameter "sample_ids"
            of list of String, parameter "condition" of list of String,
-           parameter "genome_id" of String, parameter "expressionSet_id" of
-           type "ws_expressionSet_id" (Id for expression sample set @id ws
-           KBaseRNASeq.RNASeqExpressionSet), parameter "alignmentSet_id" of
-           type "ws_alignmentSet_id" (The workspace id for a
-           RNASeqAlignmentSet object @id ws KBaseRNASeq.RNASeqAlignmentSet),
-           parameter "sampleset_id" of type "ws_Sampleset_id" (Id for
-           KBaseRNASeq.RNASeqSampleSet @id ws KBaseRNASeq.RNASeqSampleSet),
-           parameter "comments" of String
+           parameter "genome_id" of type "ws_genome_annotation_id" (reference
+           genome annotation id for mapping the RNA-Seq fastq file @id ws
+           KBaseGenomeAnnotations.GenomeAnnotation), parameter
+           "expressionSet_id" of type "ws_expressionSet_id" (Id for
+           expression sample set @id ws KBaseRNASeq.RNASeqExpressionSet),
+           parameter "alignmentSet_id" of type "ws_alignmentSet_id" (The
+           workspace id for a RNASeqAlignmentSet object @id ws
+           KBaseRNASeq.RNASeqAlignmentSet), parameter "sampleset_id" of type
+           "ws_Sampleset_id" (Id for KBaseRNASeq.RNASeqSampleSet @id ws
+           KBaseRNASeq.RNASeqSampleSet), parameter "comments" of String
         """
         # ctx is the context object
         # return variables are: returnVal

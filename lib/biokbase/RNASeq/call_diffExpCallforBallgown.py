@@ -48,52 +48,61 @@ def CalldiffExpCallforBallgown_helper(x):
         logger,services,ws_client,hs,ws_id,num_threads,alignment_file,transcripts_gtf,list_file,used_tool,directory,gtf_file = x
         return  _CalldiffExpCallforBallgown(logger,services,ws_client,hs,ws_id,num_threads,alignment_file,transcripts_gtf,list_file,used_tool,directory,gtf_file)
 
-def call_cuffmerge(directory,num_threads,gtf_file,list_file):
+def call_cuffmerge(working_dir,directory,num_threads,gtf_file,list_file):
 	 #cuffmerge_dir = os.path.join(directory,"cuffmerge")
+	 print "Entering cuffmerge"
+	 print "Args passed {0},{1},{2},{3}".format(directory,num_threads,gtf_file,list_file)
          cuffmerge_command = " -p {0} -o {1} -g {2} {3}".format(str(num_threads),directory,gtf_file,list_file)
          merged_gtf = None
 	 try:
-                logger.info("Executing: cuffmerge {0}".format(cuffmerge_command))
-                script_util.runProgram(logger,"cuffmerge",cuffmerge_command,None,directory)
-                if os.path.exists(cuffmerge_dir+"/merged.gtf") : merged_gtf = os.path.join(directory,"merged.gtf")
+                #logger.info("Executing: cuffmerge {0}".format(cuffmerge_command))
+                print  "Executing: cuffmerge {0}".format(cuffmerge_command)
+                r,e = script_util.runProgram(None,"cuffmerge",cuffmerge_command,None,working_dir)
+                print r + "\n" + e
+		if os.path.exists(directory+"/merged.gtf") : merged_gtf = os.path.join(directory,"merged.gtf")
          except Exception,e:
-                raise Exception("Error executing cuffmerge {0},{1}".format(cuffmerge_command,directory))
+                print "".join(traceback.format_exc())
+                raise Exception("Error executing cuffmerge {0},{1}".format(cuffmerge_command,"".join(traceback.format_exc())))
 	 return merged_gtf
 
-def call_stringtiemerge(directory,num_threads,gtf_file,list_file):
+def call_stringtiemerge(working_dir,directory,num_threads,gtf_file,list_file):
          #directory = os.path.join(directory,"cuffmerge")
          strmerge_command = " -p {0} -o {1} --merge -G {2} {3}".format(str(num_threads),directory,gtf_file,list_file)
          merged_gtf = None
          try:
-                logger.info("Executing: stringtie {0}".format(strmerge_command))
-                script_util.runProgram(logger,"stringtie",strmerge_command,None,directory)
+                print  "Executing: stringtie {0}".format(strmerge_command)
+                script_util.runProgram(None,"stringtie",strmerge_command,None,working_dir)
                 if os.path.exists(directory+"/merged.gtf") : merged_gtf = os.path.join(directory,"merged.gtf")
          except Exception,e:
-                raise Exception("Error executing StringTie merge {0},{1}".format(strmerge_command,directory))
+                raise Exception("Error executing StringTie merge {0},{1}".format(strmerge_command,working_dir))
          return merged_gtf
 
-def call_tablemaker(directory,num_threads,m_gtf_file,alignment_file):
+def call_tablemaker(working_dir,directory,num_threads,m_gtf_file,alignment_file):
+	 print "Inside Tablemaker"
+	 print "Args passed : {0} , {1} , {2} , {3} , {4} ".format(working_dir,directory,num_threads,m_gtf_file,alignment_file)
          #cuffmerge_dir = os.path.join(directory,"cuffmerge")
          tm_command = " -p {0} -o {1} -q -W -G {2} {3}".format(str(num_threads),directory,m_gtf_file,alignment_file)
          try:
-                logger.info("Executing: tablemaker {0}".format(tm_command))
-                script_util.runProgram(logger,"tablemaker",tm_command,None,directory)
+                print "Executing: tablemaker {0}".format(tm_command)
+                script_util.runProgram(None,"tablemaker",tm_command,None,working_dir)
          except Exception,e:
-                raise Exception("Error executing tablemaker {0},{1}".format(tm_command,directory))
+		logger.exception(e)
+                raise Exception("Error executing tablemaker {0},{1}".format(tm_command,working_dir))
          return directory
 
 
-def call_stringtieBall(directory,num_threads,m_gtf_file,alignment_file):
+def call_stringtieBall(working_dir,directory,num_threads,m_gtf_file,alignment_file):
          #directory = os.path.join(directory,"cuffmerge")
+	 print "Inside stringtieBall"
          strdiff_command = " -p {0} -o {1} -e -B -G {2} {3}".format(str(num_threads),directory,m_gtf_file,alignment_file)
          try:
-                logger.info("Executing: stringtie {0}".format(strdiff_command))
-                script_util.runProgram(logger,"stringtie",strdiff_command,None,directory)
+                print "Executing: stringtie {0}".format(strdiff_command)
+                script_util.runProgram(None,"stringtie",strdiff_command,None,working_dir)
          except Exception,e:
-                raise Exception("Error executing StringTie differential expression {0},{1}".format(strdiff_command,directory))
+                raise Exception("Error executing StringTie differential expression {0},{1}".format(strdiff_command,working_dir))
          return directory
 
-def _CalldiffExpCallforBallgown(logger,services,ws_client,hs,ws_id,num_threads,alignment_file,transcripts_gtf,list_file,used_tool,directory,gtf_file):
+def _CalldiffExpCallforBallgown(logger,services,ws_client,hs,ws_id,num_threads,alignment_file,transcripts_gtf,merged_gtf,used_tool,directory,gtf_file):
 	### Create output directory name as ballgown/RNASeq_sample_name/ under diffexp_dir
 	### Get i as  alignment_file
 	### Get j as expression file
@@ -104,13 +113,14 @@ def _CalldiffExpCallforBallgown(logger,services,ws_client,hs,ws_id,num_threads,a
         if not logger:
                 logger = handler_util.create_logger(directory,"run_diffExpCallforBallgown_"+str(hex(uuid.getnode())))
         try:
-		merge_dir = os.path.join(directory,"merge") 
-		if not os.path.exists(merge_dir): os.mkdir(merge_dir)
-		print merge_dir
+		#merge_dir = os.path.join(directory,"merge") 
+		#if not os.path.exists(merge_dir): os.mkdir(merge_dir)
+		#print merge_dir
 		ballgown_dir = os.path.join(directory,"ballgown")
 		if not os.path.exists(ballgown_dir): os.mkdir(ballgown_dir)
 		print ballgown_dir
-		output_name = transcripts_gtf.split("_expression")[0]		
+		print transcripts_gtf
+		output_name = transcripts_gtf.split("/")[-3]+"_"+transcripts_gtf.split("/")[-2]		
                 output_dir = os.path.join(ballgown_dir,output_name)
 		if not os.path.exists(output_dir): os.mkdir(output_dir)
 		print output_dir
@@ -118,25 +128,28 @@ def _CalldiffExpCallforBallgown(logger,services,ws_client,hs,ws_id,num_threads,a
                 #condition = expression['data']['condition']
 		if used_tool == 'StringTie':
 			print "Entering StringTie"
-			merged_gtf = call_stringtiemerge(merge_dir,num_threads,gtf_file,list_file)
-			call_stringtieBall(ballgown_dir,num_threads,merged_gtf,alignment_file)
+			#merged_gtf = call_stringtiemerge(merge_dir,num_threads,gtf_file,list_file)
+			call_stringtieBall(directory,ballgown_dir,num_threads,merged_gtf,alignment_file)
                 elif used_tool == 'Cufflinks':
 			print "Entering Tablemaker"
-			merged_gtf = call_cuffmerge(merge_dir,num_threads,gtf_file,list_file)	
-			call_tablemaker(ballgown_dir,num_threads,m_gtf_file,alignment_file)
+			print "Args passed to table maker :  {0}, {1} ,{2} ,{3}, {4}".format(directory,ballgown_dir,num_threads,merged_gtf,alignment_file)
+			#print directory + "\n" + ballgown_dir + "\n" + num_threads + "\n" +  merged_gtf + "\n" + alignment_file 
+			#merged_gtf = call_cuffmerge(merge_dir,num_threads,gtf_file,list_file)	
+			call_tablemaker(directory,output_dir,num_threads,merged_gtf,alignment_file)
 		if os.path.exists(ballgown_dir+"/t_data.ctab") :
 			logger.info("Running Differential Expression for Sample {0} completed successfully".format(transcripts_gtf))
 			print("Running Differential Expression for Sample {0} completed successfully".format(transcripts_gtf))
-        except Exception,e:
+		print transcripts_gtf + ' : ' + output_dir 
+        	return (transcripts_gtf, output_dir )
+	except Exception,e:
+		logger.exception(e)
                 logger.exception("".join(traceback.format_exc()))
-                raise Exception("Error executing stringtie {0},{1}".format(cufflinks_command,directory))
+                raise Exception("Error executing ballgown differential expression {0},{1}".format(transcripts_gtf,directory))
         finally:
                 if os.path.exists(output_dir): shutil.rmtree(output_dir)
-                if not ret is None:
-                    return (transcripts_gtf, output_dir )
-                else:
-                    return None
-
+                #if not ret is None:
+		#return None
+	
 def runMethod(logger,token,ws_client,hs,services,diffexp_dir,params):
 	    try:
                 e_sample = ws_client.get_objects(
@@ -226,20 +239,29 @@ def runMethod(logger,token,ws_client,hs,services,diffexp_dir,params):
                   #itertools.chain(m_align_exp,rep_files)
 		  m_align_exp += rep_files
 	    print m_align_exp
+	    # Determine the num_threads provided by the user otherwise default the number of threads to 2
+            num_threads =2
+            if('num_threads' in params and params['num_threads'] is not None):num_threads = int(params['num_threads'])
+            num_cores = mp.cpu_count()
+            logger.info("Number of available cores : {0}".format(num_cores))
+	    ### Create merge dir for cuffmerge or cuffdifd
+	    merge_dir = os.path.join(diffexp_dir,"merge")
+            if not os.path.exists(merge_dir): os.mkdir(merge_dir)
+            print merge_dir
 	    #print "list of alignments and expression {0}".format(",".join(m_align_exp))
 	    ### Get the tool_used from expressionset_obj
 	    used_tool = e_sample['data']['tool_used']
 	    if used_tool == 'StringTie':
+		merged_gtf = call_stringtiemerge(diffexp_dir,merge_dir,num_threads,gtf_file,assembly_file)	
 		run_tool =  TOOL1_USED
 		tool_version = TOOL1_VERSION
 	    elif used_tool == 'Cufflinks':
+		merged_gtf = call_cuffmerge(diffexp_dir,merge_dir,num_threads,gtf_file,assembly_file) 
 		run_tool = TOOL2_USED
 		tool_version = TOOL2_VERSION
             # Determine the num_threads provided by the user otherwise default the number of threads to 2
-            if('num_threads' in params and params['num_threads'] is not None):
-                        num_threads = int(params['num_threads'])
-            else:
-                        num_threads = 2
+	    num_threads =2 
+            if('num_threads' in params and params['num_threads'] is not None):num_threads = int(params['num_threads'])
             num_cores = mp.cpu_count()
             logger.info("Number of available cores : {0}".format(num_cores))
             b_tasks =[]
@@ -253,14 +275,15 @@ def runMethod(logger,token,ws_client,hs,services,diffexp_dir,params):
             for i,j in m_align_exp:
                         #try:
 			print "Adding task {0} , {1} to task list".format(i,j)
-                        b_tasks.append((None,services,ws_client,hs,params['ws_id'],num_threads,i,j,assembly_file,used_tool,diffexp_dir,gtf_file))
+                        b_tasks.append((None,services,ws_client,hs,params['ws_id'],num_threads,i,j,merged_gtf,used_tool,diffexp_dir,gtf_file))
 		
 
             @parallelize(CalldiffExpCallforBallgown_helper,pool_size)
             def run_diffexp_for_ballgown_in_parallel(tasks):
                pass
             results=run_diffexp_for_ballgown_in_parallel(b_tasks)
-	    expr_file, single_ballgown_dir = results
+	    print results
+	    #expr_file, single_ballgown_dir = results
 	    #### Check if all the jobs passed
             ballgownobject_name = params['expressionset_id']+"_DifferentialExpression_Ballgown"
             ballgown_dir = os.path.join(diffexp_dir,"ballgown")
