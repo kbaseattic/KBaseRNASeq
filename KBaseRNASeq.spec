@@ -4,13 +4,13 @@
 
    /* Importing datatype objects from other modules */
    /* indicates true or false values, false <= 0, true >=1 */
-	typedef int bool; 
+        typedef int bool; 
    /*
       Create an analysis id RNASeq analysis object
       @id KBaseRNASeq.RNASeqSampleSet 
    */
       
-      typedef string ws_rnaseq_sampleset_id;
+        typedef string ws_rnaseq_sampleset_id;
    
    /*
       Id for KBaseRNASeq.RNASeqDifferentialExpression
@@ -24,7 +24,7 @@
       @name ws KBaseAssembly.SingleEndLibrary
    */
  
-      	typedef string ws_SingleEndLibrary;
+        typedef string ws_SingleEndLibrary;
    /*
       Id for KBaseAssembly.PairedEndLibrary
       @name ws KBaseAssembly.PairedEndLibrary
@@ -43,21 +43,21 @@
      Id for the handle object
      @id handle
    */
-	typedef string HandleId;
+        typedef string HandleId;
  
    /*
       @optional hid file_name type url remote_md5 remote_sha1
    */
-	
-   	typedef structure {
-       		HandleId hid;
-       		string file_name;
-       		string id;
-       		string type;
-       		string url;
-       		string remote_md5;
-       		string remote_sha1;
-   	} Handle;
+
+        typedef structure {
+                HandleId hid;
+                string file_name;
+                string id;
+                string type;
+                string url;
+                string remote_md5;
+                string remote_sha1;
+        } Handle;
 
 
   /*
@@ -68,13 +68,13 @@
       @metadata ws genome_id
    */
 
-   	typedef structure {
-       		Handle handle;
-                int size;	
-       		/*ws_genome_annotation_id genome_id;*/
-       		string genome_id;
-		string genome_scientific_name;
-   	} GFFAnnotation;
+        typedef structure {
+                Handle handle;
+                int size;
+                /*ws_genome_annotation_id genome_id;*/
+                string genome_id;
+                string genome_scientific_name;
+        } GFFAnnotation;
 
   /*
       Id for KBaseRNASeq.GFFAnnotation
@@ -93,12 +93,12 @@
 
         typedef structure {
                 Handle handle;
-		int size;
+                int size;
                 /*ws_genome_annotation_id genome_id;*/
                 string genome_id;
-		string ftp_url;
-		string genome_scientific_name;
-        }Bowtie2Indexes;
+                string ftp_url;
+                string genome_scientific_name;
+        } Bowtie2Indexes;
 
   /*
       Id for KBaseRNASeq.Bowtie2Indexes
@@ -120,7 +120,7 @@
  typedef structure {
         string sampleset_id;
         string sampleset_desc;
-	string domain;
+        string domain;
         string platform;
         int num_samples;
         int num_replicates;
@@ -130,7 +130,7 @@
         string Library_type;
         string publication_Id;
         string external_source_date;
-        }RNASeqSampleSet;
+        } RNASeqSampleSet;
 /*
       Id for KBaseRNASeq.RNASeqSampleSet
       @id ws KBaseRNASeq.RNASeqSampleSet
@@ -149,7 +149,7 @@
    @optional five_UTR three_UTR exons TSS TES introns intergenic_regions
 */
 
-   typedef structure{
+   typedef structure {
         float five_UTR;
         float three_UTR;
         float TSS;
@@ -163,7 +163,7 @@
     Object - getAlignmentStats method
     @optional singletons multiple_alignments properly_paired alignment_rate unmapped_reads mapped_sections total_reads mapped_reads
 */
-    typedef structure{
+    typedef structure {
         int properly_paired;
         int multiple_alignments;
         int singletons;
@@ -172,7 +172,7 @@
         int unmapped_reads;
         int mapped_reads;
         int total_reads;
-        }AlignmentStatsResults;
+        } AlignmentStatsResults;
 
  /*
     Object for the RNASeq Alignment bam file
@@ -191,24 +191,24 @@
     @metadata ws platform
     */
 
-    typedef structure{
-	string aligned_using;
-	string aligner_version;
-	string library_type;
-	string read_sample_id;
-	string replicate_id;
-	string condition;
-	string platform;
+    typedef structure {
+        string aligned_using;
+        string aligner_version;
+        string library_type;
+        string read_sample_id;
+        string replicate_id;
+        string condition;
+        string platform;
         /*ws_genome_annotation_id genome_id;*/
         string genome_id;
         ws_bowtieIndex_id bowtie2_index;
-	mapping<string opt_name, string opt_value> aligner_opts;
+        mapping<string opt_name, string opt_value> aligner_opts;
         mapping<string condition,mapping<string sample_id , string replicate_id>> mapped_sample_id;
-	ws_Sampleset_id sampleset_id;
-	Handle file;
-	int size;
+        ws_Sampleset_id sampleset_id;
+        Handle file;
+        int size;
         AlignmentStatsResults alignment_stats;	
-    }RNASeqAlignment;
+    } RNASeqAlignment;
 
 
 /* 
@@ -227,19 +227,19 @@
 */
 
   typedef structure {
-	string aligned_using;
-	string aligner_version;
-	mapping<string opt_name, string opt_value> aligner_opts;
-	ws_Sampleset_id sampleset_id;
-	/*ws_genome_annotation_id genome_id;*/
-	string genome_id;
-	ws_bowtieIndex_id bowtie2_index;
-	list<string> read_sample_ids;
-	list<string> condition;
-	list<ws_samplealignment_id> sample_alignments;
+        string aligned_using;
+        string aligner_version;
+        mapping<string opt_name, string opt_value> aligner_opts;
+        ws_Sampleset_id sampleset_id;
+        /*ws_genome_annotation_id genome_id;*/
+        string genome_id;
+        ws_bowtieIndex_id bowtie2_index;
+        list<string> read_sample_ids;
+        list<string> condition;
+        list<ws_samplealignment_id> sample_alignments;
         list<mapping<string read_sample_name , string  alignment_name>> mapped_rnaseq_alignments;
         list<mapping<string read_sample_id , ws_samplealignment_id alignment_id>> mapped_alignments_ids;
-	}RNASeqAlignmentSet;
+        } RNASeqAlignmentSet;
 
 /*
   The workspace id for a RNASeqAlignmentSet object
@@ -270,10 +270,10 @@
         mapping<string feature_id,float feature_value> expression_levels; 
         mapping<string feature_id,float feature_value> tpm_expression_levels;
         /*ws_genome_annotation_id genome_id;*/
-	string genome_id;
+        string genome_id;
         ws_referenceAnnotation_id annotation_id;
-	string condition;
-	mapping<string sample_id,ws_samplealignment_id alignment_id> mapped_rnaseq_alignment;
+        string condition;
+        mapping<string sample_id,ws_samplealignment_id alignment_id> mapped_rnaseq_alignment;
         mapping<string condition,mapping<string sample_id , string replicate_id>> mapped_sample_id;
         string  platform; 
         string source; 
@@ -281,8 +281,8 @@
         string processing_comments;
         string tool_used;
         string tool_version;
-	mapping<string opt_name, string opt_value> tool_opts; 
-    }RNASeqExpression;
+        mapping<string opt_name, string opt_value> tool_opts; 
+    } RNASeqExpression;
 
 /*
       Id for expression sample
@@ -302,17 +302,17 @@
   typedef structure {
         string tool_used;
         string tool_version;
-	mapping<string opt_name, string opt_value> tool_opts;
-	ws_alignmentSet_id alignmentSet_id;
+        mapping<string opt_name, string opt_value> tool_opts;
+        ws_alignmentSet_id alignmentSet_id;
         ws_Sampleset_id sampleset_id;
         /*ws_genome_annotation_id genome_id;*/
-	string genome_id;
+        string genome_id;
         list<string> sample_ids;
         list<string> condition;
         list<ws_expression_sample_id> sample_expression_ids;
         list<mapping<string read_sample_name , string expression_name>> mapped_expression_objects;
         list<mapping<string read_sample_id , ws_expression_sample_id expression_id>> mapped_expression_ids;
-        }RNASeqExpressionSet;
+        } RNASeqExpressionSet;
 /*
       Id for expression sample set
       @id ws KBaseRNASeq.RNASeqExpressionSet
@@ -324,19 +324,19 @@
    @optional tool_opts tool_version sample_ids comments
 */
    typedef structure {
-	string tool_used;
-	string tool_version;
+        string tool_used;
+        string tool_version;
         list<mapping<string opt_name, string opt_value>> tool_opts;	
-      	Handle file;
+        Handle file;
         list<string> sample_ids;
-	list<string> condition;
+        list<string> condition;
         /*ws_genome_annotation_id genome_id;*/
-	string genome_id;
-	ws_expressionSet_id expressionSet_id;
-	ws_alignmentSet_id alignmentSet_id;
+        string genome_id;
+        ws_expressionSet_id expressionSet_id;
+        ws_alignmentSet_id alignmentSet_id;
         ws_Sampleset_id sampleset_id;
-	string comments;
-      	}RNASeqDifferentialExpression;
+        string comments;
+        } RNASeqDifferentialExpression;
 
 /*
     Object for the cummerbund plot
@@ -347,7 +347,7 @@
        Handle png_json_handle;
        string plot_title;
        string plot_description;
-       }cummerbundplot;
+       } cummerbundplot;
 /*
   List of cummerbundplot
 */
@@ -362,16 +362,16 @@
        cummerbundplotSet cummerbundplotSet;
        string rnaseq_experiment_id;
        string cuffdiff_input_id;
-       }cummerbund_output;
+       } cummerbund_output;
 
 
 /*
      Object for Report type
 */
     typedef structure {
-		string report_name;
-		string report_ref;
-    }ResultsToReport;
+            string report_name;
+            string report_ref;
+    } ResultsToReport;
 
 
     typedef structure {
@@ -386,54 +386,54 @@
                string significant;
                float value_1;
                float value_2;
-                } gene_expression_stat;
+               } gene_expression_stat;
  
     typedef list <gene_expression_stat> voldata;
     typedef structure {
                string condition_1;
                string condition_2;
                voldata voldata;
-                } condition_pair_unit;
+               } condition_pair_unit;
  
  
     typedef structure {
                list <condition_pair_unit> condition_pairs;
                list <string> unique_conditions;
-                } DifferentialExpressionStat;
+               } DifferentialExpressionStat;
  
 /* FUNCTIONS used in the service */
- 	
-   typedef structure{
-	string ws_id;
-   	string sampleset_id;
-   	string sampleset_desc;
-   	string domain;
+
+   typedef structure {
+        string ws_id;
+        string sampleset_id;
+        string sampleset_desc;
+        string domain;
         string platform;
-	list<string> sample_ids;
-   	list<string> condition;
-   	string source;
-   	string Library_type;
-	string publication_id;
-   	string external_source_date;
-   	}CreateRNASeqSampleSetParams;
-   	
+        list<string> sample_ids;
+        list<string> condition;
+        string source;
+        string Library_type;
+        string publication_id;
+        string external_source_date;
+        } CreateRNASeqSampleSetParams;
+        
   async funcdef CreateRNASeqSampleSet(CreateRNASeqSampleSetParams params)
-	returns(RNASeqSampleSet) authentication required;
-	
-   typedef structure{
-	string ws_id;
-	string reference;
-	string output_obj_name;
-	}Bowtie2IndexParams;
+        returns(RNASeqSampleSet) authentication required;
+
+   typedef structure {
+        string ws_id;
+        string reference;
+        string output_obj_name;
+        } Bowtie2IndexParams;
 
   async funcdef BuildBowtie2Index(Bowtie2IndexParams params)
      returns(ResultsToReport) authentication required;
-	
-   typedef structure{
-	string ws_id;
+
+   typedef structure {
+        string ws_id;
         string sampleset_id;
-	string genome_id;
-	string bowtie_index;
+        string genome_id;
+        string bowtie_index;
         string phred33;
         string phred64;
         string local;
@@ -445,35 +445,129 @@
         string very-sensitive-local;
         string fast-local;
         string fast-sensitive;
-	}Bowtie2Params;
+        } Bowtie2Params;
 
   async funcdef Bowtie2Call(Bowtie2Params params) 
      returns(ResultsToReport) authentication required;
-   
-   typedef structure{
+
+       /******************/
+       /* Hisat2 Methods */
+       /******************/
+
+   typedef structure {
         string ws_id;
         string sampleset_id;
         string genome_id;
-	int num_threads;
+        int num_threads;
         string quality_score;
         int skip;
         int trim3;
         int trim5;
-	int np;
-	int minins;
-	int maxins;
-	string orientation;
+        int np;
+        int minins;
+        int maxins;
+        string orientation;
         int min_intron_length;
-	int max_intron_length;
-	bool no_spliced_alignment;
-	bool transcriptome_mapping_only;
+        int max_intron_length;
+        bool no_spliced_alignment;
+        bool transcriptome_mapping_only;
         string tailor_alignments;
-        }Hisat2Params;
+        } Hisat2Params;
 
-  async funcdef Hisat2Call(Hisat2Params params)
-     returns(ResultsToReport) authentication required;
+  async funcdef Hisat2Call( Hisat2Params params )  returns(ResultsToReport) authentication required;
 
- typedef structure{
+         /*****************************/
+         /* Hisat2Call_prepare method */
+         /*****************************/
+
+    typedef structure {
+        string ws_id;                       /* duplicate of param block to main TophatCall() method */
+        string read_sample; 
+        string genome_id;
+        int read_mismatches;
+        int read_gap_length;
+        int read_edit_dist;
+        int min_intron_length;
+        int max_intron_length;
+        int num_threads;
+        string report_secondary_alignments;
+        string no_coverage_search;
+        string library_type; 
+        ws_referenceAnnotation_id annotation_gtf;
+
+        string  user_token;                  /* I think we need this */
+    } Hisat2Call_globalInputParams;
+
+
+    typedef structure {                       /* new KBParallel prepare() needs this encapsulation */
+        Hisat2Call_globalInputParams global_input_params;
+                                              /* not bothering with a 'method' here */
+    } Hisat2Call_prepareInputParams;
+
+    typedef  structure {
+        string job_id;
+        string label;           /* condition */
+        string hisat2_dir;
+        string ws_id;
+        string reads_type;  /* not sure string? */
+        string annotation_id;
+        string sampleset_id;
+        string gtf_file;
+        string bowtie_index;  /* make sure this gets passed in prepare! */
+
+
+    } Hisat2Call_task;
+
+    typedef structure {
+        tuple<Hisat2Call_task> input_arguments;
+    } Hisat2Call_runEachInput;
+
+    typedef structure {
+        list<Hisat2all_runEachInput> tasks;
+    } Hisat2Call_prepareSchedule;
+
+    funcdef Hisat2Call_prepare( Hisat2Call_prepareInputParams prepare_params ) returns( Hisat2Call_prepareSchedule ) authentication required;
+
+         /*******************************/
+         /* Hisat2Call_runEach() method */
+         /*******************************/
+
+
+    typedef structure {
+        string read_sample;
+        string output_name;
+    } Hisat2Call_runEachResult;
+
+    async funcdef Hisat2Call_runEach( Hisat2Call_task task) returns( Hisat2Call_runEachResult ) authentication required;
+
+         /*******************************/
+         /* Hisat2Call_collect() method */
+         /*******************************/
+
+    typedef structure {
+        Hisat2Call_runEachInput input;
+        Hisat2Call_runEachResult result;
+    } Hisat2Call_InputResultPair;
+
+    typedef structure {
+        Hisat2Call_globalInputParams global_params;
+        list<Hisat2Call_InputResultPair> input_result_pairs;
+    } Hisat2Call_collectInputParams;
+
+    typedef structure {
+        string output;
+        list<tuple<int job_number, string message>> jobs;
+    } Hisat2Call_globalResult;
+
+    funcdef Hisat2Call_collect( Hisat2Call_collectInputParams collect_params ) returns( Hisat2Call_globalResult ) authentication required;
+
+
+
+        /******************/
+        /* Tophat methods */
+        /******************/
+
+ typedef structure {         /* these all get passed to KBparallel.run() as 'global_params' which are then passed to prepare()  */
      string ws_id;
      string read_sample; 
      string genome_id;
@@ -488,72 +582,159 @@
      string no_coverage_search;
      string library_type; 
      ws_referenceAnnotation_id annotation_gtf;
-     }TophatParams;
+     } TophatParams;
 
   async funcdef TophatCall(TophatParams params)
      returns (ResultsToReport) authentication required;
 
- typedef structure{
+         /*****************************/
+         /* TophatCall_prepare method */
+         /*****************************/
+
+    typedef structure {
+        string ws_id;                       /* duplicate of param block to main TophatCall() method */
+        string read_sample; 
+        string genome_id;
+        string bowtie2_index;
+        int read_mismatches;
+        int read_gap_length;
+        int read_edit_dist;
+        int min_intron_length;
+        int max_intron_length;
+        int num_threads;
+        string report_secondary_alignments;
+        string no_coverage_search;
+        string library_type; 
+        ws_referenceAnnotation_id annotation_gtf;
+
+        string  user_token;                  /* I think we need this */
+    } TophatCall_globalInputParams;
+
+
+    typedef structure {                       /* new KBParallel prepare() needs this encapsulation */
+        TophatCall_globalInputParams global_input_params;
+                                              /* not bothering with a 'method' here */
+    } TophatCall_prepareInputParams;
+
+    typedef  structure {
+        string job_id;
+        string label;           /* condition */
+        string tophat_dir;
+        string ws_id;
+        string reads_type;  /* not sure string? */
+        string annotation_id;
+        string sampleset_id;
+        string gtf_file;
+        string bowtie_index;  /* make sure this gets passed in prepare! */
+        /* add user token?  WS, handle services (common parameters?) */
+
+    } TophatCall_task;
+
+    typedef structure {
+        tuple<TophatCall_task> input_arguments;
+    } TophatCall_runEachInput;
+
+    typedef structure {
+        list<TophatCall_runEachInput> tasks;
+    } TophatCall_prepareSchedule;
+
+    funcdef TophatCall_prepare( TophatCall_prepareInputParams prepare_params ) returns( TophatCall_prepareSchedule ) authentication required;
+
+         /*******************************/
+         /* TophatCall_runEach() method */
+         /*******************************/
+
+
+    typedef structure {
+        string read_sample;
+        string output_name;
+    } TophatCall_runEachResult;
+
+    async funcdef TophatCall_runEach( TophatCall_task task) returns( TophatCall_runEachResult ) authentication required;
+
+         /*******************************/
+         /* TophatCall_collect() method */
+         /*******************************/
+
+    typedef structure {
+        TophatCall_runEachInput input;
+        TophatCall_runEachResult result;
+    } TophatCall_InputResultPair;
+
+    typedef structure {
+        TophatCall_globalInputParams global_params;
+        list<TophatCall_InputResultPair> input_result_pairs;
+    } TophatCall_collectInputParams;
+
+    typedef structure {
+        string output;
+        list<tuple<int job_number, string message>> jobs;
+    } TophatCall_globalResult;
+
+    funcdef TophatCall_collect( TophatCall_collectInputParams collect_params ) returns( TophatCall_globalResult ) authentication required;
+
+
+ typedef structure {
         string ws_id;
         string sample_alignment;
         int num-threads;
-	string label;
+        string label;
         float min_isoform_abundance;
-	int a_juncs;
-	int  min_length;
-	float j_min_reads;
-	float c_min_read_coverage;
-	int gap_sep_value;
-	bool disable_trimming;
-	bool ballgown_mode;
-	bool skip_reads_with_no_ref;
-	string merge;
-        }StringTieParams;
+        int a_juncs;
+        int  min_length;
+        float j_min_reads;
+        float c_min_read_coverage;
+        int gap_sep_value;
+        bool disable_trimming;
+        bool ballgown_mode;
+        bool skip_reads_with_no_ref;
+        string merge;
+        } StringTieParams;
 
 async funcdef StringTieCall(StringTieParams params)
     returns (ResultsToReport) authentication required;
 
-typedef structure{
-	string ws_id;
-	string sample_alignment;
-	int num_threads;
+typedef structure {
+        string ws_id;
+        string sample_alignment;
+        int num_threads;
         /*string library-type; */
         /*string library-norm-method; */
-	int min-intron-length;
-	int max-intron-length;
-	int overhang-tolerance;
-        }CufflinksParams;
+        int min-intron-length;
+        int max-intron-length;
+        int overhang-tolerance;
+        } CufflinksParams;
 
   async funcdef CufflinksCall(CufflinksParams params)
     returns (ResultsToReport) authentication required;
 
-	typedef structure{
-	string ws_id;
+        typedef structure {
+        string ws_id;
         RNASeqSampleSet rnaseq_exp_details;
         string output_obj_name;
         string time-series;
-	string library-type;
+        string library-type;
         string library-norm-method;
-	string multi-read-correct;
+        string multi-read-correct;
         int  min-alignment-count;
-	string dispersion-method;
-	string no-js-tests;
-	int frag-len-mean;
-	int frag-len-std-dev;
-	int max-mle-iterations;
-	string compatible-hits-norm;
-	string no-length-correction;
-        }CuffdiffParams;
+        string dispersion-method;
+        string no-js-tests;
+        int frag-len-mean;
+        int frag-len-std-dev;
+        int max-mle-iterations;
+        string compatible-hits-norm;
+        string no-length-correction;
+        } CuffdiffParams;
 
   async funcdef CuffdiffCall(CuffdiffParams params)
    returns (RNASeqDifferentialExpression) authentication required;
 
-        typedef structure{
+        typedef structure {
         string ws_id;
         RNASeqExpressionSet expressionset_id;
         string output_obj_name;
         int num_threads;
-        }DifferentialExpParams;
+        } DifferentialExpParams;
 
   async funcdef DiffExpCallforBallgown(DifferentialExpParams params)
    returns (RNASeqDifferentialExpression) authentication required;
