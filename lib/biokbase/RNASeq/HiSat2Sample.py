@@ -105,26 +105,27 @@ class HiSat2Sample(HiSat2):
         # do with 
         alignment_name = self.method_params['sampleset_id']+"_hisat2_AlignmentSet"
         self.logger.info(" Creating Report for Alignment {0}".format(alignment_name))
-	single_alignment , single_read = self.results[0]
+	single_read , single_alignment = self.results[0]
         # TODO: Split alignment set and report method
 	sref = self.common_params['ws_client'].get_object_info_new({"objects": [{'name':single_alignment, 'workspace': self.method_params['ws_id']}]})[0]
-        reportObj = {'objects_created':[{'ref' :str(sref[6]) + '/' + str(sref[0]) + '/' + str(sref[4]),
-                                                 'description' : "RNA-seq Alignment for reads Sample: {0}".format(single_read)}],
-                                                 'text_message': "RNA-seq Alignment for reads Sample: {0}".format(single_read)}
-	reportName = 'Align_Reads_using_Hisat2_'+str(hex(uuid.getnode()))
-        report_info = self.common_params['ws_client'].save_objects({
-                                                'id':self.sample_info[6],
-                                                'objects':[
-                                                {
-                                                'type':'KBaseReport.Report',
-                                                'data':reportObj,
-                                                'name':reportName,
-                                                'meta':{},
-                                                'hidden':1, # important!  make sure the report is hidden
-                                                #'provenance':provenance
-                                                }
-                                                ]
-                                                })[0]
-
-        self.returnVal = { "report_name" : reportName,"report_ref" : str(report_info[6]) + '/' + str(report_info[0]) + '/' + str(report_info[4]) }
-
+	self.returnVal = { 'output'  : single_alignment ,'workspace' : self.method_params['ws_id']}
+#        reportObj = {'objects_created':[{'ref' :str(sref[6]) + '/' + str(sref[0]) + '/' + str(sref[4]),
+#                                                 'description' : "RNA-seq Alignment for reads Sample: {0}".format(single_read)}],
+#                                                 'text_message': "RNA-seq Alignment for reads Sample: {0}".format(single_read)}
+#	reportName = 'Align_Reads_using_Hisat2_'+str(hex(uuid.getnode()))
+#        report_info = self.common_params['ws_client'].save_objects({
+#                                                'id':self.sample_info[6],
+#                                                'objects':[
+#                                                {
+#                                                'type':'KBaseReport.Report',
+#                                                'data':reportObj,
+#                                                'name':reportName,
+#                                                'meta':{},
+#                                                'hidden':1, # important!  make sure the report is hidden
+#                                                #'provenance':provenance
+#                                                }
+#                                                ]
+#                                                })[0]
+#
+#        self.returnVal = { "report_name" : reportName,"report_ref" : str(report_info[6]) + '/' + str(report_info[0]) + '/' + str(report_info[4]) }
+#
