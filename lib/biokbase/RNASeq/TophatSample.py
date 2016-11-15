@@ -34,7 +34,7 @@ class TophatSample(Tophat):
     def __init__(self, logger, directory, urls):
         super(TophatSample, self).__init__(logger, directory, urls)
         # user defined shared variables across methods
-	self.bowtie2index_id = None
+        self.bowtie2index_id = None
         self.num_threads = 1
 
     def prepare(self): 
@@ -47,9 +47,10 @@ class TophatSample(Tophat):
         tophat_dir = self.directory
 
         try:
-               sample ,bowtie_index = ws_client.get_objects(
-                                        [{'name' : params['sampleset_id'],'workspace' : params['ws_id']},
-					{ 'name' : params['bowtie_index'], 'workspace' : params['ws_id']}])
+               sample, bowtie_index = ws_client.get_objects(
+                                        [ { 'name' : params['sampleset_id'],'workspace' : params['ws_id'] },
+                                          { 'name' : params['bowtie_index'], 'workspace' : params['ws_id'] }
+                                        ] )
                self.sample = sample
         except Exception,e:
                logger.exception("".join(traceback.format_exc()))
@@ -58,7 +59,8 @@ class TophatSample(Tophat):
         sample_info = ws_client.get_object_info_new({"objects": [{'name': params['sampleset_id'], 'workspace': params['ws_id']}]})[0]
         sample_type = sample_info[2].split('-')[0]
 
-	### Get obejct IDs
+
+        ### Get object IDs
         bowtie2_index_info,sampleset_info = ws_client.get_object_info_new({"objects": [{'name': params['bowtie_index'], 'workspace': params['ws_id']},{'name': params['sampleset_id'], 'workspace': params['ws_id']}]})
         self.bowtie2index_id = str(bowtie2_index_info[6]) + '/' + str(bowtie2_index_info[0]) + '/' + str(bowtie2_index_info[4])  
         sampleset_id = str(sampleset_info[6]) + '/' + str(sampleset_info[0]) + '/' + str(sampleset_info[4]) 
@@ -81,14 +83,14 @@ class TophatSample(Tophat):
         fasta_file =os.path.join(tophat_dir,(handler_util.get_file_with_suffix(tophat_dir,".fa")+".fa"))
         bowtie2base =os.path.join(tophat_dir,handler_util.get_file_with_suffix(tophat_dir,".rev.1.bt2"))
 
-	### Check if GTF annotation object exist or skip this step
-	### Check if the gtf object exists in the workspace
+        ### Check if GTF annotation object exist or skip this step
+        ### Check if the gtf object exists in the workspace
         ### Only run create_gtf_annotation if object doesnt exist
-	ws_gtf = annotation_gtf+"_GTF_Annotation"
-	ret = script_util.if_obj_exists(None,ws_client,params['ws_id'],"KBaseRNASeq.GFFAnnotation",[ws_gtf])
+        ws_gtf = annotation_gtf+"_GTF_Annotation"
+        ret = script_util.if_obj_exists(None,ws_client,params['ws_id'],"KBaseRNASeq.GFFAnnotation",[ws_gtf])
         if not ret is None:
             logger.info("GFF Annotation Exist for Genome Annotation {0}.... Skipping step ".format(annotation_gtf))
-	    annot_name,annot_id = ret[0]
+            annot_name,annot_id = ret[0]
             gtf_obj=ws_client.get_objects([{'ref' : annot_id}])[0]
             gtf_id=gtf_obj['data']['handle']['id']
             gtf_name=gtf_obj['data']['handle']['file_name']
@@ -96,15 +98,15 @@ class TophatSample(Tophat):
                script_util.download_file_from_shock(logger, shock_service_url=self.urls['shock_service_url'], shock_id=gtf_id,filename=gtf_name, directory=tophat_dir,token=token)
                gtf_file = os.path.join(tophat_dir,gtf_name)
             except Exception,e:
-	       logger.exception(e)
+               logger.exception(e)
                raise Exception( "Unable to download shock file, {0}".format(gtf_name))  
- 	else:		
-	    gtf_file =rnaseq_util.create_gtf_annotation_from_genome(logger,ws_client,hs,self.urls,params['ws_id'],genome_id,annotation_gtf,tophat_dir,token)		
-	# Determine the num_threads provided by the user otherwise default the number of threads to 2
+        else:
+            gtf_file =rnaseq_util.create_gtf_annotation_from_genome(logger,ws_client,hs,self.urls,params['ws_id'],genome_id,annotation_gtf,tophat_dir,token)		
+        # Determine the num_threads provided by the user otherwise default the number of threads to 2
         self.num_jobs =  1
 
         logger.info(" Number of threads used by each process {0}".format(self.num_threads))
-	task_param = {'job_id' : params['sampleset_id'],
+        task_param = {'job_id' : params['sampleset_id'],
                       'label' : 'Single-Sample',
                       'ws_id' : params['ws_id'],
                       'reads_type' : sample_type,
@@ -113,17 +115,16 @@ class TophatSample(Tophat):
                       'annotation_id': genome_id,
                       'sampleset_id' : None
                       }
-	self.task_list.append(task_param)
-	
-		
+        self.task_list.append(task_param)
+
     def collect(self) :
         # do with 
         #alignment_name = self.method_params['sampleset_id']+"_tophat_Alignment"
         #self.logger.info(" Creating Report for Alignment {0}".format(alignment_name))
-	single_read , single_alignment = self.results[0]
+        single_read , single_alignment = self.results[0]
         # TODO: Split alignment set and report method
-	sref = self.common_params['ws_client'].get_object_info_new({"objects": [{'name':single_alignment, 'workspace': self.method_params['ws_id']}]})[0]
-	self.returnVal = { 'output'  : single_alignment ,'workspace' : self.method_params['ws_id']}
+        sref = self.common_params['ws_client'].get_object_info_new({"objects": [{'name':single_alignment, 'workspace': self.method_params['ws_id']}]})[0]
+        self.returnVal = { 'output'  : single_alignment ,'workspace' : self.method_params['ws_id']}
 #        reportObj = {'objects_created':[{'ref' :str(sref[6]) + '/' + str(sref[0]) + '/' + str(sref[4]),
 #                                                 'description' : "RNA-seq Alignment for reads Sample: {0}".format(single_read)}],
 #                                                 'text_message': "RNA-seq Alignment for reads Sample: {0}".format(single_read)}
