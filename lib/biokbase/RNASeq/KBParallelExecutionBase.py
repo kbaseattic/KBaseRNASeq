@@ -26,11 +26,13 @@ except:
 
 from biokbase.RNASeq.ExecutionBase import ExecutionBase
 
-class KBParallelExecutionBase(ExcecutionBase):
+class KBParallelExecutionBase(ExecutionBase):
 
     # Overriding run() method:
 
-    def run(self, common_params, method_params):
+    # method is "TophatCall", etc
+ 
+    def run(self, method, common_params, method_params):
 
         self._checkCommonParams(common_params)
         #self._setCommonParams(common_params)
@@ -40,7 +42,7 @@ class KBParallelExecutionBase(ExcecutionBase):
 
         kbp = KBParallel( os.environ['SDK_CALLBACK_URL'], token=common_params['user_token'])
         returnVal = kbp.run( { 'method': { 'module_name': "KBaseRNASeq",
-                                           'method_name': "TophatCall"
+                                           'method_name': method,
                                            'service_ver': ""
                                           }
                                'is_local': 1,
