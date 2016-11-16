@@ -523,7 +523,7 @@
     } Hisat2Call_runEachInput;
 
     typedef structure {
-        list<Hisat2all_runEachInput> tasks;
+        list<Hisat2Call_runEachInput> tasks;
     } Hisat2Call_prepareSchedule;
 
     funcdef Hisat2Call_prepare( Hisat2Call_prepareInputParams prepare_params ) returns( Hisat2Call_prepareSchedule ) authentication required;
@@ -594,7 +594,7 @@
 
      } TophatCall_runParams;
 
-  async funcdef TophatCall(TophatCall_runParams params)
+  async funcdef TophatCall(TophatCall_runParams run_params)
      returns (ResultsToReport) authentication required;
 
          /*****************************/

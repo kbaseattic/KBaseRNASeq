@@ -83,7 +83,7 @@ def get_file_with_suffix(d,suffix):
     items = os.listdir(d)
     for file in items:
             if file.endswith(suffix):
-        return file.split(suffix)[0]
+                return file.split(suffix)[0]
     return None
 
 def optimize_parallel_run(num_samples,num_threads,num_cores):

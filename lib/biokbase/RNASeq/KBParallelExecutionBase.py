@@ -42,8 +42,8 @@ class KBParallelExecutionBase(ExecutionBase):
         kbp = KBParallel( os.environ['SDK_CALLBACK_URL'], token=common_params['user_token'])
         returnVal = kbp.run( { 'method': { 'module_name': "KBaseRNASeq",
                                            'method_name': method,
-                                           'service_ver': ""
-                                          }
+                                           'servic,e_ver': ""
+                                          },
                                'is_local': 1,
                                'global_params': run_params,  # NOTE: this is called global_input in KBParallel.spec:  FIX!
                                'time_limit': 1000000} )

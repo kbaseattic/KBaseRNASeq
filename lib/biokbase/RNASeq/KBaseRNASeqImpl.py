@@ -81,7 +81,7 @@ class KBaseRNASeq:
     ######################################### noqa
     VERSION = "0.0.1"
     GIT_URL = "https://github.com/sean-mccorkle/KBaseRNASeq.git"
-    GIT_COMMIT_HASH = "4f295368f227ad3232a5ec09ddf27e34a44369c2"
+    GIT_COMMIT_HASH = "1634e06fb58d153149637f204b75de955983ff3f"
 
     #BEGIN_CLASS_HEADER
     __TEMP_DIR = 'temp'
@@ -390,19 +390,19 @@ class KBaseRNASeq:
 
     def Hisat2Call(self, ctx, params):
         """
-        :param params: instance of type "Hisat2Params" -> structure:
-           parameter "ws_id" of String, parameter "sampleset_id" of String,
-           parameter "genome_id" of String, parameter "num_threads" of Long,
-           parameter "quality_score" of String, parameter "skip" of Long,
-           parameter "trim3" of Long, parameter "trim5" of Long, parameter
-           "np" of Long, parameter "minins" of Long, parameter "maxins" of
-           Long, parameter "orientation" of String, parameter
-           "min_intron_length" of Long, parameter "max_intron_length" of
-           Long, parameter "no_spliced_alignment" of type "bool" (indicates
-           true or false values, false <= 0, true >=1), parameter
-           "transcriptome_mapping_only" of type "bool" (indicates true or
-           false values, false <= 0, true >=1), parameter "tailor_alignments"
-           of String
+        :param params: instance of type "Hisat2Params" (****************) ->
+           structure: parameter "ws_id" of String, parameter "sampleset_id"
+           of String, parameter "genome_id" of String, parameter
+           "num_threads" of Long, parameter "quality_score" of String,
+           parameter "skip" of Long, parameter "trim3" of Long, parameter
+           "trim5" of Long, parameter "np" of Long, parameter "minins" of
+           Long, parameter "maxins" of Long, parameter "orientation" of
+           String, parameter "min_intron_length" of Long, parameter
+           "max_intron_length" of Long, parameter "no_spliced_alignment" of
+           type "bool" (indicates true or false values, false <= 0, true
+           >=1), parameter "transcriptome_mapping_only" of type "bool"
+           (indicates true or false values, false <= 0, true >=1), parameter
+           "tailor_alignments" of String
         :returns: instance of type "ResultsToReport" (Object for Report type)
            -> structure: parameter "report_name" of String, parameter
            "report_ref" of String
@@ -445,11 +445,13 @@ class KBaseRNASeq:
         # return the results
         return [returnVal]
 
-    def TophatCall(self, ctx, run_params):
+    def Hisat2Call_prepare(self, ctx, prepare_params):
         """
-        :param params: instance of type "TophatParams" (****************) ->
-           structure: parameter "ws_id" of String, parameter "read_sample" of
-           String, parameter "genome_id" of String, parameter "bowtie2_index"
+        :param prepare_params: instance of type
+           "Hisat2Call_prepareInputParams" -> structure: parameter
+           "global_input_params" of type "Hisat2Call_globalInputParams"
+           (***************************) -> structure: parameter "ws_id" of
+           String, parameter "read_sample" of String, parameter "genome_id"
            of String, parameter "read_mismatches" of Long, parameter
            "read_gap_length" of Long, parameter "read_edit_dist" of Long,
            parameter "min_intron_length" of Long, parameter
@@ -458,7 +460,114 @@ class KBaseRNASeq:
            "no_coverage_search" of String, parameter "library_type" of
            String, parameter "annotation_gtf" of type
            "ws_referenceAnnotation_id" (Id for KBaseRNASeq.GFFAnnotation @id
-           ws KBaseRNASeq.GFFAnnotation)
+           ws KBaseRNASeq.GFFAnnotation), parameter "user_token" of String
+        :returns: instance of type "Hisat2Call_prepareSchedule" -> structure:
+           parameter "tasks" of list of type "Hisat2Call_runEachInput" ->
+           structure: parameter "input_arguments" of tuple of size 1: type
+           "Hisat2Call_task" -> structure: parameter "job_id" of String,
+           parameter "label" of String, parameter "hisat2_dir" of String,
+           parameter "ws_id" of String, parameter "reads_type" of String,
+           parameter "annotation_id" of String, parameter "sampleset_id" of
+           String, parameter "gtf_file" of String, parameter "bowtie_index"
+           of String
+        """
+        # ctx is the context object
+        # return variables are: returnVal
+        #BEGIN Hisat2Call_prepare
+        #END Hisat2Call_prepare
+
+        # At some point might do deeper type checking...
+        if not isinstance(returnVal, dict):
+            raise ValueError('Method Hisat2Call_prepare return value ' +
+                             'returnVal is not type dict as required.')
+        # return the results
+        return [returnVal]
+
+    def Hisat2Call_runEach(self, ctx, task):
+        """
+        :param task: instance of type "Hisat2Call_task" -> structure:
+           parameter "job_id" of String, parameter "label" of String,
+           parameter "hisat2_dir" of String, parameter "ws_id" of String,
+           parameter "reads_type" of String, parameter "annotation_id" of
+           String, parameter "sampleset_id" of String, parameter "gtf_file"
+           of String, parameter "bowtie_index" of String
+        :returns: instance of type "Hisat2Call_runEachResult"
+           (*****************************) -> structure: parameter
+           "read_sample" of String, parameter "output_name" of String
+        """
+        # ctx is the context object
+        # return variables are: returnVal
+        #BEGIN Hisat2Call_runEach
+        #END Hisat2Call_runEach
+
+        # At some point might do deeper type checking...
+        if not isinstance(returnVal, dict):
+            raise ValueError('Method Hisat2Call_runEach return value ' +
+                             'returnVal is not type dict as required.')
+        # return the results
+        return [returnVal]
+
+    def Hisat2Call_collect(self, ctx, collect_params):
+        """
+        :param collect_params: instance of type
+           "Hisat2Call_collectInputParams" -> structure: parameter
+           "global_params" of type "Hisat2Call_globalInputParams"
+           (***************************) -> structure: parameter "ws_id" of
+           String, parameter "read_sample" of String, parameter "genome_id"
+           of String, parameter "read_mismatches" of Long, parameter
+           "read_gap_length" of Long, parameter "read_edit_dist" of Long,
+           parameter "min_intron_length" of Long, parameter
+           "max_intron_length" of Long, parameter "num_threads" of Long,
+           parameter "report_secondary_alignments" of String, parameter
+           "no_coverage_search" of String, parameter "library_type" of
+           String, parameter "annotation_gtf" of type
+           "ws_referenceAnnotation_id" (Id for KBaseRNASeq.GFFAnnotation @id
+           ws KBaseRNASeq.GFFAnnotation), parameter "user_token" of String,
+           parameter "input_result_pairs" of list of type
+           "Hisat2Call_InputResultPair" (*****************************) ->
+           structure: parameter "input" of type "Hisat2Call_runEachInput" ->
+           structure: parameter "input_arguments" of tuple of size 1: type
+           "Hisat2Call_task" -> structure: parameter "job_id" of String,
+           parameter "label" of String, parameter "hisat2_dir" of String,
+           parameter "ws_id" of String, parameter "reads_type" of String,
+           parameter "annotation_id" of String, parameter "sampleset_id" of
+           String, parameter "gtf_file" of String, parameter "bowtie_index"
+           of String, parameter "result" of type "Hisat2Call_runEachResult"
+           (*****************************) -> structure: parameter
+           "read_sample" of String, parameter "output_name" of String
+        :returns: instance of type "Hisat2Call_globalResult" -> structure:
+           parameter "output" of String, parameter "jobs" of list of tuple of
+           size 2: parameter "job_number" of Long, parameter "message" of
+           String
+        """
+        # ctx is the context object
+        # return variables are: returnVal
+        #BEGIN Hisat2Call_collect
+        #END Hisat2Call_collect
+
+        # At some point might do deeper type checking...
+        if not isinstance(returnVal, dict):
+            raise ValueError('Method Hisat2Call_collect return value ' +
+                             'returnVal is not type dict as required.')
+        # return the results
+        return [returnVal]
+
+    def TophatCall(self, ctx, run_params):
+        """
+        :param run_params: instance of type "TophatCall_runParams" ->
+           structure: parameter "global_input_params" of type
+           "TophatCall_globalInputParams" (****************) -> structure:
+           parameter "ws_id" of String, parameter "sampleset_id" of String,
+           parameter "genome_id" of String, parameter "bowtie2_index" of
+           String, parameter "read_mismatches" of Long, parameter
+           "read_gap_length" of Long, parameter "read_edit_dist" of Long,
+           parameter "min_intron_length" of Long, parameter
+           "max_intron_length" of Long, parameter "num_threads" of Long,
+           parameter "report_secondary_alignments" of String, parameter
+           "no_coverage_search" of String, parameter "library_type" of
+           String, parameter "annotation_gtf" of type
+           "ws_referenceAnnotation_id" (Id for KBaseRNASeq.GFFAnnotation @id
+           ws KBaseRNASeq.GFFAnnotation), parameter "is_sample_set" of Long
         :returns: instance of type "ResultsToReport" (Object for Report type)
            -> structure: parameter "report_name" of String, parameter
            "report_ref" of String
@@ -489,7 +598,7 @@ class KBaseRNASeq:
 
         # Check to Call Tophat in Set mode or Single mode
         wsc = common_params['ws_client']
-        obj_info = wsc.get_object_info_new({"objects": [{'name': params['sample_set_id'], 'workspace': params['ws_id']}]})
+        obj_info = wsc.get_object_info_new({"objects": [{'name': params['sampleset_id'], 'workspace': params['ws_id']}]})
         obj_type = obj_info[0][2].split('-')[0]
 
         toph = Tophat( self.__LOGGER, tophat_dir, self.__SERVICES )
@@ -521,27 +630,29 @@ class KBaseRNASeq:
     def TophatCall_prepare(self, ctx, prepare_params):
         """
         :param prepare_params: instance of type
-           "TophatCall_prepareInputParams" -> structure: parameter
-           "global_input_params" of type "TophatCall_globalInputParams"
-           (***************************) -> structure: parameter "ws_id" of
-           String, parameter "read_sample" of String, parameter "genome_id"
-           of String, parameter "bowtie2_index" of String, parameter
-           "read_mismatches" of Long, parameter "read_gap_length" of Long,
-           parameter "read_edit_dist" of Long, parameter "min_intron_length"
-           of Long, parameter "max_intron_length" of Long, parameter
-           "num_threads" of Long, parameter "report_secondary_alignments" of
-           String, parameter "no_coverage_search" of String, parameter
-           "library_type" of String, parameter "annotation_gtf" of type
+           "TophatCall_prepareInputParams" (***************************) ->
+           structure: parameter "global_input_params" of type
+           "TophatCall_globalInputParams" (****************) -> structure:
+           parameter "ws_id" of String, parameter "sampleset_id" of String,
+           parameter "genome_id" of String, parameter "bowtie2_index" of
+           String, parameter "read_mismatches" of Long, parameter
+           "read_gap_length" of Long, parameter "read_edit_dist" of Long,
+           parameter "min_intron_length" of Long, parameter
+           "max_intron_length" of Long, parameter "num_threads" of Long,
+           parameter "report_secondary_alignments" of String, parameter
+           "no_coverage_search" of String, parameter "library_type" of
+           String, parameter "annotation_gtf" of type
            "ws_referenceAnnotation_id" (Id for KBaseRNASeq.GFFAnnotation @id
-           ws KBaseRNASeq.GFFAnnotation), parameter "user_token" of String
+           ws KBaseRNASeq.GFFAnnotation), parameter "is_sample_set" of Long
         :returns: instance of type "TophatCall_prepareSchedule" -> structure:
            parameter "tasks" of list of type "TophatCall_runEachInput" ->
            structure: parameter "input_arguments" of tuple of size 1: type
-           "TophatCall_task" -> structure: parameter "read_sample" of String,
+           "TophatCall_task" -> structure: parameter "job_id" of String,
            parameter "label" of String, parameter "tophat_dir" of String,
            parameter "ws_id" of String, parameter "reads_type" of String,
-           parameter "genome_id" of String, parameter "sampleset_id" of
-           String, parameter "gtf_file" of String
+           parameter "annotation_id" of String, parameter "sampleset_id" of
+           String, parameter "gtf_file" of String, parameter "bowtie_index"
+           of String
         """
         # ctx is the context object
         # return variables are: returnVal
@@ -597,13 +708,14 @@ class KBaseRNASeq:
     def TophatCall_runEach(self, ctx, task):
         """
         :param task: instance of type "TophatCall_task" -> structure:
-           parameter "read_sample" of String, parameter "label" of String,
+           parameter "job_id" of String, parameter "label" of String,
            parameter "tophat_dir" of String, parameter "ws_id" of String,
-           parameter "reads_type" of String, parameter "genome_id" of String,
-           parameter "sampleset_id" of String, parameter "gtf_file" of String
+           parameter "reads_type" of String, parameter "annotation_id" of
+           String, parameter "sampleset_id" of String, parameter "gtf_file"
+           of String, parameter "bowtie_index" of String
         :returns: instance of type "TophatCall_runEachResult"
-           (*****************************) -> structure: parameter "message"
-           of String
+           (*****************************) -> structure: parameter
+           "sample_set_id" of String, parameter "output_name" of String
         """
         # ctx is the context object
         # return variables are: returnVal
@@ -658,9 +770,9 @@ class KBaseRNASeq:
         :param collect_params: instance of type
            "TophatCall_collectInputParams" -> structure: parameter
            "global_params" of type "TophatCall_globalInputParams"
-           (***************************) -> structure: parameter "ws_id" of
-           String, parameter "read_sample" of String, parameter "genome_id"
-           of String, parameter "bowtie2_index" of String, parameter
+           (****************) -> structure: parameter "ws_id" of String,
+           parameter "sampleset_id" of String, parameter "genome_id" of
+           String, parameter "bowtie2_index" of String, parameter
            "read_mismatches" of Long, parameter "read_gap_length" of Long,
            parameter "read_edit_dist" of Long, parameter "min_intron_length"
            of Long, parameter "max_intron_length" of Long, parameter
@@ -668,21 +780,21 @@ class KBaseRNASeq:
            String, parameter "no_coverage_search" of String, parameter
            "library_type" of String, parameter "annotation_gtf" of type
            "ws_referenceAnnotation_id" (Id for KBaseRNASeq.GFFAnnotation @id
-           ws KBaseRNASeq.GFFAnnotation), parameter "user_token" of String,
+           ws KBaseRNASeq.GFFAnnotation), parameter "is_sample_set" of Long,
            parameter "input_result_pairs" of list of type
            "TophatCall_InputResultPair" (*****************************) ->
            structure: parameter "input" of type "TophatCall_runEachInput" ->
            structure: parameter "input_arguments" of tuple of size 1: type
-           "TophatCall_task" -> structure: parameter "read_sample" of String,
+           "TophatCall_task" -> structure: parameter "job_id" of String,
            parameter "label" of String, parameter "tophat_dir" of String,
            parameter "ws_id" of String, parameter "reads_type" of String,
-           parameter "genome_id" of String, parameter "sampleset_id" of
-           String, parameter "gtf_file" of String, parameter "result" of type
-           "TophatCall_runEachResult" (*****************************) ->
-           structure: parameter "message" of String
+           parameter "annotation_id" of String, parameter "sampleset_id" of
+           String, parameter "gtf_file" of String, parameter "bowtie_index"
+           of String, parameter "result" of type "TophatCall_runEachResult"
+           (*****************************) -> structure: parameter
+           "sample_set_id" of String, parameter "output_name" of String
         :returns: instance of type "TophatCall_globalResult" -> structure:
-           parameter "output" of String, parameter "jobs" of list of tuple of
-           size 2: parameter "job_number" of Long, parameter "message" of
+           parameter "output" of unspecified object, parameter "workspace" of
            String
         """
         # ctx is the context object

@@ -111,32 +111,6 @@ class KBaseRNASeq(object):
             if job_state['finished']:
                 return job_state['result'][0]
 
-    def _GetFeaturesToGTF_submit(self, params, context=None):
-        return self._client._submit_job(
-             'KBaseRNASeq.GetFeaturesToGTF', [params],
-             self._service_ver, context)
-
-    def GetFeaturesToGTF(self, params, context=None):
-        """
-        :param params: instance of type "GetFeaturesToGTFParams" ->
-           structure: parameter "ws_id" of String, parameter "reference" of
-           String, parameter "output_obj_name" of String
-        :returns: instance of type "ResultsToReport" (Object for Report type)
-           -> structure: parameter "report_name" of String, parameter
-           "report_ref" of String
-        """
-        job_id = self._GetFeaturesToGTF_submit(params, context)
-        async_job_check_time = self._client.async_job_check_time
-        while True:
-            time.sleep(async_job_check_time)
-            async_job_check_time = (async_job_check_time *
-                self._client.async_job_check_time_scale_percent / 100.0)
-            if async_job_check_time > self._client.async_job_check_max_time:
-                async_job_check_time = self._client.async_job_check_max_time
-            job_state = self._check_job(job_id)
-            if job_state['finished']:
-                return job_state['result'][0]
-
     def _Bowtie2Call_submit(self, params, context=None):
         return self._client._submit_job(
              'KBaseRNASeq.Bowtie2Call', [params],
@@ -177,19 +151,19 @@ class KBaseRNASeq(object):
 
     def Hisat2Call(self, params, context=None):
         """
-        :param params: instance of type "Hisat2Params" -> structure:
-           parameter "ws_id" of String, parameter "sampleset_id" of String,
-           parameter "genome_id" of String, parameter "num_threads" of Long,
-           parameter "quality_score" of String, parameter "skip" of Long,
-           parameter "trim3" of Long, parameter "trim5" of Long, parameter
-           "np" of Long, parameter "minins" of Long, parameter "maxins" of
-           Long, parameter "orientation" of String, parameter
-           "min_intron_length" of Long, parameter "max_intron_length" of
-           Long, parameter "no_spliced_alignment" of type "bool" (indicates
-           true or false values, false <= 0, true >=1), parameter
-           "transcriptome_mapping_only" of type "bool" (indicates true or
-           false values, false <= 0, true >=1), parameter "tailor_alignments"
-           of String
+        :param params: instance of type "Hisat2Params" (****************) ->
+           structure: parameter "ws_id" of String, parameter "sampleset_id"
+           of String, parameter "genome_id" of String, parameter
+           "num_threads" of Long, parameter "quality_score" of String,
+           parameter "skip" of Long, parameter "trim3" of Long, parameter
+           "trim5" of Long, parameter "np" of Long, parameter "minins" of
+           Long, parameter "maxins" of Long, parameter "orientation" of
+           String, parameter "min_intron_length" of Long, parameter
+           "max_intron_length" of Long, parameter "no_spliced_alignment" of
+           type "bool" (indicates true or false values, false <= 0, true
+           >=1), parameter "transcriptome_mapping_only" of type "bool"
+           (indicates true or false values, false <= 0, true >=1), parameter
+           "tailor_alignments" of String
         :returns: instance of type "ResultsToReport" (Object for Report type)
            -> structure: parameter "report_name" of String, parameter
            "report_ref" of String
@@ -206,17 +180,14 @@ class KBaseRNASeq(object):
             if job_state['finished']:
                 return job_state['result'][0]
 
-    def _TophatCall_submit(self, params, context=None):
-        return self._client._submit_job(
-             'KBaseRNASeq.TophatCall', [params],
-             self._service_ver, context)
-
-    def TophatCall(self, params, context=None):
+    def Hisat2Call_prepare(self, prepare_params, context=None):
         """
-        :param params: instance of type "TophatParams" -> structure:
-           parameter "ws_id" of String, parameter "read_sample" of String,
-           parameter "genome_id" of String, parameter "bowtie2_index" of
-           String, parameter "read_mismatches" of Long, parameter
+        :param prepare_params: instance of type
+           "Hisat2Call_prepareInputParams" -> structure: parameter
+           "global_input_params" of type "Hisat2Call_globalInputParams"
+           (***************************) -> structure: parameter "ws_id" of
+           String, parameter "read_sample" of String, parameter "genome_id"
+           of String, parameter "read_mismatches" of Long, parameter
            "read_gap_length" of Long, parameter "read_edit_dist" of Long,
            parameter "min_intron_length" of Long, parameter
            "max_intron_length" of Long, parameter "num_threads" of Long,
@@ -224,12 +195,39 @@ class KBaseRNASeq(object):
            "no_coverage_search" of String, parameter "library_type" of
            String, parameter "annotation_gtf" of type
            "ws_referenceAnnotation_id" (Id for KBaseRNASeq.GFFAnnotation @id
-           ws KBaseRNASeq.GFFAnnotation)
-        :returns: instance of type "ResultsToReport" (Object for Report type)
-           -> structure: parameter "report_name" of String, parameter
-           "report_ref" of String
+           ws KBaseRNASeq.GFFAnnotation), parameter "user_token" of String
+        :returns: instance of type "Hisat2Call_prepareSchedule" -> structure:
+           parameter "tasks" of list of type "Hisat2Call_runEachInput" ->
+           structure: parameter "input_arguments" of tuple of size 1: type
+           "Hisat2Call_task" -> structure: parameter "job_id" of String,
+           parameter "label" of String, parameter "hisat2_dir" of String,
+           parameter "ws_id" of String, parameter "reads_type" of String,
+           parameter "annotation_id" of String, parameter "sampleset_id" of
+           String, parameter "gtf_file" of String, parameter "bowtie_index"
+           of String
         """
-        job_id = self._TophatCall_submit(params, context)
+        return self._client.call_method(
+            'KBaseRNASeq.Hisat2Call_prepare',
+            [prepare_params], self._service_ver, context)
+
+    def _Hisat2Call_runEach_submit(self, task, context=None):
+        return self._client._submit_job(
+             'KBaseRNASeq.Hisat2Call_runEach', [task],
+             self._service_ver, context)
+
+    def Hisat2Call_runEach(self, task, context=None):
+        """
+        :param task: instance of type "Hisat2Call_task" -> structure:
+           parameter "job_id" of String, parameter "label" of String,
+           parameter "hisat2_dir" of String, parameter "ws_id" of String,
+           parameter "reads_type" of String, parameter "annotation_id" of
+           String, parameter "sampleset_id" of String, parameter "gtf_file"
+           of String, parameter "bowtie_index" of String
+        :returns: instance of type "Hisat2Call_runEachResult"
+           (*****************************) -> structure: parameter
+           "read_sample" of String, parameter "output_name" of String
+        """
+        job_id = self._Hisat2Call_runEach_submit(task, context)
         async_job_check_time = self._client.async_job_check_time
         while True:
             time.sleep(async_job_check_time)
@@ -240,6 +238,176 @@ class KBaseRNASeq(object):
             job_state = self._check_job(job_id)
             if job_state['finished']:
                 return job_state['result'][0]
+
+    def Hisat2Call_collect(self, collect_params, context=None):
+        """
+        :param collect_params: instance of type
+           "Hisat2Call_collectInputParams" -> structure: parameter
+           "global_params" of type "Hisat2Call_globalInputParams"
+           (***************************) -> structure: parameter "ws_id" of
+           String, parameter "read_sample" of String, parameter "genome_id"
+           of String, parameter "read_mismatches" of Long, parameter
+           "read_gap_length" of Long, parameter "read_edit_dist" of Long,
+           parameter "min_intron_length" of Long, parameter
+           "max_intron_length" of Long, parameter "num_threads" of Long,
+           parameter "report_secondary_alignments" of String, parameter
+           "no_coverage_search" of String, parameter "library_type" of
+           String, parameter "annotation_gtf" of type
+           "ws_referenceAnnotation_id" (Id for KBaseRNASeq.GFFAnnotation @id
+           ws KBaseRNASeq.GFFAnnotation), parameter "user_token" of String,
+           parameter "input_result_pairs" of list of type
+           "Hisat2Call_InputResultPair" (*****************************) ->
+           structure: parameter "input" of type "Hisat2Call_runEachInput" ->
+           structure: parameter "input_arguments" of tuple of size 1: type
+           "Hisat2Call_task" -> structure: parameter "job_id" of String,
+           parameter "label" of String, parameter "hisat2_dir" of String,
+           parameter "ws_id" of String, parameter "reads_type" of String,
+           parameter "annotation_id" of String, parameter "sampleset_id" of
+           String, parameter "gtf_file" of String, parameter "bowtie_index"
+           of String, parameter "result" of type "Hisat2Call_runEachResult"
+           (*****************************) -> structure: parameter
+           "read_sample" of String, parameter "output_name" of String
+        :returns: instance of type "Hisat2Call_globalResult" -> structure:
+           parameter "output" of String, parameter "jobs" of list of tuple of
+           size 2: parameter "job_number" of Long, parameter "message" of
+           String
+        """
+        return self._client.call_method(
+            'KBaseRNASeq.Hisat2Call_collect',
+            [collect_params], self._service_ver, context)
+
+    def _TophatCall_submit(self, run_params, context=None):
+        return self._client._submit_job(
+             'KBaseRNASeq.TophatCall', [run_params],
+             self._service_ver, context)
+
+    def TophatCall(self, run_params, context=None):
+        """
+        :param run_params: instance of type "TophatCall_runParams" ->
+           structure: parameter "global_input_params" of type
+           "TophatCall_globalInputParams" (****************) -> structure:
+           parameter "ws_id" of String, parameter "sampleset_id" of String,
+           parameter "genome_id" of String, parameter "bowtie2_index" of
+           String, parameter "read_mismatches" of Long, parameter
+           "read_gap_length" of Long, parameter "read_edit_dist" of Long,
+           parameter "min_intron_length" of Long, parameter
+           "max_intron_length" of Long, parameter "num_threads" of Long,
+           parameter "report_secondary_alignments" of String, parameter
+           "no_coverage_search" of String, parameter "library_type" of
+           String, parameter "annotation_gtf" of type
+           "ws_referenceAnnotation_id" (Id for KBaseRNASeq.GFFAnnotation @id
+           ws KBaseRNASeq.GFFAnnotation), parameter "is_sample_set" of Long
+        :returns: instance of type "ResultsToReport" (Object for Report type)
+           -> structure: parameter "report_name" of String, parameter
+           "report_ref" of String
+        """
+        job_id = self._TophatCall_submit(run_params, context)
+        async_job_check_time = self._client.async_job_check_time
+        while True:
+            time.sleep(async_job_check_time)
+            async_job_check_time = (async_job_check_time *
+                self._client.async_job_check_time_scale_percent / 100.0)
+            if async_job_check_time > self._client.async_job_check_max_time:
+                async_job_check_time = self._client.async_job_check_max_time
+            job_state = self._check_job(job_id)
+            if job_state['finished']:
+                return job_state['result'][0]
+
+    def TophatCall_prepare(self, prepare_params, context=None):
+        """
+        :param prepare_params: instance of type
+           "TophatCall_prepareInputParams" (***************************) ->
+           structure: parameter "global_input_params" of type
+           "TophatCall_globalInputParams" (****************) -> structure:
+           parameter "ws_id" of String, parameter "sampleset_id" of String,
+           parameter "genome_id" of String, parameter "bowtie2_index" of
+           String, parameter "read_mismatches" of Long, parameter
+           "read_gap_length" of Long, parameter "read_edit_dist" of Long,
+           parameter "min_intron_length" of Long, parameter
+           "max_intron_length" of Long, parameter "num_threads" of Long,
+           parameter "report_secondary_alignments" of String, parameter
+           "no_coverage_search" of String, parameter "library_type" of
+           String, parameter "annotation_gtf" of type
+           "ws_referenceAnnotation_id" (Id for KBaseRNASeq.GFFAnnotation @id
+           ws KBaseRNASeq.GFFAnnotation), parameter "is_sample_set" of Long
+        :returns: instance of type "TophatCall_prepareSchedule" -> structure:
+           parameter "tasks" of list of type "TophatCall_runEachInput" ->
+           structure: parameter "input_arguments" of tuple of size 1: type
+           "TophatCall_task" -> structure: parameter "job_id" of String,
+           parameter "label" of String, parameter "tophat_dir" of String,
+           parameter "ws_id" of String, parameter "reads_type" of String,
+           parameter "annotation_id" of String, parameter "sampleset_id" of
+           String, parameter "gtf_file" of String, parameter "bowtie_index"
+           of String
+        """
+        return self._client.call_method(
+            'KBaseRNASeq.TophatCall_prepare',
+            [prepare_params], self._service_ver, context)
+
+    def _TophatCall_runEach_submit(self, task, context=None):
+        return self._client._submit_job(
+             'KBaseRNASeq.TophatCall_runEach', [task],
+             self._service_ver, context)
+
+    def TophatCall_runEach(self, task, context=None):
+        """
+        :param task: instance of type "TophatCall_task" -> structure:
+           parameter "job_id" of String, parameter "label" of String,
+           parameter "tophat_dir" of String, parameter "ws_id" of String,
+           parameter "reads_type" of String, parameter "annotation_id" of
+           String, parameter "sampleset_id" of String, parameter "gtf_file"
+           of String, parameter "bowtie_index" of String
+        :returns: instance of type "TophatCall_runEachResult"
+           (*****************************) -> structure: parameter
+           "sample_set_id" of String, parameter "output_name" of String
+        """
+        job_id = self._TophatCall_runEach_submit(task, context)
+        async_job_check_time = self._client.async_job_check_time
+        while True:
+            time.sleep(async_job_check_time)
+            async_job_check_time = (async_job_check_time *
+                self._client.async_job_check_time_scale_percent / 100.0)
+            if async_job_check_time > self._client.async_job_check_max_time:
+                async_job_check_time = self._client.async_job_check_max_time
+            job_state = self._check_job(job_id)
+            if job_state['finished']:
+                return job_state['result'][0]
+
+    def TophatCall_collect(self, collect_params, context=None):
+        """
+        :param collect_params: instance of type
+           "TophatCall_collectInputParams" -> structure: parameter
+           "global_params" of type "TophatCall_globalInputParams"
+           (****************) -> structure: parameter "ws_id" of String,
+           parameter "sampleset_id" of String, parameter "genome_id" of
+           String, parameter "bowtie2_index" of String, parameter
+           "read_mismatches" of Long, parameter "read_gap_length" of Long,
+           parameter "read_edit_dist" of Long, parameter "min_intron_length"
+           of Long, parameter "max_intron_length" of Long, parameter
+           "num_threads" of Long, parameter "report_secondary_alignments" of
+           String, parameter "no_coverage_search" of String, parameter
+           "library_type" of String, parameter "annotation_gtf" of type
+           "ws_referenceAnnotation_id" (Id for KBaseRNASeq.GFFAnnotation @id
+           ws KBaseRNASeq.GFFAnnotation), parameter "is_sample_set" of Long,
+           parameter "input_result_pairs" of list of type
+           "TophatCall_InputResultPair" (*****************************) ->
+           structure: parameter "input" of type "TophatCall_runEachInput" ->
+           structure: parameter "input_arguments" of tuple of size 1: type
+           "TophatCall_task" -> structure: parameter "job_id" of String,
+           parameter "label" of String, parameter "tophat_dir" of String,
+           parameter "ws_id" of String, parameter "reads_type" of String,
+           parameter "annotation_id" of String, parameter "sampleset_id" of
+           String, parameter "gtf_file" of String, parameter "bowtie_index"
+           of String, parameter "result" of type "TophatCall_runEachResult"
+           (*****************************) -> structure: parameter
+           "sample_set_id" of String, parameter "output_name" of String
+        :returns: instance of type "TophatCall_globalResult" -> structure:
+           parameter "output" of unspecified object, parameter "workspace" of
+           String
+        """
+        return self._client.call_method(
+            'KBaseRNASeq.TophatCall_collect',
+            [collect_params], self._service_ver, context)
 
     def _StringTieCall_submit(self, params, context=None):
         return self._client._submit_job(

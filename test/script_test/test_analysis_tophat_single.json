@@ -3,6 +3,7 @@
 	"method":"KBaseRNASeq.TophatCall",
 	"context": null,
 	"params":[
+		{ "global_input_params":
 	{
 	 "ws_id" : "single_RNASeq_test",
 	 "sampleset_id" : "ath_wt_demo_Reads" ,
@@ -11,5 +12,6 @@
 	 "read_gap_length" : null,
          "min_intron_length" : null,
 	 "num_threads" : 2,
-	 "no_coverage_search" : 0 } ]
+	 "no_coverage_search" : 0 }
+	} ]
 }
