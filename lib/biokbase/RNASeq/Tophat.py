@@ -48,18 +48,21 @@ class Tophat(KBParallelExecutionBase):
         params = self.method_params
         logger = self.logger
         token = self.common_params['user_token']
+        logger.info("common_params: " + pformat(self.common_params, indent=4))
         
-        job_id = task_params['job_id']
+        read_sample = task_params['job_id']
         condition = task_params['label']
         directory = task_params['tophat_dir']
         ws_id = task_params['ws_id']
         reads_type = task_params['reads_type']
         genome_id = task_params['annotation_id']
-        sampleset_id = task_params['sampleset_id']
+        #sampleset_id = task_params['sampleset_id']
         gtf_file = task_params['gtf_file']
 
+        logger.info("processing index preparation")
         # fetch bowtie2 index file if necessary
         if ( handler_util.get_file_with_suffix(directory,".rev.1.bt2") == None ):
+            logger.info("no bowtie index")
             try:
                    bowtie_index = ws_client.get_objects( [ { 'name' : task_params['bowtie_index'], 'workspace' : task_params['ws_id'] } ] )
             except Exception,e:
@@ -89,37 +92,39 @@ class Tophat(KBParallelExecutionBase):
             #bowtie2base =os.path.join(directory,handler_util.get_file_with_suffix(directory,".rev.1.bt2"))
             ##############
 
-        # fetch GTF file if necessary  (right now this just repeats whats in prepare() - FIX)
+            # fetch GTF file if necessary  (right now this just repeats whats in prepare() - FIX)
+            
+            ### Check if GTF annotation object exist or skip this step
+            ### Check if the gtf object exists in the workspace
+            ### Only run create_gtf_annotation if object doesnt exist
+            logger.info("GTF checking")
+            ws_gtf = annotation_gtf+"_GTF_Annotation"
+            ret = script_util.if_obj_exists(None,ws_client,params['ws_id'],"KBaseRNASeq.GFFAnnotation",[ws_gtf])
+            if not ret is None:
+                logger.info("GFF Annotation Exist for Genome Annotation {0}.... Skipping step ".format(annotation_gtf))
+                annot_name,annot_id = ret[0]
+                gtf_obj=ws_client.get_objects([{'ref' : annot_id}])[0]
+                gtf_id=gtf_obj['data']['handle']['id']
+                gtf_name=gtf_obj['data']['handle']['file_name']
+                try:
+                   script_util.download_file_from_shock(logger, shock_service_url=self.urls['shock_service_url'], shock_id=gtf_id,filename=gtf_name, directory=tophat_dir,token=token)
+                   gtf_file = os.path.join(tophat_dir,gtf_name)
+                except Exception,e:
+                   logger.exception(e)
+                   raise Exception( "Unable to download shock file, {0}".format(gtf_name))  
+            else:
+                gtf_file =rnaseq_util.create_gtf_annotation_from_genome(logger,ws_client,hs,self.urls,params['ws_id'],genome_id,annotation_gtf,tophat_dir,token)        
 
-        ### Check if GTF annotation object exist or skip this step
-        ### Check if the gtf object exists in the workspace
-        ### Only run create_gtf_annotation if object doesnt exist
-        ws_gtf = annotation_gtf+"_GTF_Annotation"
-        ret = script_util.if_obj_exists(None,ws_client,params['ws_id'],"KBaseRNASeq.GFFAnnotation",[ws_gtf])
-        if not ret is None:
-            logger.info("GFF Annotation Exist for Genome Annotation {0}.... Skipping step ".format(annotation_gtf))
-            annot_name,annot_id = ret[0]
-            gtf_obj=ws_client.get_objects([{'ref' : annot_id}])[0]
-            gtf_id=gtf_obj['data']['handle']['id']
-            gtf_name=gtf_obj['data']['handle']['file_name']
-            try:
-               script_util.download_file_from_shock(logger, shock_service_url=self.urls['shock_service_url'], shock_id=gtf_id,filename=gtf_name, directory=tophat_dir,token=token)
-               gtf_file = os.path.join(tophat_dir,gtf_name)
-            except Exception,e:
-               logger.exception(e)
-               raise Exception( "Unable to download shock file, {0}".format(gtf_name))  
-        else:
-            gtf_file =rnaseq_util.create_gtf_annotation_from_genome(logger,ws_client,hs,self.urls,params['ws_id'],genome_id,annotation_gtf,tophat_dir,token)        
 
-
-        print "Downloading Read Sample{0}".format(sampleset_id)
-        logger.info("Downloading Read Sample{0}".format(sampleset_id))
+        logger.info("Downloading read sample")
+        print "Downloading Read Sample{0}".format(read_sample)
+        logger.info("Downloading Read Sample{0}".format(read_sample))
         try:
                 r_sample = ws_client.get_objects(
-                                        [{ 'name' : sampleset_id, 'workspace' : ws_id}])[0]
-                r_sample_info = ws_client.get_object_info_new({"objects": [{'name': sampleset_id, 'workspace': ws_id}]})[0]
+                                        [{ 'name' : read_sample, 'workspace' : ws_id}])[0]
+                r_sample_info = ws_client.get_object_info_new({"objects": [{'name': read_sample, 'workspace': ws_id}]})[0]
                 sample_type = r_sample_info[2].split('-')[0]
-                output_name = sampleset_id.split('.')[0]+"_tophat_alignment"
+                output_name = read_sample.split('.')[0]+"_tophat_alignment"
                 output_dir = os.path.join(directory,output_name)
                 #if not os.path.exists(output_dir): os.makedirs(output_dir)
                 #out_file = output_dir +"/accepted_hits.sam"
@@ -200,7 +205,7 @@ class Tophat(KBParallelExecutionBase):
                                'genome_id' : genome_id , 
                                'bowtie2_index': self.bowtie2index_id,
                                'alignment_stats' : stats_data }
-                if not sampleset_id is None: tophat_out['sampleset_id'] = sampleset_id
+                #if not sampleset_id is None: tophat_out['sampleset_id'] = sampleset_id
                 pprint(tophat_out)
                 try:
                         res= ws_client.save_objects( { "workspace":ws_id,
@@ -220,6 +225,6 @@ class Tophat(KBParallelExecutionBase):
                 if os.path.exists(output_dir): shutil.rmtree(output_dir)
                 ret = script_util.if_obj_exists(None,ws_client,ws_id,"KBaseRNASeq.RNASeqAlignment",[output_name])
                 if not ret is None:
-                    return { 'sampleset_id': sampleset_id, 'output_name': output_name }
+                    return { 'read_sample': sampleset_id, 'output_name': output_name }
                 else :
                     return None

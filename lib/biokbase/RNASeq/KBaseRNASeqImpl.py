@@ -757,6 +757,7 @@ class KBaseRNASeq:
         self.__LOGGER.info("TophatCall_runeach")
 
         toph = Tophat( self.__LOGGER, tophat_dir, self.__SERVICES )
+        toph.common_params = common_params
 
         returnVal = toph.runEach( task )
 
