@@ -38,6 +38,11 @@ class TophatSample(Tophat):
         self.num_threads = 1
 
     def prepare( self, common_params, method_params ): 
+        print( "in TophatSample.prepare(), common_params are ")
+        pprint( common_params )
+        print( " and method_params are" )
+        pprint( method_params )
+
         # for quick testing, we recover parameters here
         ws_client = common_params['ws_client']
         hs = common_params['hs_client']
@@ -120,6 +125,11 @@ class TophatSample(Tophat):
         return self.task_list
 
     def collect(self, common_params, method_params) :
+        print( "in TophatSample.collect(), common_params are ")
+        pprint( common_params )
+        print( " and method_params are" )
+        pprint( method_params )
+
         # do with 
         #alignment_name = self.method_params['sampleset_id']+"_tophat_Alignment"
         #self.logger.info(" Creating Report for Alignment {0}".format(alignment_name))

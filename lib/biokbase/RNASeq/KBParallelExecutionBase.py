@@ -36,6 +36,10 @@ class KBParallelExecutionBase(ExecutionBase):
  
     def run(self, method, common_params, run_params):
 
+        print( "in KBparallelExecutionBase.run, common_params are")
+        pprint( common_params )
+        print( "and run_params are ")
+        pprint( run_params )
         self._checkCommonParams(common_params)
         #self._setCommonParams(common_params)
         #self.method_params = method_params
