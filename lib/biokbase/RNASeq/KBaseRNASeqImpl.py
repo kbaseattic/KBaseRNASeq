@@ -613,7 +613,8 @@ class KBaseRNASeq:
                 run_params["global_input_params"]["is_sample_set"] = 0
                 #ts = TophatSample( self.__LOGGER, tophat_dir, self.__SERVICES )
                 #returnVal = ts.run( "Tophat", common_params, params )
-
+        print( "in TophatCall, run_params")
+        pprint( run_params)
         returnVal = toph.run( "TophatCall", common_params, run_params )
 
         handler_util.cleanup(self.__LOGGER,tophat_dir)
