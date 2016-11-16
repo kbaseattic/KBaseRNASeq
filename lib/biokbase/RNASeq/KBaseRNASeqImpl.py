@@ -658,9 +658,10 @@ class KBaseRNASeq:
         # return variables are: returnVal
         #BEGIN TophatCall_prepare
 
-        if not os.path.exists( self.__SCRATCH ): os.makedirs(self.__SCRATCH)
-        tophat_dir = os.path.join( self.__SCRATCH, "tmp" )
-        handler_util.setupWorkingDir( self.__LOGGER, tophat_dir ) 
+        # this prepare() runs in the same process as 
+        #if not os.path.exists( self.__SCRATCH ): os.makedirs(self.__SCRATCH)
+        #tophat_dir = os.path.join( self.__SCRATCH, "tmp" )
+        #handler_util.setupWorkingDir( self.__LOGGER, tophat_dir ) 
         # Set the common Params
         common_params = {'ws_client' : Workspace(url=self.__WS_URL, token=ctx['token']),
                          'hs_client' : HandleService(url=self.__HS_URL, token=ctx['token']),
@@ -693,7 +694,7 @@ class KBaseRNASeq:
         #        self.__LOGGER.info("TophatCall_prepare Sample Case")
         #        ts = TophatSample(self.__LOGGER, tophat_dir, self.__SERVICES)
         #        tasklist = ts.prepare( common_params, params )
-        handler_util.cleanup( self.__LOGGER, tophat_dir )
+        #handler_util.cleanup( self.__LOGGER, tophat_dir )
 
         returnVal = { 'tasks': tasklist }
         #END TophatCall_prepare
@@ -728,7 +729,8 @@ class KBaseRNASeq:
 
         if not os.path.exists( self.__SCRATCH ): os.makedirs(self.__SCRATCH)
         tophat_dir = os.path.join( self.__SCRATCH, "tmp" )
-        handler_util.setupWorkingDir( self.__LOGGER, tophat_dir ) 
+        if ( not os.path.exists( tophat_dir ) ):
+           handler_util.setupWorkingDir( self.__LOGGER, tophat_dir ) 
         # Set the common Params
         common_params = {'ws_client' : Workspace(url=self.__WS_URL, token=ctx['token']),
                          'hs_client' : HandleService(url=self.__HS_URL, token=ctx['token']),
@@ -754,7 +756,7 @@ class KBaseRNASeq:
 
         returnVal = toph.runEach( task )
 
-        handler_util.cleanup( self.__LOGGER, tophat_dir )
+        #handler_util.cleanup( self.__LOGGER, tophat_dir )
 
         #END TophatCall_runEach
 
@@ -804,9 +806,9 @@ class KBaseRNASeq:
         #QUESTION: is it necessary to invoke TopHatSampleSet.runEach() or TopHatSample.runEach()
         # can we just invoke TopHat.runEach()
 
-        if not os.path.exists( self.__SCRATCH ): os.makedirs(self.__SCRATCH)
+        #if not os.path.exists( self.__SCRATCH ): os.makedirs(self.__SCRATCH)
         #tophat_dir = os.path.join( self.__SCRATCH, "tmp" )
-        handler_util.setupWorkingDir( self.__LOGGER, tophat_dir ) 
+        #handler_util.setupWorkingDir( self.__LOGGER, tophat_dir ) 
         # Set the common Params
         common_params = {'ws_client' : Workspace(url=self.__WS_URL, token=ctx['token']),
                          'hs_client' : HandleService(url=self.__HS_URL, token=ctx['token']),
@@ -835,7 +837,7 @@ class KBaseRNASeq:
                  ts = TophatSample(self.__LOGGER, tophat_dir, self.__SERVICES)
                  returnVal = ts.collect( common_params, params )
 
-        handler_util.cleanup( self.__LOGGER, tophat_dir )
+        #handler_util.cleanup( self.__LOGGER, tophat_dir )
 
         #END TophatCall_collect
 
