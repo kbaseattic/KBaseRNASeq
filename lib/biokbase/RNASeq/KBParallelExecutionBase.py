@@ -24,7 +24,9 @@ try:
 except:
     from biokbase.AbstractHandle.Client import AbstractHandle as HandleService
 
+from KBParallel.KBParallelClient import KBParallel
 from biokbase.RNASeq.ExecutionBase import ExecutionBase
+
 
 class KBParallelExecutionBase(ExecutionBase):
 
@@ -32,22 +34,20 @@ class KBParallelExecutionBase(ExecutionBase):
 
     # method is "TophatCall", etc
  
-    def run(self, method, common_params, method_params):
+    def run(self, method, common_params, run_params):
 
         self._checkCommonParams(common_params)
         #self._setCommonParams(common_params)
         #self.method_params = method_params
         #self.common_params = common_params
-        method_params["user_token"] = common_params["user_token"]   # don't know a better way pass token to kbp.run()
 
         kbp = KBParallel( os.environ['SDK_CALLBACK_URL'], token=common_params['user_token'])
         returnVal = kbp.run( { 'method': { 'module_name': "KBaseRNASeq",
                                            'method_name': method,
-                                           'service_ver': ""
-                                          }
+                                           'service_ver': "dev"
+                                          },
                                'is_local': 1,
-                               'global_params': method_params,   # common_params not appropriate for prepare,runeach
-                                                                 # NOTE: this is called global_input in KBParallel.spec:  FIX!
+                               'global_params': run_params,  # NOTE: this is called global_input in KBParallel.spec:  FIX!
                                'time_limit': 1000000} )
         return returnVal
 

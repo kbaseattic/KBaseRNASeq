@@ -45,7 +45,7 @@ def get_config():
 
 config = get_config()
 
-from biokbase.RNASeq.KBaseRNASeqImpl import KBaseRNASeq  # @IgnorePep8
+from biokbase.RNASeq.KBaseRNASeqImpl import KBaseRNASeq  # noqa @IgnorePep8
 impl_KBaseRNASeq = KBaseRNASeq(config)
 
 
@@ -171,7 +171,7 @@ class JSONRPCServiceCustom(JSONRPCService):
 
     def _handle_request(self, ctx, request):
         """Handles given request and returns its response."""
-        if self.method_data[request['method']].has_key('types'): # @IgnorePep8
+        if self.method_data[request['method']].has_key('types'):  # noqa @IgnorePep8
             self._validate_params_types(request['method'], request['params'])
 
         result = self._call_method(ctx, request)
@@ -332,43 +332,63 @@ class Application(object):
         self.rpc_service.add(impl_KBaseRNASeq.CreateRNASeqSampleSet,
                              name='KBaseRNASeq.CreateRNASeqSampleSet',
                              types=[dict])
-        self.method_authentication['KBaseRNASeq.CreateRNASeqSampleSet'] = 'required'
+        self.method_authentication['KBaseRNASeq.CreateRNASeqSampleSet'] = 'required' # noqa
         self.rpc_service.add(impl_KBaseRNASeq.BuildBowtie2Index,
                              name='KBaseRNASeq.BuildBowtie2Index',
                              types=[dict])
-        self.method_authentication['KBaseRNASeq.BuildBowtie2Index'] = 'required'
-        self.rpc_service.add(impl_KBaseRNASeq.GetFeaturesToGTF,
-                             name='KBaseRNASeq.GetFeaturesToGTF',
-                             types=[dict])
-        self.method_authentication['KBaseRNASeq.GetFeaturesToGTF'] = 'required'
+        self.method_authentication['KBaseRNASeq.BuildBowtie2Index'] = 'required' # noqa
         self.rpc_service.add(impl_KBaseRNASeq.Bowtie2Call,
                              name='KBaseRNASeq.Bowtie2Call',
                              types=[dict])
-        self.method_authentication['KBaseRNASeq.Bowtie2Call'] = 'required'
+        self.method_authentication['KBaseRNASeq.Bowtie2Call'] = 'required' # noqa
         self.rpc_service.add(impl_KBaseRNASeq.Hisat2Call,
                              name='KBaseRNASeq.Hisat2Call',
                              types=[dict])
-        self.method_authentication['KBaseRNASeq.Hisat2Call'] = 'required'
+        self.method_authentication['KBaseRNASeq.Hisat2Call'] = 'required' # noqa
+        self.rpc_service.add(impl_KBaseRNASeq.Hisat2Call_prepare,
+                             name='KBaseRNASeq.Hisat2Call_prepare',
+                             types=[dict])
+        self.method_authentication['KBaseRNASeq.Hisat2Call_prepare'] = 'required' # noqa
+        self.rpc_service.add(impl_KBaseRNASeq.Hisat2Call_runEach,
+                             name='KBaseRNASeq.Hisat2Call_runEach',
+                             types=[dict])
+        self.method_authentication['KBaseRNASeq.Hisat2Call_runEach'] = 'required' # noqa
+        self.rpc_service.add(impl_KBaseRNASeq.Hisat2Call_collect,
+                             name='KBaseRNASeq.Hisat2Call_collect',
+                             types=[dict])
+        self.method_authentication['KBaseRNASeq.Hisat2Call_collect'] = 'required' # noqa
         self.rpc_service.add(impl_KBaseRNASeq.TophatCall,
                              name='KBaseRNASeq.TophatCall',
                              types=[dict])
-        self.method_authentication['KBaseRNASeq.TophatCall'] = 'required'
+        self.method_authentication['KBaseRNASeq.TophatCall'] = 'required' # noqa
+        self.rpc_service.add(impl_KBaseRNASeq.TophatCall_prepare,
+                             name='KBaseRNASeq.TophatCall_prepare',
+                             types=[dict])
+        self.method_authentication['KBaseRNASeq.TophatCall_prepare'] = 'required' # noqa
+        self.rpc_service.add(impl_KBaseRNASeq.TophatCall_runEach,
+                             name='KBaseRNASeq.TophatCall_runEach',
+                             types=[dict])
+        self.method_authentication['KBaseRNASeq.TophatCall_runEach'] = 'required' # noqa
+        self.rpc_service.add(impl_KBaseRNASeq.TophatCall_collect,
+                             name='KBaseRNASeq.TophatCall_collect',
+                             types=[dict])
+        self.method_authentication['KBaseRNASeq.TophatCall_collect'] = 'required' # noqa
         self.rpc_service.add(impl_KBaseRNASeq.StringTieCall,
                              name='KBaseRNASeq.StringTieCall',
                              types=[dict])
-        self.method_authentication['KBaseRNASeq.StringTieCall'] = 'required'
+        self.method_authentication['KBaseRNASeq.StringTieCall'] = 'required' # noqa
         self.rpc_service.add(impl_KBaseRNASeq.CufflinksCall,
                              name='KBaseRNASeq.CufflinksCall',
                              types=[dict])
-        self.method_authentication['KBaseRNASeq.CufflinksCall'] = 'required'
+        self.method_authentication['KBaseRNASeq.CufflinksCall'] = 'required' # noqa
         self.rpc_service.add(impl_KBaseRNASeq.CuffdiffCall,
                              name='KBaseRNASeq.CuffdiffCall',
                              types=[dict])
-        self.method_authentication['KBaseRNASeq.CuffdiffCall'] = 'required'
+        self.method_authentication['KBaseRNASeq.CuffdiffCall'] = 'required' # noqa
         self.rpc_service.add(impl_KBaseRNASeq.DiffExpCallforBallgown,
                              name='KBaseRNASeq.DiffExpCallforBallgown',
                              types=[dict])
-        self.method_authentication['KBaseRNASeq.DiffExpCallforBallgown'] = 'required'
+        self.method_authentication['KBaseRNASeq.DiffExpCallforBallgown'] = 'required' # noqa
         self.rpc_service.add(impl_KBaseRNASeq.status,
                              name='KBaseRNASeq.status',
                              types=[dict])
@@ -424,7 +444,8 @@ class Application(object):
                         if token is None and auth_req == 'required':
                             err = JSONServerError()
                             err.data = (
-                                'Authentication required for KBaseRNASeq ' +
+                                'Authentication required for ' +
+                                'KBaseRNASeq ' +
                                 'but no authentication header was passed')
                             raise err
                         elif token is None and auth_req == 'optional':
@@ -456,7 +477,7 @@ class Application(object):
                            }
                     trace = jre.trace if hasattr(jre, 'trace') else None
                     rpc_result = self.process_error(err, ctx, req, trace)
-                except Exception, e:
+                except Exception:
                     err = {'error': {'code': 0,
                                      'name': 'Unexpected Server Error',
                                      'message': 'An unexpected server error ' +
@@ -466,10 +487,10 @@ class Application(object):
                     rpc_result = self.process_error(err, ctx, req,
                                                     traceback.format_exc())
 
-        # print 'The request method was %s\n' % environ['REQUEST_METHOD']
-        # print 'The environment dictionary is:\n%s\n' % pprint.pformat(environ) @IgnorePep8
-        # print 'The request body was: %s' % request_body
-        # print 'The result from the method call is:\n%s\n' % \
+        # print 'Request method was %s\n' % environ['REQUEST_METHOD']
+        # print 'Environment dictionary is:\n%s\n' % pprint.pformat(environ)
+        # print 'Request body was: %s' % request_body
+        # print 'Result from the method call is:\n%s\n' % \
         #    pprint.pformat(rpc_result)
 
         if rpc_result:
@@ -505,11 +526,12 @@ class Application(object):
         return json.dumps(error)
 
     def now_in_utc(self):
-        # Taken from http://stackoverflow.com/questions/3401428/how-to-get-an-isoformat-datetime-string-including-the-default-timezone @IgnorePep8
+        # noqa Taken from http://stackoverflow.com/questions/3401428/how-to-get-an-isoformat-datetime-string-including-the-default-timezone @IgnorePep8
         dtnow = datetime.datetime.now()
         dtutcnow = datetime.datetime.utcnow()
         delta = dtnow - dtutcnow
-        hh, mm = divmod((delta.days * 24*60*60 + delta.seconds + 30) // 60, 60)
+        hh, mm = divmod((delta.days * 24 * 60 * 60 + delta.seconds + 30) // 60,
+                        60)
         return "%s%+02d:%02d" % (dtnow.isoformat(), hh, mm)
 
 application = Application()
@@ -538,9 +560,7 @@ try:
         print "Monkeypatching std libraries for async"
         from gevent import monkey
         monkey.patch_all()
-    uwsgi.applications = {
-        '': application
-        }
+    uwsgi.applications = {'': application}
 except ImportError:
     # Not available outside of wsgi, ignore
     pass

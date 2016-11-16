@@ -158,6 +158,7 @@ deploy-libs2:
 	rsync -vrh lib/biokbase/$(MODULE) $(TARGET)/lib/biokbase/.
 	rsync -vrh lib/AssemblyUtil $(TARGET)/lib/.
 	rsync -vrh lib/GenomeFileUtil $(TARGET)/lib/.
+	rsync -vrh lib/KBParallel $(TARGET)/lib/.
 
 deploy-executable-script:
 	@echo "Installing executable scripts to target: $(TARGET)/bin"

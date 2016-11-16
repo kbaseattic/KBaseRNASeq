@@ -48,6 +48,7 @@ from biokbase.RNASeq.HiSat2Sample import HiSat2Sample
 from biokbase.RNASeq.StringTieSampleSet import StringTieSampleSet
 from biokbase.RNASeq.StringTieSample import StringTieSample
 from biokbase.RNASeq.Cuffdiff import Cuffdiff
+from biokbase.RNASeq.Tophat import Tophat
 from biokbase.RNASeq.TophatSampleSet import TophatSampleSet
 from biokbase.RNASeq.TophatSample import TophatSample
 from biokbase.RNASeq.CufflinksSampleSet import CufflinksSampleSet
@@ -62,6 +63,7 @@ class KBaseRNASeqException(BaseException):
 		return repr(self.msg)
 #END_HEADER
 
+
 class KBaseRNASeq:
     '''
     Module Name:
@@ -71,16 +73,16 @@ class KBaseRNASeq:
     
     '''
 
-    ######## WARNING FOR GEVENT USERS #######
+    ######## WARNING FOR GEVENT USERS ####### noqa
     # Since asynchronous IO can lead to methods - even the same method -
     # interrupting each other, you must be *very* careful when using global
     # state. A method could easily clobber the state set by another while
     # the latter method is running.
-    #########################################
+    ######################################### noqa
     VERSION = "0.0.1"
-    GIT_URL = "https://github.com/sjyoo/KBaseRNASeq"
-    GIT_COMMIT_HASH = "c16cf497efbdbbbf982d928015fc6d70a2ba1d33"
-    
+    GIT_URL = "https://github.com/sean-mccorkle/KBaseRNASeq.git"
+    GIT_COMMIT_HASH = "1634e06fb58d153149637f204b75de955983ff3f"
+
     #BEGIN_CLASS_HEADER
     __TEMP_DIR = 'temp'
     __PUBLIC_SHOCK_NODE = 'true'
@@ -90,7 +92,7 @@ class KBaseRNASeq:
     __TOPHAT_SUFFIX = '_tophat_Alignment'
     __STATS_DIR = 'stats'
     def generic_helper(self, ctx, params):
-	  pass
+          pass
 
     # we do normal help function call to parameter mapping
     #END_CLASS_HEADER
@@ -99,33 +101,33 @@ class KBaseRNASeq:
     # be found
     def __init__(self, config):
         #BEGIN_CONSTRUCTOR
-	 # This is where config variable for deploy.cfg are available
+       # This is where config variable for deploy.cfg are available
         #pprint(config)
         if 'ws_url' in config:
               self.__WS_URL = config['ws_url']
         if 'shock_url' in config:
               self.__SHOCK_URL = config['shock_url']
-	if 'hs_url' in config:
-	      self.__HS_URL = config['hs_url']
+        if 'hs_url' in config:
+              self.__HS_URL = config['hs_url']
         if 'temp_dir' in config:
               self.__TEMP_DIR = config['temp_dir']
-	if 'scratch' in config:
-	      self.__SCRATCH= config['scratch']
-	      #print self.__SCRATCH
+        if 'scratch' in config:
+              self.__SCRATCH= config['scratch']
+              #print self.__SCRATCH
         if 'svc_user' in config:
               self.__SVC_USER = config['svc_user']
         if 'svc_pass' in config:
               self.__SVC_PASS = config['svc_pass']
-	if 'scripts_dir' in config:
-	      self.__SCRIPTS_DIR = config['scripts_dir']
-	if 'force_shock_node_2b_public' in config: # expect 'true' or 'false' string
-	      self.__PUBLIC_SHOCK_NODE = config['force_shock_node_2b_public']
-	self.__CALLBACK_URL = os.environ['SDK_CALLBACK_URL']	
-	
-	self.__SERVICES = { 'workspace_service_url' : self.__WS_URL,
-			    'shock_service_url' : self.__SHOCK_URL,
-			    'handle_service_url' : self.__HS_URL, 
-			    'callback_url' : self.__CALLBACK_URL }
+        if 'scripts_dir' in config:
+              self.__SCRIPTS_DIR = config['scripts_dir']
+        if 'force_shock_node_2b_public' in config: # expect 'true' or 'false' string
+              self.__PUBLIC_SHOCK_NODE = config['force_shock_node_2b_public']
+        self.__CALLBACK_URL = os.environ['SDK_CALLBACK_URL']	
+        
+        self.__SERVICES = { 'workspace_service_url' : self.__WS_URL,
+                            'shock_service_url' : self.__SHOCK_URL,
+                            'handle_service_url' : self.__HS_URL, 
+                            'callback_url' : self.__CALLBACK_URL }
         # logging
         self.__LOGGER = logging.getLogger('KBaseRNASeq')
         if 'log_level' in config:
@@ -141,7 +143,7 @@ class KBaseRNASeq:
 
         #END_CONSTRUCTOR
         pass
-    
+
 
     def CreateRNASeqSampleSet(self, ctx, params):
         """
@@ -333,138 +335,6 @@ class KBaseRNASeq:
         # return the results
         return [returnVal]
 
-    def GetFeaturesToGTF(self, ctx, params):
-        """
-        :param params: instance of type "GetFeaturesToGTFParams" ->
-           structure: parameter "ws_id" of String, parameter "reference" of
-           type "ws_genome_annotation_id" (reference genome annotation id for
-           mapping the RNA-Seq fastq file @id ws
-           KBaseGenomeAnnotations.GenomeAnnotation), parameter
-           "output_obj_name" of String
-        :returns: instance of type "ResultsToReport" (Object for Report type)
-           -> structure: parameter "report_name" of String, parameter
-           "report_ref" of String
-        """
-        # ctx is the context object
-        # return variables are: returnVal
-        #BEGIN GetFeaturesToGTF
-        user_token=ctx['token']
-        #pprint(params)
-        ws_client=Workspace(url=self.__WS_URL, token=user_token)
-        hs = HandleService(url=self.__HS_URL, token=user_token)
-        try:
-                self.__LOGGER.info( "Downloading Genome object from workspace")
-            ## Check if the gtf_dir is present; remove files in gtf_dir if exists ; create a new dir if doesnt exists     
-		#if os.path.exists(self.__SCRATCH):
-                # 	handler_util.cleanup(self.__LOGGER,self.__SCRATCH)
-            	if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
-		gtf_dir = self.__SCRATCH+'/tmp'
-                if os.path.exists(gtf_dir):
-                        handler_util.cleanup(self.__LOGGER,gtf_dir)
-                if not os.path.exists(gtf_dir): os.makedirs(gtf_dir)
-                provenance = [{}]
-                if 'provenance' in ctx:
-                        provenance = ctx['provenance']
-                # add additional info to provenance here, in this case the input data object reference
-                provenance[0]['input_ws_objects']=[params['ws_id']+'/'+params['reference']]
-		ref_info = ws_client.get_object_info_new({"objects": [{'name': params['reference'], 'workspace': params['ws_id']}]})
-		#out_file_path = os.path.join(gtf_dir,params['output_obj_name']+'.gff')
-		#output = open(out_file_path,'w')
-		obj_type = ref_info[0][2].split('-')[0] 
-		if obj_type == 'KBaseGenomeAnnotations.GenomeAnnotation':
-			out_file_path = os.path.join(gtf_dir,params['output_obj_name']+'.gff')
-			try:
-				fasta_file= script_util.generate_fasta(self.__LOGGER,self.__SERVICES,user_token,params['ws_id'],gtf_dir,params['reference'])
-                                self.__LOGGER.info("Sanitizing the fasta file to correct id names {}".format(datetime.datetime.utcnow()))
-                                mapping_filename = c_mapping.create_sanitized_contig_ids(fasta_file)
-                                c_mapping.replace_fasta_contig_ids(fasta_file, mapping_filename, to_modified=True)
-                                self.__LOGGER.info("Generating FASTA file completed successfully : {}".format(datetime.datetime.utcnow()))
-				script_util.generate_gff(self.__LOGGER,self.__SERVICES,user_token,params['ws_id'],gtf_dir,params['reference'],out_file_path)
-				c_mapping.replace_gff_contig_ids(out_file_path, mapping_filename, to_modified=True) 
-			except Exception as e:
-				self.__LOGGER.exception("".join(traceback.format_exc()))
-				raise ValueError("Generating GFF file from Genome Annotation object Failed :  {}".format("".join(traceback.format_exc())))
-		elif obj_type == 'KBaseGenomes.Genome':
-		     try:
-                	reference = ws_client.get_object_subset(
-                                        [{ 'name' : params['reference'], 'workspace' : params['ws_id'],'included': ['features']}])
-                	#reference = ws_client.get_objects(
-                        #                [{ 'name' : params['reference'], 'workspace' : params['ws_id']}])
-			out_file_path = os.path.join(gtf_dir,params['output_obj_name']+'.gtf')
-                	output = open(out_file_path,'w')
-			ref =reference[0]['data']
-        		if "features" in ref:
-                  		for f in ref['features']:
-                     			if "type" in f and  f['type'] == 'CDS': f_type = f['type']
-                     			if "id" in f: f_id =  f['id']
-                     			if "location" in f:
-                        			for contig_id,f_start,f_strand,f_len  in f['location']:
-                                			f_end = script_util.get_end(int(f_start),int(f_len),f_strand)
-			        			output.write(contig_id + "\tKBase\t" + f_type + "\t" + str(f_start) + "\t" + str(f_end) + "\t.\t" + f_strand + "\t"+ str(0) + "\ttranscript_id " + f_id + "; gene_id " + f_id + ";\n")
-		     except Exception,e:
-			raise KBaseRNASeqException("Failed to create Reference Annotation File: {0}".format(e))	
-		     finally:
-			output.close()
-                try:
-			#out_file_path = os.path.join(params['output_obj_name']+'.gtf')
-                        gtf_handle = hs.upload(out_file_path)
-
-                except Exception, e:
-                        raise KBaseRNASeqException("Failed to create Reference Annotation: {0}".format(e))
-                gtfhandle = { "handle" : gtf_handle ,"size" : os.path.getsize(out_file_path)}
-
-             ## Save object to workspace
-                self.__LOGGER.info( "Saving Reference Annotation object to  workspace")
-                res= ws_client.save_objects(
-                                        {"workspace":params['ws_id'],
-                                         "objects": [{
-                                         "type":"KBaseRNASeq.ReferenceAnnotation",
-                                         "data":gtfhandle,
-                                         "name":params['output_obj_name']}
-                                        ]})
-                info = res[0]
-		report = "Extracting Features from {0}".format(params['reference'])
-             ## Create report object:
-                reportObj = {
-                                'objects_created':[{
-                                'ref':str(info[6]) + '/'+str(info[0])+'/'+str(info[4]),
-                                'description':'Create Reference Annotation'
-                                }],
-                                'text_message':report
-                            }
-                reportName = 'Create_Reference_Annotation_'+str(hex(uuid.getnode()))
-                report_info = ws_client.save_objects({
-                                                'id':info[6],
-                                                'objects':[
-                                                {
-                                                'type':'KBaseReport.Report',
-                                                'data':reportObj,
-                                                'name':reportName,
-                                                'meta':{},
-                                                'hidden':1, # important!  make sure the report is hidden
-                                                'provenance':provenance
-                                                }
-                                                ]
-                                                })[0]
-
-                #print('saved Report: '+pformat(report_info))
-
-		returnVal = { "report_name" : reportName,"report_ref" : str(report_info[6]) + '/' + str(report_info[0]) + '/' + str(report_info[4]) }
-        except Exception, e:
-                raise KBaseRNASeqException("Create Reference Annotation Failed: {0}".format(e))
-        finally:
-                handler_util.cleanup(self.__LOGGER,gtf_dir)
-		#if os.path.exists(out_file_path): os.remove(out_file_path)
-	
-        #END GetFeaturesToGTF
-
-        # At some point might do deeper type checking...
-        if not isinstance(returnVal, dict):
-            raise ValueError('Method GetFeaturesToGTF return value ' +
-                             'returnVal is not type dict as required.')
-        # return the results
-        return [returnVal]
-
     def Bowtie2Call(self, ctx, params):
         """
         :param params: instance of type "Bowtie2Params" -> structure:
@@ -520,19 +390,19 @@ class KBaseRNASeq:
 
     def Hisat2Call(self, ctx, params):
         """
-        :param params: instance of type "Hisat2Params" -> structure:
-           parameter "ws_id" of String, parameter "sampleset_id" of String,
-           parameter "genome_id" of String, parameter "num_threads" of Long,
-           parameter "quality_score" of String, parameter "skip" of Long,
-           parameter "trim3" of Long, parameter "trim5" of Long, parameter
-           "np" of Long, parameter "minins" of Long, parameter "maxins" of
-           Long, parameter "orientation" of String, parameter
-           "min_intron_length" of Long, parameter "max_intron_length" of
-           Long, parameter "no_spliced_alignment" of type "bool" (indicates
-           true or false values, false <= 0, true >=1), parameter
-           "transcriptome_mapping_only" of type "bool" (indicates true or
-           false values, false <= 0, true >=1), parameter "tailor_alignments"
-           of String
+        :param params: instance of type "Hisat2Params" (****************) ->
+           structure: parameter "ws_id" of String, parameter "sampleset_id"
+           of String, parameter "genome_id" of String, parameter
+           "num_threads" of Long, parameter "quality_score" of String,
+           parameter "skip" of Long, parameter "trim3" of Long, parameter
+           "trim5" of Long, parameter "np" of Long, parameter "minins" of
+           Long, parameter "maxins" of Long, parameter "orientation" of
+           String, parameter "min_intron_length" of Long, parameter
+           "max_intron_length" of Long, parameter "no_spliced_alignment" of
+           type "bool" (indicates true or false values, false <= 0, true
+           >=1), parameter "transcriptome_mapping_only" of type "bool"
+           (indicates true or false values, false <= 0, true >=1), parameter
+           "tailor_alignments" of String
         :returns: instance of type "ResultsToReport" (Object for Report type)
            -> structure: parameter "report_name" of String, parameter
            "report_ref" of String
@@ -575,10 +445,119 @@ class KBaseRNASeq:
         # return the results
         return [returnVal]
 
-    def TophatCall(self, ctx, params):
+    def Hisat2Call_prepare(self, ctx, prepare_params):
         """
-        :param params: instance of type "TophatParams" -> structure:
-           parameter "ws_id" of String, parameter "read_sample" of String,
+        :param prepare_params: instance of type
+           "Hisat2Call_prepareInputParams" -> structure: parameter
+           "global_input_params" of type "Hisat2Call_globalInputParams"
+           (***************************) -> structure: parameter "ws_id" of
+           String, parameter "read_sample" of String, parameter "genome_id"
+           of String, parameter "read_mismatches" of Long, parameter
+           "read_gap_length" of Long, parameter "read_edit_dist" of Long,
+           parameter "min_intron_length" of Long, parameter
+           "max_intron_length" of Long, parameter "num_threads" of Long,
+           parameter "report_secondary_alignments" of String, parameter
+           "no_coverage_search" of String, parameter "library_type" of
+           String, parameter "annotation_gtf" of type
+           "ws_referenceAnnotation_id" (Id for KBaseRNASeq.GFFAnnotation @id
+           ws KBaseRNASeq.GFFAnnotation), parameter "user_token" of String
+        :returns: instance of type "Hisat2Call_prepareSchedule" -> structure:
+           parameter "tasks" of list of type "Hisat2Call_runEachInput" ->
+           structure: parameter "input_arguments" of tuple of size 1: type
+           "Hisat2Call_task" -> structure: parameter "job_id" of String,
+           parameter "label" of String, parameter "hisat2_dir" of String,
+           parameter "ws_id" of String, parameter "reads_type" of String,
+           parameter "annotation_id" of String, parameter "sampleset_id" of
+           String, parameter "gtf_file" of String, parameter "bowtie_index"
+           of String
+        """
+        # ctx is the context object
+        # return variables are: returnVal
+        #BEGIN Hisat2Call_prepare
+        #END Hisat2Call_prepare
+
+        # At some point might do deeper type checking...
+        if not isinstance(returnVal, dict):
+            raise ValueError('Method Hisat2Call_prepare return value ' +
+                             'returnVal is not type dict as required.')
+        # return the results
+        return [returnVal]
+
+    def Hisat2Call_runEach(self, ctx, task):
+        """
+        :param task: instance of type "Hisat2Call_task" -> structure:
+           parameter "job_id" of String, parameter "label" of String,
+           parameter "hisat2_dir" of String, parameter "ws_id" of String,
+           parameter "reads_type" of String, parameter "annotation_id" of
+           String, parameter "sampleset_id" of String, parameter "gtf_file"
+           of String, parameter "bowtie_index" of String
+        :returns: instance of type "Hisat2Call_runEachResult"
+           (*****************************) -> structure: parameter
+           "read_sample" of String, parameter "output_name" of String
+        """
+        # ctx is the context object
+        # return variables are: returnVal
+        #BEGIN Hisat2Call_runEach
+        #END Hisat2Call_runEach
+
+        # At some point might do deeper type checking...
+        if not isinstance(returnVal, dict):
+            raise ValueError('Method Hisat2Call_runEach return value ' +
+                             'returnVal is not type dict as required.')
+        # return the results
+        return [returnVal]
+
+    def Hisat2Call_collect(self, ctx, collect_params):
+        """
+        :param collect_params: instance of type
+           "Hisat2Call_collectInputParams" -> structure: parameter
+           "global_params" of type "Hisat2Call_globalInputParams"
+           (***************************) -> structure: parameter "ws_id" of
+           String, parameter "read_sample" of String, parameter "genome_id"
+           of String, parameter "read_mismatches" of Long, parameter
+           "read_gap_length" of Long, parameter "read_edit_dist" of Long,
+           parameter "min_intron_length" of Long, parameter
+           "max_intron_length" of Long, parameter "num_threads" of Long,
+           parameter "report_secondary_alignments" of String, parameter
+           "no_coverage_search" of String, parameter "library_type" of
+           String, parameter "annotation_gtf" of type
+           "ws_referenceAnnotation_id" (Id for KBaseRNASeq.GFFAnnotation @id
+           ws KBaseRNASeq.GFFAnnotation), parameter "user_token" of String,
+           parameter "input_result_pairs" of list of type
+           "Hisat2Call_InputResultPair" (*****************************) ->
+           structure: parameter "input" of type "Hisat2Call_runEachInput" ->
+           structure: parameter "input_arguments" of tuple of size 1: type
+           "Hisat2Call_task" -> structure: parameter "job_id" of String,
+           parameter "label" of String, parameter "hisat2_dir" of String,
+           parameter "ws_id" of String, parameter "reads_type" of String,
+           parameter "annotation_id" of String, parameter "sampleset_id" of
+           String, parameter "gtf_file" of String, parameter "bowtie_index"
+           of String, parameter "result" of type "Hisat2Call_runEachResult"
+           (*****************************) -> structure: parameter
+           "read_sample" of String, parameter "output_name" of String
+        :returns: instance of type "Hisat2Call_globalResult" -> structure:
+           parameter "output" of String, parameter "jobs" of list of tuple of
+           size 2: parameter "job_number" of Long, parameter "message" of
+           String
+        """
+        # ctx is the context object
+        # return variables are: returnVal
+        #BEGIN Hisat2Call_collect
+        #END Hisat2Call_collect
+
+        # At some point might do deeper type checking...
+        if not isinstance(returnVal, dict):
+            raise ValueError('Method Hisat2Call_collect return value ' +
+                             'returnVal is not type dict as required.')
+        # return the results
+        return [returnVal]
+
+    def TophatCall(self, ctx, run_params):
+        """
+        :param run_params: instance of type "TophatCall_runParams" ->
+           structure: parameter "global_input_params" of type
+           "TophatCall_globalInputParams" (****************) -> structure:
+           parameter "ws_id" of String, parameter "sampleset_id" of String,
            parameter "genome_id" of String, parameter "bowtie2_index" of
            String, parameter "read_mismatches" of Long, parameter
            "read_gap_length" of Long, parameter "read_edit_dist" of Long,
@@ -588,7 +567,7 @@ class KBaseRNASeq:
            "no_coverage_search" of String, parameter "library_type" of
            String, parameter "annotation_gtf" of type
            "ws_referenceAnnotation_id" (Id for KBaseRNASeq.GFFAnnotation @id
-           ws KBaseRNASeq.GFFAnnotation)
+           ws KBaseRNASeq.GFFAnnotation), parameter "is_sample_set" of Long
         :returns: instance of type "ResultsToReport" (Object for Report type)
            -> structure: parameter "report_name" of String, parameter
            "report_ref" of String
@@ -596,30 +575,47 @@ class KBaseRNASeq:
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN TophatCall
-	if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
+
+        print( "In TophatCall, run_params are")
+        pprint( run_params )
+        params = run_params["global_input_params"]
+        print( "global_input_params are" )
+        pprint( params )
+
+        if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
         tophat_dir = os.path.join(self.__SCRATCH,"tmp")
         handler_util.setupWorkingDir(self.__LOGGER,tophat_dir) 
-	# Set the common Params
-	common_params = {'ws_client' : Workspace(url=self.__WS_URL, token=ctx['token']),
+        # Set the common Params
+        # Workspace access is needed to assess whether or not input is a set or a single sample
+        # user_token passed to run() and then KBParallel.run()
+        common_params = {'ws_client' : Workspace(url=self.__WS_URL, token=ctx['token']),
                          'hs_client' : HandleService(url=self.__HS_URL, token=ctx['token']),
                          'user_token' : ctx['token']
                         }
-	# Set the Number of threads if specified 
+        # Set the Number of threads if specified 
         if 'num_threads' in params and params['num_threads'] is not None:
             common_params['num_threads'] = params['num_threads']
 
-	# Check to Call Tophat in Set mode or Single mode
-	wsc = common_params['ws_client']
-	obj_info = wsc.get_object_info_new({"objects": [{'name': params['sampleset_id'], 'workspace': params['ws_id']}]})
+        # Check to Call Tophat in Set mode or Single mode
+        wsc = common_params['ws_client']
+        obj_info = wsc.get_object_info_new({"objects": [{'name': params['sampleset_id'], 'workspace': params['ws_id']}]})
         obj_type = obj_info[0][2].split('-')[0]
-	if obj_type == 'KBaseRNASeq.RNASeqSampleSet':	
-		self.__LOGGER.info("Tophat SampleSet Case")
-        	tss = TophatSampleSet(self.__LOGGER, tophat_dir, self.__SERVICES)
-        	returnVal = tss.run(common_params, params)
-	else:
-		self.__LOGGER.info("Tophat Sample Case")
-		ts = TophatSample(self.__LOGGER, tophat_dir, self.__SERVICES)
-		returnVal = ts.run(common_params,params)
+
+        toph = Tophat( self.__LOGGER, tophat_dir, self.__SERVICES )
+
+        if obj_type == 'KBaseRNASeq.RNASeqSampleSet':	
+                self.__LOGGER.info( "TophatCall SampleSet Case" )
+                run_params["global_input_params"]["is_sample_set"] = 1
+                #tss = TophatSampleSet( self.__LOGGER, tophat_dir, self.__SERVICES )
+                #returnVal = tss.run( "Tophat", common_params, params )
+        else:
+                self.__LOGGER.info("TophatCall Sample Case")
+                run_params["global_input_params"]["is_sample_set"] = 0
+                #ts = TophatSample( self.__LOGGER, tophat_dir, self.__SERVICES )
+                #returnVal = ts.run( "Tophat", common_params, params )
+
+        returnVal = toph.run( "Tophat", common_params, run_params )
+
         handler_util.cleanup(self.__LOGGER,tophat_dir)
 
         #END TophatCall
@@ -627,6 +623,225 @@ class KBaseRNASeq:
         # At some point might do deeper type checking...
         if not isinstance(returnVal, dict):
             raise ValueError('Method TophatCall return value ' +
+                             'returnVal is not type dict as required.')
+        # return the results
+        return [returnVal]
+
+    def TophatCall_prepare(self, ctx, prepare_params):
+        """
+        :param prepare_params: instance of type
+           "TophatCall_prepareInputParams" (***************************) ->
+           structure: parameter "global_input_params" of type
+           "TophatCall_globalInputParams" (****************) -> structure:
+           parameter "ws_id" of String, parameter "sampleset_id" of String,
+           parameter "genome_id" of String, parameter "bowtie2_index" of
+           String, parameter "read_mismatches" of Long, parameter
+           "read_gap_length" of Long, parameter "read_edit_dist" of Long,
+           parameter "min_intron_length" of Long, parameter
+           "max_intron_length" of Long, parameter "num_threads" of Long,
+           parameter "report_secondary_alignments" of String, parameter
+           "no_coverage_search" of String, parameter "library_type" of
+           String, parameter "annotation_gtf" of type
+           "ws_referenceAnnotation_id" (Id for KBaseRNASeq.GFFAnnotation @id
+           ws KBaseRNASeq.GFFAnnotation), parameter "is_sample_set" of Long
+        :returns: instance of type "TophatCall_prepareSchedule" -> structure:
+           parameter "tasks" of list of type "TophatCall_runEachInput" ->
+           structure: parameter "input_arguments" of tuple of size 1: type
+           "TophatCall_task" -> structure: parameter "job_id" of String,
+           parameter "label" of String, parameter "tophat_dir" of String,
+           parameter "ws_id" of String, parameter "reads_type" of String,
+           parameter "annotation_id" of String, parameter "sampleset_id" of
+           String, parameter "gtf_file" of String, parameter "bowtie_index"
+           of String
+        """
+        # ctx is the context object
+        # return variables are: returnVal
+        #BEGIN TophatCall_prepare
+
+        if not os.path.exists( self.__SCRATCH ): os.makedirs(self.__SCRATCH)
+        tophat_dir = os.path.join( self.__SCRATCH, "tmp" )
+        handler_util.setupWorkingDir( self.__LOGGER, tophat_dir ) 
+        # Set the common Params
+        common_params = {'ws_client' : Workspace(url=self.__WS_URL, token=ctx['token']),
+                         'hs_client' : HandleService(url=self.__HS_URL, token=ctx['token']),
+                         'user_token' : ctx['token']
+                        }
+        params = prepare_params['global_input_params']    # de-encapsulate the actual method parameters
+                                                          # NOTE: check for error if does not exist
+        # Set the Number of threads if specified 
+        if 'num_threads' in params and params['num_threads'] is not None:
+            common_params['num_threads'] = params['num_threads']
+
+        # Check whether to call Tophat prepare() single or set subclass
+        if ( params['is_sample_set'] == 1 ):
+                 self.__LOGGER.info("TophatCall_prepare SampleSet Case")
+                 tss = TophatSampleSet(self.__LOGGER, tophat_dir, self.__SERVICES)
+                 tasklist = tss.prepare( common_params, params )
+        else:
+                 self.__LOGGER.info("TophatCall_prepare Sample Case")
+                 ts = TophatSample(self.__LOGGER, tophat_dir, self.__SERVICES)
+                 tasklist = ts.prepare( common_params, params )
+
+        #wsc = common_params['ws_client']
+        #obj_info = wsc.get_object_info_new({"objects": [{'name': params['sampleset_id'], 'workspace': params['ws_id']}]})
+        #obj_type = obj_info[0][2].split('-')[0]
+        #if obj_type == 'KBaseRNASeq.RNASeqSampleSet': 
+        #        self.__LOGGER.info("TophatCall_prepare SampleSet Case")
+        #        tss = TophatSampleSet(self.__LOGGER, tophat_dir, self.__SERVICES)
+        #        tasklist = tss.prepare( common_params, params )
+        #else:
+        #        self.__LOGGER.info("TophatCall_prepare Sample Case")
+        #        ts = TophatSample(self.__LOGGER, tophat_dir, self.__SERVICES)
+        #        tasklist = ts.prepare( common_params, params )
+        handler_util.cleanup( self.__LOGGER, tophat_dir )
+
+        returnVal = { 'tasks': tasklist }
+        #END TophatCall_prepare
+
+        # At some point might do deeper type checking...
+        if not isinstance(returnVal, dict):
+            raise ValueError('Method TophatCall_prepare return value ' +
+                             'returnVal is not type dict as required.')
+        # return the results
+        return [returnVal]
+
+    def TophatCall_runEach(self, ctx, task):
+        """
+        :param task: instance of type "TophatCall_task" -> structure:
+           parameter "job_id" of String, parameter "label" of String,
+           parameter "tophat_dir" of String, parameter "ws_id" of String,
+           parameter "reads_type" of String, parameter "annotation_id" of
+           String, parameter "sampleset_id" of String, parameter "gtf_file"
+           of String, parameter "bowtie_index" of String
+        :returns: instance of type "TophatCall_runEachResult"
+           (*****************************) -> structure: parameter
+           "sample_set_id" of String, parameter "output_name" of String
+        """
+        # ctx is the context object
+        # return variables are: returnVal
+        #BEGIN TophatCall_runEach
+
+        #QUESTION: is it necessary to invoke TopHatSampleSet.runEach() or TopHatSample.runEach()
+        # can we just invoke TopHat.runEach()
+
+
+
+        if not os.path.exists( self.__SCRATCH ): os.makedirs(self.__SCRATCH)
+        tophat_dir = os.path.join( self.__SCRATCH, "tmp" )
+        handler_util.setupWorkingDir( self.__LOGGER, tophat_dir ) 
+        # Set the common Params
+        common_params = {'ws_client' : Workspace(url=self.__WS_URL, token=ctx['token']),
+                         'hs_client' : HandleService(url=self.__HS_URL, token=ctx['token']),
+                         'user_token' : ctx['token']
+                        }
+        # Check to Call Tophat in Set mode or Single mode
+        #wsc = common_params['ws_client']
+        #obj_info = wsc.get_object_info_new({"objects": [{'name': params['sampleset_id'], 'workspace': params['ws_id']}]})
+        #obj_type = obj_info[0][2].split('-')[0]
+        #
+        #if obj_type == 'KBaseRNASeq.RNASeqSampleSet': 
+        #        self.__LOGGER.info("TophatCall_prepare SampleSet Case")
+        #        tss = TophatSampleSet(self.__LOGGER, tophat_dir, self.__SERVICES)
+        #        returnVal = tss.runEach( task )
+        #else:
+        #        self.__LOGGER.info("TophatCall_prepare Sample Case")
+        #        ts = TophatSample(self.__LOGGER, tophat_dir, self.__SERVICES)
+        #        returnVal = ts.runEach( task )
+
+        self.__LOGGER.info("TophatCall_runeach")
+
+        toph = Tophat( self.__LOGGER, tophat_dir, self.__SERVICES )
+
+        returnVal = toph.runEach( task )
+
+        handler_util.cleanup( self.__LOGGER, tophat_dir )
+
+        #END TophatCall_runEach
+
+        # At some point might do deeper type checking...
+        if not isinstance(returnVal, dict):
+            raise ValueError('Method TophatCall_runEach return value ' +
+                             'returnVal is not type dict as required.')
+        # return the results
+        return [returnVal]
+
+    def TophatCall_collect(self, ctx, collect_params):
+        """
+        :param collect_params: instance of type
+           "TophatCall_collectInputParams" -> structure: parameter
+           "global_params" of type "TophatCall_globalInputParams"
+           (****************) -> structure: parameter "ws_id" of String,
+           parameter "sampleset_id" of String, parameter "genome_id" of
+           String, parameter "bowtie2_index" of String, parameter
+           "read_mismatches" of Long, parameter "read_gap_length" of Long,
+           parameter "read_edit_dist" of Long, parameter "min_intron_length"
+           of Long, parameter "max_intron_length" of Long, parameter
+           "num_threads" of Long, parameter "report_secondary_alignments" of
+           String, parameter "no_coverage_search" of String, parameter
+           "library_type" of String, parameter "annotation_gtf" of type
+           "ws_referenceAnnotation_id" (Id for KBaseRNASeq.GFFAnnotation @id
+           ws KBaseRNASeq.GFFAnnotation), parameter "is_sample_set" of Long,
+           parameter "input_result_pairs" of list of type
+           "TophatCall_InputResultPair" (*****************************) ->
+           structure: parameter "input" of type "TophatCall_runEachInput" ->
+           structure: parameter "input_arguments" of tuple of size 1: type
+           "TophatCall_task" -> structure: parameter "job_id" of String,
+           parameter "label" of String, parameter "tophat_dir" of String,
+           parameter "ws_id" of String, parameter "reads_type" of String,
+           parameter "annotation_id" of String, parameter "sampleset_id" of
+           String, parameter "gtf_file" of String, parameter "bowtie_index"
+           of String, parameter "result" of type "TophatCall_runEachResult"
+           (*****************************) -> structure: parameter
+           "sample_set_id" of String, parameter "output_name" of String
+        :returns: instance of type "TophatCall_globalResult" -> structure:
+           parameter "output" of unspecified object, parameter "workspace" of
+           String
+        """
+        # ctx is the context object
+        # return variables are: returnVal
+        #BEGIN TophatCall_collect
+
+        #QUESTION: is it necessary to invoke TopHatSampleSet.runEach() or TopHatSample.runEach()
+        # can we just invoke TopHat.runEach()
+
+        if not os.path.exists( self.__SCRATCH ): os.makedirs(self.__SCRATCH)
+        #tophat_dir = os.path.join( self.__SCRATCH, "tmp" )
+        handler_util.setupWorkingDir( self.__LOGGER, tophat_dir ) 
+        # Set the common Params
+        common_params = {'ws_client' : Workspace(url=self.__WS_URL, token=ctx['token']),
+                         'hs_client' : HandleService(url=self.__HS_URL, token=ctx['token']),
+                         'user_token' : ctx['token']
+                        }
+        # Check to Call Tophat in Set mode or Single mode
+        #wsc = common_params['ws_client']
+        #obj_info = wsc.get_object_info_new({"objects": [{'name': params['sampleset_id'], 'workspace': params['ws_id']}]})
+        #obj_type = obj_info[0][2].split('-')[0]
+        #if obj_type == 'KBaseRNASeq.RNASeqSampleSet': 
+        #        self.__LOGGER.info("TophatCall_prepare SampleSet Case")
+        #        tss = TophatSampleSet(self.__LOGGER, tophat_dir, self.__SERVICES)
+        #        returnVal = tss.runEach( task )
+        #else:
+        #        self.__LOGGER.info("TophatCall_prepare Sample Case")
+        #        ts = TophatSample(self.__LOGGER, tophat_dir, self.__SERVICES)
+        #        returnVal = ts.runEach( task )
+
+        # Check whether to call Tophat collect() single or set subclass
+        if ( params['is_sample_set'] == 1 ):
+                 self.__LOGGER.info("TophatCall_prepare SampleSet Case")
+                 tss = TophatSampleSet(self.__LOGGER, tophat_dir, self.__SERVICES)
+                 returnVal = tss.collect( common_params, params )
+        else:
+                 self.__LOGGER.info("TophatCall_prepare Sample Case")
+                 ts = TophatSample(self.__LOGGER, tophat_dir, self.__SERVICES)
+                 returnVal = ts.collect( common_params, params )
+
+        handler_util.cleanup( self.__LOGGER, tophat_dir )
+
+        #END TophatCall_collect
+
+        # At some point might do deeper type checking...
+        if not isinstance(returnVal, dict):
+            raise ValueError('Method TophatCall_collect return value ' +
                              'returnVal is not type dict as required.')
         # return the results
         return [returnVal]
@@ -769,16 +984,14 @@ class KBaseRNASeq:
            of String, parameter "url" of String, parameter "remote_md5" of
            String, parameter "remote_sha1" of String, parameter "sample_ids"
            of list of String, parameter "condition" of list of String,
-           parameter "genome_id" of type "ws_genome_annotation_id" (reference
-           genome annotation id for mapping the RNA-Seq fastq file @id ws
-           KBaseGenomeAnnotations.GenomeAnnotation), parameter
-           "expressionSet_id" of type "ws_expressionSet_id" (Id for
-           expression sample set @id ws KBaseRNASeq.RNASeqExpressionSet),
-           parameter "alignmentSet_id" of type "ws_alignmentSet_id" (The
-           workspace id for a RNASeqAlignmentSet object @id ws
-           KBaseRNASeq.RNASeqAlignmentSet), parameter "sampleset_id" of type
-           "ws_Sampleset_id" (Id for KBaseRNASeq.RNASeqSampleSet @id ws
-           KBaseRNASeq.RNASeqSampleSet), parameter "comments" of String
+           parameter "genome_id" of String, parameter "expressionSet_id" of
+           type "ws_expressionSet_id" (Id for expression sample set @id ws
+           KBaseRNASeq.RNASeqExpressionSet), parameter "alignmentSet_id" of
+           type "ws_alignmentSet_id" (The workspace id for a
+           RNASeqAlignmentSet object @id ws KBaseRNASeq.RNASeqAlignmentSet),
+           parameter "sampleset_id" of type "ws_Sampleset_id" (Id for
+           KBaseRNASeq.RNASeqSampleSet @id ws KBaseRNASeq.RNASeqSampleSet),
+           parameter "comments" of String
         """
         # ctx is the context object
         # return variables are: returnVal
@@ -824,18 +1037,15 @@ class KBaseRNASeq:
            object @id ws KBaseRNASeq.RNASeqAlignmentSet), parameter
            "sampleset_id" of type "ws_Sampleset_id" (Id for
            KBaseRNASeq.RNASeqSampleSet @id ws KBaseRNASeq.RNASeqSampleSet),
-           parameter "genome_id" of type "ws_genome_annotation_id" (reference
-           genome annotation id for mapping the RNA-Seq fastq file @id ws
-           KBaseGenomeAnnotations.GenomeAnnotation), parameter "sample_ids"
-           of list of String, parameter "condition" of list of String,
-           parameter "sample_expression_ids" of list of type
-           "ws_expression_sample_id" (Id for expression sample @id ws
-           KBaseRNASeq.RNASeqExpression), parameter
-           "mapped_expression_objects" of list of mapping from String to
-           String, parameter "mapped_expression_ids" of list of mapping from
-           String to type "ws_expression_sample_id" (Id for expression sample
-           @id ws KBaseRNASeq.RNASeqExpression), parameter "output_obj_name"
-           of String, parameter "num_threads" of Long
+           parameter "genome_id" of String, parameter "sample_ids" of list of
+           String, parameter "condition" of list of String, parameter
+           "sample_expression_ids" of list of type "ws_expression_sample_id"
+           (Id for expression sample @id ws KBaseRNASeq.RNASeqExpression),
+           parameter "mapped_expression_objects" of list of mapping from
+           String to String, parameter "mapped_expression_ids" of list of
+           mapping from String to type "ws_expression_sample_id" (Id for
+           expression sample @id ws KBaseRNASeq.RNASeqExpression), parameter
+           "output_obj_name" of String, parameter "num_threads" of Long
         :returns: instance of type "RNASeqDifferentialExpression" (Object
            RNASeqDifferentialExpression file structure @optional tool_opts
            tool_version sample_ids comments) -> structure: parameter
@@ -848,16 +1058,14 @@ class KBaseRNASeq:
            of String, parameter "url" of String, parameter "remote_md5" of
            String, parameter "remote_sha1" of String, parameter "sample_ids"
            of list of String, parameter "condition" of list of String,
-           parameter "genome_id" of type "ws_genome_annotation_id" (reference
-           genome annotation id for mapping the RNA-Seq fastq file @id ws
-           KBaseGenomeAnnotations.GenomeAnnotation), parameter
-           "expressionSet_id" of type "ws_expressionSet_id" (Id for
-           expression sample set @id ws KBaseRNASeq.RNASeqExpressionSet),
-           parameter "alignmentSet_id" of type "ws_alignmentSet_id" (The
-           workspace id for a RNASeqAlignmentSet object @id ws
-           KBaseRNASeq.RNASeqAlignmentSet), parameter "sampleset_id" of type
-           "ws_Sampleset_id" (Id for KBaseRNASeq.RNASeqSampleSet @id ws
-           KBaseRNASeq.RNASeqSampleSet), parameter "comments" of String
+           parameter "genome_id" of String, parameter "expressionSet_id" of
+           type "ws_expressionSet_id" (Id for expression sample set @id ws
+           KBaseRNASeq.RNASeqExpressionSet), parameter "alignmentSet_id" of
+           type "ws_alignmentSet_id" (The workspace id for a
+           RNASeqAlignmentSet object @id ws KBaseRNASeq.RNASeqAlignmentSet),
+           parameter "sampleset_id" of type "ws_Sampleset_id" (Id for
+           KBaseRNASeq.RNASeqSampleSet @id ws KBaseRNASeq.RNASeqSampleSet),
+           parameter "comments" of String
         """
         # ctx is the context object
         # return variables are: returnVal
@@ -884,7 +1092,6 @@ class KBaseRNASeq:
                              'returnVal is not type dict as required.')
         # return the results
         return [returnVal]
-
     def status(self, ctx):
         #BEGIN_STATUS
         returnVal = {'state': "OK", 'message': "", 'version': self.VERSION, 
