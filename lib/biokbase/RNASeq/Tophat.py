@@ -40,6 +40,9 @@ class Tophat(KBParallelExecutionBase):
 
 
     def runEach(self,task_params):
+
+        print( "in Tophat.runEach(), task_params are")
+        pprint( task_params )
         ws_client = self.common_params['ws_client']
         hs = self.common_params['hs_client']
         params = self.method_params

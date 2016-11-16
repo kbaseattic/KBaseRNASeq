@@ -664,6 +664,8 @@ class KBaseRNASeq:
         #tophat_dir = os.path.join( self.__SCRATCH, "tmp" )
         #handler_util.setupWorkingDir( self.__LOGGER, tophat_dir ) 
         # Set the common Params
+        print( "in TophatCall_prepare, prepare_params is" )
+        pprint( prepare_params )
         common_params = {'ws_client' : Workspace(url=self.__WS_URL, token=ctx['token']),
                          'hs_client' : HandleService(url=self.__HS_URL, token=ctx['token']),
                          'user_token' : ctx['token']
@@ -726,7 +728,8 @@ class KBaseRNASeq:
         #QUESTION: is it necessary to invoke TopHatSampleSet.runEach() or TopHatSample.runEach()
         # can we just invoke TopHat.runEach()
 
-
+        print( "in TophatCall_runEach, task is" )
+        pprint( task )
 
         if not os.path.exists( self.__SCRATCH ): os.makedirs(self.__SCRATCH)
         tophat_dir = os.path.join( self.__SCRATCH, "tmp" )
@@ -811,6 +814,9 @@ class KBaseRNASeq:
         #tophat_dir = os.path.join( self.__SCRATCH, "tmp" )
         #handler_util.setupWorkingDir( self.__LOGGER, tophat_dir ) 
         # Set the common Params
+
+        print( "in TophatCall_collect, collect_params is" )
+        pprint( collect_params )
         common_params = {'ws_client' : Workspace(url=self.__WS_URL, token=ctx['token']),
                          'hs_client' : HandleService(url=self.__HS_URL, token=ctx['token']),
                          'user_token' : ctx['token']

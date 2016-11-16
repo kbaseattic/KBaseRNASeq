@@ -43,6 +43,10 @@ class TophatSampleSet(Tophat):
 
     def prepare( self, common_params, method_params ): 
         # for quick testing, we recover parameters here
+        print( "in TophatSampleSet.prepare(), common_params are ")
+        pprint( common_params )
+        print( " and method_params are" )
+        pprint( method_params )
         ws_client = common_params['ws_client']
         hs = common_params['hs_client']
         params = method_params
@@ -146,6 +150,11 @@ class TophatSampleSet(Tophat):
 
     def collect(self, common_params, method_params):
         # do with 
+        print( "in TophatSampleSet.collect(), common_params are ")
+        pprint( common_params )
+        print( " and method_params are" )
+        pprint( method_params )
+
         alignmentSet_name = method_params['sampleset_id']+"_tophat_AlignmentSet"
         self.logger.info(" Creating AlignmentSet for the Alignments {0}".format(alignmentSet_name))
         # TODO: Split alignment set and report method
