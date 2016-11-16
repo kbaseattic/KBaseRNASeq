@@ -24,7 +24,9 @@ try:
 except:
     from biokbase.AbstractHandle.Client import AbstractHandle as HandleService
 
+from KBParallel.KBParallelClient import KBParallel
 from biokbase.RNASeq.ExecutionBase import ExecutionBase
+
 
 class KBParallelExecutionBase(ExecutionBase):
 
@@ -42,7 +44,7 @@ class KBParallelExecutionBase(ExecutionBase):
         kbp = KBParallel( os.environ['SDK_CALLBACK_URL'], token=common_params['user_token'])
         returnVal = kbp.run( { 'method': { 'module_name': "KBaseRNASeq",
                                            'method_name': method,
-                                           'servic,e_ver': ""
+                                           'service_ver': "dev"
                                           },
                                'is_local': 1,
                                'global_params': run_params,  # NOTE: this is called global_input in KBParallel.spec:  FIX!
