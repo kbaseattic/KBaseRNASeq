@@ -660,8 +660,8 @@ class KBaseRNASeq:
         #BEGIN TophatCall_prepare
 
         # this prepare() runs in the same process as 
-        #if not os.path.exists( self.__SCRATCH ): os.makedirs(self.__SCRATCH)
-        #tophat_dir = os.path.join( self.__SCRATCH, "tmp" )
+        if not os.path.exists( self.__SCRATCH ): os.makedirs(self.__SCRATCH)
+        tophat_dir = os.path.join( self.__SCRATCH, "tmp" )
         #handler_util.setupWorkingDir( self.__LOGGER, tophat_dir ) 
         # Set the common Params
         print( "in TophatCall_prepare, prepare_params is" )
