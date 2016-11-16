@@ -569,7 +569,7 @@
 
     typedef structure {
         string ws_id;                       /* duplicate of param block to main TophatCall() method */
-        string read_sample; 
+        string sampleset_id; 
         string genome_id;
         string bowtie2_index;
         int read_mismatches;

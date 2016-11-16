@@ -52,7 +52,7 @@ class TophatSampleSet(Tophat):
 
         try:
                sample, bowtie_index = ws_client.get_objects(
-                                        [ { 'name' : params['read_sample'], 'workspace' : params['ws_id'] },
+                                        [ { 'name' : params['sampleset_id'], 'workspace' : params['ws_id'] },
                                           { 'name' : params['bowtie_index'], 'workspace' : params['ws_id'] }
                                         ] )
                self.sample = sample
@@ -60,7 +60,7 @@ class TophatSampleSet(Tophat):
                logger.exception("".join(traceback.format_exc()))
                raise ValueError(" Error Downloading objects from the workspace ")
         ### Get object Info and IDs
-        sample_info = ws_client.get_object_info_new({"objects": [{'name': params['read_sample'], 'workspace': params['ws_id']}]})[0]
+        sample_info = ws_client.get_object_info_new({"objects": [{'name': params['sampleset_id'], 'workspace': params['ws_id']}]})[0]
         sample_type = sample_info[2].split('-')[0]
 
         # SampleSet
