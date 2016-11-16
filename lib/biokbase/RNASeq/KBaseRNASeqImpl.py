@@ -614,7 +614,7 @@ class KBaseRNASeq:
                 #ts = TophatSample( self.__LOGGER, tophat_dir, self.__SERVICES )
                 #returnVal = ts.run( "Tophat", common_params, params )
 
-        returnVal = toph.run( "Tophat", common_params, run_params )
+        returnVal = toph.run( "TophatCall", common_params, run_params )
 
         handler_util.cleanup(self.__LOGGER,tophat_dir)
 
