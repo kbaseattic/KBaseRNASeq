@@ -567,30 +567,6 @@
         /* Tophat methods */
         /******************/
 
- typedef structure {         /* these all get passed to KBparallel.run() as 'global_params' which are then passed to prepare()  */
-     string ws_id;
-     string read_sample; 
-     string genome_id;
-     string bowtie2_index;
-     int read_mismatches;
-     int read_gap_length;
-     int read_edit_dist;
-     int min_intron_length;
-     int max_intron_length;
-     int num_threads;
-     string report_secondary_alignments;
-     string no_coverage_search;
-     string library_type; 
-     ws_referenceAnnotation_id annotation_gtf;
-     } TophatParams;
-
-  async funcdef TophatCall(TophatParams params)
-     returns (ResultsToReport) authentication required;
-
-         /*****************************/
-         /* TophatCall_prepare method */
-         /*****************************/
-
     typedef structure {
         string ws_id;                       /* duplicate of param block to main TophatCall() method */
         string read_sample; 
@@ -607,8 +583,24 @@
         string library_type; 
         ws_referenceAnnotation_id annotation_gtf;
 
-        string  user_token;                  /* I think we need this */
+        int is_sample_set;                  /* 1 if input is a sample set as opposed to singular */
+                                            /* this is set by TophatCall() before invoking Tophat.run() */
+
     } TophatCall_globalInputParams;
+
+
+ typedef structure {         /* these all get passed to KBparallel.run() as 'global_params' which are then passed to prepare()  */
+      TophatCall_globalInputParams global_input_params;
+
+     } TophatCall_runParams;
+
+  async funcdef TophatCall(TophatCall_runParams params)
+     returns (ResultsToReport) authentication required;
+
+         /*****************************/
+         /* TophatCall_prepare method */
+         /*****************************/
+
 
 
     typedef structure {                       /* new KBParallel prepare() needs this encapsulation */
@@ -646,7 +638,7 @@
 
 
     typedef structure {
-        string read_sample;
+        string sample_set_id;
         string output_name;
     } TophatCall_runEachResult;
 
@@ -667,8 +659,8 @@
     } TophatCall_collectInputParams;
 
     typedef structure {
-        string output;
-        list<tuple<int job_number, string message>> jobs;
+         UnspecifiedObject output;
+         string           workspace;
     } TophatCall_globalResult;
 
     funcdef TophatCall_collect( TophatCall_collectInputParams collect_params ) returns( TophatCall_globalResult ) authentication required;

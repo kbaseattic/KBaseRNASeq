@@ -37,29 +37,30 @@ class TophatSampleSet(Tophat):
 
         # user defined shared variables across methods
         self.sample = None
-	self.bowtie2index_id = None
+        self.bowtie2index_id = None
         #self.num_threads = None
 
 
-    def prepare(self): 
+    def prepare( self, common_params, method_params ): 
         # for quick testing, we recover parameters here
-        ws_client = self.common_params['ws_client']
-        hs = self.common_params['hs_client']
-        params = self.method_params
+        ws_client = common_params['ws_client']
+        hs = common_params['hs_client']
+        params = method_params
         logger = self.logger
-        token = self.common_params['user_token']
-        tophat_dir = self.directory
+        token = common_params['user_token']
+        tophat_dir = self.directory             # QUESTION: Will this be shared directory if local?
 
         try:
-               sample ,bowtie_index = ws_client.get_objects(
-                                        [{'name' : params['sampleset_id'],'workspace' : params['ws_id']},
-					{ 'name' : params['bowtie_index'], 'workspace' : params['ws_id']}])
+               sample, bowtie_index = ws_client.get_objects(
+                                        [ { 'name' : params['read_sample'], 'workspace' : params['ws_id'] },
+                                          { 'name' : params['bowtie_index'], 'workspace' : params['ws_id'] }
+                                        ] )
                self.sample = sample
         except Exception,e:
                logger.exception("".join(traceback.format_exc()))
                raise ValueError(" Error Downloading objects from the workspace ")
         ### Get object Info and IDs
-        sample_info = ws_client.get_object_info_new({"objects": [{'name': params['sampleset_id'], 'workspace': params['ws_id']}]})[0]
+        sample_info = ws_client.get_object_info_new({"objects": [{'name': params['read_sample'], 'workspace': params['ws_id']}]})[0]
         sample_type = sample_info[2].split('-')[0]
 
         # SampleSet
@@ -73,8 +74,7 @@ class TophatSampleSet(Tophat):
            raise ValueError('Missing Library objects {0} in the {1}. please copy them and run this method'.format(",".join(missing_objs),params['ws_id']))
 
 
-
-	### Get obejct IDs
+        ### Get object IDs
         bowtie2_index_info,sampleset_info = ws_client.get_object_info_new({"objects": [{'name': params['bowtie_index'], 'workspace': params['ws_id']},{'name': params['sampleset_id'], 'workspace': params['ws_id']}]})
         self.bowtie2index_id = str(bowtie2_index_info[6]) + '/' + str(bowtie2_index_info[0]) + '/' + str(bowtie2_index_info[4])  
         sampleset_id = str(sampleset_info[6]) + '/' + str(sampleset_info[0]) + '/' + str(sampleset_info[4]) 
@@ -97,14 +97,14 @@ class TophatSampleSet(Tophat):
         fasta_file =os.path.join(tophat_dir,(handler_util.get_file_with_suffix(tophat_dir,".fa")+".fa"))
         bowtie2base =os.path.join(tophat_dir,handler_util.get_file_with_suffix(tophat_dir,".rev.1.bt2"))
 
-	### Check if GTF annotation object exist or skip this step
-	### Check if the gtf object exists in the workspace
+        ### Check if GTF annotation object exist or skip this step
+        ### Check if the gtf object exists in the workspace
         ### Only run create_gtf_annotation if object doesnt exist
-	ws_gtf = annotation_gtf+"_GTF_Annotation"
-	ret = script_util.if_obj_exists(None,ws_client,params['ws_id'],"KBaseRNASeq.GFFAnnotation",[ws_gtf])
+        ws_gtf = annotation_gtf+"_GTF_Annotation"
+        ret = script_util.if_obj_exists(None,ws_client,params['ws_id'],"KBaseRNASeq.GFFAnnotation",[ws_gtf])
         if not ret is None:
             logger.info("GFF Annotation Exist for Genome Annotation {0}.... Skipping step ".format(annotation_gtf))
-	    annot_name,annot_id = ret[0]
+            annot_name,annot_id = ret[0]
             gtf_obj=ws_client.get_objects([{'ref' : annot_id}])[0]
             gtf_id=gtf_obj['data']['handle']['id']
             gtf_name=gtf_obj['data']['handle']['file_name']
@@ -112,11 +112,11 @@ class TophatSampleSet(Tophat):
                script_util.download_file_from_shock(logger, shock_service_url=self.urls['shock_service_url'], shock_id=gtf_id,filename=gtf_name, directory=tophat_dir,token=token)
                gtf_file = os.path.join(tophat_dir,gtf_name)
             except Exception,e:
-	       logger.exception(e)
+               logger.exception(e)
                raise Exception( "Unable to download shock file, {0}".format(gtf_name))  
- 	else:		
-	    gtf_file =rnaseq_util.create_gtf_annotation_from_genome(logger,ws_client,hs,self.urls,params['ws_id'],genome_id,annotation_gtf,tophat_dir,token)		
-	# Determine the num_threads provided by the user otherwise default the number of threads to 2
+        else:
+            gtf_file =rnaseq_util.create_gtf_annotation_from_genome(logger,ws_client,hs,self.urls,params['ws_id'],genome_id,annotation_gtf,tophat_dir,token)
+        # Determine the num_threads provided by the user otherwise default the number of threads to 2
         reads = sample['data']['sample_ids']
         reads_type= sample['data']['Library_type']
         r_label = sample['data']['condition']
@@ -132,7 +132,7 @@ class TophatSampleSet(Tophat):
                                   'ws_id' : params['ws_id'],
                                   'reads_type' : reads_type,
                                   'tophat_dir' : self.directory,
-				  'gtf_file' : gtf_file,
+                                  'gtf_file' : gtf_file,
                                   'annotation_id': genome_id,
                                   'sampleset_id' : sampleset_id
                                  }
@@ -141,14 +141,24 @@ class TophatSampleSet(Tophat):
             except Exception,e:
                     raise
 
+        return self.task_list
 
-    def collect(self) :
+
+    def collect(self, common_params, method_params):
         # do with 
-        alignmentSet_name = self.method_params['sampleset_id']+"_tophat_AlignmentSet"
+        alignmentSet_name = method_params['sampleset_id']+"_tophat_AlignmentSet"
         self.logger.info(" Creating AlignmentSet for the Alignments {0}".format(alignmentSet_name))
         # TODO: Split alignment set and report method
-        reportObj=rnaseq_util.create_RNASeq_AlignmentSet_and_build_report(self.logger,self.common_params['ws_client'],self.method_params['ws_id'],self.sample['data']['sample_ids'],self.task_list[0]['sampleset_id'],self.task_list[0]['annotation_id'],self.bowtie2index_id,self.results,alignmentSet_name)
+        #reportObj=rnaseq_util.create_RNASeq_AlignmentSet_and_build_report( self.logger, 
+        #                                                                   common_params['ws_client'],
+        #                                                                   method_params['ws_id'],sample['data']['sample_ids'],
+        #                                                                   self.task_list[0]['sampleset_id'],
+        #                                                                   self.task_list[0]['annotation_id'],
+        #                                                                   self.bowtie2index_id,
+        #                                                                   self.results,
+        #                                                                   alignmentSet_name)
         self.returnVal = { 'output'  : alignmentSet_name ,'workspace' : self.method_params['ws_id']}
+        return( self.returnVal )
 #	reportName = 'Align_Reads_using_Tophat_'+str(hex(uuid.getnode()))
 #        report_info = self.common_params['ws_client'].save_objects({
 #                                                'workspace':self.method_params['ws_id'],

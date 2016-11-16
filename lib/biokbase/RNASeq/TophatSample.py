@@ -37,18 +37,18 @@ class TophatSample(Tophat):
         self.bowtie2index_id = None
         self.num_threads = 1
 
-    def prepare(self): 
+    def prepare( self, common_params, method_params ): 
         # for quick testing, we recover parameters here
-        ws_client = self.common_params['ws_client']
-        hs = self.common_params['hs_client']
-        params = self.method_params
+        ws_client = common_params['ws_client']
+        hs = common_params['hs_client']
+        params = method_params
         logger = self.logger
-        token = self.common_params['user_token']
+        token = common_params['user_token']
         tophat_dir = self.directory
 
         try:
                sample, bowtie_index = ws_client.get_objects(
-                                        [ { 'name' : params['sampleset_id'],'workspace' : params['ws_id'] },
+                                        [ { 'name' : params['read_sample'],'workspace' : params['ws_id'] },
                                           { 'name' : params['bowtie_index'], 'workspace' : params['ws_id'] }
                                         ] )
                self.sample = sample
@@ -56,7 +56,7 @@ class TophatSample(Tophat):
                logger.exception("".join(traceback.format_exc()))
                raise ValueError(" Error Downloading objects from the workspace ")
         ### Get object Info and IDs
-        sample_info = ws_client.get_object_info_new({"objects": [{'name': params['sampleset_id'], 'workspace': params['ws_id']}]})[0]
+        sample_info = ws_client.get_object_info_new({"objects": [{'name': params['read_sample'], 'workspace': params['ws_id']}]})[0]
         sample_type = sample_info[2].split('-')[0]
 
 
@@ -117,7 +117,9 @@ class TophatSample(Tophat):
                       }
         self.task_list.append(task_param)
 
-    def collect(self) :
+        return self.task_list
+
+    def collect(self, common_params, method_params) :
         # do with 
         #alignment_name = self.method_params['sampleset_id']+"_tophat_Alignment"
         #self.logger.info(" Creating Report for Alignment {0}".format(alignment_name))
@@ -125,6 +127,7 @@ class TophatSample(Tophat):
         # TODO: Split alignment set and report method
         sref = self.common_params['ws_client'].get_object_info_new({"objects": [{'name':single_alignment, 'workspace': self.method_params['ws_id']}]})[0]
         self.returnVal = { 'output'  : single_alignment ,'workspace' : self.method_params['ws_id']}
+        return( self.returnVal )
 #        reportObj = {'objects_created':[{'ref' :str(sref[6]) + '/' + str(sref[0]) + '/' + str(sref[4]),
 #                                                 'description' : "RNA-seq Alignment for reads Sample: {0}".format(single_read)}],
 #                                                 'text_message': "RNA-seq Alignment for reads Sample: {0}".format(single_read)}
