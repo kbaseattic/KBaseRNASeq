@@ -36,7 +36,7 @@ class Tophat(KBParallelExecutionBase):
         # user defined shared variables across methods
         #self.sample = None
         #self.sampleset_info = None
-        self.num_threads = None
+        self.num_threads = 2
 
 
     def runEach(self,task_params):
@@ -45,7 +45,7 @@ class Tophat(KBParallelExecutionBase):
         pprint( task_params )
         ws_client = self.common_params['ws_client']
         hs = self.common_params['hs_client']
-        params = self.method_params
+        params = task_params
         logger = self.logger
         token = self.common_params['user_token']
         logger.info("common_params: " + pformat(self.common_params, indent=4))
@@ -56,7 +56,7 @@ class Tophat(KBParallelExecutionBase):
         ws_id = task_params['ws_id']
         reads_type = task_params['reads_type']
         genome_id = task_params['annotation_id']
-        #sampleset_id = task_params['sampleset_id']
+        sampleset_id = task_params['sampleset_id']
         gtf_file = task_params['gtf_file']
 
         logger.info("processing index preparation")
@@ -201,12 +201,12 @@ class Tophat(KBParallelExecutionBase):
                                "aligner_version" : "2.2.1" , 
                                'library_type' : lib_type , 
                                'condition' : condition ,
-                               'sample_id': sample_id, 
+                               'read_sample_id': read_sample, 
                                'genome_id' : genome_id , 
-                               'bowtie2_index': self.bowtie2index_id,
+                               'bowtie2_index': params['bowtie2index_id'],
                                'alignment_stats' : stats_data }
-                #if not sampleset_id is None: tophat_out['sampleset_id'] = sampleset_id
-                pprint(tophat_out)
+                if not sampleset_id is None: tophat_out['sampleset_id'] = sampleset_id
+                logger.info(pformat(tophat_out))
                 try:
                         res= ws_client.save_objects( { "workspace":ws_id,
                                                        "objects": [ { "type":"KBaseRNASeq.RNASeqAlignment",

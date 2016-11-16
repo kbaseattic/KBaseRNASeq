@@ -118,7 +118,9 @@ class TophatSample(Tophat):
                       'tophat_dir' : self.directory,
                       'gtf_file': gtf_file,
                       'annotation_id': genome_id,
-                      'sampleset_id' : None
+                      'sampleset_id' : None,
+                      'bowtie_index' : params['bowtie_index'],
+                      'bowtie2index_id' : self.bowtie2index_id
                       }
         self.task_list.append(task_param)
 
