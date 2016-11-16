@@ -594,7 +594,7 @@
 
      } TophatCall_runParams;
 
-  async funcdef TophatCall(TophatCall_runParams run_params)
+  async funcdef TophatCall(TophatCall_globalInputParams params)
      returns (ResultsToReport) authentication required;
 
          /*****************************/
