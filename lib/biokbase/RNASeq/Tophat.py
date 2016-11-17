@@ -64,13 +64,14 @@ class Tophat(KBParallelExecutionBase):
         if ( handler_util.get_file_with_suffix(directory,".rev.1.bt2") == None ):
             logger.info("no bowtie index")
             try:
-                   bowtie_index = ws_client.get_objects( [ { 'name' : task_params['bowtie_index'], 'workspace' : task_params['ws_id'] } ] )
+                   bowtie_index = ws_client.get_objects( [ { 'name' : task_params['bowtie_index'], 'workspace' : task_params['ws_id'] } ] )[0]
             except Exception,e:
                    logger.exception("".join(traceback.format_exc()))
                    raise ValueError(" Error Downloading bowtie_index object from the workspace ")
     
-            bowtie2_index_info = ws_client.get_object_info_new( {"objects": [{'name': task_params['bowtie_index'], 'workspace': task_params['ws_id']} ] } )
+            bowtie2_index_info = ws_client.get_object_info_new( {"objects": [{'name': task_params['bowtie_index'], 'workspace': task_params['ws_id']} ] } )[0]
     
+            logger.info(pformat(bowtie2_index_info))
             self.bowtie2index_id = str(bowtie2_index_info[6]) + '/' + str(bowtie2_index_info[0]) + '/' + str(bowtie2_index_info[4])  
             bw_id = bowtie_index['data']['handle']['id'] 
             bw_name =  bowtie_index['data']['handle']['file_name']
@@ -107,13 +108,13 @@ class Tophat(KBParallelExecutionBase):
                 gtf_id=gtf_obj['data']['handle']['id']
                 gtf_name=gtf_obj['data']['handle']['file_name']
                 try:
-                   script_util.download_file_from_shock(logger, shock_service_url=self.urls['shock_service_url'], shock_id=gtf_id,filename=gtf_name, directory=tophat_dir,token=token)
-                   gtf_file = os.path.join(tophat_dir,gtf_name)
+                   script_util.download_file_from_shock(logger, shock_service_url=self.urls['shock_service_url'], shock_id=gtf_id,filename=gtf_name, directory=directory,token=token)
+                   gtf_file = os.path.join(directory,gtf_name)
                 except Exception,e:
                    logger.exception(e)
                    raise Exception( "Unable to download shock file, {0}".format(gtf_name))  
             else:
-                gtf_file =rnaseq_util.create_gtf_annotation_from_genome(logger,ws_client,hs,self.urls,params['ws_id'],genome_id,annotation_gtf,tophat_dir,token)        
+                gtf_file =rnaseq_util.create_gtf_annotation_from_genome(logger,ws_client,hs,self.urls,params['ws_id'],genome_id,annotation_gtf,directory,token)        
 
 
         logger.info("Downloading read sample")
