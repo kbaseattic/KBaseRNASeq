@@ -131,16 +131,20 @@ class TophatSampleSet(Tophat):
         for i in reads:
             try:
                     label = r_label[count]
-                    task_param = {'job_id' : i,
-                                  'label' : r_label[count],
-                                  'ws_id' : params['ws_id'],
-                                  'reads_type' : reads_type,
-                                  'tophat_dir' : self.directory,
-                                  'gtf_file' : gtf_file,
-                                  'annotation_id': genome_id,
-                                  'sampleset_id' : sampleset_id,
-                                  'bowtie_index' : params['bowtie_index'],
-                                  'bowtie2index_id' : self.bowtie2index_id
+                    task_param = {'input_arguments' :  
+                                  [
+                                   {'job_id' : i,
+                                    'label' : r_label[count],
+                                    'ws_id' : params['ws_id'],
+                                    'reads_type' : reads_type,
+                                    'tophat_dir' : self.directory,
+                                    'gtf_file' : gtf_file,
+                                    'annotation_id': genome_id,
+                                    'sampleset_id' : sampleset_id,
+                                    'bowtie_index' : params['bowtie_index'],
+                                    'bowtie2index_id' : self.bowtie2index_id
+                                   }
+                                  ]
                                  }
                     self.task_list.append(task_param)
                     count = count + 1
