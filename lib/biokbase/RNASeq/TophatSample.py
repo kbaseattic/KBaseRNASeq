@@ -111,17 +111,19 @@ class TophatSample(Tophat):
         self.num_jobs =  1
 
         logger.info(" Number of threads used by each process {0}".format(self.num_threads))
-        task_param = {'job_id' : params['sampleset_id'],
-                      'label' : 'Single-Sample',
-                      'ws_id' : params['ws_id'],
-                      'reads_type' : sample_type,
-                      'tophat_dir' : self.directory,
-                      'gtf_file': gtf_file,
-                      'annotation_id': genome_id,
-                      'sampleset_id' : None,
-                      'bowtie_index' : params['bowtie_index'],
-                      'bowtie2index_id' : self.bowtie2index_id
-                      }
+        task_param = {'input_arguments' : 
+                       {'job_id' : params['sampleset_id'],
+                        'label' : 'Single-Sample',
+                        'ws_id' : params['ws_id'],
+                        'reads_type' : sample_type,
+                        'tophat_dir' : self.directory,
+                        'gtf_file': gtf_file,
+                        'annotation_id': genome_id,
+                        'sampleset_id' : None,
+                        'bowtie_index' : params['bowtie_index'],
+                        'bowtie2index_id' : self.bowtie2index_id
+                       }
+                     }
         self.task_list.append(task_param)
 
         return self.task_list

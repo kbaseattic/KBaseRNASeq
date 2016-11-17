@@ -34,24 +34,24 @@ class KBParallelExecutionBase(ExecutionBase):
 
     # method is "TophatCall", etc
  
-    def run(self, method, common_params, run_params):
+    def run(self, module, method, common_params, method_params):
 
         print( "in KBparallelExecutionBase.run, common_params are")
         pprint( common_params )
-        print( "and run_params are ")
-        pprint( run_params )
+        print( "and method_params are ")
+        pprint( method_params )
         self._checkCommonParams(common_params)
         #self._setCommonParams(common_params)
         #self.method_params = method_params
         #self.common_params = common_params
 
         kbp = KBParallel( os.environ['SDK_CALLBACK_URL'], token=common_params['user_token'])
-        returnVal = kbp.run( { 'method': { 'module_name': "KBaseRNASeq",
+        returnVal = kbp.run( { 'method': { 'module_name': module,
                                            'method_name': method,
-                                           'service_ver': "dev"
+                                           'service_ver': method_params['service_ver']
                                           },
-                               'is_local': 1,
-                               'global_params': run_params,  # NOTE: this is called global_input in KBParallel.spec:  FIX!
+                               'is_local': int(method_params['is_local']),
+                               'global_params': method_params,  
                                'time_limit': 1000000} )
         return returnVal
 

@@ -602,19 +602,17 @@ class KBaseRNASeq:
 
         if obj_type == 'KBaseRNASeq.RNASeqSampleSet':	
                 self.__LOGGER.info( "TophatCall SampleSet Case" )
-                params["is_sample_set"] = 1
+                params['is_sample_set'] = 1
                 #tss = TophatSampleSet( self.__LOGGER, tophat_dir, self.__SERVICES )
                 #returnVal = tss.run( "Tophat", common_params, params )
         else:
                 self.__LOGGER.info("TophatCall Sample Case")
-                params["is_sample_set"] = 0
+                params['is_sample_set'] = 0
                 #ts = TophatSample( self.__LOGGER, tophat_dir, self.__SERVICES )
                 #returnVal = ts.run( "Tophat", common_params, params )
 
-        run_params = { "global_input_params": params }   # encapsulate params for KBParallel.run()
         print( "in TophatCall, run_params")
-        pprint( run_params)
-        returnVal = toph.run( "TophatCall", common_params, run_params )
+        returnVal = toph.run( ctx['module'], ctx['method'], common_params, params )
 
         handler_util.cleanup(self.__LOGGER,tophat_dir)
 
