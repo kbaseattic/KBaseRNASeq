@@ -552,7 +552,7 @@ class KBaseRNASeq:
         # return the results
         return [returnVal]
 
-    def TophatCall(self, ctx, run_params):
+    def TophatCall(self, ctx, params):
         """
         :param run_params: instance of type "TophatCall_runParams" ->
            structure: parameter "global_input_params" of type
@@ -576,10 +576,7 @@ class KBaseRNASeq:
         # return variables are: returnVal
         #BEGIN TophatCall
 
-        print( "In TophatCall, run_params are")
-        pprint( run_params )
-        params = run_params["global_input_params"]
-        print( "global_input_params are" )
+        print( "In TophatCall, params are")
         pprint( params )
 
         if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
@@ -605,14 +602,16 @@ class KBaseRNASeq:
 
         if obj_type == 'KBaseRNASeq.RNASeqSampleSet':	
                 self.__LOGGER.info( "TophatCall SampleSet Case" )
-                run_params["global_input_params"]["is_sample_set"] = 1
+                params["is_sample_set"] = 1
                 #tss = TophatSampleSet( self.__LOGGER, tophat_dir, self.__SERVICES )
                 #returnVal = tss.run( "Tophat", common_params, params )
         else:
                 self.__LOGGER.info("TophatCall Sample Case")
-                run_params["global_input_params"]["is_sample_set"] = 0
+                params["is_sample_set"] = 0
                 #ts = TophatSample( self.__LOGGER, tophat_dir, self.__SERVICES )
                 #returnVal = ts.run( "Tophat", common_params, params )
+
+        run_params = { "global_input_params": params }   # encapsulate params for KBParallel.run()
         print( "in TophatCall, run_params")
         pprint( run_params)
         returnVal = toph.run( "TophatCall", common_params, run_params )
