@@ -141,8 +141,8 @@ class TophatSample(Tophat):
         #self.logger.info(" Creating Report for Alignment {0}".format(alignment_name))
         global_params = method_params['global_params']
         input_result_pairs = method_params['input_result_pairs']
-        single_read = input_result_pairs[0]['read_sample']
-        single_alignment = input_result_pairs[0]['output_name']
+        single_read = input_result_pairs[0]['result']['read_sample']
+        single_alignment = input_result_pairs[0]['result']['output_name']
         # TODO: Split alignment set and report method
         sref = common_params['ws_client'].get_object_info_new({"objects": [{'name':single_alignment, 'workspace': global_params['ws_id']}]})[0]
         returnVal = { 'output': single_alignment, 'workspace': global_params['ws_id'] }
