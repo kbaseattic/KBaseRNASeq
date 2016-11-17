@@ -808,8 +808,8 @@ class KBaseRNASeq:
         #QUESTION: is it necessary to invoke TopHatSampleSet.runEach() or TopHatSample.runEach()
         # can we just invoke TopHat.runEach()
 
-        #if not os.path.exists( self.__SCRATCH ): os.makedirs(self.__SCRATCH)
-        #tophat_dir = os.path.join( self.__SCRATCH, "tmp" )
+        if not os.path.exists( self.__SCRATCH ): os.makedirs(self.__SCRATCH)
+        tophat_dir = os.path.join( self.__SCRATCH, "tmp" )
         #handler_util.setupWorkingDir( self.__LOGGER, tophat_dir ) 
         # Set the common Params
 
