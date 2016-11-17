@@ -196,12 +196,12 @@
           "target_property" : "ws_id"
         },
         {
-          "constant_value" : "service_ver",
-          "target_property" : "dev"
+          "constant_value" : "dev",
+          "target_property" : "service_ver"
         },
         {
-          "constant_value" : "is_local",
-          "target_property" : 1
+          "constant_value" : 1,
+          "target_property" :"is_local" 
         },
         {
           "input_parameter" : "sampleset_id",
