@@ -135,11 +135,14 @@ class TophatSample(Tophat):
         # do with 
         #alignment_name = self.method_params['sampleset_id']+"_tophat_Alignment"
         #self.logger.info(" Creating Report for Alignment {0}".format(alignment_name))
-        single_read , single_alignment = self.results[0]
+        global_params = method_params['global_params']
+        input_result_pairs = method_params['input_result_pairs']
+        single_read = input_result_pairs[0]['read_sample']
+        single_alignment = input_result_pairs[0]['output_name']
         # TODO: Split alignment set and report method
-        sref = self.common_params['ws_client'].get_object_info_new({"objects": [{'name':single_alignment, 'workspace': self.method_params['ws_id']}]})[0]
-        self.returnVal = { 'output'  : single_alignment ,'workspace' : self.method_params['ws_id']}
-        return( self.returnVal )
+        sref = common_params['ws_client'].get_object_info_new({"objects": [{'name':single_alignment, 'workspace': global_params['ws_id']}]})[0]
+        returnVal = { 'output': single_alignment, 'workspace': global_params['ws_id'] }
+        return( returnVal )
 #        reportObj = {'objects_created':[{'ref' :str(sref[6]) + '/' + str(sref[0]) + '/' + str(sref[4]),
 #                                                 'description' : "RNA-seq Alignment for reads Sample: {0}".format(single_read)}],
 #                                                 'text_message': "RNA-seq Alignment for reads Sample: {0}".format(single_read)}

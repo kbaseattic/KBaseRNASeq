@@ -157,7 +157,15 @@ class TophatSampleSet(Tophat):
         print( " and method_params are" )
         pprint( method_params )
 
-        alignmentSet_name = method_params['sampleset_id']+"_tophat_AlignmentSet"
+        global_params = method_params['global_params']
+        input_result_pairs = method_params['input_result_pairs']
+        single_alignment = input_result_pairs[0]['output_name']
+
+        sref = common_params['ws_client'].get_object_info_new({"objects": [{'name':single_alignment, 'workspace': global_params['ws_id']}]})[0]
+        returnVal = { 'output': single_alignment, 'workspace': global_params['ws_id'] }
+        return( returnVal )
+
+        alignmentSet_name = global_params['sampleset_id']+"_tophat_AlignmentSet"
         self.logger.info(" Creating AlignmentSet for the Alignments {0}".format(alignmentSet_name))
         # TODO: Split alignment set and report method
         #reportObj=rnaseq_util.create_RNASeq_AlignmentSet_and_build_report( self.logger, 
@@ -168,8 +176,8 @@ class TophatSampleSet(Tophat):
         #                                                                   self.bowtie2index_id,
         #                                                                   self.results,
         #                                                                   alignmentSet_name)
-        self.returnVal = { 'output'  : alignmentSet_name ,'workspace' : self.method_params['ws_id']}
-        return( self.returnVal )
+        returnVal = { 'output'  : alignmentSet_name ,'workspace' : global_params['ws_id']}
+        return( returnVal )
 #	reportName = 'Align_Reads_using_Tophat_'+str(hex(uuid.getnode()))
 #        report_info = self.common_params['ws_client'].save_objects({
 #                                                'workspace':self.method_params['ws_id'],
