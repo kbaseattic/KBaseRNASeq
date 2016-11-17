@@ -833,14 +833,14 @@ class KBaseRNASeq:
         #        returnVal = ts.runEach( task )
 
         # Check whether to call Tophat collect() single or set subclass
-        if ( params['is_sample_set'] == 1 ):
+        if ( collect_params['global_params']['is_sample_set'] == 1 ):
                  self.__LOGGER.info("TophatCall_prepare SampleSet Case")
                  tss = TophatSampleSet(self.__LOGGER, tophat_dir, self.__SERVICES)
-                 returnVal = tss.collect( common_params, params )
+                 returnVal = tss.collect( common_params, collect_params )
         else:
                  self.__LOGGER.info("TophatCall_prepare Sample Case")
                  ts = TophatSample(self.__LOGGER, tophat_dir, self.__SERVICES)
-                 returnVal = ts.collect( common_params, params )
+                 returnVal = ts.collect( common_params, collect_params )
 
         #handler_util.cleanup( self.__LOGGER, tophat_dir )
 
