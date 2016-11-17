@@ -191,9 +191,17 @@
       "name" : "KBaseRNASeq",
       "method" : "TophatCall",
       "input_mapping" : [
-       {
+        {
           "narrative_system_variable": "workspace",
           "target_property" : "ws_id"
+        },
+        {
+          "constant_value" : "service_ver",
+          "target_property" : "dev"
+        },
+        {
+          "constant_value" : "is_local",
+          "target_property" : 1
         },
         {
           "input_parameter" : "sampleset_id",

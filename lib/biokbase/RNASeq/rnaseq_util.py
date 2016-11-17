@@ -12,6 +12,7 @@ from doekbase.data_api.annotation.genome_annotation.api import GenomeAnnotationA
 from doekbase.data_api.sequence.assembly.api import AssemblyAPI, AssemblyClientAPI
 from biokbase.RNASeq import handler_utils as handler_util
 from biokbase.RNASeq import script_util
+from pprint import pprint,pformat
 
 def get_fa_from_genome(logger,ws_client,urls,ws_id,directory,genome_name):
     ref_info = ws_client.get_object_info_new({"objects": [{'name': genome_name, 'workspace': ws_id}]})[0]
@@ -158,6 +159,68 @@ def create_RNASeq_AlignmentSet_and_build_report(logger,ws_client,ws_id,sample_li
                      }
 	 return reportObj
 
+
+def create_RNASeq_AlignmentSet_and_build_report4kbp(logger,ws_client,ws_id,sampleset_id,genome_id,bowtie2index_id,results,alignmentSet_name):
+	 results =  [ ret for ret in results if not ret is None ]
+	 if len(results) < 2:
+	  	raise ValueError("Not enough alignments got created for a AlignmentSet obj")
+	 set_obj = { 'sampleset_id' :sampleset_id ,'genome_id' : genome_id}
+	 if not bowtie2index_id is None:
+		set_obj['bowtie2_index'] = bowtie2index_id
+         sids=[]
+         m_alignments = []
+         alignments = []
+	 m_align_names = []
+	 output_objs = []
+	 num_results = len(results)
+         # TODO: Fix this later
+	 num_samples = num_results #len(sample_list)
+	 #num_failed = num_samples - num_results
+	 #run_list = [ k for (k,v) in results ]
+	 #print run_list
+	 #failed_list = [k for k in sample_list if k not in run_list ]
+	 #print  "\n".join(failed_list)
+         for result in results:
+                    sid = result['result']['output_name']
+                    a_ref = ws_client.get_object_info_new({"objects": [{'name':result['result']['output_name'], 'workspace': ws_id}]})[0]
+                    a_id = str(a_ref[6]) + '/' + str(a_ref[0]) + '/' + str(a_ref[4])
+                    m_alignments.append({sid : a_id})
+                    m_align_names.append({sid : result['result']['output_name']})
+                    output_objs.append({'ref' : a_id , 'description': "RNA-seq Alignment for reads Sample :  {0}".format(sid)})
+                    sids.append(sid)
+                    alignments.append(a_id)
+         set_obj['read_sample_ids']= sids
+         set_obj['sample_alignments']= alignments
+         set_obj['mapped_alignments_ids']=m_alignments
+	 set_obj['mapped_rnaseq_alignments'] = m_align_names
+         logger.info(pformat(set_obj))
+         try:
+        	logger.info( "Saving AlignmentSet object to  workspace")
+                res= ws_client.save_objects(
+                                        {"workspace":ws_id,
+                                         "objects": [{
+                                         "type":"KBaseRNASeq.RNASeqAlignmentSet",
+                                         "data":set_obj,
+                                         "name":alignmentSet_name}
+                                        ]})[0]
+                                                                
+                output_objs.append({'ref': str(res[6]) + '/' + str(res[0]) + '/' + str(res[4]),'description' : "Set of Alignments for Sampleset : {0}".format(sampleset_id)})
+	 except Exception as e:
+                    logger.exception(e)
+                    raise Exception("Failed Saving AlignmentSet to Workspace") 
+	 ### Build Report obj ###
+	 report = []
+	 report.append("Total number of reads : {0}".format(str(num_samples)))
+	 report.append("Number of reads ran successfully : {0}".format(str(num_results)))
+	 #report.append("Number of reads failed during this run : {0}".format(str(num_failed))) 
+	 #if len(failed_list) != 0:
+         #      report.append("List of reads failed in this run : {0}".format("\n".join(failed_list)))
+	 reportObj = {
+                      'objects_created':output_objs,
+                      'text_message':'\n'.join(report)
+                     }
+	 return reportObj
+
 def create_RNASeq_ExpressionSet_and_build_report(logger,ws_client,tool_used, tool_version,tool_opts,ws_id,alignment_list,alignmentset_id,genome_id,sampleset_id,results,expressionSet_name):
 	 results =  [ ret for ret in results if not ret is None ]
 	 if len(results) < 2:
@@ -213,6 +276,7 @@ def create_RNASeq_ExpressionSet_and_build_report(logger,ws_client,tool_used, too
                       'text_message':'\n'.join(report)
                      }
 	 return reportObj
+
 
 def extractAlignmentStatsInfo(logger,tool_used,ws_client,ws_id,sample_id,result,stats_obj_name):
         lines = result.splitlines()
