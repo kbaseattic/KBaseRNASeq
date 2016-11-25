@@ -4,7 +4,7 @@
 name     : Set up RNA-seq Analysis
 
 tooltip  : |
-    Provide the metadata to set up an RNA-seq experiment 
+    Provide the metadata to set up an RNA-seq experiment.
 screenshots :
     []
 
