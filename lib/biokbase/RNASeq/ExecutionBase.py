@@ -49,7 +49,7 @@ class ExecutionBase(object):
         self.method_params = None
         self.num_threads = None
         self.num_jobs = None
-	#self.callback_url = os.environ['SDK_CALLBACK_URL']
+        #self.callback_url = os.environ['SDK_CALLBACK_URL']
         # default parameters
         self.num_cores = mp.cpu_count()
 
@@ -150,8 +150,8 @@ class ExecutionBase(object):
 
     # individual file processing code
     def runEach(self, task_params):
-	raise NotImplementedMethod() 
-	
+        raise NotImplementedMethod() 
+
 
     # collect parallel execution results
     # (optionally) it may call writeReport

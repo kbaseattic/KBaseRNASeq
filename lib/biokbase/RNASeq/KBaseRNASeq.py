@@ -381,6 +381,18 @@ class Application(object):
                              name='KBaseRNASeq.CufflinksCall',
                              types=[dict])
         self.method_authentication['KBaseRNASeq.CufflinksCall'] = 'required' # noqa
+        self.rpc_service.add(impl_KBaseRNASeq.CufflinksCall_prepare,
+                             name='KBaseRNASeq.CufflinksCall_prepare',
+                             types=[dict])
+        self.method_authentication['KBaseRNASeq.CufflinksCall_prepare'] = 'required' # noqa
+        self.rpc_service.add(impl_KBaseRNASeq.CufflinksCall_runEach,
+                             name='KBaseRNASeq.CufflinksCall_runEach',
+                             types=[dict])
+        self.method_authentication['KBaseRNASeq.CufflinksCall_runEach'] = 'required' # noqa
+        self.rpc_service.add(impl_KBaseRNASeq.CufflinksCall_collect,
+                             name='KBaseRNASeq.CufflinksCall_collect',
+                             types=[dict])
+        self.method_authentication['KBaseRNASeq.CufflinksCall_collect'] = 'required' # noqa
         self.rpc_service.add(impl_KBaseRNASeq.CuffdiffCall,
                              name='KBaseRNASeq.CuffdiffCall',
                              types=[dict])

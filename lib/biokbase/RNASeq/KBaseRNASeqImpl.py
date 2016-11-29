@@ -53,6 +53,7 @@ from biokbase.RNASeq.TophatSampleSet import TophatSampleSet
 from biokbase.RNASeq.TophatSample import TophatSample
 from biokbase.RNASeq.CufflinksSampleSet import CufflinksSampleSet
 from biokbase.RNASeq.CufflinksSample import CufflinksSample
+from biokbase.RNASeq.Cufflinks input Cufflinks
 
 _KBaseRNASeq__DATA_VERSION = "0.2"
 
@@ -79,9 +80,9 @@ class KBaseRNASeq:
     # state. A method could easily clobber the state set by another while
     # the latter method is running.
     ######################################### noqa
-    VERSION = "0.0.1"
+    VERSION = "0.0.2"
     GIT_URL = "https://github.com/sean-mccorkle/KBaseRNASeq.git"
-    GIT_COMMIT_HASH = "1634e06fb58d153149637f204b75de955983ff3f"
+    GIT_COMMIT_HASH = "abcdbafeecb7ae9f9212871eab8a037ab8c797c3"
 
     #BEGIN_CLASS_HEADER
     __TEMP_DIR = 'temp'
@@ -554,18 +555,16 @@ class KBaseRNASeq:
 
     def TophatCall(self, ctx, params):
         """
-        :param run_params: instance of type "TophatCall_runParams" ->
-           structure: parameter "global_input_params" of type
-           "TophatCall_globalInputParams" (****************) -> structure:
-           parameter "ws_id" of String, parameter "sampleset_id" of String,
-           parameter "genome_id" of String, parameter "bowtie2_index" of
-           String, parameter "read_mismatches" of Long, parameter
-           "read_gap_length" of Long, parameter "read_edit_dist" of Long,
-           parameter "min_intron_length" of Long, parameter
-           "max_intron_length" of Long, parameter "num_threads" of Long,
-           parameter "report_secondary_alignments" of String, parameter
-           "no_coverage_search" of String, parameter "library_type" of
-           String, parameter "annotation_gtf" of type
+        :param params: instance of type "TophatCall_globalInputParams"
+           (****************) -> structure: parameter "ws_id" of String,
+           parameter "sampleset_id" of String, parameter "genome_id" of
+           String, parameter "bowtie2_index" of String, parameter
+           "read_mismatches" of Long, parameter "read_gap_length" of Long,
+           parameter "read_edit_dist" of Long, parameter "min_intron_length"
+           of Long, parameter "max_intron_length" of Long, parameter
+           "num_threads" of Long, parameter "report_secondary_alignments" of
+           String, parameter "no_coverage_search" of String, parameter
+           "library_type" of String, parameter "annotation_gtf" of type
            "ws_referenceAnnotation_id" (Id for KBaseRNASeq.GFFAnnotation @id
            ws KBaseRNASeq.GFFAnnotation), parameter "is_sample_set" of Long
         :returns: instance of type "ResultsToReport" (Object for Report type)
@@ -576,8 +575,8 @@ class KBaseRNASeq:
         # return variables are: returnVal
         #BEGIN TophatCall
 
-        print( "In TophatCall, params are")
-        pprint( params )
+        self.__LOGGER.info( "In TophatCall, params are" )
+        self.__LOGGER.info( pformat( params ) )
 
         if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
         tophat_dir = os.path.join(self.__SCRATCH,"tmp")
@@ -611,7 +610,7 @@ class KBaseRNASeq:
                 #ts = TophatSample( self.__LOGGER, tophat_dir, self.__SERVICES )
                 #returnVal = ts.run( "Tophat", common_params, params )
 
-        print( "in TophatCall, run_params")
+        self.__LOGGER.info( "back in TophatCall")
         returnVal = toph.run( ctx['module'], ctx['method'], common_params, params )
 
         handler_util.cleanup(self.__LOGGER,tophat_dir)
@@ -661,8 +660,8 @@ class KBaseRNASeq:
         tophat_dir = os.path.join( self.__SCRATCH, "tmp" )
         #handler_util.setupWorkingDir( self.__LOGGER, tophat_dir ) 
         # Set the common Params
-        print( "in TophatCall_prepare, prepare_params is" )
-        pprint( prepare_params )
+        self.__LOGGER.info( "in TophatCall_prepare, prepare_params is" )
+        self.__LOGGER.info( pformat( prepare_params ) )
         common_params = {'ws_client' : Workspace(url=self.__WS_URL, token=ctx['token']),
                          'hs_client' : HandleService(url=self.__HS_URL, token=ctx['token']),
                          'user_token' : ctx['token']
@@ -725,8 +724,8 @@ class KBaseRNASeq:
         #QUESTION: is it necessary to invoke TopHatSampleSet.runEach() or TopHatSample.runEach()
         # can we just invoke TopHat.runEach()
 
-        print( "in TophatCall_runEach, task is" )
-        pprint( task )
+        self.__LOGGER.info( "in TophatCall_runEach, task is" )
+        self.__LOGGER.info( pformat( task ) )
 
         if not os.path.exists( self.__SCRATCH ): os.makedirs(self.__SCRATCH)
         tophat_dir = os.path.join( self.__SCRATCH, "tmp" )
@@ -813,8 +812,8 @@ class KBaseRNASeq:
         #handler_util.setupWorkingDir( self.__LOGGER, tophat_dir ) 
         # Set the common Params
 
-        print( "in TophatCall_collect, collect_params is" )
-        pprint( collect_params )
+        self.__LOGGER.info( "in TophatCall_collect, collect_params is" )
+        self.__LOGGER.info( pformat( collect_params ) )
         common_params = {'ws_client' : Workspace(url=self.__WS_URL, token=ctx['token']),
                          'hs_client' : HandleService(url=self.__HS_URL, token=ctx['token']),
                          'user_token' : ctx['token']
@@ -909,11 +908,13 @@ class KBaseRNASeq:
 
     def CufflinksCall(self, ctx, params):
         """
-        :param params: instance of type "CufflinksParams" -> structure:
-           parameter "ws_id" of String, parameter "sample_alignment" of
-           String, parameter "num_threads" of Long, parameter
-           "min-intron-length" of Long, parameter "max-intron-length" of
-           Long, parameter "overhang-tolerance" of Long
+        :param params: instance of type "CufflinksCall_runParams" ->
+           structure: parameter "global_input_params" of type
+           "CufflinksCall_globalInputParams" (*******************) ->
+           structure: parameter "ws_id" of String, parameter
+           "sample_alignment" of String, parameter "num_threads" of Long,
+           parameter "min-intron-length" of Long, parameter
+           "max-intron-length" of Long, parameter "overhang-tolerance" of Long
         :returns: instance of type "ResultsToReport" (Object for Report type)
            -> structure: parameter "report_name" of String, parameter
            "report_ref" of String
@@ -921,7 +922,9 @@ class KBaseRNASeq:
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN CufflinksCall
-	if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
+        self.__LOGGER.info( "in CufflinksCall, params are")
+        self.__LOGGER.info( pformat( params ) )
+        if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
         cufflinks_dir = os.path.join(self.__SCRATCH,"tmp")
         handler_util.setupWorkingDir(self.__LOGGER,cufflinks_dir)
         # Set the common Params
@@ -937,19 +940,183 @@ class KBaseRNASeq:
         wsc = common_params['ws_client']
         obj_info = wsc.get_object_info_new({"objects": [{'name': params['alignmentset_id'], 'workspace': params['ws_id']}]})
         obj_type = obj_info[0][2].split('-')[0]
+
+        cuff = CuffLinks( self.__LOGGER, cufflinks_dir, self.__SERVICES )
         if obj_type == 'KBaseRNASeq.RNASeqAlignmentSet':
-                self.__LOGGER.info("Cufflinks AlignmentSet Case")
-                sts = CufflinksSampleSet(self.__LOGGER, cufflinks_dir, self.__SERVICES)
-                returnVal = sts.run(common_params, params)
+                self.__LOGGER.info( "Cufflinks AlignmentSet Case" )
+                params['is_alignment_set'] = 1
+                #sts = CufflinksSampleSet(self.__LOGGER, cufflinks_dir, self.__SERVICES)
+                #returnVal = sts.run(common_params, params)
         else:
-		sts = CufflinksSample(self.__LOGGER, cufflinks_dir, self.__SERVICES)
-                returnVal = sts.run(common_params,params)
-        handler_util.cleanup(self.__LOGGER,cufflinks_dir)
+                self.__LOGGER.info( "Cufflinks single alignment case" )
+                params['is_alignment_set'] = 0
+                #sts = CufflinksSample(self.__LOGGER, cufflinks_dir, self.__SERVICES)
+                #returnVal = sts.run(common_params,params)
+        returnVal = cuff.run( ctx['module'], ctx['method'], common_params, params)
+
+        handler_util.cleanup( self.__LOGGER, cufflinks_dir )
         #END CufflinksCall
 
         # At some point might do deeper type checking...
         if not isinstance(returnVal, dict):
             raise ValueError('Method CufflinksCall return value ' +
+                             'returnVal is not type dict as required.')
+        # return the results
+        return [returnVal]
+
+    def CufflinksCall_prepare(self, ctx, prepare_params):
+        """
+        :param prepare_params: instance of type
+           "CufflinksCall_prepareInputParams" (**************************) ->
+           structure: parameter "global_input_params" of type
+           "CufflinksCall_globalInputParams" (*******************) ->
+           structure: parameter "ws_id" of String, parameter
+           "sample_alignment" of String, parameter "num_threads" of Long,
+           parameter "min-intron-length" of Long, parameter
+           "max-intron-length" of Long, parameter "overhang-tolerance" of Long
+        :returns: instance of type "CufflinksCall_prepareSchedule" ->
+           structure: parameter "tasks" of list of type
+           "CufflinksCall_runEachInput" -> structure: parameter
+           "input_arguments" of tuple of size 1: type "CufflinksCall_task" ->
+           structure:
+        """
+        # ctx is the context object
+        # return variables are: returnVal
+        #BEGIN CufflinksCall_prepare
+        # this prepare() runs in the same process as 
+        if not os.path.exists( self.__SCRATCH ): os.makedirs(self.__SCRATCH)
+        cufflinks_dir = os.path.join( self.__SCRATCH, "tmp" )
+        #handler_util.setupWorkingDir( self.__LOGGER, cufflinks_dir ) 
+        # Set the common Params
+        self.__LOGGER.info( "in CufflinksCall_prepare, prepare_params is" )
+        self.__LOGGER.info( pformat( prepare_params ) )
+        common_params = {'ws_client' : Workspace(url=self.__WS_URL, token=ctx['token']),
+                         'hs_client' : HandleService(url=self.__HS_URL, token=ctx['token']),
+                         'user_token' : ctx['token']
+                        }
+        params = prepare_params['global_input_params']    # de-encapsulate the actual method parameters
+                                                          # NOTE: check for error if does not exist
+        # Set the Number of threads if specified 
+        if 'num_threads' in params and params['num_threads'] is not None:
+            common_params['num_threads'] = params['num_threads']
+
+        # Check whether to call Cufflinks prepare() single or set subclass
+        if ( params['is_alignment_set'] == 1 ):
+                 self.__LOGGER.info("CufflinksCall_prepare AlignmentSet Case")
+                 cuff_set = CufflinksSampleSet(self.__LOGGER, cufflnks_dir, self.__SERVICES)
+                 tasklist = cuff_set.prepare( common_params, params )
+        else:
+                 self.__LOGGER.info("CufflinksCall_prepare Single Alignment Case")
+                 cuff_sing = CufflinksSample(self.__LOGGER, cufflinks_dir, self.__SERVICES)
+                 tasklist = cuff_sing.prepare( common_params, params )
+
+        returnVal = { 'tasks': tasklist }
+
+        #END CufflinksCall_prepare
+
+        # At some point might do deeper type checking...
+        if not isinstance(returnVal, dict):
+            raise ValueError('Method CufflinksCall_prepare return value ' +
+                             'returnVal is not type dict as required.')
+        # return the results
+        return [returnVal]
+
+    def CufflinksCall_runEach(self, ctx, task):
+        """
+        :param task: instance of type "CufflinksCall_task" -> structure:
+        :returns: instance of type "CufflinksCall_runEachResult"
+           (**************************) -> structure: parameter
+           "alignment_set_id" of String, parameter "output_name" of String
+        """
+        # ctx is the context object
+        # return variables are: returnVal
+        #BEGIN CufflinksCall_runEach
+
+        self.__LOGGER.info( "in CufflinksCall_runEach, task is" )
+        self.__LOGGER.info( pformat( task ) )
+
+        if not os.path.exists( self.__SCRATCH ): os.makedirs(self.__SCRATCH)
+        cufflinks_dir = os.path.join( self.__SCRATCH, "tmp" )
+        if ( not os.path.exists( cufflinks_dir ) ):
+           handler_util.setupWorkingDir( self.__LOGGER, cufflinks_dir ) 
+        # Set the common Params
+        common_params = {'ws_client' : Workspace(url=self.__WS_URL, token=ctx['token']),
+                         'hs_client' : HandleService(url=self.__HS_URL, token=ctx['token']),
+                         'user_token' : ctx['token']
+                        }
+
+        self.__LOGGER.info( "CufflinksCall_runeach" )
+
+        cuff = Cufflinks( self.__LOGGER, cufflinks_dir, self.__SERVICES )
+        cuff.common_params = common_params
+
+        returnVal = cuff.runEach( task )
+
+        #handler_util.cleanup( self.__LOGGER, cufflinks_dir )
+
+        #END CufflinksCall_runEach
+
+        # At some point might do deeper type checking...
+        if not isinstance(returnVal, dict):
+            raise ValueError('Method CufflinksCall_runEach return value ' +
+                             'returnVal is not type dict as required.')
+        # return the results
+        return [returnVal]
+
+    def CufflinksCall_collect(self, ctx, collect_params):
+        """
+        :param collect_params: instance of type
+           "CufflinksCall_collectInputParams" -> structure: parameter
+           "global_params" of type "CufflinksCall_globalInputParams"
+           (*******************) -> structure: parameter "ws_id" of String,
+           parameter "sample_alignment" of String, parameter "num_threads" of
+           Long, parameter "min-intron-length" of Long, parameter
+           "max-intron-length" of Long, parameter "overhang-tolerance" of
+           Long, parameter "input_result_pairs" of list of type
+           "CufflinksCall_InputResultPair" (**************************) ->
+           structure: parameter "input" of type "CufflinksCall_runEachInput"
+           -> structure: parameter "input_arguments" of tuple of size 1: type
+           "CufflinksCall_task" -> structure: , parameter "result" of type
+           "CufflinksCall_runEachResult" (**************************) ->
+           structure: parameter "alignment_set_id" of String, parameter
+           "output_name" of String
+        :returns: instance of type "CufflinksCall_globalResult" -> structure:
+           parameter "output" of unspecified object, parameter "workspace" of
+           String
+        """
+        # ctx is the context object
+        # return variables are: returnVal
+        #BEGIN CufflinksCall_collect
+
+        if not os.path.exists( self.__SCRATCH ): os.makedirs(self.__SCRATCH)
+        cufflinks_dir = os.path.join( self.__SCRATCH, "tmp" )
+        #handler_util.setupWorkingDir( self.__LOGGER, cufflinks_dir ) 
+        # Set the common Params
+
+        self.__LOGGER.info( "in CufflinksCall_collect, collect_params is" )
+        self.__LOGGER.info( pformat( collect_params ) )
+        common_params = { 'ws_client' : Workspace(url=self.__WS_URL, token=ctx['token']),
+                          'hs_client' : HandleService(url=self.__HS_URL, token=ctx['token']),
+                          'user_token' : ctx['token']
+                        }
+
+        # Check whether to call Cufflinks collect() single or set subclass
+        if ( collect_params['global_params']['is_alignment_set'] == 1 ):
+                 self.__LOGGER.info("CufflinksCall_prepare AlignmentSet Case")
+                 cuff_set = CufflinksSampleSet(self.__LOGGER, cufflinks_dir, self.__SERVICES)
+                 returnVal = cuff_set.collect( common_params, collect_params )
+        else:
+                 self.__LOGGER.info("CufflinksCall_prepare Sample Case")
+                 cuff_sing = CufflinksSample(self.__LOGGER, cufflinks_dir, self.__SERVICES)
+                 returnVal = cuff_sing.collect( common_params, collect_params )
+
+        #handler_util.cleanup( self.__LOGGER, tophat_dir )
+
+        #END CufflinksCall_collect
+
+        # At some point might do deeper type checking...
+        if not isinstance(returnVal, dict):
+            raise ValueError('Method CufflinksCall_collect return value ' +
                              'returnVal is not type dict as required.')
         # return the results
         return [returnVal]

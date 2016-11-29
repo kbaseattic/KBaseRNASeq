@@ -276,32 +276,30 @@ class KBaseRNASeq(object):
             'KBaseRNASeq.Hisat2Call_collect',
             [collect_params], self._service_ver, context)
 
-    def _TophatCall_submit(self, run_params, context=None):
+    def _TophatCall_submit(self, params, context=None):
         return self._client._submit_job(
-             'KBaseRNASeq.TophatCall', [run_params],
+             'KBaseRNASeq.TophatCall', [params],
              self._service_ver, context)
 
-    def TophatCall(self, run_params, context=None):
+    def TophatCall(self, params, context=None):
         """
-        :param run_params: instance of type "TophatCall_runParams" ->
-           structure: parameter "global_input_params" of type
-           "TophatCall_globalInputParams" (****************) -> structure:
-           parameter "ws_id" of String, parameter "sampleset_id" of String,
-           parameter "genome_id" of String, parameter "bowtie2_index" of
-           String, parameter "read_mismatches" of Long, parameter
-           "read_gap_length" of Long, parameter "read_edit_dist" of Long,
-           parameter "min_intron_length" of Long, parameter
-           "max_intron_length" of Long, parameter "num_threads" of Long,
-           parameter "report_secondary_alignments" of String, parameter
-           "no_coverage_search" of String, parameter "library_type" of
-           String, parameter "annotation_gtf" of type
+        :param params: instance of type "TophatCall_globalInputParams"
+           (****************) -> structure: parameter "ws_id" of String,
+           parameter "sampleset_id" of String, parameter "genome_id" of
+           String, parameter "bowtie2_index" of String, parameter
+           "read_mismatches" of Long, parameter "read_gap_length" of Long,
+           parameter "read_edit_dist" of Long, parameter "min_intron_length"
+           of Long, parameter "max_intron_length" of Long, parameter
+           "num_threads" of Long, parameter "report_secondary_alignments" of
+           String, parameter "no_coverage_search" of String, parameter
+           "library_type" of String, parameter "annotation_gtf" of type
            "ws_referenceAnnotation_id" (Id for KBaseRNASeq.GFFAnnotation @id
            ws KBaseRNASeq.GFFAnnotation), parameter "is_sample_set" of Long
         :returns: instance of type "ResultsToReport" (Object for Report type)
            -> structure: parameter "report_name" of String, parameter
            "report_ref" of String
         """
-        job_id = self._TophatCall_submit(run_params, context)
+        job_id = self._TophatCall_submit(params, context)
         async_job_check_time = self._client.async_job_check_time
         while True:
             time.sleep(async_job_check_time)
@@ -451,11 +449,13 @@ class KBaseRNASeq(object):
 
     def CufflinksCall(self, params, context=None):
         """
-        :param params: instance of type "CufflinksParams" -> structure:
-           parameter "ws_id" of String, parameter "sample_alignment" of
-           String, parameter "num_threads" of Long, parameter
-           "min-intron-length" of Long, parameter "max-intron-length" of
-           Long, parameter "overhang-tolerance" of Long
+        :param params: instance of type "CufflinksCall_runParams" ->
+           structure: parameter "global_input_params" of type
+           "CufflinksCall_globalInputParams" (*******************) ->
+           structure: parameter "ws_id" of String, parameter
+           "sample_alignment" of String, parameter "num_threads" of Long,
+           parameter "min-intron-length" of Long, parameter
+           "max-intron-length" of Long, parameter "overhang-tolerance" of Long
         :returns: instance of type "ResultsToReport" (Object for Report type)
            -> structure: parameter "report_name" of String, parameter
            "report_ref" of String
@@ -471,6 +471,75 @@ class KBaseRNASeq(object):
             job_state = self._check_job(job_id)
             if job_state['finished']:
                 return job_state['result'][0]
+
+    def CufflinksCall_prepare(self, prepare_params, context=None):
+        """
+        :param prepare_params: instance of type
+           "CufflinksCall_prepareInputParams" (**************************) ->
+           structure: parameter "global_input_params" of type
+           "CufflinksCall_globalInputParams" (*******************) ->
+           structure: parameter "ws_id" of String, parameter
+           "sample_alignment" of String, parameter "num_threads" of Long,
+           parameter "min-intron-length" of Long, parameter
+           "max-intron-length" of Long, parameter "overhang-tolerance" of Long
+        :returns: instance of type "CufflinksCall_prepareSchedule" ->
+           structure: parameter "tasks" of list of type
+           "CufflinksCall_runEachInput" -> structure: parameter
+           "input_arguments" of tuple of size 1: type "CufflinksCall_task" ->
+           structure:
+        """
+        return self._client.call_method(
+            'KBaseRNASeq.CufflinksCall_prepare',
+            [prepare_params], self._service_ver, context)
+
+    def _CufflinksCall_runEach_submit(self, task, context=None):
+        return self._client._submit_job(
+             'KBaseRNASeq.CufflinksCall_runEach', [task],
+             self._service_ver, context)
+
+    def CufflinksCall_runEach(self, task, context=None):
+        """
+        :param task: instance of type "CufflinksCall_task" -> structure:
+        :returns: instance of type "CufflinksCall_runEachResult"
+           (**************************) -> structure: parameter
+           "alignment_set_id" of String, parameter "output_name" of String
+        """
+        job_id = self._CufflinksCall_runEach_submit(task, context)
+        async_job_check_time = self._client.async_job_check_time
+        while True:
+            time.sleep(async_job_check_time)
+            async_job_check_time = (async_job_check_time *
+                self._client.async_job_check_time_scale_percent / 100.0)
+            if async_job_check_time > self._client.async_job_check_max_time:
+                async_job_check_time = self._client.async_job_check_max_time
+            job_state = self._check_job(job_id)
+            if job_state['finished']:
+                return job_state['result'][0]
+
+    def CufflinksCall_collect(self, collect_params, context=None):
+        """
+        :param collect_params: instance of type
+           "CufflinksCall_collectInputParams" -> structure: parameter
+           "global_params" of type "CufflinksCall_globalInputParams"
+           (*******************) -> structure: parameter "ws_id" of String,
+           parameter "sample_alignment" of String, parameter "num_threads" of
+           Long, parameter "min-intron-length" of Long, parameter
+           "max-intron-length" of Long, parameter "overhang-tolerance" of
+           Long, parameter "input_result_pairs" of list of type
+           "CufflinksCall_InputResultPair" (**************************) ->
+           structure: parameter "input" of type "CufflinksCall_runEachInput"
+           -> structure: parameter "input_arguments" of tuple of size 1: type
+           "CufflinksCall_task" -> structure: , parameter "result" of type
+           "CufflinksCall_runEachResult" (**************************) ->
+           structure: parameter "alignment_set_id" of String, parameter
+           "output_name" of String
+        :returns: instance of type "CufflinksCall_globalResult" -> structure:
+           parameter "output" of unspecified object, parameter "workspace" of
+           String
+        """
+        return self._client.call_method(
+            'KBaseRNASeq.CufflinksCall_collect',
+            [collect_params], self._service_ver, context)
 
     def _CuffdiffCall_submit(self, params, context=None):
         return self._client._submit_job(
