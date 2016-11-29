@@ -686,19 +686,85 @@
 async funcdef StringTieCall(StringTieParams params)
     returns (ResultsToReport) authentication required;
 
-typedef structure {
-        string ws_id;
-        string sample_alignment;
-        int num_threads;
-        /*string library-type; */
-        /*string library-norm-method; */
-        int min-intron-length;
-        int max-intron-length;
-        int overhang-tolerance;
-        } CufflinksParams;
+        /*********************/
+        /* Cufflinks methods */
+        /*********************/
 
-  async funcdef CufflinksCall(CufflinksParams params)
-    returns (ResultsToReport) authentication required;
+        typedef structure {
+                string ws_id;
+                string sample_alignment;    /* this is sam/bam file output from one tophat sample? */
+                int num_threads;
+                /*string library-type; */
+                /*string library-norm-method; */
+                int min-intron-length;
+                int max-intron-length;
+                int overhang-tolerance;
+        } CufflinksCall_globalInputParams;
+
+        typedef structure {
+                CufflinksCall_globalInputParams global_input_params;
+        } CufflinksCall_runParams;
+
+        async funcdef CufflinksCall( CufflinksCall_runParams params )
+             returns( ResultsToReport ) authentication required;
+
+        /****************************/
+        /* Cufflinks_prepare method */
+        /****************************/
+
+        typedef structure {
+                CufflinksCall_globalInputParams global_input_params;
+        } CufflinksCall_prepareInputParams;
+
+        typedef structure {
+
+        } CufflinksCall_task;
+
+        typedef structure {
+                tuple<CufflinksCall_task> input_arguments;
+        } CufflinksCall_runEachInput;
+
+        typedef structure {
+                list<CufflinksCall_runEachInput> tasks;
+        } CufflinksCall_prepareSchedule;
+        
+        funcdef CufflinksCall_prepar( CufflinksCall_prepareInputParams prepare_params )
+             returns( CufflinksCall_prepareSchedule ) authentication required;
+
+        /****************************/
+        /* Cufflinks_runEach method */
+        /****************************/
+
+        typedef structure {
+            string  alignment_set_id;
+            string  output_name;
+        } CufflinksCall_runEachResult;
+
+        async funcdef CufflinksCall_runEach( CufflinksCall_task task ) 
+             returns( CufflinksCall_runEachResult ) authentication required;
+
+        /****************************/
+        /* Cufflinks_collect method */
+        /****************************/
+
+        typedef structure {
+                CufflinksCall_runEachInput input;
+                CufflinksCall_runEachResult result;
+        } CufflinksCall_InputResultPair;
+
+        typedef structure {
+                CufflinksCall_globalInputParams global_params;
+                list<CufflinksCall_InputResultPair> input_result_pairs;
+        } CufflinksCall_collectInputParams;
+
+        typedef structure {
+            UnspecifiedObject  output;
+            string             workspace;
+        } CufflinksCall_globalResult;
+
+        funcdef  CufflinksCall_collect( CufflinksCall_collectInputParams collect_params )
+             returns( CufflinksCall_globalResult ) authentication required;
+
 
         typedef structure {
         string ws_id;

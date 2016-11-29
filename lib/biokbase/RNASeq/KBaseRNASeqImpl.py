@@ -576,8 +576,8 @@ class KBaseRNASeq:
         # return variables are: returnVal
         #BEGIN TophatCall
 
-        print( "In TophatCall, params are")
-        pprint( params )
+        self.__LOGGER.info( "In TophatCall, params are" )
+        self.__LOGGER.info( pformat( params ) )
 
         if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
         tophat_dir = os.path.join(self.__SCRATCH,"tmp")
@@ -611,7 +611,7 @@ class KBaseRNASeq:
                 #ts = TophatSample( self.__LOGGER, tophat_dir, self.__SERVICES )
                 #returnVal = ts.run( "Tophat", common_params, params )
 
-        print( "in TophatCall, run_params")
+        self.__LOGGER.info( "back in TophatCall")
         returnVal = toph.run( ctx['module'], ctx['method'], common_params, params )
 
         handler_util.cleanup(self.__LOGGER,tophat_dir)
@@ -661,8 +661,8 @@ class KBaseRNASeq:
         tophat_dir = os.path.join( self.__SCRATCH, "tmp" )
         #handler_util.setupWorkingDir( self.__LOGGER, tophat_dir ) 
         # Set the common Params
-        print( "in TophatCall_prepare, prepare_params is" )
-        pprint( prepare_params )
+        self.__LOGGER.info( "in TophatCall_prepare, prepare_params is" )
+        self.__LOGGER.info( pformat( prepare_params ) )
         common_params = {'ws_client' : Workspace(url=self.__WS_URL, token=ctx['token']),
                          'hs_client' : HandleService(url=self.__HS_URL, token=ctx['token']),
                          'user_token' : ctx['token']
@@ -725,8 +725,8 @@ class KBaseRNASeq:
         #QUESTION: is it necessary to invoke TopHatSampleSet.runEach() or TopHatSample.runEach()
         # can we just invoke TopHat.runEach()
 
-        print( "in TophatCall_runEach, task is" )
-        pprint( task )
+        self.__LOGGER.info( "in TophatCall_runEach, task is" )
+        self.__LOGGER.info( pformat( task ) )
 
         if not os.path.exists( self.__SCRATCH ): os.makedirs(self.__SCRATCH)
         tophat_dir = os.path.join( self.__SCRATCH, "tmp" )
@@ -813,8 +813,8 @@ class KBaseRNASeq:
         #handler_util.setupWorkingDir( self.__LOGGER, tophat_dir ) 
         # Set the common Params
 
-        print( "in TophatCall_collect, collect_params is" )
-        pprint( collect_params )
+        self.__LOGGER.info( "in TophatCall_collect, collect_params is" )
+        self.__LOGGER.info( pformat( collect_params ) )
         common_params = {'ws_client' : Workspace(url=self.__WS_URL, token=ctx['token']),
                          'hs_client' : HandleService(url=self.__HS_URL, token=ctx['token']),
                          'user_token' : ctx['token']
@@ -921,7 +921,9 @@ class KBaseRNASeq:
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN CufflinksCall
-	if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
+        self.__LOGGER.info( "in CufflinksCall, params are")
+        self.__LOGGER.info( pformat( params ) )
+        if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
         cufflinks_dir = os.path.join(self.__SCRATCH,"tmp")
         handler_util.setupWorkingDir(self.__LOGGER,cufflinks_dir)
         # Set the common Params
@@ -942,7 +944,7 @@ class KBaseRNASeq:
                 sts = CufflinksSampleSet(self.__LOGGER, cufflinks_dir, self.__SERVICES)
                 returnVal = sts.run(common_params, params)
         else:
-		sts = CufflinksSample(self.__LOGGER, cufflinks_dir, self.__SERVICES)
+                sts = CufflinksSample(self.__LOGGER, cufflinks_dir, self.__SERVICES)
                 returnVal = sts.run(common_params,params)
         handler_util.cleanup(self.__LOGGER,cufflinks_dir)
         #END CufflinksCall
@@ -953,6 +955,7 @@ class KBaseRNASeq:
                              'returnVal is not type dict as required.')
         # return the results
         return [returnVal]
+
 
     def CuffdiffCall(self, ctx, params):
         """
