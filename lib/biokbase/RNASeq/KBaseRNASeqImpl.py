@@ -53,7 +53,7 @@ from biokbase.RNASeq.TophatSampleSet import TophatSampleSet
 from biokbase.RNASeq.TophatSample import TophatSample
 from biokbase.RNASeq.CufflinksSampleSet import CufflinksSampleSet
 from biokbase.RNASeq.CufflinksSample import CufflinksSample
-from biokbase.RNASeq.Cufflinks input Cufflinks   # do we still need the above?
+from biokbase.RNASeq.Cufflinks input Cufflinks
 
 _KBaseRNASeq__DATA_VERSION = "0.2"
 
@@ -983,6 +983,35 @@ class KBaseRNASeq:
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN CufflinksCall_prepare
+        # this prepare() runs in the same process as 
+        if not os.path.exists( self.__SCRATCH ): os.makedirs(self.__SCRATCH)
+        cufflinks_dir = os.path.join( self.__SCRATCH, "tmp" )
+        #handler_util.setupWorkingDir( self.__LOGGER, cufflinks_dir ) 
+        # Set the common Params
+        self.__LOGGER.info( "in CufflinksCall_prepare, prepare_params is" )
+        self.__LOGGER.info( pformat( prepare_params ) )
+        common_params = {'ws_client' : Workspace(url=self.__WS_URL, token=ctx['token']),
+                         'hs_client' : HandleService(url=self.__HS_URL, token=ctx['token']),
+                         'user_token' : ctx['token']
+                        }
+        params = prepare_params['global_input_params']    # de-encapsulate the actual method parameters
+                                                          # NOTE: check for error if does not exist
+        # Set the Number of threads if specified 
+        if 'num_threads' in params and params['num_threads'] is not None:
+            common_params['num_threads'] = params['num_threads']
+
+        # Check whether to call Tophat prepare() single or set subclass
+        if ( params['is_alignment_set'] == 1 ):
+                 self.__LOGGER.info("CufflinksCall_prepare AlignmentSet Case")
+                 cuff_set = CufflinksSampleSet(self.__LOGGER, tophat_dir, self.__SERVICES)
+                 tasklist = cuff_set.prepare( common_params, params )
+        else:
+                 self.__LOGGER.info("TophatCall_prepare Single Alignment Case")
+                 cuff_sing = CufflinksSample(self.__LOGGER, tophat_dir, self.__SERVICES)
+                 tasklist = cuff_sing.prepare( common_params, params )
+
+        returnVal = { 'tasks': tasklist }
+
         #END CufflinksCall_prepare
 
         # At some point might do deeper type checking...
