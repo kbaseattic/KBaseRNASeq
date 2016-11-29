@@ -53,6 +53,7 @@ from biokbase.RNASeq.TophatSampleSet import TophatSampleSet
 from biokbase.RNASeq.TophatSample import TophatSample
 from biokbase.RNASeq.CufflinksSampleSet import CufflinksSampleSet
 from biokbase.RNASeq.CufflinksSample import CufflinksSample
+from biokbase.RNASeq.Cufflinks input Cufflinks   # do we still need the above?
 
 _KBaseRNASeq__DATA_VERSION = "0.2"
 
@@ -939,14 +940,21 @@ class KBaseRNASeq:
         wsc = common_params['ws_client']
         obj_info = wsc.get_object_info_new({"objects": [{'name': params['alignmentset_id'], 'workspace': params['ws_id']}]})
         obj_type = obj_info[0][2].split('-')[0]
+
+        cuff = CuffLinks( self.__LOGGER, cufflinks_dir, self.__SERVICES )
         if obj_type == 'KBaseRNASeq.RNASeqAlignmentSet':
-                self.__LOGGER.info("Cufflinks AlignmentSet Case")
-                sts = CufflinksSampleSet(self.__LOGGER, cufflinks_dir, self.__SERVICES)
-                returnVal = sts.run(common_params, params)
+                self.__LOGGER.info( "Cufflinks AlignmentSet Case" )
+                params['is_alignment_set'] = 1
+                #sts = CufflinksSampleSet(self.__LOGGER, cufflinks_dir, self.__SERVICES)
+                #returnVal = sts.run(common_params, params)
         else:
-                sts = CufflinksSample(self.__LOGGER, cufflinks_dir, self.__SERVICES)
-                returnVal = sts.run(common_params,params)
-        handler_util.cleanup(self.__LOGGER,cufflinks_dir)
+                self.__LOGGER.info( "Cufflinks single alignment case" )
+                params['is_alignment_set'] = 0
+                #sts = CufflinksSample(self.__LOGGER, cufflinks_dir, self.__SERVICES)
+                #returnVal = sts.run(common_params,params)
+        returnVal = cuff.run( ctx['module'], ctx['method'], common_params, params)
+
+        handler_util.cleanup( self.__LOGGER, cufflinks_dir )
         #END CufflinksCall
 
         # At some point might do deeper type checking...

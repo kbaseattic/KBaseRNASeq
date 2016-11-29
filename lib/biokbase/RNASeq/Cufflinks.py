@@ -37,8 +37,8 @@ class Cufflinks(ExecutionBase):
         #self.sample = None
         #self.sampleset_info = None
         self.num_threads = None
-	self.tool_used = "Cufflinks"
-	self.tool_version = "1.2.3"
+        self.tool_used = "Cufflinks"
+        self.tool_version = "1.2.3"
 
     def runEach(self,task_params):
         ws_client = self.common_params['ws_client']
@@ -78,10 +78,10 @@ class Cufflinks(ExecutionBase):
                 raise Exception( "Unable to download shock file, {0},{1}".format(a_filename,"".join(traceback.format_exc())))
            try:
                 input_dir = os.path.join(input_direc,alignment_name)
-		if not os.path.exists(input_dir): os.mkdir(input_dir)
+                if not os.path.exists(input_dir): os.mkdir(input_dir)
                 script_util.unzip_files(logger,os.path.join(input_direc,a_filename), input_dir)
            except Exception, e:
-		raise Exception(e)
+                raise Exception(e)
                 logger.error("".join(traceback.format_exc()))
                 raise Exception("Unzip alignment files  error: Please contact help@kbase.us")
 
@@ -89,7 +89,7 @@ class Cufflinks(ExecutionBase):
                 ### Adding advanced options to tophat command
            tool_opts = { k:str(v) for k,v in params.iteritems() if not k in ('ws_id','alignmentset_id', 'num_threads') and v is not None  }
            cufflinks_command = (' -p '+str(self.num_threads))
-	   if 'max_intron_length' in params and params['max_intron_length'] is not None:
+           if 'max_intron_length' in params and params['max_intron_length'] is not None:
                cufflinks_command += (' --max-intron-length '+str(params['max_intron_length']))
            if 'min_intron_length' in params and params['min_intron_length'] is not None:
                cufflinks_command += (' --min-intron-length '+str(params['min_intron_length']))
@@ -102,7 +102,7 @@ class Cufflinks(ExecutionBase):
            print "Executing: cufflinks {0}".format(cufflinks_command)
            ret = script_util.runProgram(None,"cufflinks",cufflinks_command,None,directory)
            result = ret["result"]
-	   for line in result.splitlines(False):
+           for line in result.splitlines(False):
                        self.logger.info(line)
                        stderr = ret["stderr"]
                        prev_value = ''
@@ -117,13 +117,13 @@ class Cufflinks(ExecutionBase):
                                       prev_value = ''
                                       self.logger.info(line)
 
-	   ##Parse output files
+           ##Parse output files
            try:
-	 	g_output_file = os.path.join(output_dir,"genes.fpkm_tracking")
+                g_output_file = os.path.join(output_dir,"genes.fpkm_tracking")
                 exp_dict = script_util.parse_FPKMtracking(g_output_file,'Cufflinks','FPKM')
                 #tpm_exp_dict = script_util.parse_FPKMtracking(g_output_file,'Cufflinks','TPM')
            except Exception,e:
-	        raise Exception(e)
+                raise Exception(e)
                 logger.exception("".join(traceback.format_exc()))
                 raise Exception("Error parsing FPKMtracking")
         ##  compress and upload to shock
@@ -133,13 +133,13 @@ class Cufflinks(ExecutionBase):
                 out_file_path = os.path.join(directory,"%s.zip" % output_name)
                 script_util.zip_files(logger,output_dir,out_file_path)
            except Exception,e:
-	        raise Exception(e)
+                raise Exception(e)
                 logger.exception("".join(traceback.format_exc()))
                 raise Exception("Error executing cufflinks")
            try:
                 handle = hs.upload(out_file_path)
            except Exception, e:
-	        raise Exception(e)
+                raise Exception(e)
                 logger.exception("".join(traceback.format_exc()))
                 raise Exception("Error while zipping the output objects: {0}".format(out_file_path))
                 ## Save object to workspace
@@ -172,10 +172,10 @@ class Cufflinks(ExecutionBase):
            except Exception, e:
                 logger.exception("".join(traceback.format_exc()))
                 raise Exception("Failed to upload the ExpressionSample: {0}".format(output_name))
-   	except Exception,e:
-       		logger.exception("".join(traceback.format_exc()))
-       		raise Exception("Error executing cufflinks {0},{1}".format(cufflinks_command,directory))
-   	finally:
+        except Exception,e:
+                logger.exception("".join(traceback.format_exc()))
+                raise Exception("Error executing cufflinks {0},{1}".format(cufflinks_command,directory))
+        finally:
                 if os.path.exists(out_file_path): os.remove(out_file_path)
                 if os.path.exists(output_dir): shutil.rmtree(output_dir)
                 if os.path.exists(input_direc): shutil.rmtree(input_direc)
