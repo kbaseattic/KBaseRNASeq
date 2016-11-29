@@ -79,9 +79,9 @@ class KBaseRNASeq:
     # state. A method could easily clobber the state set by another while
     # the latter method is running.
     ######################################### noqa
-    VERSION = "0.0.1"
+    VERSION = "0.0.2"
     GIT_URL = "https://github.com/sean-mccorkle/KBaseRNASeq.git"
-    GIT_COMMIT_HASH = "1634e06fb58d153149637f204b75de955983ff3f"
+    GIT_COMMIT_HASH = "abcdbafeecb7ae9f9212871eab8a037ab8c797c3"
 
     #BEGIN_CLASS_HEADER
     __TEMP_DIR = 'temp'
@@ -554,18 +554,16 @@ class KBaseRNASeq:
 
     def TophatCall(self, ctx, params):
         """
-        :param run_params: instance of type "TophatCall_runParams" ->
-           structure: parameter "global_input_params" of type
-           "TophatCall_globalInputParams" (****************) -> structure:
-           parameter "ws_id" of String, parameter "sampleset_id" of String,
-           parameter "genome_id" of String, parameter "bowtie2_index" of
-           String, parameter "read_mismatches" of Long, parameter
-           "read_gap_length" of Long, parameter "read_edit_dist" of Long,
-           parameter "min_intron_length" of Long, parameter
-           "max_intron_length" of Long, parameter "num_threads" of Long,
-           parameter "report_secondary_alignments" of String, parameter
-           "no_coverage_search" of String, parameter "library_type" of
-           String, parameter "annotation_gtf" of type
+        :param params: instance of type "TophatCall_globalInputParams"
+           (****************) -> structure: parameter "ws_id" of String,
+           parameter "sampleset_id" of String, parameter "genome_id" of
+           String, parameter "bowtie2_index" of String, parameter
+           "read_mismatches" of Long, parameter "read_gap_length" of Long,
+           parameter "read_edit_dist" of Long, parameter "min_intron_length"
+           of Long, parameter "max_intron_length" of Long, parameter
+           "num_threads" of Long, parameter "report_secondary_alignments" of
+           String, parameter "no_coverage_search" of String, parameter
+           "library_type" of String, parameter "annotation_gtf" of type
            "ws_referenceAnnotation_id" (Id for KBaseRNASeq.GFFAnnotation @id
            ws KBaseRNASeq.GFFAnnotation), parameter "is_sample_set" of Long
         :returns: instance of type "ResultsToReport" (Object for Report type)
@@ -909,11 +907,13 @@ class KBaseRNASeq:
 
     def CufflinksCall(self, ctx, params):
         """
-        :param params: instance of type "CufflinksParams" -> structure:
-           parameter "ws_id" of String, parameter "sample_alignment" of
-           String, parameter "num_threads" of Long, parameter
-           "min-intron-length" of Long, parameter "max-intron-length" of
-           Long, parameter "overhang-tolerance" of Long
+        :param params: instance of type "CufflinksCall_runParams" ->
+           structure: parameter "global_input_params" of type
+           "CufflinksCall_globalInputParams" (*******************) ->
+           structure: parameter "ws_id" of String, parameter
+           "sample_alignment" of String, parameter "num_threads" of Long,
+           parameter "min-intron-length" of Long, parameter
+           "max-intron-length" of Long, parameter "overhang-tolerance" of Long
         :returns: instance of type "ResultsToReport" (Object for Report type)
            -> structure: parameter "report_name" of String, parameter
            "report_ref" of String
@@ -956,6 +956,85 @@ class KBaseRNASeq:
         # return the results
         return [returnVal]
 
+    def CufflinksCall_prepare(self, ctx, prepare_params):
+        """
+        :param prepare_params: instance of type
+           "CufflinksCall_prepareInputParams" (**************************) ->
+           structure: parameter "global_input_params" of type
+           "CufflinksCall_globalInputParams" (*******************) ->
+           structure: parameter "ws_id" of String, parameter
+           "sample_alignment" of String, parameter "num_threads" of Long,
+           parameter "min-intron-length" of Long, parameter
+           "max-intron-length" of Long, parameter "overhang-tolerance" of Long
+        :returns: instance of type "CufflinksCall_prepareSchedule" ->
+           structure: parameter "tasks" of list of type
+           "CufflinksCall_runEachInput" -> structure: parameter
+           "input_arguments" of tuple of size 1: type "CufflinksCall_task" ->
+           structure:
+        """
+        # ctx is the context object
+        # return variables are: returnVal
+        #BEGIN CufflinksCall_prepare
+        #END CufflinksCall_prepare
+
+        # At some point might do deeper type checking...
+        if not isinstance(returnVal, dict):
+            raise ValueError('Method CufflinksCall_prepare return value ' +
+                             'returnVal is not type dict as required.')
+        # return the results
+        return [returnVal]
+
+    def CufflinksCall_runEach(self, ctx, task):
+        """
+        :param task: instance of type "CufflinksCall_task" -> structure:
+        :returns: instance of type "CufflinksCall_runEachResult"
+           (**************************) -> structure: parameter
+           "alignment_set_id" of String, parameter "output_name" of String
+        """
+        # ctx is the context object
+        # return variables are: returnVal
+        #BEGIN CufflinksCall_runEach
+        #END CufflinksCall_runEach
+
+        # At some point might do deeper type checking...
+        if not isinstance(returnVal, dict):
+            raise ValueError('Method CufflinksCall_runEach return value ' +
+                             'returnVal is not type dict as required.')
+        # return the results
+        return [returnVal]
+
+    def CufflinksCall_collect(self, ctx, collect_params):
+        """
+        :param collect_params: instance of type
+           "CufflinksCall_collectInputParams" -> structure: parameter
+           "global_params" of type "CufflinksCall_globalInputParams"
+           (*******************) -> structure: parameter "ws_id" of String,
+           parameter "sample_alignment" of String, parameter "num_threads" of
+           Long, parameter "min-intron-length" of Long, parameter
+           "max-intron-length" of Long, parameter "overhang-tolerance" of
+           Long, parameter "input_result_pairs" of list of type
+           "CufflinksCall_InputResultPair" (**************************) ->
+           structure: parameter "input" of type "CufflinksCall_runEachInput"
+           -> structure: parameter "input_arguments" of tuple of size 1: type
+           "CufflinksCall_task" -> structure: , parameter "result" of type
+           "CufflinksCall_runEachResult" (**************************) ->
+           structure: parameter "alignment_set_id" of String, parameter
+           "output_name" of String
+        :returns: instance of type "CufflinksCall_globalResult" -> structure:
+           parameter "output" of unspecified object, parameter "workspace" of
+           String
+        """
+        # ctx is the context object
+        # return variables are: returnVal
+        #BEGIN CufflinksCall_collect
+        #END CufflinksCall_collect
+
+        # At some point might do deeper type checking...
+        if not isinstance(returnVal, dict):
+            raise ValueError('Method CufflinksCall_collect return value ' +
+                             'returnVal is not type dict as required.')
+        # return the results
+        return [returnVal]
 
     def CuffdiffCall(self, ctx, params):
         """

@@ -728,7 +728,7 @@ async funcdef StringTieCall(StringTieParams params)
                 list<CufflinksCall_runEachInput> tasks;
         } CufflinksCall_prepareSchedule;
         
-        funcdef CufflinksCall_prepar( CufflinksCall_prepareInputParams prepare_params )
+        funcdef CufflinksCall_prepare( CufflinksCall_prepareInputParams prepare_params )
              returns( CufflinksCall_prepareSchedule ) authentication required;
 
         /****************************/
