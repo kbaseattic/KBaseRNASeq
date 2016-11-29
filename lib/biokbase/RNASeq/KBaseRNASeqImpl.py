@@ -1087,6 +1087,31 @@ class KBaseRNASeq:
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN CufflinksCall_collect
+
+        if not os.path.exists( self.__SCRATCH ): os.makedirs(self.__SCRATCH)
+        cufflinks_dir = os.path.join( self.__SCRATCH, "tmp" )
+        #handler_util.setupWorkingDir( self.__LOGGER, cufflinks_dir ) 
+        # Set the common Params
+
+        self.__LOGGER.info( "in CufflinksCall_collect, collect_params is" )
+        self.__LOGGER.info( pformat( collect_params ) )
+        common_params = { 'ws_client' : Workspace(url=self.__WS_URL, token=ctx['token']),
+                          'hs_client' : HandleService(url=self.__HS_URL, token=ctx['token']),
+                          'user_token' : ctx['token']
+                        }
+
+        # Check whether to call Cufflinks collect() single or set subclass
+        if ( collect_params['global_params']['is_alignment_set'] == 1 ):
+                 self.__LOGGER.info("CufflinksCall_prepare AlignmentSet Case")
+                 cuff_set = CufflinksSampleSet(self.__LOGGER, cufflinks_dir, self.__SERVICES)
+                 returnVal = cuff_set.collect( common_params, collect_params )
+        else:
+                 self.__LOGGER.info("CufflinksCall_prepare Sample Case")
+                 cuff_sing = CufflinksSample(self.__LOGGER, cufflinks_dir, self.__SERVICES)
+                 returnVal = cuff_sing.collect( common_params, collect_params )
+
+        #handler_util.cleanup( self.__LOGGER, tophat_dir )
+
         #END CufflinksCall_collect
 
         # At some point might do deeper type checking...
