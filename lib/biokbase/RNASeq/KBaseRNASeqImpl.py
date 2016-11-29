@@ -1000,14 +1000,14 @@ class KBaseRNASeq:
         if 'num_threads' in params and params['num_threads'] is not None:
             common_params['num_threads'] = params['num_threads']
 
-        # Check whether to call Tophat prepare() single or set subclass
+        # Check whether to call Cufflinks prepare() single or set subclass
         if ( params['is_alignment_set'] == 1 ):
                  self.__LOGGER.info("CufflinksCall_prepare AlignmentSet Case")
-                 cuff_set = CufflinksSampleSet(self.__LOGGER, tophat_dir, self.__SERVICES)
+                 cuff_set = CufflinksSampleSet(self.__LOGGER, cufflnks_dir, self.__SERVICES)
                  tasklist = cuff_set.prepare( common_params, params )
         else:
-                 self.__LOGGER.info("TophatCall_prepare Single Alignment Case")
-                 cuff_sing = CufflinksSample(self.__LOGGER, tophat_dir, self.__SERVICES)
+                 self.__LOGGER.info("CufflinksCall_prepare Single Alignment Case")
+                 cuff_sing = CufflinksSample(self.__LOGGER, cufflinks_dir, self.__SERVICES)
                  tasklist = cuff_sing.prepare( common_params, params )
 
         returnVal = { 'tasks': tasklist }
@@ -1031,6 +1031,29 @@ class KBaseRNASeq:
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN CufflinksCall_runEach
+
+        self.__LOGGER.info( "in CufflinksCall_runEach, task is" )
+        self.__LOGGER.info( pformat( task ) )
+
+        if not os.path.exists( self.__SCRATCH ): os.makedirs(self.__SCRATCH)
+        cufflinks_dir = os.path.join( self.__SCRATCH, "tmp" )
+        if ( not os.path.exists( cufflinks_dir ) ):
+           handler_util.setupWorkingDir( self.__LOGGER, cufflinks_dir ) 
+        # Set the common Params
+        common_params = {'ws_client' : Workspace(url=self.__WS_URL, token=ctx['token']),
+                         'hs_client' : HandleService(url=self.__HS_URL, token=ctx['token']),
+                         'user_token' : ctx['token']
+                        }
+
+        self.__LOGGER.info( "CufflinksCall_runeach" )
+
+        cuff = Cufflinks( self.__LOGGER, cufflinks_dir, self.__SERVICES )
+        cuff.common_params = common_params
+
+        returnVal = cuff.runEach( task )
+
+        #handler_util.cleanup( self.__LOGGER, cufflinks_dir )
+
         #END CufflinksCall_runEach
 
         # At some point might do deeper type checking...
