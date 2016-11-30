@@ -53,7 +53,7 @@ from biokbase.RNASeq.TophatSampleSet import TophatSampleSet
 from biokbase.RNASeq.TophatSample import TophatSample
 from biokbase.RNASeq.CufflinksSampleSet import CufflinksSampleSet
 from biokbase.RNASeq.CufflinksSample import CufflinksSample
-from biokbase.RNASeq.Cufflinks input Cufflinks
+from biokbase.RNASeq.Cufflinks import Cufflinks
 
 _KBaseRNASeq__DATA_VERSION = "0.2"
 
