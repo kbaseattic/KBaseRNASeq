@@ -105,13 +105,14 @@ class CufflinksSampleSet(Cufflinks):
             for sample_name, alignment_id in i.items():
                     task_param = { "input_arguments":
                                     [
-                                      { 'job_id' : alignment_id,
-                                        'gtf_file' : gtf_file,
-                                        'ws_id' : params['ws_id'],
-                                        'genome_id' : genome_id,
-                                        'cufflinks_dir' : self.directory,
-                                        'annotation_id': gtf_id,
-                                        'sample_id' : sample_name,
+                                      { 'job_id'          : alignment_id,
+                                        'gtf_file'        : gtf_file,
+                                        'ws_gtf'          : ws_gtf
+                                        'ws_id'           : params['ws_id'],
+                                        'genome_id'       : genome_id,
+                                        'cufflinks_dir'   : self.directory,
+                                        'annotation_id'   : gtf_id,
+                                        'sample_id'       : sample_name,
                                         'alignmentset_id' : alignmentset_id 
                                       }
                                     ]

@@ -40,15 +40,20 @@ class Cufflinks(ExecutionBase):
         self.tool_used = "Cufflinks"
         self.tool_version = "1.2.3"
 
-    def runEach(self,task_params):
+    def runEach( self, task_params ):
+
+        self.logger.info( "in Cufflinks.runEach(), task_params are" )
+        self.logger.info( pformat( task_params ) )
+
         ws_client = self.common_params['ws_client']
         hs = self.common_params['hs_client']
-        params = self.method_params
+        params = task_params
         logger = self.logger
         token = self.common_params['user_token']
         
         s_alignment = task_params['job_id']
         gtf_file = task_params['gtf_file']
+        gtf_ws = task_params['ws_gtf']
         directory = task_params['cufflinks_dir']
         genome_id = task_params['genome_id']
         annotation_id = task_params['annotation_id']
@@ -56,6 +61,23 @@ class Cufflinks(ExecutionBase):
         alignmentset_id = task_params['alignmentset_id']
         ws_id = task_params['ws_id']
     
+        # if runnining locally, there's a possibility that the gtf file is already downloaded
+        # in the cufflinks directory.  Check for it. If not, we need to retreive it again
+
+        if not os.path.isfile( gtf_file ) :
+            # didn't find it, lets get it from the workspace - prepare would have created that 
+            # if it didn't already exist
+            gtf_file = script_util.check_and_download_existing_handle_obj( logger, 
+                                                                           ws_client, 
+                                                                           self.urls,
+                                                                           ws_id,
+                                                                           gtf_ws,
+                                                                           "KBaseRNASeq.GFFAnnotation",
+                                                                           directory,
+                                                                           token )
+            if gtf_file is None:
+                raise Exception( "Unable to get GFF {0} from workspace".format( gtf_ws ) )
+
         print "Downloading Sample Alignment from workspace {0}".format(s_alignment)
         logger.info("Downloading Sample Alignment from workspace {0}".format(s_alignment))
         alignment_name = ws_client.get_object_info([{"ref" :s_alignment}],includeMetadata=None)[0][1]
@@ -181,6 +203,6 @@ class Cufflinks(ExecutionBase):
                 if os.path.exists(input_direc): shutil.rmtree(input_direc)
                 ret = script_util.if_obj_exists(None,ws_client,ws_id,"KBaseRNASeq.RNASeqExpression",[output_name])
                 if not ret is None:
-                    return (alignment_name, output_name )
+                    return { 'alignment_set_id': alignment_name, 'output_name': output_name }
         return None
 
