@@ -705,7 +705,7 @@ async funcdef StringTieCall(StringTieParams params)
                 CufflinksCall_globalInputParams global_input_params;
         } CufflinksCall_runParams;
 
-        async funcdef CufflinksCall( CufflinksCall_runParams params )
+        async funcdef CufflinksCall( CufflinksCall_globalInputParams params )
              returns( ResultsToReport ) authentication required;
 
         /****************************/
