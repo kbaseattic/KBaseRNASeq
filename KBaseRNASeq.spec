@@ -736,7 +736,7 @@ async funcdef StringTieCall(StringTieParams params)
         /****************************/
 
         typedef structure {
-            string  alignment_set_id;
+            string  alignmentset_id;
             string  output_name;
         } CufflinksCall_runEachResult;
 

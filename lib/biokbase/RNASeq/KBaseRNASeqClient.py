@@ -449,12 +449,10 @@ class KBaseRNASeq(object):
 
     def CufflinksCall(self, params, context=None):
         """
-        :param params: instance of type "CufflinksCall_runParams" ->
-           structure: parameter "global_input_params" of type
-           "CufflinksCall_globalInputParams" (*******************) ->
-           structure: parameter "ws_id" of String, parameter
-           "sample_alignment" of String, parameter "num_threads" of Long,
-           parameter "min-intron-length" of Long, parameter
+        :param params: instance of type "CufflinksCall_globalInputParams"
+           (*******************) -> structure: parameter "ws_id" of String,
+           parameter "sample_alignment" of String, parameter "num_threads" of
+           Long, parameter "min-intron-length" of Long, parameter
            "max-intron-length" of Long, parameter "overhang-tolerance" of Long
         :returns: instance of type "ResultsToReport" (Object for Report type)
            -> structure: parameter "report_name" of String, parameter
@@ -502,7 +500,7 @@ class KBaseRNASeq(object):
         :param task: instance of type "CufflinksCall_task" -> structure:
         :returns: instance of type "CufflinksCall_runEachResult"
            (**************************) -> structure: parameter
-           "alignment_set_id" of String, parameter "output_name" of String
+           "alignmentset_id" of String, parameter "output_name" of String
         """
         job_id = self._CufflinksCall_runEach_submit(task, context)
         async_job_check_time = self._client.async_job_check_time
@@ -531,7 +529,7 @@ class KBaseRNASeq(object):
            -> structure: parameter "input_arguments" of tuple of size 1: type
            "CufflinksCall_task" -> structure: , parameter "result" of type
            "CufflinksCall_runEachResult" (**************************) ->
-           structure: parameter "alignment_set_id" of String, parameter
+           structure: parameter "alignmentset_id" of String, parameter
            "output_name" of String
         :returns: instance of type "CufflinksCall_globalResult" -> structure:
            parameter "output" of unspecified object, parameter "workspace" of

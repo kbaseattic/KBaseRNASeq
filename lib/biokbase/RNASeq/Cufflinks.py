@@ -215,6 +215,6 @@ class Cufflinks(KBParallelExecutionBase):
                 if os.path.exists(input_direc): shutil.rmtree(input_direc)
                 ret = script_util.if_obj_exists(None,ws_client,ws_id,"KBaseRNASeq.RNASeqExpression",[output_name])
                 if not ret is None:
-                    return { 'alignment_set_id': alignment_name, 'output_name': output_name }
+                    return { 'alignmentset_id': alignment_name, 'output_name': output_name }
         return None
 
