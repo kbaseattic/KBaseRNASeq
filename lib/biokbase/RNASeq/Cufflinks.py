@@ -21,13 +21,14 @@ try:
     from biokbase.HandleService.Client import HandleService
 except:
     from biokbase.AbstractHandle.Client import AbstractHandle as HandleService
-from biokbase.RNASeq.ExecutionBase import ExecutionBase
-#import ExecutionBase.ExecutionBase as ExecutionBase
+
+from biokbase.RNASeq.KBParallelExecutionBase import KBParallelExecutionBase
+
 
 class CufflinksException(Exception):
     pass
 
-class Cufflinks(ExecutionBase): 
+class Cufflinks(KBParallelExecutionBase): 
 
     def __init__(self, logger, directory, urls):
         pprint(self.__class__)
@@ -36,7 +37,8 @@ class Cufflinks(ExecutionBase):
         # user defined shared variables across methods
         #self.sample = None
         #self.sampleset_info = None
-        self.num_threads = None
+        #self.num_threads = None
+        self.num_threads = 1    # this is the cufflinks default value
         self.tool_used = "Cufflinks"
         self.tool_version = "1.2.3"
 
@@ -82,7 +84,7 @@ class Cufflinks(ExecutionBase):
         logger.info("Downloading Sample Alignment from workspace {0}".format(s_alignment))
         alignment_name = ws_client.get_object_info([{"ref" :s_alignment}],includeMetadata=None)[0][1]
         if not logger:
-           logger = handler_util.create_logger(directory,"run_cufflinks_"+alignment_name)
+            logger = handler_util.create_logger(directory,"run_cufflinks_"+alignment_name)
         try:
            alignment = ws_client.get_objects(
                                         [{ 'ref' : s_alignment }])[0]
@@ -95,7 +97,12 @@ class Cufflinks(ExecutionBase):
            a_filename = alignment['data']['file']['file_name']
            condition = alignment['data']['condition']
            try:
-                script_util.download_file_from_shock(logger, shock_service_url=self.urls['shock_service_url'], shock_id=a_file_id,filename=a_filename,directory=input_direc,token=token)
+                script_util.download_file_from_shock( logger, 
+                                                      shock_service_url=self.urls['shock_service_url'], 
+                                                      shock_id=a_file_id,
+                                                      filename=a_filename,
+                                                      directory=input_direc,
+                                                      token=token )
            except Exception,e:
                 raise Exception( "Unable to download shock file, {0},{1}".format(a_filename,"".join(traceback.format_exc())))
            try:
@@ -110,6 +117,9 @@ class Cufflinks(ExecutionBase):
            input_file = os.path.join(input_dir,"accepted_hits.bam")
                 ### Adding advanced options to tophat command
            tool_opts = { k:str(v) for k,v in params.iteritems() if not k in ('ws_id','alignmentset_id', 'num_threads') and v is not None  }
+           if self.num_threads is None:
+               self.num_threads = 1
+          
            cufflinks_command = (' -p '+str(self.num_threads))
            if 'max_intron_length' in params and params['max_intron_length'] is not None:
                cufflinks_command += (' --max-intron-length '+str(params['max_intron_length']))
@@ -123,6 +133,7 @@ class Cufflinks(ExecutionBase):
            logger.info("Executing: cufflinks {0}".format(cufflinks_command))
            print "Executing: cufflinks {0}".format(cufflinks_command)
            ret = script_util.runProgram(None,"cufflinks",cufflinks_command,None,directory)
+           self.logger.info( "##########back from script_util.runProgram#########" )
            result = ret["result"]
            for line in result.splitlines(False):
                        self.logger.info(line)
@@ -138,6 +149,7 @@ class Cufflinks(ExecutionBase):
                                    else:
                                       prev_value = ''
                                       self.logger.info(line)
+           self.logger.info( "#######HERE#######")
 
            ##Parse output files
            try:
@@ -148,7 +160,7 @@ class Cufflinks(ExecutionBase):
                 raise Exception(e)
                 logger.exception("".join(traceback.format_exc()))
                 raise Exception("Error parsing FPKMtracking")
-        ##  compress and upload to shock
+           ##  compress and upload to shock
            try:
                 logger.info("Zipping cufflinks output")
                 print "Zipping cufflinks output"

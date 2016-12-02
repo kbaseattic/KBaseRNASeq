@@ -107,7 +107,7 @@ class CufflinksSampleSet(Cufflinks):
                                     [
                                       { 'job_id'          : alignment_id,
                                         'gtf_file'        : gtf_file,
-                                        'ws_gtf'          : ws_gtf
+                                        'ws_gtf'          : ws_gtf,
                                         'ws_id'           : params['ws_id'],
                                         'genome_id'       : genome_id,
                                         'cufflinks_dir'   : self.directory,
@@ -127,8 +127,19 @@ class CufflinksSampleSet(Cufflinks):
         self.logger.info(" Creating ExpressionSet for the Assemblies {0}".format(expressionSet_name))
         
         # TODO: Split alignment set and report method
-        reportObj=rnaseq_util.create_RNASeq_ExpressionSet_and_build_report(self.logger,self.common_params['ws_client'],self.tool_used,self.tool_version,self.tool_opts,self.method_params['ws_id'],self.align_names,self.task_list[0]['alignmentset_id'],self.task_list[0]['genome_id'],self.sampleset_id,self.results,expressionSet_name)
-        self.returnVal = { 'output'  : expressionSet_name ,'workspace' : self.method_params['ws_id']}
+        reportObj = rnaseq_util.create_RNASeq_ExpressionSet_and_build_report( self.logger,
+                                                                              common_params['ws_client'],
+                                                                              self.tool_used,
+                                                                              self.tool_version,
+                                                                              self.tool_opts,
+                                                                              method_params['ws_id'],
+                                                                              self.align_names,
+                                                                              self.task_list[0]['alignmentset_id'],
+                                                                              self.task_list[0]['genome_id'],
+                                                                              self.sampleset_id,
+                                                                              self.results,
+                                                                              expressionSet_name)
+        self.returnVal = { 'output'  : expressionSet_name ,'workspace' : method_params['ws_id']}
 #	reportName = 'Align_Reads_using_Hisat2_'+str(hex(uuid.getnode()))
 #        report_info = self.common_params['ws_client'].save_objects({
 #                                                'id':self.alignmentset_info[6],
