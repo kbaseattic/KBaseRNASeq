@@ -411,6 +411,8 @@ class KBaseRNASeq:
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN Hisat2Call
+        self.__LOGGER.debug( "params:\n" +  pformat( params ) )
+
 	if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
         hisat2_dir = os.path.join(self.__SCRATCH,"tmp")
         handler_util.setupWorkingDir(self.__LOGGER,hisat2_dir) 
@@ -426,16 +428,17 @@ class KBaseRNASeq:
 
 	# Check to Call HiSat2 in Set mode or Single mode
 	wsc = common_params['ws_client']
+
 	readsobj_info = wsc.get_object_info_new({"objects": [{'name': params['sampleset_id'], 'workspace': params['ws_id']}]})
         readsobj_type = readsobj_info[0][2].split('-')[0]
 	if readsobj_type == 'KBaseRNASeq.RNASeqSampleSet':	
 		self.__LOGGER.info("HiSat2 SampleSet Case")
         	hs2ss = HiSat2SampleSet(self.__LOGGER, hisat2_dir, self.__SERVICES)
-        	returnVal = hs2ss.run(common_params, params)
+        	returnVal = hs2ss.run(ctx['module'], ctx['method'], common_params, params)
 	else:
-		hs2ss = HiSat2Sample(self.__LOGGER, hisat2_dir, self.__SERVICES)
-		returnVal = hs2ss.run(common_params,params)
-	#finally:
+                self.__LOGGER.error("HiSat2 Sample is no longer supported")
+		returnVal = {}
+        self.__LOGGER.debug("Back to HiSat2Call")
         handler_util.cleanup(self.__LOGGER,hisat2_dir)
         #END Hisat2Call
 
@@ -475,6 +478,28 @@ class KBaseRNASeq:
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN Hisat2Call_prepare
+        if not os.path.exists( self.__SCRATCH ): os.makedirs(self.__SCRATCH)
+        hisat_dir = os.path.join( self.__SCRATCH, "tmp" )
+        #handler_util.setupWorkingDir( self.__LOGGER, hisat_dir ) 
+        # Set the common Params
+
+        self.__LOGGER.debug( "prepare_params:\n" +  pformat( prepare_params ) )
+
+        common_params = {'ws_client' : Workspace(url=self.__WS_URL, token=ctx['token']),
+                         'hs_client' : HandleService(url=self.__HS_URL, token=ctx['token']),
+                         'user_token' : ctx['token']
+                        }
+        params = prepare_params['global_input_params']    # de-encapsulate the actual method parameters
+                                                          # NOTE: check for error if does not exist
+        # Set the Number of threads if specified 
+        if 'num_threads' in params and params['num_threads'] is not None:
+            common_params['num_threads'] = params['num_threads']
+
+        h2ss = HiSat2SampleSet(self.__LOGGER, hisat_dir, self.__SERVICES)
+        tasklist = h2ss.prepare( common_params, params )
+        
+        returnVal = {'tasks' : tasklist}
+
         #END Hisat2Call_prepare
 
         # At some point might do deeper type checking...
@@ -499,6 +524,22 @@ class KBaseRNASeq:
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN Hisat2Call_runEach
+        self.__LOGGER.info( "Hisat2Call_runEach:\n" +  pformat( task ) )
+
+        if not os.path.exists( self.__SCRATCH ): os.makedirs(self.__SCRATCH)
+        hisat_dir = os.path.join( self.__SCRATCH, "tmp" )
+        if ( not os.path.exists( hisat_dir ) ):
+           handler_util.setupWorkingDir( self.__LOGGER, hisat_dir ) 
+        # Set the common Params
+        common_params = {'ws_client' : Workspace(url=self.__WS_URL, token=ctx['token']),
+                         'hs_client' : HandleService(url=self.__HS_URL, token=ctx['token']),
+                         'user_token' : ctx['token']
+                        }
+
+        hs2 = HiSat2( self.__LOGGER, hisat_dir, self.__SERVICES )
+        hs2.common_params = common_params
+
+        returnVal = hs2.runEach( task )
         #END Hisat2Call_runEach
 
         # At some point might do deeper type checking...
@@ -544,6 +585,19 @@ class KBaseRNASeq:
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN Hisat2Call_collect
+        if not os.path.exists( self.__SCRATCH ): os.makedirs(self.__SCRATCH)
+        hisat_dir = os.path.join( self.__SCRATCH, "tmp" )
+        #handler_util.setupWorkingDir( self.__LOGGER, hisat_dir ) 
+        # Set the common Params
+
+        self.__LOGGER.debug( "Hisat2Call_collect:\n" +  pformat( collect_params ) )
+        common_params = {'ws_client' : Workspace(url=self.__WS_URL, token=ctx['token']),
+                         'hs_client' : HandleService(url=self.__HS_URL, token=ctx['token']),
+                         'user_token' : ctx['token']
+                        }
+
+        hsss = HiSat2SampleSet(self.__LOGGER, hisat_dir, self.__SERVICES)
+        returnVal = hsss.collect( common_params, collect_params )
         #END Hisat2Call_collect
 
         # At some point might do deeper type checking...
