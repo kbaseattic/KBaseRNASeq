@@ -32,7 +32,7 @@ class CufflinksSampleException(Exception):
 class CufflinksSampleSet(Cufflinks): 
 
     def __init__(self, logger, directory, urls):
-	pprint(self.__class__)
+        pprint(self.__class__)
         super(self.__class__, self).__init__(logger, directory, urls)
         #super(StringtTieSampleSet, self).__init__(logger, directory, urls)
         # user defined shared variables across methods
@@ -40,39 +40,54 @@ class CufflinksSampleSet(Cufflinks):
         self.alignmentset_info = None
         self.num_threads = 1
 
-    def prepare(self): 
+    def prepare( self, common_params, method_params ): 
         # for quick testing, we recover parameters here
-        ws_client = self.common_params['ws_client']
-        hs = self.common_params['hs_client']
-        params = self.method_params
+        ws_client = common_params['ws_client']
+        hs = common_params['hs_client']
+        params = method_params
         logger = self.logger
-        token = self.common_params['user_token']
+        token = common_params['user_token']
         cufflinks_dir = self.directory
         try:
                a_sampleset = ws_client.get_objects(
                                         [{'name' : params['alignmentset_id'],'workspace' : params['ws_id']}])[0]
                a_sampleset_info = ws_client.get_object_info_new({"objects" : 
                                         [{'name' : params['alignmentset_id'],'workspace' : params['ws_id']}]})[0]
-	       self.alignmentset_info =  a_sampleset_info
+               self.alignmentset_info =  a_sampleset_info    # QUESTION:  WHY IS THIS NEEDED?
                a_sampleset_id = str(a_sampleset_info[6]) + '/' + str(a_sampleset_info[0]) + '/' + str(a_sampleset_info[4])	
-	       alignmentset_id = a_sampleset_id
+               alignmentset_id = a_sampleset_id
         except Exception,e:
                logger.exception("".join(traceback.format_exc()))
                raise Exception("Error Downloading objects from the workspace ")
         #read_sample_id']
-	### Check if the gtf file exists in the workspace. if exists download the file from that
+        ### Check if the gtf file exists in the workspace. if exists download the file from that
         genome_id = a_sampleset['data']['genome_id']
         genome_name = ws_client.get_object_info([{"ref" :genome_id}],includeMetadata=None)[0][1]
         ws_gtf = genome_name+"_GTF_Annotation"
-	gtf_file = script_util.check_and_download_existing_handle_obj(logger,ws_client,self.urls,params['ws_id'],ws_gtf,"KBaseRNASeq.GFFAnnotation",cufflinks_dir,token)
+        gtf_file = script_util.check_and_download_existing_handle_obj( logger,
+                                                                       ws_client,
+                                                                       self.urls,
+                                                                       params['ws_id'],
+                                                                       ws_gtf,
+                                                                       "KBaseRNASeq.GFFAnnotation",
+                                                                       cufflinks_dir,
+                                                                       token )
         if gtf_file is None:
-             rnaseq_util.create_gtf_annotation_from_genome(logger,ws_client,hs,self.urls,params['ws_id'],genome_id,genome_name,cufflinks_dir,token)
-	gtf_info = ws_client.get_object_info_new({"objects": [{'name': ws_gtf , 'workspace': params['ws_id']}]})[0]
+             rnaseq_util.create_gtf_annotation_from_genome( logger,
+                                                            ws_client,
+                                                            hs,
+                                                            self.urls,
+                                                            params['ws_id'],
+                                                            genome_id,
+                                                            genome_name,
+                                                            cufflinks_dir,
+                                                            token )
+        gtf_info = ws_client.get_object_info_new({"objects": [{'name': ws_gtf , 'workspace': params['ws_id']}]})[0]
         gtf_id = str(gtf_info[6]) + '/' + str(gtf_info[0]) + '/' + str(gtf_info[4])
-	self.tool_opts = { k:str(v) for k,v in params.iteritems() if not k in ('ws_id','alignmentset_id', 'num_threads') and v is not None  }
-	alignment_ids = a_sampleset['data']['sample_alignments']
+        self.tool_opts = { k:str(v) for k,v in params.iteritems() if not k in ('ws_id','alignmentset_id', 'num_threads') and v is not None  }
+        alignment_ids = a_sampleset['data']['sample_alignments']
         m_alignment_names = a_sampleset['data']['mapped_rnaseq_alignments']
-        self.sampleset_id =   a_sampleset['data']['sampleset_id']
+        self.sampleset_id = a_sampleset['data']['sampleset_id']
         ### Get List of Alignments Names
         self.align_names = []
         for d_align in m_alignment_names:
@@ -84,31 +99,36 @@ class CufflinksSampleSet(Cufflinks):
         if self.num_jobs < 2:
             raise ValueError("Please ensure you have atleast 2 alignments to run cufflinks in Set mode")
 
-	logger.info(" Number of threads used by each process {0}".format(self.num_threads))
-	count = 0
+        logger.info(" Number of threads used by each process {0}".format(self.num_threads))
+        count = 0
         for i in m_alignment_ids:
-	    for sample_name, alignment_id in i.items():
-		    task_param = {'job_id' : alignment_id,
-                                  'gtf_file' : gtf_file,
-                                  'ws_id' : params['ws_id'],
-                                  'genome_id' : genome_id,
-                                  'cufflinks_dir' : self.directory,
-                                  'annotation_id': gtf_id,
-                                  'sample_id' : sample_name,
-                                  'alignmentset_id' : alignmentset_id 
+            for sample_name, alignment_id in i.items():
+                    task_param = { "input_arguments":
+                                    [
+                                      { 'job_id'          : alignment_id,
+                                        'gtf_file'        : gtf_file,
+                                        'ws_gtf'          : ws_gtf
+                                        'ws_id'           : params['ws_id'],
+                                        'genome_id'       : genome_id,
+                                        'cufflinks_dir'   : self.directory,
+                                        'annotation_id'   : gtf_id,
+                                        'sample_id'       : sample_name,
+                                        'alignmentset_id' : alignmentset_id 
+                                      }
+                                    ]
                                   }
                     self.task_list.append(task_param)
                     count = count + 1
  
 
-    def collect(self) :
+    def collect( self, common_params, method_params ) :
         # do with 
         expressionSet_name = self.method_params['alignmentset_id']+"_cufflinks_ExpressionSet"
         self.logger.info(" Creating ExpressionSet for the Assemblies {0}".format(expressionSet_name))
         
-	# TODO: Split alignment set and report method
+        # TODO: Split alignment set and report method
         reportObj=rnaseq_util.create_RNASeq_ExpressionSet_and_build_report(self.logger,self.common_params['ws_client'],self.tool_used,self.tool_version,self.tool_opts,self.method_params['ws_id'],self.align_names,self.task_list[0]['alignmentset_id'],self.task_list[0]['genome_id'],self.sampleset_id,self.results,expressionSet_name)
-	self.returnVal = { 'output'  : expressionSet_name ,'workspace' : self.method_params['ws_id']}
+        self.returnVal = { 'output'  : expressionSet_name ,'workspace' : self.method_params['ws_id']}
 #	reportName = 'Align_Reads_using_Hisat2_'+str(hex(uuid.getnode()))
 #        report_info = self.common_params['ws_client'].save_objects({
 #                                                'id':self.alignmentset_info[6],
@@ -122,5 +142,5 @@ class CufflinksSampleSet(Cufflinks):
 #                                                #'provenance':provenance
 #                                                }
 #                                                ]
-#						})[0]
-#	self.returnVal = { "report_name" : reportName,"report_ref" : str(report_info[6]) + '/' + str(report_info[0]) + '/' + str(report_info[4]) }
+#                                               })[0]
+#        self.returnVal = { "report_name" : reportName,"report_ref" : str(report_info[6]) + '/' + str(report_info[0]) + '/' + str(report_info[4]) }

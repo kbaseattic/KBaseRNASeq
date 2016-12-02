@@ -43,10 +43,10 @@ class TophatSampleSet(Tophat):
 
     def prepare( self, common_params, method_params ): 
         # for quick testing, we recover parameters here
-        print( "in TophatSampleSet.prepare(), common_params are ")
-        pprint( common_params )
-        print( " and method_params are" )
-        pprint( method_params )
+        self.logger.info( "in TophatSampleSet.prepare(), common_params are ")
+        self.logger.info( pformat( common_params ) )
+        self.logger.info( " and method_params are" )
+        self.logger.info( pformat( method_params ) )
         ws_client = common_params['ws_client']
         hs = common_params['hs_client']
         params = method_params
@@ -154,12 +154,12 @@ class TophatSampleSet(Tophat):
         return self.task_list
 
 
-    def collect(self, common_params, method_params):
+    def collect( self, common_params, method_params ):
         # do with 
-        print( "in TophatSampleSet.collect(), common_params are ")
-        pprint( common_params )
-        print( " and method_params are" )
-        pprint( method_params )
+        self.logger.info( "in TophatSampleSet.collect(), common_params are ")
+        self.logger.info( pformat( common_params ) )
+        self.logger.info( " and method_params are" )
+        self.logger.info( pformat( method_params ) )
 
         global_params = method_params['global_params']
         input_result_pairs = method_params['input_result_pairs']
@@ -180,7 +180,7 @@ class TophatSampleSet(Tophat):
                                                                              input_result_pairs,
                                                                              alignmentSet_name
                                                                            )
-	reportName = 'Align_Reads_using_Tophat_'+str(hex(uuid.getnode()))
+        reportName = 'Align_Reads_using_Tophat_'+str(hex(uuid.getnode()))
         report_info = common_params['ws_client'].save_objects({
                                                                      'workspace': global_params['ws_id'],
                                                                      'objects':[

@@ -82,7 +82,7 @@ class KBaseRNASeq:
     ######################################### noqa
     VERSION = "0.0.2"
     GIT_URL = "https://github.com/sean-mccorkle/KBaseRNASeq.git"
-    GIT_COMMIT_HASH = "abcdbafeecb7ae9f9212871eab8a037ab8c797c3"
+    GIT_COMMIT_HASH = "9b70021bf8a36d7eb716ca96986e7d87c16df28a"
 
     #BEGIN_CLASS_HEADER
     __TEMP_DIR = 'temp'
