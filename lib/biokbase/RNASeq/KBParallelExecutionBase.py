@@ -36,16 +36,14 @@ class KBParallelExecutionBase(ExecutionBase):
  
     def run(self, module, method, common_params, method_params):
 
-        print( "in KBparallelExecutionBase.run, common_params are")
-        pprint( common_params )
-        print( "and method_params are ")
-        pprint( method_params )
+        self.logger.debug("common_params:\n" + pformat(common_params))
+        self.logger.debug("method_params:\n" + pformat(method_params))
         self._checkCommonParams(common_params)
         #self._setCommonParams(common_params)
         #self.method_params = method_params
         #self.common_params = common_params
 
-        kbp = KBParallel( os.environ['SDK_CALLBACK_URL'], token=common_params['user_token'])
+        kbp = KBParallel( os.environ['SDK_CALLBACK_URL'], token=common_params['user_token'], service_ver = method_params['service_ver'])
         returnVal = kbp.run( { 'method': { 'module_name': module,
                                            'method_name': method,
                                            'service_ver': method_params['service_ver']
