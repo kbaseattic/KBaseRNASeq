@@ -122,12 +122,12 @@ class CufflinksSample(Cufflinks):
         self.logger.info( pformat( method_params ) )
 
         # do with 
-        alignment_name = self.method_params['alignmentset_id']+"_cufflinks_AlignmentSet"
+        alignment_name = method_params['alignmentset_id']+"_cufflinks_AlignmentSet"
         self.logger.info(" Creating Report for Alignment {0}".format(alignment_name))
         single_alignment , single_expression = self.results[0]
         # TODO: Split alignment set and report method
-        sref = self.common_params['ws_client'].get_object_info_new({"objects": [{'name':single_expression, 'workspace': self.method_params['ws_id']}]})[0]
-        self.returnVal = { 'output'  : single_expression ,'workspace' : self.method_params['ws_id']}
+        sref = self.common_params['ws_client'].get_object_info_new({"objects": [{'name':single_expression, 'workspace': method_params['ws_id']}]})[0]
+        self.returnVal = { 'output'  : single_expression ,'workspace' : method_params['ws_id']}
 #        reportObj = {'objects_created':[{'ref' :str(sref[6]) + '/' + str(sref[0]) + '/' + str(sref[4]),
 #                                                 'description' : "RNA-seq Expression for read alignment : {0}".format(single_alignment)}],
 #                                                 'text_message': "RNA-seq Alignment for reads alignment : {0}".format(single_alignment)}
