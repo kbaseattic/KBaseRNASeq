@@ -82,7 +82,7 @@ class KBaseRNASeq:
     ######################################### noqa
     VERSION = "0.0.2"
     GIT_URL = "https://github.com/sean-mccorkle/KBaseRNASeq.git"
-    GIT_COMMIT_HASH = "9b70021bf8a36d7eb716ca96986e7d87c16df28a"
+    GIT_COMMIT_HASH = "f58929f879f6e2cc4f7d694771edf3c77e309372"
 
     #BEGIN_CLASS_HEADER
     __TEMP_DIR = 'temp'
@@ -908,12 +908,10 @@ class KBaseRNASeq:
 
     def CufflinksCall(self, ctx, params):
         """
-        :param params: instance of type "CufflinksCall_runParams" ->
-           structure: parameter "global_input_params" of type
-           "CufflinksCall_globalInputParams" (*******************) ->
-           structure: parameter "ws_id" of String, parameter
-           "sample_alignment" of String, parameter "num_threads" of Long,
-           parameter "min-intron-length" of Long, parameter
+        :param params: instance of type "CufflinksCall_globalInputParams"
+           (*******************) -> structure: parameter "ws_id" of String,
+           parameter "sample_alignment" of String, parameter "num_threads" of
+           Long, parameter "min-intron-length" of Long, parameter
            "max-intron-length" of Long, parameter "overhang-tolerance" of Long
         :returns: instance of type "ResultsToReport" (Object for Report type)
            -> structure: parameter "report_name" of String, parameter
@@ -1026,7 +1024,7 @@ class KBaseRNASeq:
         :param task: instance of type "CufflinksCall_task" -> structure:
         :returns: instance of type "CufflinksCall_runEachResult"
            (**************************) -> structure: parameter
-           "alignment_set_id" of String, parameter "output_name" of String
+           "alignmentset_id" of String, parameter "output_name" of String
         """
         # ctx is the context object
         # return variables are: returnVal
@@ -1078,7 +1076,7 @@ class KBaseRNASeq:
            -> structure: parameter "input_arguments" of tuple of size 1: type
            "CufflinksCall_task" -> structure: , parameter "result" of type
            "CufflinksCall_runEachResult" (**************************) ->
-           structure: parameter "alignment_set_id" of String, parameter
+           structure: parameter "alignmentset_id" of String, parameter
            "output_name" of String
         :returns: instance of type "CufflinksCall_globalResult" -> structure:
            parameter "output" of unspecified object, parameter "workspace" of
