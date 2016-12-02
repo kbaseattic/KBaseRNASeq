@@ -62,7 +62,7 @@ class CufflinksSample(Cufflinks):
                                         [{'name' : params['alignmentset_id'],'workspace' : params['ws_id']}]})[0]
                self.logger.info( "get_object_new_info alignment returns" )
                self.logger.info( pformat( a_alignment_info ) )
-               self.alignment_info =  a_alignment_info
+               self.alignment_info =  a_alignment_info       # QUESTION: WHY IS THIS NEEDED?
                s_alignment_id = str(a_alignment_info[6]) + '/' + str(a_alignment_info[0]) + '/' + str(a_alignment_info[4])
         except Exception,e:
                logger.exception("".join(traceback.format_exc()))
@@ -75,7 +75,8 @@ class CufflinksSample(Cufflinks):
         ws_gtf = genome_name+"_GTF_Annotation"
         gtf_file = script_util.check_and_download_existing_handle_obj( logger, 
                                                                        ws_client, 
-                                                                       self.urls,params['ws_id'],
+                                                                       self.urls,
+                                                                       params['ws_id'],
                                                                        ws_gtf,
                                                                        "KBaseRNASeq.GFFAnnotation",
                                                                        cufflinks_dir,
@@ -95,16 +96,24 @@ class CufflinksSample(Cufflinks):
         self.tool_opts = { k:str(v) for k,v in params.iteritems() if not k in ('ws_id','alignmentset_id', 'num_threads') and v is not None  }
         self.num_jobs =  1
         logger.info( " Number of threads used by each process {0}".format(self.num_threads) )
-        task_param = {'job_id' : s_alignment_id,
-                      'gtf_file' : gtf_file,
-                      'ws_id' : params['ws_id'],
-                      'genome_id' : genome_id,
-                      'cufflinks_dir' : self.directory,
-                      'annotation_id': gtf_id,
-                      'sample_id' : read_sample_id , 
-                      'alignmentset_id' : None
-                      }
+        task_param = { "input_arguments" :
+                       [
+                         { 'job_id'          : s_alignment_id,
+                           'gtf_file'        : gtf_file,
+                           'ws_gtf'          : ws_gtf,
+                           'ws_id'           : params['ws_id'],
+                           'genome_id'       : genome_id,
+                           'cufflinks_dir'   : cufflinks_dir,
+                           'annotation_id'   : gtf_id,
+                           'sample_id'       : read_sample_id, 
+                           'alignmentset_id' : None
+                         }
+                       ]
+                    }
         self.task_list.append( task_param )
+
+        return( self.task_list )
+
 
     def collect( self, common_params, method_params ) :
         self.logger.info( "in CufflinksSample.collect(), common_params are " )

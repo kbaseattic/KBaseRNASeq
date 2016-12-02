@@ -110,7 +110,7 @@ class TophatSample(Tophat):
         # Determine the num_threads provided by the user otherwise default the number of threads to 2
         self.num_jobs =  1
 
-        logger.info(" Number of threads used by each process {0}".format(self.num_threads))
+        logger.info( " Number of threads used by each process {0}".format(self.num_threads) )
         task_param = {'input_arguments' :  
                       [
                        {'job_id' : params['sampleset_id'],
