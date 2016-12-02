@@ -30,7 +30,7 @@ class TophatException(Exception):
 class Tophat(KBParallelExecutionBase): 
 
     def __init__(self, logger, directory, urls):
-        pprint(self.__class__)
+        logger.info(self.__class__)
         super(Tophat, self).__init__(logger, directory, urls)
 
         # user defined shared variables across methods
@@ -41,8 +41,8 @@ class Tophat(KBParallelExecutionBase):
 
     def runEach(self,task_params):
 
-        print( "in Tophat.runEach(), task_params are")
-        pprint( task_params )
+        self.logger.info( "in Tophat.runEach(), task_params are" )
+        self.logger.info( pformat( task_params ) )
         ws_client = self.common_params['ws_client']
         hs = self.common_params['hs_client']
         params = task_params
@@ -118,7 +118,6 @@ class Tophat(KBParallelExecutionBase):
 
 
         logger.info("Downloading read sample")
-        print "Downloading Read Sample{0}".format(read_sample)
         logger.info("Downloading Read Sample{0}".format(read_sample))
         try:
                 r_sample = ws_client.get_objects(

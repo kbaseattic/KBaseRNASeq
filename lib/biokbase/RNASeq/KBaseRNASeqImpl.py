@@ -53,7 +53,7 @@ from biokbase.RNASeq.TophatSampleSet import TophatSampleSet
 from biokbase.RNASeq.TophatSample import TophatSample
 from biokbase.RNASeq.CufflinksSampleSet import CufflinksSampleSet
 from biokbase.RNASeq.CufflinksSample import CufflinksSample
-from biokbase.RNASeq.Cufflinks input Cufflinks
+from biokbase.RNASeq.Cufflinks import Cufflinks
 
 _KBaseRNASeq__DATA_VERSION = "0.2"
 
@@ -82,7 +82,7 @@ class KBaseRNASeq:
     ######################################### noqa
     VERSION = "0.0.2"
     GIT_URL = "https://github.com/sean-mccorkle/KBaseRNASeq.git"
-    GIT_COMMIT_HASH = "abcdbafeecb7ae9f9212871eab8a037ab8c797c3"
+    GIT_COMMIT_HASH = "9b70021bf8a36d7eb716ca96986e7d87c16df28a"
 
     #BEGIN_CLASS_HEADER
     __TEMP_DIR = 'temp'
