@@ -1,0 +1,81 @@
+{
+        "version":"1.1",
+        "method":"KBaseRNASeq.CufflinksCall_collect",
+        "context": null,
+        "params":[
+                   {
+                    "global_params": {
+			               "ws_id"            : "srividya22:1474862362136",
+			               "alignmentset_id"  : "rna_test_to_new_genome_tophat_AlignmentSet",
+	                               "num_threads"      : 2,
+                                       "is_alignment_set" : 1
+                                     },
+                    "input_result_pairs": [
+                                            {
+                                              "input":  { "input_arguments": 
+                                                             [
+                                                               {
+								"cufflinks_dir": "/kb/module/work/tmp",
+								"annotation_id": "11600/9/1",
+								"job_id": "11600/11/15",
+								"sample_id": "Ecoli_SE_8083_R1_tophat_alignment",
+								"genome_id": "11600/5/2",
+								"gtf_file": "/kb/module/work/tmp/Escherichia_coli_K12.gtf",
+								"ws_id": "srividya22:1474862362136",
+								"ws_gtf": "Escherichia_coli_K12_GTF_Annotation",
+								"alignmentset_id": "11600/13/16"
+                                                               }
+                                                             ]
+                                                        },
+                                              "result": {
+                                                          "alignmentset_id": "Ecoli_SE_8083_R1_tophat_alignment",
+                                                          "output_name": "Ecoli_SE_8083_R1_tophat_cufflinks_expression"
+                                                        }
+                                            },
+                                            {
+                                              "input":  { "input_arguments": 
+                                                             [
+                                                               {
+								"cufflinks_dir": "/kb/module/work/tmp",
+								"annotation_id": "11600/9/1",
+								"job_id": "11600/10/15",
+								"sample_id": "Ecoli_SE_8085_R1_tophat_alignment",
+								"genome_id": "11600/5/2",
+								"gtf_file": "/kb/module/work/tmp/Escherichia_coli_K12.gtf",
+								"ws_id": "srividya22:1474862362136",
+								"ws_gtf": "Escherichia_coli_K12_GTF_Annotation",
+								"alignmentset_id": "11600/13/16"
+                                                               }
+                                                             ]
+                                                        },
+                                              "result": {
+                                                          "alignmentset_id": "Ecoli_SE_8085_R1_tophat_alignment",
+                                                          "output_name": "Ecoli_SE_8085_R1_tophat_cufflinks_expression"
+                                                        }
+                                            },
+                                            {
+                                              "input":  { "input_arguments": 
+                                                             [
+                                                               {
+								"cufflinks_dir": "/kb/module/work/tmp",
+								"annotation_id": "11600/9/1",
+								"job_id": "11600/12/15",
+								"sample_id": "EColi_SE_8086_R1_tophat_alignment",
+								"genome_id": "11600/5/2",
+								"gtf_file": "/kb/module/work/tmp/Escherichia_coli_K12.gtf",
+								"ws_id": "srividya22:1474862362136",
+								"ws_gtf": "Escherichia_coli_K12_GTF_Annotation",
+								"alignmentset_id": "11600/13/16"
+                                                               }
+                                                             ]
+                                                        },
+                                              "result": {
+                                                          "alignmentset_id": "EColi_SE_8086_R1_tophat_alignment",
+                                                          "output_name": "EColi_SE_8086_R1_tophat_cufflinks_expression"
+                                                        }
+                                            }
+
+                                          ]
+                   }
+                 ]
+}

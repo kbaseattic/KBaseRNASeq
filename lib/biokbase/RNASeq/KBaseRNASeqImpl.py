@@ -82,7 +82,7 @@ class KBaseRNASeq:
     ######################################### noqa
     VERSION = "0.0.2"
     GIT_URL = "https://github.com/sean-mccorkle/KBaseRNASeq.git"
-    GIT_COMMIT_HASH = "f58929f879f6e2cc4f7d694771edf3c77e309372"
+    GIT_COMMIT_HASH = "788a0356dbc3ce5665376ccec72998b2e573d71a"
 
     #BEGIN_CLASS_HEADER
     __TEMP_DIR = 'temp'
@@ -141,6 +141,8 @@ class KBaseRNASeq:
         streamHandler.setFormatter(formatter)
         self.__LOGGER.addHandler(streamHandler)
         self.__LOGGER.info("Logger was set")
+        self.__LOGGER.info( "services are" )
+        self.__LOGGER.info( pformat( self.__SERVICES ) )
 
         #END_CONSTRUCTOR
         pass
@@ -993,7 +995,7 @@ class KBaseRNASeq:
         obj_info = wsc.get_object_info_new({"objects": [{'name': params['alignmentset_id'], 'workspace': params['ws_id']}]})
         obj_type = obj_info[0][2].split('-')[0]
 
-        cuff = CuffLinks( self.__LOGGER, cufflinks_dir, self.__SERVICES )
+        cuff = Cufflinks( self.__LOGGER, cufflinks_dir, self.__SERVICES )
         if obj_type == 'KBaseRNASeq.RNASeqAlignmentSet':
                 self.__LOGGER.info( "Cufflinks AlignmentSet Case" )
                 params['is_alignment_set'] = 1
@@ -1055,7 +1057,7 @@ class KBaseRNASeq:
         # Check whether to call Cufflinks prepare() single or set subclass
         if ( params['is_alignment_set'] == 1 ):
                  self.__LOGGER.info("CufflinksCall_prepare AlignmentSet Case")
-                 cuff_set = CufflinksSampleSet(self.__LOGGER, cufflnks_dir, self.__SERVICES)
+                 cuff_set = CufflinksSampleSet(self.__LOGGER, cufflinks_dir, self.__SERVICES)
                  tasklist = cuff_set.prepare( common_params, params )
         else:
                  self.__LOGGER.info("CufflinksCall_prepare Single Alignment Case")
