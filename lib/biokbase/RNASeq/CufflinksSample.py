@@ -115,19 +115,30 @@ class CufflinksSample(Cufflinks):
         return( self.task_list )
 
 
-    def collect( self, common_params, method_params ) :
+    def collect( self, common_params, collect_params ) :
         self.logger.info( "in CufflinksSample.collect(), common_params are " )
         self.logger.info( pformat( common_params ) )
-        self.logger.info( " and method_params are" )
-        self.logger.info( pformat( method_params ) )
+        self.logger.info( " and collect_params are" )
+        self.logger.info( pformat( collect_params ) )
 
         # do with 
-        alignment_name = method_params['alignmentset_id']+"_cufflinks_AlignmentSet"
-        self.logger.info(" Creating Report for Alignment {0}".format(alignment_name))
-        single_alignment , single_expression = self.results[0]
+        global_params = collect_params['global_params']
+        input_result_pairs = collect_params['input_result_pairs']  
+        expressionSet_name = global_params['alignmentset_id']+"_cufflinks_ExpressionSet"
+        self.logger.info(" Creating ExpressionSet for the Assemblies {0}".format(expressionSet_name))
+
+
+        single_alignment  = input_result_pairs[0]['result']['alignmentset_id']
+        single_expression = input_result_pairs[0]['result']['output_name']
+        self.logger.info( 'single_alignment {0} single_expression {1}'.format( single_alignment, single_expression ) )
         # TODO: Split alignment set and report method
-        sref = self.common_params['ws_client'].get_object_info_new({"objects": [{'name':single_expression, 'workspace': method_params['ws_id']}]})[0]
-        self.returnVal = { 'output'  : single_expression ,'workspace' : method_params['ws_id']}
+        sref = common_params['ws_client'].get_object_info_new( { "objects": [ { 'name':      single_expression,
+                                                                                'workspace': global_params['ws_id'] } ]
+                                                                }
+                                                              )[0]
+        returnVal = { 'output': expressionSet_name, 'workspace': global_params['ws_id'] }
+
+        return( returnVal )
 #        reportObj = {'objects_created':[{'ref' :str(sref[6]) + '/' + str(sref[0]) + '/' + str(sref[4]),
 #                                                 'description' : "RNA-seq Expression for read alignment : {0}".format(single_alignment)}],
 #                                                 'text_message': "RNA-seq Alignment for reads alignment : {0}".format(single_alignment)}

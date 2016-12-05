@@ -221,26 +221,44 @@ def create_RNASeq_AlignmentSet_and_build_report4kbp(logger,ws_client,ws_id,sampl
                      }
 	 return reportObj
 
-def create_RNASeq_ExpressionSet_and_build_report(logger,ws_client,tool_used, tool_version,tool_opts,ws_id,alignment_list,alignmentset_id,genome_id,sampleset_id,results,expressionSet_name):
-	 results =  [ ret for ret in results if not ret is None ]
-	 if len(results) < 2:
-	  	raise ValueError("Not enough expression results to create a ExpressionSet object")
-	 set_obj = { 'tool_used': tool_used, 'tool_version': tool_version,'alignmentSet_id' : alignmentset_id ,'genome_id' : genome_id,'sampleset_id' : sampleset_id }
-	 if not tool_opts is None:
-		set_obj['tool_opts'] = tool_opts
+def create_RNASeq_ExpressionSet_and_build_report( logger,
+                                                  ws_client,
+                                                  tool_used, 
+                                                  tool_version,
+                                                  tool_opts,
+                                                  ws_id,
+                                                  alignment_list,
+                                                  alignmentset_id,
+                                                  genome_id,
+                                                  sampleset_id,
+                                                  results,
+                                                  expressionSet_name ):
+         results =  [ ret for ret in results if not ret is None ]
+         logger.info( "create_RNASeq_ExpressionSet, results:")
+         logger.info( pformat(results ) )
+         if len(results) < 2:
+                raise ValueError("Not enough expression results to create a ExpressionSet object")
+         set_obj = { 'tool_used': tool_used, 
+                     'tool_version': tool_version,
+                     'alignmentSet_id' : alignmentset_id ,
+                     'genome_id' : genome_id,
+                     'sampleset_id' : sampleset_id }
+         if not tool_opts is None:
+                set_obj['tool_opts'] = tool_opts
          sids=[]
          condition = []
-	 expr_ids = []
+         expr_ids = []
          m_expr_names= []
-	 m_expr_ids = []
-	 output_objs = []
-	 num_samples = len(alignment_list)
-	 num_results = len(results)
-	 num_failed = num_samples - num_results
-	 run_list = [ k for (k,v) in results ]
-	 failed_list = [k for k in alignment_list if k not in run_list ]
+         m_expr_ids = []
+         output_objs = []
+         num_samples = len(alignment_list)
+         num_results = len(results)
+         num_failed = num_samples - num_results
+         run_list = [ k for (k,v) in results ]
+         failed_list = [k for k in alignment_list if k not in run_list ]
          for a_name, e_name in results:
-                    a_ref,e_ref = ws_client.get_object_info_new({"objects": [{'name':a_name, 'workspace': ws_id},{'name':e_name, 'workspace': ws_id}]})
+                    a_ref,e_ref = ws_client.get_object_info_new( {"objects": [ {'name':a_name, 'workspace': ws_id},
+                                                                               {'name':e_name, 'workspace': ws_id} ] } )
                     a_id = str(a_ref[6]) + '/' + str(a_ref[0]) + '/' + str(a_ref[4])
                     e_id = str(e_ref[6]) + '/' + str(e_ref[0]) + '/' + str(e_ref[4])
                     m_expr_ids.append({a_id : e_id})
@@ -251,7 +269,7 @@ def create_RNASeq_ExpressionSet_and_build_report(logger,ws_client,tool_used, too
          set_obj['mapped_expression_objects']= m_expr_names
          set_obj['mapped_expression_ids'] = m_expr_ids
          try:
-        	logger.info( "Saving AlignmentSet object to  workspace")
+                logger.info( "Saving AlignmentSet object to  workspace")
                 res= ws_client.save_objects(
                                         {"workspace":ws_id,
                                          "objects": [{
@@ -261,21 +279,21 @@ def create_RNASeq_ExpressionSet_and_build_report(logger,ws_client,tool_used, too
                                         ]})[0]
                                                                 
                 output_objs.append({'ref': str(res[6]) + '/' + str(res[0]) + '/' + str(res[4]),'description' : "Set of Expression objects for AlignmentSet : {0}".format(alignmentset_id)})
-	 except Exception as e:
-		    logger.exception("".join(traceback.format_exc()))
+         except Exception as e:
+                    logger.exception("".join(traceback.format_exc()))
                     raise Exception("Failed Saving ExpressionSet to Workspace") 
-	 ### Build Report obj ###
-	 report = []
-	 report.append("Total number of alignments given : {0}".format(str(num_samples)))
-	 report.append("Number of assemblies ran successfully : {0}".format(str(num_results)))
-	 report.append("Number of  assemblies failed during this run : {0}".format(str(num_failed))) 
-	 if len(failed_list) != 0:
-		report.append("List of reads failed in this run : {0}".format("\n".join(failed_list)))
-	 reportObj = {
+         ### Build Report obj ###
+         report = []
+         report.append("Total number of alignments given : {0}".format(str(num_samples)))
+         report.append("Number of assemblies ran successfully : {0}".format(str(num_results)))
+         report.append("Number of  assemblies failed during this run : {0}".format(str(num_failed))) 
+         if len(failed_list) != 0:
+                report.append("List of reads failed in this run : {0}".format("\n".join(failed_list)))
+         reportObj = {
                       'objects_created':output_objs,
                       'text_message':'\n'.join(report)
                      }
-	 return reportObj
+         return reportObj
 
 
 def extractAlignmentStatsInfo(logger,tool_used,ws_client,ws_id,sample_id,result,stats_obj_name):
