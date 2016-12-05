@@ -41,6 +41,11 @@ class CufflinksSampleSet(Cufflinks):
         self.num_threads = 1
 
     def prepare( self, common_params, method_params ): 
+        self.logger.info( "in CufflinksSample.collect(), common_params are " )
+        self.logger.info( pformat( common_params ) )
+        self.logger.info( " and method_params are" )
+        self.logger.info( pformat( method_params ) )
+
         # for quick testing, we recover parameters here
         ws_client = common_params['ws_client']
         hs = common_params['hs_client']
@@ -50,9 +55,11 @@ class CufflinksSampleSet(Cufflinks):
         cufflinks_dir = self.directory
         try:
                a_sampleset = ws_client.get_objects(
-                                        [{'name' : params['alignmentset_id'],'workspace' : params['ws_id']}])[0]
+                                        [ {'name' : params['alignmentset_id'], 'workspace' : params['ws_id']} ] )[0]
+               self.logger.info( "a_sampleset")
+               self.logger.info( pformat( a_sampleset ) )
                a_sampleset_info = ws_client.get_object_info_new({"objects" : 
-                                        [{'name' : params['alignmentset_id'],'workspace' : params['ws_id']}]})[0]
+                                        [ {'name' : params['alignmentset_id'],'workspace' : params['ws_id']} ] } )[0]
                self.alignmentset_info =  a_sampleset_info    # QUESTION:  WHY IS THIS NEEDED?
                a_sampleset_id = str(a_sampleset_info[6]) + '/' + str(a_sampleset_info[0]) + '/' + str(a_sampleset_info[4])	
                alignmentset_id = a_sampleset_id
@@ -84,17 +91,35 @@ class CufflinksSampleSet(Cufflinks):
                                                             token )
         gtf_info = ws_client.get_object_info_new({"objects": [{'name': ws_gtf , 'workspace': params['ws_id']}]})[0]
         gtf_id = str(gtf_info[6]) + '/' + str(gtf_info[0]) + '/' + str(gtf_info[4])
-        self.tool_opts = { k:str(v) for k,v in params.iteritems() if not k in ('ws_id','alignmentset_id', 'num_threads') and v is not None  }
+
+        tool_opts = { k:str(v) for k,v in params.iteritems() if not k in ('ws_id','alignmentset_id', 'num_threads') and v is not None  }
+        self.logger.info( "tool_opts:")
+        self.logger.info( pformat( tool_opts ))
+
         alignment_ids = a_sampleset['data']['sample_alignments']
+        self.logger.info( "alignment_ids:" )
+        self.logger.info( pformat( alignment_ids ) )
+
         m_alignment_names = a_sampleset['data']['mapped_rnaseq_alignments']
-        self.sampleset_id = a_sampleset['data']['sampleset_id']
+        self.logger.info( "m_alignment_names:" )
+        self.logger.info( pformat( m_alignment_names ) )
+
+        sampleset_id = a_sampleset['data']['sampleset_id']
+        logger.info( "sampleset_id:" )
+        logger.info( sampleset_id )
+
         ### Get List of Alignments Names
-        self.align_names = []
+        align_names = []
         for d_align in m_alignment_names:
             for i , j  in d_align.items():
-                     self.align_names.append(j)
+                     align_names.append(j)
+        self.logger.info( "align_names:" )
+        self.logger.info( pformat( align_names ) )
 
         m_alignment_ids = a_sampleset['data']['mapped_alignments_ids']
+        self.logger.info( "m_alignment_ids:" )
+        self.logger.info( pformat( m_alignment_ids ) )
+
         self.num_jobs =  len(alignment_ids)
         if self.num_jobs < 2:
             raise ValueError("Please ensure you have atleast 2 alignments to run cufflinks in Set mode")
@@ -117,29 +142,58 @@ class CufflinksSampleSet(Cufflinks):
                                       }
                                     ]
                                   }
-                    self.task_list.append(task_param)
+                    self.task_list.append( task_param )
                     count = count + 1
- 
 
-    def collect( self, common_params, method_params ) :
+        return self.task_list
+
+
+    def collect( self, common_params, collect_params ):
+        self.logger.info( "in CufflinksSample.collect(), common_params are " )
+        self.logger.info( pformat( common_params ) )
+        self.logger.info( " and collect_params are" )
+        self.logger.info( pformat( collect_params ) )
+
         # do with 
-        expressionSet_name = self.method_params['alignmentset_id']+"_cufflinks_ExpressionSet"
+        global_params = collect_params['global_params']
+        input_result_pairs = collect_params['input_result_pairs']
+        expressionSet_name = global_params['alignmentset_id']+"_cufflinks_ExpressionSet"
         self.logger.info(" Creating ExpressionSet for the Assemblies {0}".format(expressionSet_name))
         
+        tool_used = 'Cufflinks'
+        tool_version = "v2.2.1"
+        tool_opts = None
+        sampleset_id = '11600/6/1'  # not sure where to get this from
+        results = []
+        align_names = []
+        for i in range( 0, len( input_result_pairs ) ):
+             results.append(
+                             ( input_result_pairs[i]['result']['alignmentset_id'],
+                               input_result_pairs[i]['result']['output_name'] )
+                           )
+             align_names.append( input_result_pairs[i]['input']['input_arguments'][0]['sample_id'] )
+
+        self.logger.info( 'results:')
+        self.logger.info( pformat( results ) )
+        self.logger.info( 'align_names:' )
+        self.logger.info( pformat( align_names ) )
         # TODO: Split alignment set and report method
+
         reportObj = rnaseq_util.create_RNASeq_ExpressionSet_and_build_report( self.logger,
                                                                               common_params['ws_client'],
-                                                                              self.tool_used,
-                                                                              self.tool_version,
-                                                                              self.tool_opts,
-                                                                              method_params['ws_id'],
-                                                                              self.align_names,
-                                                                              self.task_list[0]['alignmentset_id'],
-                                                                              self.task_list[0]['genome_id'],
-                                                                              self.sampleset_id,
-                                                                              self.results,
+                                                                              tool_used,
+                                                                              tool_version,
+                                                                              tool_opts,
+                                                                              global_params['ws_id'],
+                                                                              align_names,
+                                                                              input_result_pairs[0]['input']['input_arguments'][0]['alignmentset_id'],
+                                                                              input_result_pairs[0]['input']['input_arguments'][0]['genome_id'],
+                                                                              sampleset_id,
+                                                                              results,
                                                                               expressionSet_name)
-        self.returnVal = { 'output'  : expressionSet_name ,'workspace' : method_params['ws_id']}
+        returnVal = { 'output' : expressionSet_name , 'workspace' : global_params['ws_id']}
+
+        return( returnVal )
 #	reportName = 'Align_Reads_using_Hisat2_'+str(hex(uuid.getnode()))
 #        report_info = self.common_params['ws_client'].save_objects({
 #                                                'id':self.alignmentset_info[6],

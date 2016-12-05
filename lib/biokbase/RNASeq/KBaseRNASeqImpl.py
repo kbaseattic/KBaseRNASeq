@@ -1055,7 +1055,7 @@ class KBaseRNASeq:
         # Check whether to call Cufflinks prepare() single or set subclass
         if ( params['is_alignment_set'] == 1 ):
                  self.__LOGGER.info("CufflinksCall_prepare AlignmentSet Case")
-                 cuff_set = CufflinksSampleSet(self.__LOGGER, cufflnks_dir, self.__SERVICES)
+                 cuff_set = CufflinksSampleSet(self.__LOGGER, cufflinks_dir, self.__SERVICES)
                  tasklist = cuff_set.prepare( common_params, params )
         else:
                  self.__LOGGER.info("CufflinksCall_prepare Single Alignment Case")
