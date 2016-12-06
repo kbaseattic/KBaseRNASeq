@@ -171,5 +171,5 @@ class HiSat2(ExecutionBase):
                 #if os.path.exists(output_dir): shutil.rmtree(output_dir)
                 ret = script_util.if_obj_exists(None,ws_client,ws_id,"KBaseRNASeq.RNASeqAlignment",[output_name])
                 if not ret is None:
-                    return (read_sample,output_name)
+                    return { 'read_sample': read_sample, 'output_name': output_name }
         return None
