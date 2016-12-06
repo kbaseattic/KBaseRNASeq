@@ -538,7 +538,7 @@ class KBaseRNASeq:
                          'user_token' : ctx['token']
                         }
 
-        hs2 = HiSat2( self.__LOGGER, hisat_dir, self.__SERVICES )
+        hs2 = HiSat2SampleSet( self.__LOGGER, hisat_dir, self.__SERVICES )
         hs2.common_params = common_params
 
         returnVal = hs2.runEach( task )
