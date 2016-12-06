@@ -1,0 +1,21 @@
+{
+        "version":"1.1",
+        "method":"KBaseRNASeq.CufflinksCall_runEach",
+        "context": null,
+        "params":[
+                   {
+                    "cufflinks_dir": "/kb/module/work/tmp",
+                    "annotation_id": "8053/4/3",
+                    "job_id": "8053/5/2",
+                    "sample_id": "Ecoli_SingleEnd_SRR228083_16000.fastq",
+                    "genome_id": "7610/10/1",
+                    "gtf_file": "/kb/module/work/tmp/Ecoli_Genome_Annotation_GTF.gtf",
+                    "ws_id": "single_RNASeq_test",
+                    "ws_gtf": "Ecoli_Genome_Annotation_GTF_Annotation",
+                    "alignmentset_id": null
+                   }
+                ]
+}
+
+
+
