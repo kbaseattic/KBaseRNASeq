@@ -41,13 +41,16 @@ class HiSat2SampleSet(HiSat2):
         #self.num_threads = None
 
 
-    def prepare(self): 
+    def prepare(self, common_params, method_params): 
         # for quick testing, we recover parameters here
-        ws_client = self.common_params['ws_client']
-        hs = self.common_params['hs_client']
-        params = self.method_params
+        self.logger.info( "Hisat2SampleSet.prepare()")
+        self.logger.debug( "common_params:\n" + pformat( common_params ) )
+        self.logger.debug( "method_params:\n" + pformat( method_params ) )
+        ws_client = common_params['ws_client']
+        hs = common_params['hs_client']
+        params = method_params
         logger = self.logger
-        token = self.common_params['user_token']
+        token = common_params['user_token']
         hisat2_dir = self.directory
 
         try:
@@ -104,27 +107,71 @@ class HiSat2SampleSet(HiSat2):
         for i in reads:
             try:
                     label = r_label[count]
-                    task_param = {'job_id' : i,
-                                  'label' : r_label[count],
-                                  'ws_id' : params['ws_id'],
-                                  'reads_type' : reads_type,
-                                  'hisat2_dir' : self.directory,
-                                  'annotation_id': ref_id, # Changed annotation_id to ref_id for genome object 
-                                  'sampleset_id' : sampleset_id
+                    task_param = {'input_arguments' :  
+                                  [
+                                   {'job_id' : i,
+                                    'label' : r_label[count],
+                                    'ws_id' : params['ws_id'],
+                                    'reads_type' : reads_type,
+                                    'hisat2_dir' : self.directory,
+                                    'gtf_file' : gtf_file,
+                                    'annotation_id': ref_id, # Changed annotation_id to ref_id for genome object 
+                                    'sampleset_id' : sampleset_id
+                                   }
+                                  ]
                                  }
                     self.task_list.append(task_param)
                     count = count + 1
             except Exception,e:
                     raise
+        return self.task_list
 
 
-    def collect(self) :
+    def collect(self, common_params, method_params) :
         # do with 
+        self.logger.info( "Hisat2SampleSet.collect()")
+        self.logger.info( "common_params:\n" + pformat( common_params ) )
+        self.logger.info( "method_params:\n" + pformat( method_params ) )
+
+        global_params = method_params['global_params']
+        input_result_pairs = method_params['input_result_pairs']
+
+
         alignmentSet_name = self.method_params['sampleset_id']+"_hisat2_AlignmentSet"
         self.logger.info(" Creating AlignmentSet for the Alignments {0}".format(alignmentSet_name))
         # TODO: Split alignment set and report method
         reportObj=rnaseq_util.create_RNASeq_AlignmentSet_and_build_report(self.logger,self.common_params['ws_client'],self.method_params['ws_id'],self.sample['data']['sample_ids'],self.task_list[0]['sampleset_id'],self.task_list[0]['annotation_id'],None,self.results,alignmentSet_name)
-	self.returnVal = { 'output'  : alignmentSet_name ,'workspace' : self.method_params['ws_id']}
+
+        reportObj = rnaseq_util.create_RNASeq_AlignmentSet_and_build_report4kbp( self.logger, 
+                                                                             common_params['ws_client'],
+                                                                             global_params['ws_id'],
+                                                                             input_result_pairs[0]['input']['input_arguments'][0]['sampleset_id'],
+                                                                             input_result_pairs[0]['input']['input_arguments'][0]['annotation_id'],
+                                                                             None,
+                                                                             input_result_pairs,
+                                                                             alignmentSet_name
+                                                                           )
+        reportName = 'Align_Reads_using_Hisat2_'+str(hex(uuid.getnode()))
+        report_info = common_params['ws_client'].save_objects({
+                                                                     'workspace': global_params['ws_id'],
+                                                                     'objects':[
+                                                                                 {
+                                                                                  'type':'KBaseReport.Report',
+                                                                                  'data':reportObj,
+                                                                                  'name':reportName,
+                                                                                  'meta':{},
+                                                                                  'hidden':1, # important!  make sure the report is hidden
+                                                                                  #'provenance':provenance
+                                                                                 }
+                                                                                ]
+                                                                     })[0]
+
+        returnVal = { 'output':      alignmentSet_name ,
+                      'workspace':   global_params['ws_id'],
+                      'report_name': reportName,
+                      'report_ref':  str(report_info[6]) + '/' + str(report_info[0]) + '/' + str(report_info[4])
+                    }
+        return( returnVal )
 #        reportName = 'Align_Reads_using_Hisat2_'+str(hex(uuid.getnode()))
 #        report_info = self.common_params['ws_client'].save_objects({
 #                                                'id':self.sampleset_info[6],

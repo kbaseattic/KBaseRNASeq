@@ -21,7 +21,7 @@ try:
     from biokbase.HandleService.Client import HandleService
 except:
     from biokbase.AbstractHandle.Client import AbstractHandle as HandleService
-from biokbase.RNASeq.ExecutionBase import ExecutionBase
+from biokbase.RNASeq.KBParallelExecutionBase import KBParallelExecutionBase as ExecutionBase
 #import ExecutionBase.ExecutionBase as ExecutionBase
 
 class HiSat2Exception(Exception):
@@ -36,10 +36,14 @@ class HiSat2(ExecutionBase):
         # user defined shared variables across methods
         #self.sample = None
         #self.sampleset_info = None
-        self.num_threads = None
+        self.num_threads = 2
 
 
     def runEach(self,task_params):
+        self.logger.info("Hisat2.runEach()")
+        self.logger.debug( "task_params:\n" + pformat( task_params ) )
+        self.logger.debug( "common_params:\n" + pformat( self.common_params, indent=4 ) )
+
         ws_client = self.common_params['ws_client']
         hs = self.common_params['hs_client']
         params = self.method_params
@@ -54,7 +58,6 @@ class HiSat2(ExecutionBase):
         genome_id = task_params['annotation_id']
         sampleset_id = task_params['sampleset_id']
 
-        print "Downloading Read Sample{0}".format(read_sample)
         logger.info("Downloading Read Sample{0}".format(read_sample))
         try:
                 r_sample = ws_client.get_objects(
