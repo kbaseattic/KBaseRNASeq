@@ -41,7 +41,7 @@ class CufflinksSampleSet(Cufflinks):
         self.num_threads = 1
 
     def prepare( self, common_params, method_params ): 
-        self.logger.info( "in CufflinksSample.collect(), common_params are " )
+        self.logger.info( "in CufflinksSampleSet.collect(), common_params are " )
         self.logger.info( pformat( common_params ) )
         self.logger.info( " and method_params are" )
         self.logger.info( pformat( method_params ) )

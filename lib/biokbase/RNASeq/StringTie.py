@@ -40,9 +40,13 @@ class StringTie(KBParallelExecutionBase):
         self.tool_version = "1.2.3"
 
     def runEach( self, task_params ):
+
+        self.logger.info( "in StringTie.runEach(), task_params are" )
+        self.logger.info( pformat( task_params ) )
+
         ws_client = self.common_params['ws_client']
         hs = self.common_params['hs_client']
-        params = self.method_params
+        params = task_params
         logger = self.logger
         token = self.common_params['user_token']
         
@@ -55,15 +59,15 @@ class StringTie(KBParallelExecutionBase):
         alignmentset_id = task_params['alignmentset_id']
         ws_id = task_params['ws_id']
     
-        print "Downloading Sample Alignment from workspace {0}".format(s_alignment)
-        logger.info("Downloading Sample Alignment from workspace {0}".format(s_alignment))
+        #print "Downloading Sample Alignment from workspace {0}".format(s_alignment)
+        logger.info( "Downloading Sample Alignment from workspace {0}".format(s_alignment) )
         alignment_name = ws_client.get_object_info([{"ref" :s_alignment}],includeMetadata=None)[0][1]
         if not logger:
-           logger = handler_util.create_logger(directory,"run_Stringtie_"+alignment_name)
+           logger = handler_util.create_logger( directory,"run_Stringtie_"+alignment_name )
         try:
            alignment = ws_client.get_objects(
                                         [{ 'ref' : s_alignment }])[0]
-           input_direc = os.path.join(directory,alignment_name.split('_alignment')[0]+"_stringtie_input")
+           input_direc = os.path.join( directory, alignment_name.split('_alignment')[0]+"_stringtie_input" )
            if not os.path.exists(input_direc) : os.mkdir(input_direc)
            output_name = alignment_name.split('_alignment')[0]+"_stringtie_expression"
            output_dir = os.path.join(directory,output_name)
@@ -113,7 +117,7 @@ class StringTie(KBParallelExecutionBase):
            stringtie_command += " -o {0} -A {1} -G {2} {3}".format(t_file_name,g_output_file,gtf_file,input_file)
            logger.info("Executing: stringtie {0}".format(stringtie_command))
            print "Executing: stringtie {0}".format(stringtie_command)
-           ret = script_util.runProgram(None,"stringtie",stringtie_command,None,directory)
+           ret = script_util.runProgram( None, "stringtie", stringtie_command, None, directory )
            ##Parse output files
            try:
                 exp_dict = script_util.parse_FPKMtracking(g_output_file,'StringTie','FPKM')
@@ -124,7 +128,7 @@ class StringTie(KBParallelExecutionBase):
                 raise Exception("Error parsing FPKMtracking")
         ##  compress and upload to shock
            try:
-                logger.info("Zipping Stringtie output")
+                logger.info( "Zipping Stringtie output" )
                 print "Zipping Stringtie output"
                 out_file_path = os.path.join(directory,"%s.zip" % output_name)
                 script_util.zip_files(logger,output_dir,out_file_path)
@@ -141,29 +145,32 @@ class StringTie(KBParallelExecutionBase):
                 ## Save object to workspace
            try:
                 logger.info("Saving Stringtie object to workspace")
-                es_obj = { 'id' : output_name,
-                           'type' : 'RNA-Seq',
+                es_obj = { 'id'                       : output_name,
+                           'type'                     : 'RNA-Seq',
                            'numerical_interpretation' : 'FPKM',
-                           'expression_levels' : exp_dict,
-                           'tpm_expression_levels' : tpm_exp_dict,
-                           'processing_comments' : "log2 Normalized",
-                           'genome_id' : genome_id,
-                           'annotation_id' : annotation_id,
-                           'condition' : condition,
-                           'mapped_rnaseq_alignment' : { sample_id : s_alignment },
-                           'tool_used' : self.tool_used,
-                           'tool_version' : self.tool_version,
-                           'tool_opts' : tool_opts,
-                           'file' : handle
+                           'expression_levels'        : exp_dict,
+                           'tpm_expression_levels'    : tpm_exp_dict,
+                           'processing_comments'      : "log2 Normalized",
+                           'genome_id'                : genome_id,
+                           'annotation_id'            : annotation_id,
+                           'condition'                : condition,
+                           'mapped_rnaseq_alignment'  : { sample_id : s_alignment },
+                           'tool_used'                : self.tool_used,
+                           'tool_version'             : self.tool_version,
+                           'tool_opts'                : tool_opts,
+                           'file'                     : handle
                          }
 
-                res= ws_client.save_objects(
-                                   {"workspace":ws_id,
-                                    "objects": [{
-                                    "type":"KBaseRNASeq.RNASeqExpression",
-                                    "data":es_obj,
-                                    "name":output_name}
-                                     ]})[0]
+                res = ws_client.save_objects(
+                                   { "workspace" : ws_id,
+                                     "objects"   : [ 
+                                                    {
+                                                     "type" : "KBaseRNASeq.RNASeqExpression",
+                                                     "data" : es_obj,
+                                                     "name" : output_name
+                                                    }
+                                                   ]
+                                    })[0]
                 expr_id = str(res[6]) + '/' + str(res[0]) + '/' + str(res[4])
            except Exception, e:
                 logger.exception("".join(traceback.format_exc()))
@@ -177,6 +184,7 @@ class StringTie(KBParallelExecutionBase):
                 if os.path.exists(input_direc): shutil.rmtree(input_direc)
                 ret = script_util.if_obj_exists(None,ws_client,ws_id,"KBaseRNASeq.RNASeqExpression",[output_name])
                 if not ret is None:
-                    return (alignment_name, output_name )
+                    #return (alignment_name, output_name )
+                    return { 'alignmentset_id': alignment_name, 'output_name': output_name }
         return None
 

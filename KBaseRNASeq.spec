@@ -698,7 +698,14 @@
         } StringTieCall_prepareInputParams;
 
         typedef structure {
-
+                string job_id;          /* s_alignment */
+                string gtf_file;
+                string ws_id;
+                string genome_id;
+                string stringtie_dir;
+                string annotation_id;
+                string sample_id;
+                string alignmentset_id;
         } StringTieCall_task;
 
         typedef structure {
