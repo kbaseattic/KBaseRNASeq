@@ -46,7 +46,7 @@ class HiSat2(ExecutionBase):
 
         ws_client = self.common_params['ws_client']
         hs = self.common_params['hs_client']
-        params = self.method_params
+        params = task_params
         logger = self.logger
         token = self.common_params['user_token']
         
@@ -166,9 +166,9 @@ class HiSat2(ExecutionBase):
                         #logger.exception("Failed to create hisat2 Alignment {0}".format(" ".join(traceback.print_exc())))
                         raise Exception("Failed to create hisat2 Alignment {0}".format(" ".join(traceback.print_exc())))
         finally:
-                if os.path.exists(input_direc): shutil.rmtree(input_direc)
-                if os.path.exists(out_file_path): os.remove(out_file_path)
-                if os.path.exists(output_dir): shutil.rmtree(output_dir)
+                #if os.path.exists(input_direc): shutil.rmtree(input_direc)
+                #if os.path.exists(out_file_path): os.remove(out_file_path)
+                #if os.path.exists(output_dir): shutil.rmtree(output_dir)
                 ret = script_util.if_obj_exists(None,ws_client,ws_id,"KBaseRNASeq.RNASeqAlignment",[output_name])
                 if not ret is None:
                     return (read_sample,output_name)
