@@ -956,10 +956,10 @@ class KBaseRNASeq:
 
         if obj_type == 'KBaseRNASeq.RNASeqAlignmentSet':
                 self.__LOGGER.info( "StringTie AlignmentSet Case" )
-                params['is_sample_set'] = 1
+                params['is_alignment_set'] = 1
         else:
                 self.__LOGGER.info( "StringTie Alignment Single Case" )
-                params['is_sample_set'] = 0
+                params['is_alignment_set'] = 0
 
         self.__LOGGER.info( "abougt to invoke StringTie run")
         returnVal = sts.run( ctx['module'], ctx['method'], common_params, params )
@@ -1022,8 +1022,8 @@ class KBaseRNASeq:
             common_params['num_threads'] = params['num_threads']
 
         # Check whether to call StringTie prepare() single or set subclass
-        if ( params['is_sample_set'] == 1 ):
-                 self.__LOGGER.info( "StringTieCall_prepare SampleSet Case" )
+        if ( params['is_alignment_set'] == 1 ):
+                 self.__LOGGER.info( "StringTieCall_prepare AlignmentSet Case" )
                  sts = StringTieSampleSet( self.__LOGGER, stringtie_dir, self.__SERVICES )
                  tasklist = sts.prepare( common_params, params )
         else:
