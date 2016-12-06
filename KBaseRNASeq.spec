@@ -617,6 +617,7 @@
         string annotation_id;
         string sampleset_id;
         string gtf_file;
+        string ws_gtf;
         string bowtie_index;  /* make sure this gets passed in prepare! */
         /* add user token?  WS, handle services (common parameters?) */
 

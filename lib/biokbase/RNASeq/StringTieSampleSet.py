@@ -133,6 +133,7 @@ class StringTieSampleSet(StringTie):
                                     [
                                       { 'job_id'          : alignment_id,
                                         'gtf_file'        : gtf_file,
+                                        'ws_gtf'          : ws_gtf,
                                         'ws_id'           : params['ws_id'],
                                         'genome_id'       : genome_id,
                                         'stringtie_dir'   : self.directory,

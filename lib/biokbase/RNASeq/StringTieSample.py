@@ -107,6 +107,7 @@ class StringTieSample(StringTie):
                        [
                          { 'job_id'          : s_alignment_id,
                            'gtf_file'        : gtf_file,
+                           'ws_gtf'          : ws_gtf,
                            'ws_id'           : params['ws_id'],
                            'genome_id'       : genome_id,
                            'stringtie_dir'   : stringtie_dir,

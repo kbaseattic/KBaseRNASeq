@@ -52,13 +52,28 @@ class StringTie(KBParallelExecutionBase):
         
         s_alignment = task_params['job_id']
         gtf_file = task_params['gtf_file']
+        gtf_ws = task_params['ws_gtf']
         directory = task_params['stringtie_dir']
         genome_id = task_params['genome_id']
         annotation_id = task_params['annotation_id']
         sample_id = task_params['sample_id']
         alignmentset_id = task_params['alignmentset_id']
         ws_id = task_params['ws_id']
-    
+
+        if not os.path.isfile( gtf_file ) :
+            # didn't find it, lets get it from the workspace - prepare would have created that 
+            # if it didn't already exist
+            gtf_file = script_util.check_and_download_existing_handle_obj( logger, 
+                                                                           ws_client, 
+                                                                           self.urls,
+                                                                           ws_id,
+                                                                           gtf_ws,
+                                                                           "KBaseRNASeq.GFFAnnotation",
+                                                                           directory,
+                                                                           token )
+            if gtf_file is None:
+                raise Exception( "Unable to get GFF {0} from workspace".format( gtf_ws ) )
+
         #print "Downloading Sample Alignment from workspace {0}".format(s_alignment)
         logger.info( "Downloading Sample Alignment from workspace {0}".format(s_alignment) )
         alignment_name = ws_client.get_object_info([{"ref" :s_alignment}],includeMetadata=None)[0][1]
