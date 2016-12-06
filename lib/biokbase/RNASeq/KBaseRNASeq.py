@@ -377,6 +377,18 @@ class Application(object):
                              name='KBaseRNASeq.StringTieCall',
                              types=[dict])
         self.method_authentication['KBaseRNASeq.StringTieCall'] = 'required' # noqa
+        self.rpc_service.add(impl_KBaseRNASeq.StringTieCall_prepare,
+                             name='KBaseRNASeq.StringTieCall_prepare',
+                             types=[dict])
+        self.method_authentication['KBaseRNASeq.StringTieCall_prepare'] = 'required' # noqa
+        self.rpc_service.add(impl_KBaseRNASeq.StringTieCall_runEach,
+                             name='KBaseRNASeq.StringTieCall_runEach',
+                             types=[dict])
+        self.method_authentication['KBaseRNASeq.StringTieCall_runEach'] = 'required' # noqa
+        self.rpc_service.add(impl_KBaseRNASeq.StringTieCall_collect,
+                             name='KBaseRNASeq.StringTieCall_collect',
+                             types=[dict])
+        self.method_authentication['KBaseRNASeq.StringTieCall_collect'] = 'required' # noqa
         self.rpc_service.add(impl_KBaseRNASeq.CufflinksCall,
                              name='KBaseRNASeq.CufflinksCall',
                              types=[dict])
