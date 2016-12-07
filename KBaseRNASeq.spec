@@ -617,6 +617,7 @@
         string annotation_id;
         string sampleset_id;
         string gtf_file;
+        string ws_gtf;
         string bowtie_index;  /* make sure this gets passed in prepare! */
         /* add user token?  WS, handle services (common parameters?) */
 
@@ -665,26 +666,95 @@
 
     funcdef TophatCall_collect( TophatCall_collectInputParams collect_params ) returns( TophatCall_globalResult ) authentication required;
 
+        /*********************/
+        /* StringTie methods */
+        /*********************/
 
- typedef structure {
-        string ws_id;
-        string sample_alignment;
-        int num-threads;
-        string label;
-        float min_isoform_abundance;
-        int a_juncs;
-        int  min_length;
-        float j_min_reads;
-        float c_min_read_coverage;
-        int gap_sep_value;
-        bool disable_trimming;
-        bool ballgown_mode;
-        bool skip_reads_with_no_ref;
-        string merge;
-        } StringTieParams;
+        typedef structure {
+                string ws_id;
+                string sample_alignment;
+                int num-threads;
+                string label;
+                float min_isoform_abundance;
+                int a_juncs;
+                int  min_length;
+                float j_min_reads;
+                float c_min_read_coverage;
+                int gap_sep_value;
+                bool disable_trimming;
+                bool ballgown_mode;
+                bool skip_reads_with_no_ref;
+                string merge;
+        } StringTieCall_globalInputParams;
 
-async funcdef StringTieCall(StringTieParams params)
-    returns (ResultsToReport) authentication required;
+       async funcdef StringTieCall( StringTieCall_globalInputParams params)
+                returns ( ResultsToReport ) authentication required;
+
+        /****************************/
+        /* StringTie_prepare method */
+        /****************************/
+
+        typedef structure {
+                StringTieCall_globalInputParams global_input_params;
+        } StringTieCall_prepareInputParams;
+
+        typedef structure {
+                string job_id;          /* s_alignment */
+                string gtf_file;
+                string ws_id;
+                string genome_id;
+                string stringtie_dir;
+                string annotation_id;
+                string sample_id;
+                string alignmentset_id;
+        } StringTieCall_task;
+
+        typedef structure {
+                tuple<StringTieCall_task> input_arguments;
+        } StringTieCall_runEachInput;
+
+        typedef structure {
+                list<StringTieCall_runEachInput> tasks;
+        } StringTieCall_prepareSchedule;
+        
+        funcdef StringTieCall_prepare( StringTieCall_prepareInputParams prepare_params )
+             returns( StringTieCall_prepareSchedule ) authentication required;
+
+        /****************************/
+        /* StringTie_runEach method */
+        /****************************/
+
+        typedef structure {
+            string  alignmentset_id;
+            string  output_name;
+        } StringTieCall_runEachResult;
+
+        async funcdef StringTieCall_runEach( StringTieCall_task task ) 
+             returns( StringTieCall_runEachResult ) authentication required;
+
+        /****************************/
+        /* Stringtie_collect method */
+        /****************************/
+
+        typedef structure {
+                StringTieCall_runEachInput input;
+                StringTieCall_runEachResult result;
+        } StringTieCall_InputResultPair;
+
+        typedef structure {
+                StringTieCall_globalInputParams global_params;
+                list<StringTieCall_InputResultPair> input_result_pairs;
+        } StringTieCall_collectInputParams;
+
+        typedef structure {
+            UnspecifiedObject  output;
+            string             workspace;
+        } StringTieCall_globalResult;
+
+        funcdef  StringTieCall_collect( StringTieCall_collectInputParams collect_params )
+             returns( StringTieCall_globalResult ) authentication required;
+
+
 
         /*********************/
         /* Cufflinks methods */

@@ -21,50 +21,68 @@ try:
     from biokbase.HandleService.Client import HandleService
 except:
     from biokbase.AbstractHandle.Client import AbstractHandle as HandleService
-from biokbase.RNASeq.ExecutionBase import ExecutionBase
-#import ExecutionBase.ExecutionBase as ExecutionBase
+from biokbase.RNASeq.KBParallelExecutionBase import KBParallelExecutionBase
 
 class StringTieException(Exception):
     pass
 
-class StringTie(ExecutionBase): 
-
-    def __init__(self, logger, directory, urls):
-        pprint(self.__class__)
+class StringTie(KBParallelExecutionBase): 
+ 
+    def __init__( self, logger, directory, urls ):
+        logger.info(self.__class__)
         super(StringTie, self).__init__(logger, directory, urls)
 
         # user defined shared variables across methods
         #self.sample = None
         #self.sampleset_info = None
         self.num_threads = None
-	self.tool_used = "StringTie"
-	self.tool_version = "1.2.3"
+        self.tool_used = "StringTie"
+        self.tool_version = "1.2.3"
 
-    def runEach(self,task_params):
+    def runEach( self, task_params ):
+
+        self.logger.info( "in StringTie.runEach(), task_params are" )
+        self.logger.info( pformat( task_params ) )
+
         ws_client = self.common_params['ws_client']
         hs = self.common_params['hs_client']
-        params = self.method_params
+        params = task_params
         logger = self.logger
         token = self.common_params['user_token']
         
         s_alignment = task_params['job_id']
         gtf_file = task_params['gtf_file']
+        gtf_ws = task_params['ws_gtf']
         directory = task_params['stringtie_dir']
         genome_id = task_params['genome_id']
         annotation_id = task_params['annotation_id']
         sample_id = task_params['sample_id']
         alignmentset_id = task_params['alignmentset_id']
         ws_id = task_params['ws_id']
-    
-        print "Downloading Sample Alignment from workspace {0}".format(s_alignment)
-        logger.info("Downloading Sample Alignment from workspace {0}".format(s_alignment))
+
+        if not os.path.isfile( gtf_file ) :
+            # didn't find it, lets get it from the workspace - prepare would have created that 
+            # if it didn't already exist
+            gtf_file = script_util.check_and_download_existing_handle_obj( logger, 
+                                                                           ws_client, 
+                                                                           self.urls,
+                                                                           ws_id,
+                                                                           gtf_ws,
+                                                                           "KBaseRNASeq.GFFAnnotation",
+                                                                           directory,
+                                                                           token )
+            if gtf_file is None:
+                raise Exception( "Unable to get GFF {0} from workspace".format( gtf_ws ) )
+
+        #print "Downloading Sample Alignment from workspace {0}".format(s_alignment)
+        logger.info( "Downloading Sample Alignment from workspace {0}".format(s_alignment) )
         alignment_name = ws_client.get_object_info([{"ref" :s_alignment}],includeMetadata=None)[0][1]
         if not logger:
-           logger = handler_util.create_logger(directory,"run_Stringtie_"+alignment_name)
+           logger = handler_util.create_logger( directory,"run_Stringtie_"+alignment_name )
         try:
            alignment = ws_client.get_objects(
                                         [{ 'ref' : s_alignment }])[0]
-           input_direc = os.path.join(directory,alignment_name.split('_alignment')[0]+"_stringtie_input")
+           input_direc = os.path.join( directory, alignment_name.split('_alignment')[0]+"_stringtie_input" )
            if not os.path.exists(input_direc) : os.mkdir(input_direc)
            output_name = alignment_name.split('_alignment')[0]+"_stringtie_expression"
            output_dir = os.path.join(directory,output_name)
@@ -78,10 +96,10 @@ class StringTie(ExecutionBase):
                 raise Exception( "Unable to download shock file, {0},{1}".format(a_filename,"".join(traceback.format_exc())))
            try:
                 input_dir = os.path.join(input_direc,alignment_name)
-		if not os.path.exists(input_dir): os.mkdir(input_dir)
+                if not os.path.exists(input_dir): os.mkdir(input_dir)
                 script_util.unzip_files(logger,os.path.join(input_direc,a_filename), input_dir)
            except Exception, e:
-		raise Exception(e)
+                raise Exception(e)
                 logger.error("".join(traceback.format_exc()))
                 raise Exception("Unzip alignment files  error: Please contact help@kbase.us")
 
@@ -114,70 +132,74 @@ class StringTie(ExecutionBase):
            stringtie_command += " -o {0} -A {1} -G {2} {3}".format(t_file_name,g_output_file,gtf_file,input_file)
            logger.info("Executing: stringtie {0}".format(stringtie_command))
            print "Executing: stringtie {0}".format(stringtie_command)
-           ret = script_util.runProgram(None,"stringtie",stringtie_command,None,directory)
+           ret = script_util.runProgram( None, "stringtie", stringtie_command, None, directory )
            ##Parse output files
            try:
                 exp_dict = script_util.parse_FPKMtracking(g_output_file,'StringTie','FPKM')
                 tpm_exp_dict = script_util.parse_FPKMtracking(g_output_file,'StringTie','TPM')
            except Exception,e:
-	        raise Exception(e)
+                raise Exception(e)
                 logger.exception("".join(traceback.format_exc()))
                 raise Exception("Error parsing FPKMtracking")
         ##  compress and upload to shock
            try:
-                logger.info("Zipping Stringtie output")
+                logger.info( "Zipping Stringtie output" )
                 print "Zipping Stringtie output"
                 out_file_path = os.path.join(directory,"%s.zip" % output_name)
                 script_util.zip_files(logger,output_dir,out_file_path)
            except Exception,e:
-	        raise Exception(e)
+                raise Exception(e)
                 logger.exception("".join(traceback.format_exc()))
                 raise Exception("Error executing stringtie")
            try:
                 handle = hs.upload(out_file_path)
            except Exception, e:
-	        raise Exception(e)
+                raise Exception(e)
                 logger.exception("".join(traceback.format_exc()))
                 raise Exception("Error while zipping the output objects: {0}".format(out_file_path))
                 ## Save object to workspace
            try:
                 logger.info("Saving Stringtie object to workspace")
-                es_obj = { 'id' : output_name,
-                           'type' : 'RNA-Seq',
+                es_obj = { 'id'                       : output_name,
+                           'type'                     : 'RNA-Seq',
                            'numerical_interpretation' : 'FPKM',
-                           'expression_levels' : exp_dict,
-                           'tpm_expression_levels' : tpm_exp_dict,
-                           'processing_comments' : "log2 Normalized",
-                           'genome_id' : genome_id,
-                           'annotation_id' : annotation_id,
-                           'condition' : condition,
-                           'mapped_rnaseq_alignment' : { sample_id : s_alignment },
-                           'tool_used' : self.tool_used,
-                           'tool_version' : self.tool_version,
-                           'tool_opts' : tool_opts,
-                           'file' : handle
+                           'expression_levels'        : exp_dict,
+                           'tpm_expression_levels'    : tpm_exp_dict,
+                           'processing_comments'      : "log2 Normalized",
+                           'genome_id'                : genome_id,
+                           'annotation_id'            : annotation_id,
+                           'condition'                : condition,
+                           'mapped_rnaseq_alignment'  : { sample_id : s_alignment },
+                           'tool_used'                : self.tool_used,
+                           'tool_version'             : self.tool_version,
+                           'tool_opts'                : tool_opts,
+                           'file'                     : handle
                          }
 
-                res= ws_client.save_objects(
-                                   {"workspace":ws_id,
-                                    "objects": [{
-                                    "type":"KBaseRNASeq.RNASeqExpression",
-                                    "data":es_obj,
-                                    "name":output_name}
-                                     ]})[0]
+                res = ws_client.save_objects(
+                                   { "workspace" : ws_id,
+                                     "objects"   : [ 
+                                                    {
+                                                     "type" : "KBaseRNASeq.RNASeqExpression",
+                                                     "data" : es_obj,
+                                                     "name" : output_name
+                                                    }
+                                                   ]
+                                    })[0]
                 expr_id = str(res[6]) + '/' + str(res[0]) + '/' + str(res[4])
            except Exception, e:
                 logger.exception("".join(traceback.format_exc()))
                 raise Exception("Failed to upload the ExpressionSample: {0}".format(output_name))
-   	except Exception,e:
-       		logger.exception("".join(traceback.format_exc()))
-       		raise Exception("Error executing stringtie {0},{1}".format(cufflinks_command,directory))
-   	finally:
+        except Exception,e:
+                logger.exception("".join(traceback.format_exc()))
+                raise Exception("Error executing stringtie {0},{1}".format(cufflinks_command,directory))
+        finally:
                 if os.path.exists(out_file_path): os.remove(out_file_path)
                 if os.path.exists(output_dir): shutil.rmtree(output_dir)
                 if os.path.exists(input_direc): shutil.rmtree(input_direc)
                 ret = script_util.if_obj_exists(None,ws_client,ws_id,"KBaseRNASeq.RNASeqExpression",[output_name])
                 if not ret is None:
-                    return (alignment_name, output_name )
+                    #return (alignment_name, output_name )
+                    return { 'alignmentset_id': alignment_name, 'output_name': output_name }
         return None
 

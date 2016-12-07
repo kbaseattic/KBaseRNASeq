@@ -414,18 +414,19 @@ class KBaseRNASeq(object):
 
     def StringTieCall(self, params, context=None):
         """
-        :param params: instance of type "StringTieParams" -> structure:
-           parameter "ws_id" of String, parameter "sample_alignment" of
-           String, parameter "num-threads" of Long, parameter "label" of
-           String, parameter "min_isoform_abundance" of Double, parameter
-           "a_juncs" of Long, parameter "min_length" of Long, parameter
-           "j_min_reads" of Double, parameter "c_min_read_coverage" of
-           Double, parameter "gap_sep_value" of Long, parameter
-           "disable_trimming" of type "bool" (indicates true or false values,
-           false <= 0, true >=1), parameter "ballgown_mode" of type "bool"
-           (indicates true or false values, false <= 0, true >=1), parameter
-           "skip_reads_with_no_ref" of type "bool" (indicates true or false
-           values, false <= 0, true >=1), parameter "merge" of String
+        :param params: instance of type "StringTieCall_globalInputParams"
+           (*******************) -> structure: parameter "ws_id" of String,
+           parameter "sample_alignment" of String, parameter "num-threads" of
+           Long, parameter "label" of String, parameter
+           "min_isoform_abundance" of Double, parameter "a_juncs" of Long,
+           parameter "min_length" of Long, parameter "j_min_reads" of Double,
+           parameter "c_min_read_coverage" of Double, parameter
+           "gap_sep_value" of Long, parameter "disable_trimming" of type
+           "bool" (indicates true or false values, false <= 0, true >=1),
+           parameter "ballgown_mode" of type "bool" (indicates true or false
+           values, false <= 0, true >=1), parameter "skip_reads_with_no_ref"
+           of type "bool" (indicates true or false values, false <= 0, true
+           >=1), parameter "merge" of String
         :returns: instance of type "ResultsToReport" (Object for Report type)
            -> structure: parameter "report_name" of String, parameter
            "report_ref" of String
@@ -441,6 +442,91 @@ class KBaseRNASeq(object):
             job_state = self._check_job(job_id)
             if job_state['finished']:
                 return job_state['result'][0]
+
+    def StringTieCall_prepare(self, prepare_params, context=None):
+        """
+        :param prepare_params: instance of type
+           "StringTieCall_prepareInputParams" (**************************) ->
+           structure: parameter "global_input_params" of type
+           "StringTieCall_globalInputParams" (*******************) ->
+           structure: parameter "ws_id" of String, parameter
+           "sample_alignment" of String, parameter "num-threads" of Long,
+           parameter "label" of String, parameter "min_isoform_abundance" of
+           Double, parameter "a_juncs" of Long, parameter "min_length" of
+           Long, parameter "j_min_reads" of Double, parameter
+           "c_min_read_coverage" of Double, parameter "gap_sep_value" of
+           Long, parameter "disable_trimming" of type "bool" (indicates true
+           or false values, false <= 0, true >=1), parameter "ballgown_mode"
+           of type "bool" (indicates true or false values, false <= 0, true
+           >=1), parameter "skip_reads_with_no_ref" of type "bool" (indicates
+           true or false values, false <= 0, true >=1), parameter "merge" of
+           String
+        :returns: instance of type "StringTieCall_prepareSchedule" ->
+           structure: parameter "tasks" of list of type
+           "StringTieCall_runEachInput" -> structure: parameter
+           "input_arguments" of tuple of size 1: type "StringTieCall_task" ->
+           structure:
+        """
+        return self._client.call_method(
+            'KBaseRNASeq.StringTieCall_prepare',
+            [prepare_params], self._service_ver, context)
+
+    def _StringTieCall_runEach_submit(self, task, context=None):
+        return self._client._submit_job(
+             'KBaseRNASeq.StringTieCall_runEach', [task],
+             self._service_ver, context)
+
+    def StringTieCall_runEach(self, task, context=None):
+        """
+        :param task: instance of type "StringTieCall_task" -> structure:
+        :returns: instance of type "StringTieCall_runEachResult"
+           (**************************) -> structure: parameter
+           "alignmentset_id" of String, parameter "output_name" of String
+        """
+        job_id = self._StringTieCall_runEach_submit(task, context)
+        async_job_check_time = self._client.async_job_check_time
+        while True:
+            time.sleep(async_job_check_time)
+            async_job_check_time = (async_job_check_time *
+                self._client.async_job_check_time_scale_percent / 100.0)
+            if async_job_check_time > self._client.async_job_check_max_time:
+                async_job_check_time = self._client.async_job_check_max_time
+            job_state = self._check_job(job_id)
+            if job_state['finished']:
+                return job_state['result'][0]
+
+    def StringTieCall_collect(self, collect_params, context=None):
+        """
+        :param collect_params: instance of type
+           "StringTieCall_collectInputParams" -> structure: parameter
+           "global_params" of type "StringTieCall_globalInputParams"
+           (*******************) -> structure: parameter "ws_id" of String,
+           parameter "sample_alignment" of String, parameter "num-threads" of
+           Long, parameter "label" of String, parameter
+           "min_isoform_abundance" of Double, parameter "a_juncs" of Long,
+           parameter "min_length" of Long, parameter "j_min_reads" of Double,
+           parameter "c_min_read_coverage" of Double, parameter
+           "gap_sep_value" of Long, parameter "disable_trimming" of type
+           "bool" (indicates true or false values, false <= 0, true >=1),
+           parameter "ballgown_mode" of type "bool" (indicates true or false
+           values, false <= 0, true >=1), parameter "skip_reads_with_no_ref"
+           of type "bool" (indicates true or false values, false <= 0, true
+           >=1), parameter "merge" of String, parameter "input_result_pairs"
+           of list of type "StringTieCall_InputResultPair"
+           (**************************) -> structure: parameter "input" of
+           type "StringTieCall_runEachInput" -> structure: parameter
+           "input_arguments" of tuple of size 1: type "StringTieCall_task" ->
+           structure: , parameter "result" of type
+           "StringTieCall_runEachResult" (**************************) ->
+           structure: parameter "alignmentset_id" of String, parameter
+           "output_name" of String
+        :returns: instance of type "StringTieCall_globalResult" -> structure:
+           parameter "output" of unspecified object, parameter "workspace" of
+           String
+        """
+        return self._client.call_method(
+            'KBaseRNASeq.StringTieCall_collect',
+            [collect_params], self._service_ver, context)
 
     def _CufflinksCall_submit(self, params, context=None):
         return self._client._submit_job(

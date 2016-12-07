@@ -31,63 +31,119 @@ class StringTieSampleException(Exception):
 
 class StringTieSample(StringTie): 
 
-    def __init__(self, logger, directory, urls):
+    def __init__( self, logger, directory, urls ):
         super(self.__class__, self).__init__(logger, directory, urls)
         # user defined shared variables across methods
         self.alignment_info = None
         #self.sampleset_info = None
         self.num_threads = 1
 
-    def prepare(self): 
+    def prepare( self, common_params, method_params): 
+        self.logger.info( "in StringTieSample.prepare(), common_params are ")
+        self.logger.info( pformat( common_params ) )
+        self.logger.info( " and method_params are" )
+        self.logger.info( pformat( method_params ) )
         # for quick testing, we recover parameters here
-        ws_client = self.common_params['ws_client']
-        hs = self.common_params['hs_client']
-        params = self.method_params
+        ws_client = common_params['ws_client']
+        hs = common_params['hs_client']
+        params = method_params
         logger = self.logger
-        token = self.common_params['user_token']
+        token = common_params['user_token']
         stringtie_dir = self.directory
+
         try:
-               a_sample = ws_client.get_objects(
-                                        [{'name' : params['alignmentset_id'],'workspace' : params['ws_id']}])[0]
-               a_alignment_info = ws_client.get_object_info_new({"objects" :
-                                        [{'name' : params['alignmentset_id'],'workspace' : params['ws_id']}]})[0]
+               a_sample = ws_client.get_objects( [ 
+                                                   { 'name' : params['alignmentset_id'],
+                                                     'workspace' : params['ws_id']
+                                                   }
+                                                 ]
+                                               )[0]
+               self.logger.info( "get_object sample returns" )
+               self.logger.info( pformat( a_sample ) )
+
+               a_alignment_info = ws_client.get_object_info_new( { "objects" : [  { 'name' : params['alignmentset_id'],
+                                                                                   'workspace' : params['ws_id']
+                                                                                  }
+                                                                               ]
+                                                                 }
+                                                               )[0]
+               self.logger.info( "get_object_new_info alignment returns" )
+               self.logger.info( pformat( a_alignment_info ) )
                self.alignment_info =  a_alignment_info
                s_alignment_id = str(a_alignment_info[6]) + '/' + str(a_alignment_info[0]) + '/' + str(a_alignment_info[4])
-	except Exception,e:
-               logger.exception("".join(traceback.format_exc()))
-               raise Exception("Error Downloading objects from the workspace ")
-        read_sample_id = a_sample['data']['read_sample_id']
-	### Check if the gtf file exists in the workspace. if exists download the file from that
-        genome_id = a_sample['data']['genome_id']
-        genome_name = ws_client.get_object_info([{"ref" :genome_id}],includeMetadata=None)[0][1]
-        ws_gtf = genome_name+"_GTF_Annotation"
-	gtf_file = script_util.check_and_download_existing_handle_obj(logger,ws_client,self.urls,params['ws_id'],ws_gtf,"KBaseRNASeq.GFFAnnotation",stringtie_dir,token)
-        if gtf_file is None:
-             rnaseq_util.create_gtf_annotation_from_genome(logger,ws_client,hs,self.urls,params['ws_id'],genome_id,genome_name,stringtie_dir,token)
-	gtf_info = ws_client.get_object_info_new({"objects": [{'name': ws_gtf , 'workspace': params['ws_id']}]})[0]
-        gtf_id = str(gtf_info[6]) + '/' + str(gtf_info[0]) + '/' + str(gtf_info[4])
-	self.tool_opts = { k:str(v) for k,v in params.iteritems() if not k in ('ws_id','alignmentset_id', 'num_threads') and v is not None  }
-	self.num_jobs =  1
-	logger.info(" Number of threads used by each process {0}".format(self.num_threads))
-        task_param = {'job_id' : s_alignment_id,
-                      'gtf_file' : gtf_file,
-                      'ws_id' : params['ws_id'],
-                      'genome_id' : genome_id,
-                      'stringtie_dir' : self.directory,
-                      'annotation_id': gtf_id,
-		      'sample_id' : read_sample_id , 
-                      'alignmentset_id' : None
-                      }
-        self.task_list.append(task_param)
+        except Exception,e:
+               logger.exception( "".join(traceback.format_exc()) )
+               raise Exception( "Error Downloading objects from the workspace " )
 
-    def collect(self) :
+        read_sample_id = a_sample['data']['read_sample_id']
+        ### Check if the gtf file exists in the workspace. if exists download the file from that
+        genome_id = a_sample['data']['genome_id']
+        genome_name = ws_client.get_object_info([ {"ref" :genome_id}], includeMetadata=None )[0][1]
+        ws_gtf = genome_name + "_GTF_Annotation"
+        gtf_file = script_util.check_and_download_existing_handle_obj( logger,
+                                                                       ws_client,
+                                                                       self.urls,
+                                                                       params['ws_id'],
+                                                                       ws_gtf,
+                                                                       "KBaseRNASeq.GFFAnnotation",
+                                                                       stringtie_dir,
+                                                                       token )
+        if gtf_file is None:
+             rnaseq_util.create_gtf_annotation_from_genome( logger,
+                                                            ws_client,
+                                                            hs,
+                                                            self.urls,
+                                                            params['ws_id'],
+                                                            genome_id,
+                                                            genome_name,
+                                                            stringtie_dir,
+                                                            token )
+        gtf_info = ws_client.get_object_info_new({"objects": [{'name': ws_gtf , 'workspace': params['ws_id']}]})[0]
+        gtf_id = str(gtf_info[6]) + '/' + str(gtf_info[0]) + '/' + str(gtf_info[4])
+        self.tool_opts = { k:str(v) for k,v in params.iteritems() if not k in ( 'ws_id','alignmentset_id', 'num_threads') and v is not None  }
+        self.num_jobs =  1
+        logger.info( " Number of threads used by each process {0}".format(self.num_threads) )
+        task_param = { "input_arguments" :
+                       [
+                         { 'job_id'          : s_alignment_id,
+                           'gtf_file'        : gtf_file,
+                           'ws_gtf'          : ws_gtf,
+                           'ws_id'           : params['ws_id'],
+                           'genome_id'       : genome_id,
+                           'stringtie_dir'   : stringtie_dir,
+                           'annotation_id'   : gtf_id,
+                           'sample_id'       : read_sample_id, 
+                           'alignmentset_id' : None
+                         }
+                       ]
+                     }
+        self.task_list.append( task_param )
+
+        return( self.task_list )
+
+    def collect( self, common_params, collect_params ) :
+        self.logger.info( "in StringTieSample.collect(), common_params are " )
+        self.logger.info( pformat( common_params ) )
+        self.logger.info( " and collect_params are" )
+        self.logger.info( pformat( collect_params ) )
+
         # do with 
+        global_params = collect_params['global_params']
+        input_result_pairs = collect_params['input_result_pairs']
         alignment_name = self.method_params['alignmentset_id']+"_stringtie_AlignmentSet"
-        self.logger.info(" Creating Report for Alignment {0}".format(alignment_name))
-	single_alignment , single_expression = self.results[0]
+        self.logger.info( " Creating Report for Alignment {0}".format(alignment_name) )
+
+        single_alignment = input_result_pairs[0]['result']['alignmentset_id']
+        single_expression = self.results[0]['result']['output_name']
+        self.logger.info( 'single_alignment {0} single_expression {1}'.format( single_alignment, single_expression ) )
         # TODO: Split alignment set and report method
-	sref = self.common_params['ws_client'].get_object_info_new({"objects": [{'name':single_expression, 'workspace': self.method_params['ws_id']}]})[0]
-	self.returnVal = { 'output'  : single_expression ,'workspace' : self.method_params['ws_id']}
+        sref = self.common_params['ws_client'].get_object_info_new( {"objects": [ { 'name':single_expression,
+                                                                                    'workspace': self.method_params['ws_id'] } ]
+                                                                    }
+                                                                  )[0]
+        returnVal = { 'output'  : single_expression, 'workspace' : global_params['ws_id'] }
+
+        return( returnVal )
 #        reportObj = {'objects_created':[{'ref' :str(sref[6]) + '/' + str(sref[0]) + '/' + str(sref[4]),
 #                                                 'description' : "RNA-seq Expression for read alignment : {0}".format(single_alignment)}],
 #                                                 'text_message': "RNA-seq Alignment for reads alignment : {0}".format(single_alignment)}

@@ -116,7 +116,7 @@ class CufflinksSample(Cufflinks):
 
 
     def collect( self, common_params, collect_params ) :
-        self.logger.info( "in CufflinksSample.collect(), common_params are " )
+        self.logger.info( "in CufflinksSampleSet.collect(), common_params are " )
         self.logger.info( pformat( common_params ) )
         self.logger.info( " and collect_params are" )
         self.logger.info( pformat( collect_params ) )

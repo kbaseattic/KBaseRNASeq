@@ -47,6 +47,7 @@ from biokbase.RNASeq.HiSat2SampleSet import HiSat2SampleSet
 from biokbase.RNASeq.HiSat2Sample import HiSat2Sample
 from biokbase.RNASeq.StringTieSampleSet import StringTieSampleSet
 from biokbase.RNASeq.StringTieSample import StringTieSample
+from biokbase.RNASeq.StringTie import StringTie
 from biokbase.RNASeq.Cuffdiff import Cuffdiff
 from biokbase.RNASeq.Tophat import Tophat
 from biokbase.RNASeq.TophatSampleSet import TophatSampleSet
@@ -82,7 +83,7 @@ class KBaseRNASeq:
     ######################################### noqa
     VERSION = "0.0.2"
     GIT_URL = "https://github.com/sean-mccorkle/KBaseRNASeq.git"
-    GIT_COMMIT_HASH = "788a0356dbc3ce5665376ccec72998b2e573d71a"
+    GIT_COMMIT_HASH = "176d65f72c05e880dcd592b94be86d226a16ed17"
 
     #BEGIN_CLASS_HEADER
     __TEMP_DIR = 'temp'
@@ -666,7 +667,7 @@ class KBaseRNASeq:
                 #ts = TophatSample( self.__LOGGER, tophat_dir, self.__SERVICES )
                 #returnVal = ts.run( "Tophat", common_params, params )
 
-        self.__LOGGER.info( "back in TophatCall")
+        self.__LOGGER.info( "about to invoke Tophat run" )
         returnVal = toph.run( ctx['module'], ctx['method'], common_params, params )
 
         handler_util.cleanup(self.__LOGGER,tophat_dir)
@@ -910,18 +911,19 @@ class KBaseRNASeq:
 
     def StringTieCall(self, ctx, params):
         """
-        :param params: instance of type "StringTieParams" -> structure:
-           parameter "ws_id" of String, parameter "sample_alignment" of
-           String, parameter "num-threads" of Long, parameter "label" of
-           String, parameter "min_isoform_abundance" of Double, parameter
-           "a_juncs" of Long, parameter "min_length" of Long, parameter
-           "j_min_reads" of Double, parameter "c_min_read_coverage" of
-           Double, parameter "gap_sep_value" of Long, parameter
-           "disable_trimming" of type "bool" (indicates true or false values,
-           false <= 0, true >=1), parameter "ballgown_mode" of type "bool"
-           (indicates true or false values, false <= 0, true >=1), parameter
-           "skip_reads_with_no_ref" of type "bool" (indicates true or false
-           values, false <= 0, true >=1), parameter "merge" of String
+        :param params: instance of type "StringTieCall_globalInputParams"
+           (*******************) -> structure: parameter "ws_id" of String,
+           parameter "sample_alignment" of String, parameter "num-threads" of
+           Long, parameter "label" of String, parameter
+           "min_isoform_abundance" of Double, parameter "a_juncs" of Long,
+           parameter "min_length" of Long, parameter "j_min_reads" of Double,
+           parameter "c_min_read_coverage" of Double, parameter
+           "gap_sep_value" of Long, parameter "disable_trimming" of type
+           "bool" (indicates true or false values, false <= 0, true >=1),
+           parameter "ballgown_mode" of type "bool" (indicates true or false
+           values, false <= 0, true >=1), parameter "skip_reads_with_no_ref"
+           of type "bool" (indicates true or false values, false <= 0, true
+           >=1), parameter "merge" of String
         :returns: instance of type "ResultsToReport" (Object for Report type)
            -> structure: parameter "report_name" of String, parameter
            "report_ref" of String
@@ -929,35 +931,218 @@ class KBaseRNASeq:
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN StringTieCall
-	if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
-        stringtie_dir = os.path.join(self.__SCRATCH,"tmp")
-        handler_util.setupWorkingDir(self.__LOGGER,stringtie_dir) 
-	# Set the common Params
-	common_params = {'ws_client' : Workspace(url=self.__WS_URL, token=ctx['token']),
+
+        self.__LOGGER.info( "In StringTieCall, params are" )
+        self.__LOGGER.info( pformat( params ) )
+
+        if not os.path.exists(self.__SCRATCH): os.makedirs( self.__SCRATCH)
+        stringtie_dir = os.path.join( self.__SCRATCH, "tmp" )
+        handler_util.setupWorkingDir( self.__LOGGER, stringtie_dir ) 
+        # Set the common Params
+        common_params = {'ws_client' : Workspace(url=self.__WS_URL, token=ctx['token']),
                          'hs_client' : HandleService(url=self.__HS_URL, token=ctx['token']),
                          'user_token' : ctx['token']
                         }
-	# Set the Number of threads if specified 
+        # Set the Number of threads if specified 
         if 'num_threads' in params and params['num_threads'] is not None:
             common_params['num_threads'] = params['num_threads']
 
-	# Check to Call StringTie in Set mode or Single mode
-	wsc = common_params['ws_client']
-	obj_info = wsc.get_object_info_new({"objects": [{'name': params['alignmentset_id'], 'workspace': params['ws_id']}]})
+        # Check to Call StringTie in Set mode or Single mode
+        wsc = common_params['ws_client']
+        obj_info = wsc.get_object_info_new( {"objects": [ {'name': params['alignmentset_id'], 'workspace': params['ws_id']} ] } )
         obj_type = obj_info[0][2].split('-')[0]
-	if obj_type == 'KBaseRNASeq.RNASeqAlignmentSet':	
-		self.__LOGGER.info("StringTie AlignmentSet Case")
-        	sts = StringTieSampleSet(self.__LOGGER, stringtie_dir, self.__SERVICES)
-        	returnVal = sts.run(common_params, params)
-	else:
-		sts = StringTieSample(self.__LOGGER, stringtie_dir, self.__SERVICES)
-		returnVal = sts.run(common_params,params)
-        handler_util.cleanup(self.__LOGGER,stringtie_dir)
+
+        sts = StringTie( self.__LOGGER, stringtie_dir, self.__SERVICES )
+
+        if obj_type == 'KBaseRNASeq.RNASeqAlignmentSet':
+                self.__LOGGER.info( "StringTie AlignmentSet Case" )
+                params['is_alignment_set'] = 1
+        else:
+                self.__LOGGER.info( "StringTie Alignment Single Case" )
+                params['is_alignment_set'] = 0
+
+        self.__LOGGER.info( "abougt to invoke StringTie run")
+        returnVal = sts.run( ctx['module'], ctx['method'], common_params, params )
+
+        handler_util.cleanup( self.__LOGGER, stringtie_dir )
+
         #END StringTieCall
 
         # At some point might do deeper type checking...
         if not isinstance(returnVal, dict):
             raise ValueError('Method StringTieCall return value ' +
+                             'returnVal is not type dict as required.')
+        # return the results
+        return [returnVal]
+
+    def StringTieCall_prepare(self, ctx, prepare_params):
+        """
+        :param prepare_params: instance of type
+           "StringTieCall_prepareInputParams" (**************************) ->
+           structure: parameter "global_input_params" of type
+           "StringTieCall_globalInputParams" (*******************) ->
+           structure: parameter "ws_id" of String, parameter
+           "sample_alignment" of String, parameter "num-threads" of Long,
+           parameter "label" of String, parameter "min_isoform_abundance" of
+           Double, parameter "a_juncs" of Long, parameter "min_length" of
+           Long, parameter "j_min_reads" of Double, parameter
+           "c_min_read_coverage" of Double, parameter "gap_sep_value" of
+           Long, parameter "disable_trimming" of type "bool" (indicates true
+           or false values, false <= 0, true >=1), parameter "ballgown_mode"
+           of type "bool" (indicates true or false values, false <= 0, true
+           >=1), parameter "skip_reads_with_no_ref" of type "bool" (indicates
+           true or false values, false <= 0, true >=1), parameter "merge" of
+           String
+        :returns: instance of type "StringTieCall_prepareSchedule" ->
+           structure: parameter "tasks" of list of type
+           "StringTieCall_runEachInput" -> structure: parameter
+           "input_arguments" of tuple of size 1: type "StringTieCall_task" ->
+           structure:
+        """
+        # ctx is the context object
+        # return variables are: returnVal
+        #BEGIN StringTieCall_prepare
+
+        # this prepare() runs in the same process as 
+
+        if not os.path.exists( self.__SCRATCH ): os.makedirs(self.__SCRATCH)
+        stringtie_dir = os.path.join( self.__SCRATCH, "tmp" )
+
+        # Set the common Params
+        self.__LOGGER.info( "in StringTieCall_prepare, prepare_params is" )
+        self.__LOGGER.info( pformat( prepare_params ) )
+        common_params = {'ws_client' : Workspace(url=self.__WS_URL, token=ctx['token']),
+                         'hs_client' : HandleService(url=self.__HS_URL, token=ctx['token']),
+                         'user_token' : ctx['token']
+                        }
+        params = prepare_params['global_input_params']    # de-encapsulate the actual method parameters
+                                                          # NOTE: check for error if does not exist
+        # Set the Number of threads if specified 
+        if 'num_threads' in params and params['num_threads'] is not None:
+            common_params['num_threads'] = params['num_threads']
+
+        # Check whether to call StringTie prepare() single or set subclass
+        if ( params['is_alignment_set'] == 1 ):
+                 self.__LOGGER.info( "StringTieCall_prepare AlignmentSet Case" )
+                 sts = StringTieSampleSet( self.__LOGGER, stringtie_dir, self.__SERVICES )
+                 tasklist = sts.prepare( common_params, params )
+        else:
+                 self.__LOGGER.info( "StringTieCall_prepare Sample Case" )
+                 st = StringTieSample( self.__LOGGER, stringtie_dir, self.__SERVICES )
+                 tasklist = st.prepare( common_params, params )
+
+        returnVal = { 'tasks': tasklist }
+
+        #END StringTieCall_prepare
+
+        # At some point might do deeper type checking...
+        if not isinstance(returnVal, dict):
+            raise ValueError('Method StringTieCall_prepare return value ' +
+                             'returnVal is not type dict as required.')
+        # return the results
+        return [returnVal]
+
+    def StringTieCall_runEach(self, ctx, task):
+        """
+        :param task: instance of type "StringTieCall_task" -> structure:
+        :returns: instance of type "StringTieCall_runEachResult"
+           (**************************) -> structure: parameter
+           "alignmentset_id" of String, parameter "output_name" of String
+        """
+        # ctx is the context object
+        # return variables are: returnVal
+        #BEGIN StringTieCall_runEach
+
+        self.__LOGGER.info( "in StringTieCall_runEach, task is" )
+        self.__LOGGER.info( pformat( task ) )
+
+        if not os.path.exists( self.__SCRATCH ): os.makedirs(self.__SCRATCH)
+        stringtie_dir = os.path.join( self.__SCRATCH, "tmp" )
+        if ( not os.path.exists( stringtie_dir ) ):
+           handler_util.setupWorkingDir( self.__LOGGER, stringtie_dir ) 
+
+        # Set the common Params
+        common_params = {'ws_client' : Workspace(url=self.__WS_URL, token=ctx['token']),
+                         'hs_client' : HandleService(url=self.__HS_URL, token=ctx['token']),
+                         'user_token' : ctx['token']
+                        }
+
+        self.__LOGGER.info( "StringTieCall_runeach" )
+
+        st = StringTie( self.__LOGGER, stringtie_dir, self.__SERVICES )
+        st.common_params = common_params
+
+        returnVal = st.runEach( task )
+
+        #END StringTieCall_runEach
+
+        # At some point might do deeper type checking...
+        if not isinstance(returnVal, dict):
+            raise ValueError('Method StringTieCall_runEach return value ' +
+                             'returnVal is not type dict as required.')
+        # return the results
+        return [returnVal]
+
+    def StringTieCall_collect(self, ctx, collect_params):
+        """
+        :param collect_params: instance of type
+           "StringTieCall_collectInputParams" -> structure: parameter
+           "global_params" of type "StringTieCall_globalInputParams"
+           (*******************) -> structure: parameter "ws_id" of String,
+           parameter "sample_alignment" of String, parameter "num-threads" of
+           Long, parameter "label" of String, parameter
+           "min_isoform_abundance" of Double, parameter "a_juncs" of Long,
+           parameter "min_length" of Long, parameter "j_min_reads" of Double,
+           parameter "c_min_read_coverage" of Double, parameter
+           "gap_sep_value" of Long, parameter "disable_trimming" of type
+           "bool" (indicates true or false values, false <= 0, true >=1),
+           parameter "ballgown_mode" of type "bool" (indicates true or false
+           values, false <= 0, true >=1), parameter "skip_reads_with_no_ref"
+           of type "bool" (indicates true or false values, false <= 0, true
+           >=1), parameter "merge" of String, parameter "input_result_pairs"
+           of list of type "StringTieCall_InputResultPair"
+           (**************************) -> structure: parameter "input" of
+           type "StringTieCall_runEachInput" -> structure: parameter
+           "input_arguments" of tuple of size 1: type "StringTieCall_task" ->
+           structure: , parameter "result" of type
+           "StringTieCall_runEachResult" (**************************) ->
+           structure: parameter "alignmentset_id" of String, parameter
+           "output_name" of String
+        :returns: instance of type "StringTieCall_globalResult" -> structure:
+           parameter "output" of unspecified object, parameter "workspace" of
+           String
+        """
+        # ctx is the context object
+        # return variables are: returnVal
+        #BEGIN StringTieCall_collect
+
+        if not os.path.exists( self.__SCRATCH ): os.makedirs(self.__SCRATCH)
+        stringtie_dir = os.path.join( self.__SCRATCH, "tmp" )
+
+        # Set the common Params
+
+        self.__LOGGER.info( "in StringTieCall_collect, collect_params is" )
+        self.__LOGGER.info( pformat( collect_params ) )
+        common_params = {'ws_client' : Workspace(url=self.__WS_URL, token=ctx['token']),
+                         'hs_client' : HandleService(url=self.__HS_URL, token=ctx['token']),
+                         'user_token' : ctx['token']
+                        }
+
+        # Check whether to call Stringt collect() single or set subclass
+        if ( collect_params['global_params']['is_alignment_set'] == 1 ):
+                 self.__LOGGER.info( "StringTieCall_prepare SampleSet Case" )
+                 sts = StringTieSampleSet( self.__LOGGER, stringtie_dir, self.__SERVICES )
+                 returnVal = sts.collect( common_params, collect_params )
+        else:
+                 self.__LOGGER.info( "StringTieCall_prepare Sample Case" )
+                 st = StringTieSample( self.__LOGGER, stringtie_dir, self.__SERVICES )
+                 returnVal = st.collect( common_params, collect_params )
+
+        #END StringTieCall_collect
+
+        # At some point might do deeper type checking...
+        if not isinstance(returnVal, dict):
+            raise ValueError('Method StringTieCall_collect return value ' +
                              'returnVal is not type dict as required.')
         # return the results
         return [returnVal]
@@ -1163,8 +1348,6 @@ class KBaseRNASeq:
                  self.__LOGGER.info("CufflinksCall_prepare Sample Case")
                  cuff_sing = CufflinksSample(self.__LOGGER, cufflinks_dir, self.__SERVICES)
                  returnVal = cuff_sing.collect( common_params, collect_params )
-
-        #handler_util.cleanup( self.__LOGGER, tophat_dir )
 
         #END CufflinksCall_collect
 
