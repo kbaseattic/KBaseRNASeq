@@ -163,7 +163,7 @@ class CufflinksSampleSet(Cufflinks):
         tool_used = 'Cufflinks'
         tool_version = "v2.2.1"
         tool_opts = None
-        sampleset_id = '11600/6/1'  # not sure where to get this from
+
         results = []
         align_names = []
         for i in range( 0, len( input_result_pairs ) ):
@@ -178,6 +178,22 @@ class CufflinksSampleSet(Cufflinks):
         self.logger.info( 'align_names:' )
         self.logger.info( pformat( align_names ) )
         # TODO: Split alignment set and report method
+
+        # need to retrieve ampleset_id from alignmentset object
+
+        # ARRRRRRGGGHH  global_params['alignmentset_id'] is NOT the same as 
+        # input_result_pairs[i]['result']['alignmentset_id']  !!!!
+        # Who names these things?!!!
+
+        ws_client = common_params['ws_client']
+        align_obj = ws_client.get_objects( [ { 'name'      : global_params['alignmentset_id'],
+                                               'workspace' : global_params['ws_id']
+                                             } ]
+                                          )[0]
+        self.logger.info( "align_obj")
+        self.logger.info( pformat( align_obj ) )
+        sampleset_id = align_obj['data']['sampleset_id']
+
 
         reportObj = rnaseq_util.create_RNASeq_ExpressionSet_and_build_report( self.logger,
                                                                               common_params['ws_client'],

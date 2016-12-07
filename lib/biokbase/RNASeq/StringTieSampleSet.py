@@ -41,17 +41,17 @@ class StringTieSampleSet(StringTie):
         self.num_threads = 1
 
     def prepare( self, common_params, method_params ): 
-        self.logger.info( "in CufflinksSampleSet.collect(), common_params are " )
+        self.logger.info( "in StringTieSampleSet.prepares(), common_params are " )
         self.logger.info( pformat( common_params ) )
         self.logger.info( " and method_params are" )
         self.logger.info( pformat( method_params ) )
 
         # for quick testing, we recover parameters here
-        ws_client = self.common_params['ws_client']
-        hs = self.common_params['hs_client']
-        params = self.method_params
+        ws_client = common_params['ws_client']
+        hs = common_params['hs_client']
+        params = method_params
         logger = self.logger
-        token = self.common_params['user_token']
+        token = common_params['user_token']
         stringtie_dir = self.directory
         try:
                a_sampleset = ws_client.get_objects(
@@ -105,15 +105,15 @@ class StringTieSampleSet(StringTie):
         self.logger.info( "m_alignment_names:" )
         self.logger.info( pformat( m_alignment_names ) )
 
-        self.sampleset_id = a_sampleset['data']['sampleset_id']
+        sampleset_id = a_sampleset['data']['sampleset_id']
         logger.info( "sampleset_id:" )
         logger.info( sampleset_id )
 
         ### Get List of Alignments Names
-        self.align_names = []
+        align_names = []
         for d_align in m_alignment_names:
             for i , j  in d_align.items():
-                     self.align_names.append(j)
+                     align_names.append(j)
         self.logger.info( "align_names:" )
         self.logger.info( pformat( align_names ) )
 
@@ -148,7 +148,8 @@ class StringTieSampleSet(StringTie):
  
         return( self.task_list )
 
-    def collect(self) :
+    def collect( self, common_params, collect_params ):
+
         self.logger.info( "in StringTieSampleSet.collect(), common_params are " )
         self.logger.info( pformat( common_params ) )
         self.logger.info( " and collect_params are" )
@@ -163,11 +164,26 @@ class StringTieSampleSet(StringTie):
         results = []
         align_names = []
         for i in range( 0, len( input_result_pairs ) ):
-             results.append(
-                             ( input_result_pairs[i]['result']['alignmentset_id'],
-                               input_result_pairs[i]['result']['output_name'] )
-                           )
-             align_names.append( input_result_pairs[i]['input']['input_arguments'][0]['sample_id'] )
+            results.append(
+                            ( input_result_pairs[i]['result']['alignmentset_id'],
+                              input_result_pairs[i]['result']['output_name'] )
+                          )
+            align_names.append( input_result_pairs[i]['input']['input_arguments'][0]['sample_id'] )
+
+        # need to retrieve ampleset_id from alignmentset object
+
+        # ARRRRRRGGGHH  global_params['alignmentset_id'] is NOT the same as 
+        # input_result_pairs[i]['result']['alignmentset_id']  !!!!
+        # Who names these things?!!!
+
+        ws_client = common_params['ws_client']
+        align_obj = ws_client.get_objects( [ { 'name'      : global_params['alignmentset_id'],
+                                               'workspace' : global_params['ws_id']
+                                             } ]
+                                          )[0]
+        self.logger.info( "align_obj")
+        self.logger.info( pformat( align_obj ) )
+        sampleset_id = align_obj['data']['sampleset_id']
 
         # TODO: Split alignment set and report method
         reportObj = rnaseq_util.create_RNASeq_ExpressionSet_and_build_report( self.logger,
@@ -179,10 +195,10 @@ class StringTieSampleSet(StringTie):
                                                                               align_names,
                                                                               input_result_pairs[0]['input']['input_arguments'][0]['alignmentset_id'],
                                                                               input_result_pairs[0]['input']['input_arguments'][0]['genome_id'],
-                                                                              '99/99/99', #   sampleset_id,  # QUESTION: what to do?
+                                                                              sampleset_id,
                                                                               results,
                                                                               expressionSet_name )
-        returnVal = { 'output'  : expressionSet_name ,'workspace' : self.method_params['ws_id'] }
+        returnVal = { 'output'  : expressionSet_name ,'workspace' : global_params['ws_id'] }
 
         return( returnVal )
 #	reportName = 'Align_Reads_using_Hisat2_'+str(hex(uuid.getnode()))

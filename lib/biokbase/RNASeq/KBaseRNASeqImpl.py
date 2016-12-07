@@ -1129,9 +1129,9 @@ class KBaseRNASeq:
                         }
 
         # Check whether to call Stringt collect() single or set subclass
-        if ( collect_params['global_params']['is_sample_set'] == 1 ):
+        if ( collect_params['global_params']['is_alignment_set'] == 1 ):
                  self.__LOGGER.info( "StringTieCall_prepare SampleSet Case" )
-                 sts = StingTieSampleSet( self.__LOGGER, stringtie_dir, self.__SERVICES )
+                 sts = StringTieSampleSet( self.__LOGGER, stringtie_dir, self.__SERVICES )
                  returnVal = sts.collect( common_params, collect_params )
         else:
                  self.__LOGGER.info( "StringTieCall_prepare Sample Case" )
