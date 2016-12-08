@@ -37,7 +37,8 @@ class Bowtie2(KBParallelExecutionBase):
         # user defined shared variables across methods
         #self.sample = None
         #self.sampleset_info = None
-        self.num_threads = None
+        #self.num_threads = None
+        self.num_threads = 1
         self.tool_used = "Bowtie2"
         self.tool_version = "2.2.6"
 
@@ -220,7 +221,7 @@ class Bowtie2(KBParallelExecutionBase):
                                          "name":output_name}
                                         ]})
                 except Exception, e:
-                raise Exception(e)
+                        raise Exception(e)
                         #logger.exception("Failed to save alignment to workspace")
                         raise Exception("Failed to save alignment to workspace")
         except Exception, e:

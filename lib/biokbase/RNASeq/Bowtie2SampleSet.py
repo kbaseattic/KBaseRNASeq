@@ -160,19 +160,40 @@ class Bowtie2SampleSet(Bowtie2):
         self.logger.info( pformat( collect_params ) )
 
         # do with 
-        alignmentSet_name = collect_params['sampleset_id']+"_bowtie2_AlignmentSet"
+        global_params = collect_params['global_params']
+        input_result_pairs = collect_params['input_result_pairs']
+
+        alignmentSet_name = global_params['sampleset_id']+"_bowtie2_AlignmentSet"
         self.logger.info(" Creating AlignmentSet for the Alignments {0}".format(alignmentSet_name))
+
+        # get sample list from WS sampleset object
+        sampleset_id = input_result_pairs[0]['input']['input_arguments'][0]['sampleset_id']
+        self.logger.info( " Getting sampleset {0} from workspace {1}".format( sampleset_id, global_params['ws_id'] ))
+        ws_client = common_params['ws_client']
+        try:
+               sample = ws_client.get_objects( [ { 'ref'    : sampleset_id
+                                                   #'workspace' : global_params['ws_id']
+                                                   } ] 
+                                              )[0]
+        except Exception,e:
+               self.logger.exception("".join(traceback.format_exc()))
+               raise ValueError(" Error Downloading objects from the workspace ")
+        self.logger.info( "got this back for sample:")
+        self.logger.info( pformat( sample ) )
+
+
         # TODO: Split alignment set and report method
         reportObj = rnaseq_util.create_RNASeq_AlignmentSet_and_build_report( self.logger,
                                                                              common_params['ws_client'],
-                                                                             collect_params['ws_id'],
-                                                                             self.sample['data']['sample_ids'],
-                                                                             self.task_list[0]['sampleset_id'],
-                                                                             self.task_list[0]['annotation_id'],
+                                                                             global_params['ws_id'],
+                                                                             sample['data']['sample_ids'],
+                                                                             input_result_pairs[0]['input']['input_arguments'][0]['sampleset_id'],
+                                                                             input_result_pairs[0]['input']['input_arguments'][0]['annotation_id'],
                                                                              None,
-                                                                             self.results,
+                                                                             input_result_pairs,
                                                                              alignmentSet_name )
-        returnVal = { 'output'  : alignmentSet_name ,'workspace' : self.method_params['ws_id'] }
+
+        returnVal = { 'output'  : alignmentSet_name ,'workspace' : global_params['ws_id'] }
 
         return( returnVal )
 #        reportName = 'Align_Reads_using_Hisat2_'+str(hex(uuid.getnode()))
