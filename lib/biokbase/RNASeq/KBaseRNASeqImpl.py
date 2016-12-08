@@ -381,7 +381,7 @@ class KBaseRNASeq:
         readsobj_info = wsc.get_object_info_new({"objects": [{'name': params['sampleset_id'], 'workspace': params['ws_id']}]})
         readsobj_type = readsobj_info[0][2].split('-')[0]
 
-        bt = Bowtie2( self.__LOGGER, tophat_dir, self.__SERVICES )
+        bt = Bowtie2( self.__LOGGER, bowtie2_dir, self.__SERVICES )
 
         if readsobj_type == 'KBaseRNASeq.RNASeqSampleSet':
                 self.__LOGGER.info( "Bowtie2 SampleSet Case" )
