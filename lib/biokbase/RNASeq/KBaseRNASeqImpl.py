@@ -43,6 +43,7 @@ except:
     from biokbase.AbstractHandle.Client import AbstractHandle as HandleService
 from biokbase.RNASeq.Bowtie2SampleSet import Bowtie2SampleSet
 from biokbase.RNASeq.Bowtie2Sample import Bowtie2Sample
+from biokbase.RNASeq.Bowtie2 import Bowtie2
 from biokbase.RNASeq.HiSat2SampleSet import HiSat2SampleSet
 from biokbase.RNASeq.HiSat2Sample import HiSat2Sample
 from biokbase.RNASeq.StringTieSampleSet import StringTieSampleSet
@@ -83,7 +84,7 @@ class KBaseRNASeq:
     ######################################### noqa
     VERSION = "0.0.2"
     GIT_URL = "https://github.com/sean-mccorkle/KBaseRNASeq.git"
-    GIT_COMMIT_HASH = "176d65f72c05e880dcd592b94be86d226a16ed17"
+    GIT_COMMIT_HASH = "808fb7ce29d4173758472b88b3a64274da126021"
 
     #BEGIN_CLASS_HEADER
     __TEMP_DIR = 'temp'
@@ -234,9 +235,10 @@ class KBaseRNASeq:
 
     def BuildBowtie2Index(self, ctx, params):
         """
-        :param params: instance of type "Bowtie2IndexParams" -> structure:
-           parameter "ws_id" of String, parameter "reference" of String,
-           parameter "output_obj_name" of String
+        :param params: instance of type "Bowtie2IndexParams"
+           (*****************) -> structure: parameter "ws_id" of String,
+           parameter "reference" of String, parameter "output_obj_name" of
+           String
         :returns: instance of type "ResultsToReport" (Object for Report type)
            -> structure: parameter "report_name" of String, parameter
            "report_ref" of String
@@ -341,16 +343,16 @@ class KBaseRNASeq:
 
     def Bowtie2Call(self, ctx, params):
         """
-        :param params: instance of type "Bowtie2Params" -> structure:
-           parameter "ws_id" of String, parameter "sampleset_id" of String,
-           parameter "genome_id" of String, parameter "bowtie_index" of
-           String, parameter "phred33" of String, parameter "phred64" of
-           String, parameter "local" of String, parameter "very-fast" of
-           String, parameter "fast" of String, parameter "very-sensitive" of
-           String, parameter "sensitive" of String, parameter
-           "very-fast-local" of String, parameter "very-sensitive-local" of
-           String, parameter "fast-local" of String, parameter
-           "fast-sensitive" of String
+        :param params: instance of type "Bowtie2Call_globalInputParams"
+           (*******************) -> structure: parameter "ws_id" of String,
+           parameter "sampleset_id" of String, parameter "genome_id" of
+           String, parameter "bowtie_index" of String, parameter "phred33" of
+           String, parameter "phred64" of String, parameter "local" of
+           String, parameter "very-fast" of String, parameter "fast" of
+           String, parameter "very-sensitive" of String, parameter
+           "sensitive" of String, parameter "very-fast-local" of String,
+           parameter "very-sensitive-local" of String, parameter "fast-local"
+           of String, parameter "fast-sensitive" of String
         :returns: instance of type "ResultsToReport" (Object for Report type)
            -> structure: parameter "report_name" of String, parameter
            "report_ref" of String
@@ -358,8 +360,11 @@ class KBaseRNASeq:
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN Bowtie2Call
-	
-	if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
+
+        self.__LOGGER.info( "In Bowtie2Call, params are" )
+        self.__LOGGER.info( pformat( params ) )
+
+        if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
         bowtie2_dir = os.path.join(self.__SCRATCH,"tmp")
         handler_util.setupWorkingDir(self.__LOGGER,bowtie2_dir) 
         common_params = {'ws_client' : Workspace(url=self.__WS_URL, token=ctx['token']),
@@ -375,19 +380,205 @@ class KBaseRNASeq:
         wsc = common_params['ws_client']
         readsobj_info = wsc.get_object_info_new({"objects": [{'name': params['sampleset_id'], 'workspace': params['ws_id']}]})
         readsobj_type = readsobj_info[0][2].split('-')[0]
+
+        bt = Bowtie2( self.__LOGGER, tophat_dir, self.__SERVICES )
+
         if readsobj_type == 'KBaseRNASeq.RNASeqSampleSet':
-                self.__LOGGER.info("Bowtie2 SampleSet Case")
-                bw2ss = Bowtie2SampleSet(self.__LOGGER, bowtie2_dir, self.__SERVICES)
-                returnVal = bw2ss.run(common_params, params)
+                self.__LOGGER.info( "Bowtie2 SampleSet Case" )
+                params['is_sample_set'] = 1
         else:
-                bw2ss = Bowtie2Sample(self.__LOGGER, bowtie2_dir, self.__SERVICES)
-                returnVal = bw2ss.run(common_params,params)
-	handler_util.cleanup(self.__LOGGER,bowtie2_dir)
+                self.__LOGGER.info( "Bowtie2 Single Sample Case" )
+                params['is_sample_set'] = 0
+
+        self.__LOGGER.info( "about to invoke Bowtie2 run" )
+        returnVal = bt.run( ctx['module'], ctx['method'], common_params, params )
+
+        handler_util.cleanup(self.__LOGGER,bowtie2_dir)
         #END Bowtie2Call
 
         # At some point might do deeper type checking...
         if not isinstance(returnVal, dict):
             raise ValueError('Method Bowtie2Call return value ' +
+                             'returnVal is not type dict as required.')
+        # return the results
+        return [returnVal]
+
+    def Bowtie2Call_prepare(self, ctx, prepare_params):
+        """
+        :param prepare_params: instance of type
+           "Bowtie2Call_prepareInputParams" (************************) ->
+           structure: parameter "global_input_params" of type
+           "Bowtie2Call_globalInputParams" (*******************) ->
+           structure: parameter "ws_id" of String, parameter "sampleset_id"
+           of String, parameter "genome_id" of String, parameter
+           "bowtie_index" of String, parameter "phred33" of String, parameter
+           "phred64" of String, parameter "local" of String, parameter
+           "very-fast" of String, parameter "fast" of String, parameter
+           "very-sensitive" of String, parameter "sensitive" of String,
+           parameter "very-fast-local" of String, parameter
+           "very-sensitive-local" of String, parameter "fast-local" of
+           String, parameter "fast-sensitive" of String
+        :returns: instance of type "Bowtie2Call_prepareSchedule" ->
+           structure: parameter "tasks" of list of type
+           "Bowtie2Call_runEachInput" -> structure: parameter
+           "input_arguments" of tuple of size 1: type "Bowtie2Call_task" ->
+           structure: parameter "job_id" of String, parameter "label" of
+           String, parameter "ws_id" of String, parameter "reads_type" of
+           String, parameter "genome_id" of String, parameter "bowtie2_dir"
+           of String, parameter "annotation_id" of String, parameter
+           "sampleset_id" of String, parameter "bowtie2_index" of String
+        """
+        # ctx is the context object
+        # return variables are: returnVal
+        #BEGIN Bowtie2Call_prepare
+
+        self.__LOGGER.info( "in Bowtie2Call_prepare, prepare_params is" )
+        self.__LOGGER.info( pformat( prepare_params ) )
+
+        # this prepare() runs in the same process as 
+        if not os.path.exists( self.__SCRATCH ): os.makedirs(self.__SCRATCH)
+        bowtie2_dir = os.path.join( self.__SCRATCH, "tmp" )
+        #handler_util.setupWorkingDir( self.__LOGGER, tophat_dir ) 
+        # Set the common Params
+        common_params = { 'ws_client' : Workspace(url=self.__WS_URL, token=ctx['token']),
+                          'hs_client' : HandleService(url=self.__HS_URL, token=ctx['token']),
+                          'user_token' : ctx['token']
+                        }
+        params = prepare_params['global_input_params']    # de-encapsulate the actual method parameters
+                                                          # NOTE: check for error if does not exist
+        # Set the Number of threads if specified 
+        if 'num_threads' in params and params['num_threads'] is not None:
+            common_params['num_threads'] = params['num_threads']
+
+        # Check whether to call Tophat prepare() single or set subclass
+        if ( params['is_sample_set'] == 1 ):
+                 self.__LOGGER.info( "Bowtie2Call_prepare SampleSet Case" )
+                 bt = Bowtie2SampleSet( self.__LOGGER, bowtie2_dir, self.__SERVICES )
+                 tasklist = bt.prepare( common_params, params )
+        else:
+                 self.__LOGGER.info( "Bowtie2Call_prepare Single Sample Case" )
+                 bt = Bowtie2Sample( self.__LOGGER, bowtie2_dir, self.__SERVICES )
+                 tasklist = bt.prepare( common_params, params )
+
+        returnVal = { 'tasks': tasklist }
+
+        #END Bowtie2Call_prepare
+
+        # At some point might do deeper type checking...
+        if not isinstance(returnVal, dict):
+            raise ValueError('Method Bowtie2Call_prepare return value ' +
+                             'returnVal is not type dict as required.')
+        # return the results
+        return [returnVal]
+
+    def Bowtie2Call_runEach(self, ctx, task):
+        """
+        :param task: instance of type "Bowtie2Call_task" -> structure:
+           parameter "job_id" of String, parameter "label" of String,
+           parameter "ws_id" of String, parameter "reads_type" of String,
+           parameter "genome_id" of String, parameter "bowtie2_dir" of
+           String, parameter "annotation_id" of String, parameter
+           "sampleset_id" of String, parameter "bowtie2_index" of String
+        :returns: instance of type "Bowtie2Call_runEachResult"
+           (************************) -> structure: parameter
+           "alignmentset_id" of String, parameter "output_name" of String
+        """
+        # ctx is the context object
+        # return variables are: returnVal
+        #BEGIN Bowtie2Call_runEach
+
+        self.__LOGGER.info( "in Bowtie2Call_runEach, task is" )
+        self.__LOGGER.info( pformat( task ) )
+
+        if not os.path.exists( self.__SCRATCH ): os.makedirs(self.__SCRATCH)
+        bowtie2_dir = os.path.join( self.__SCRATCH, "tmp" )
+        if ( not os.path.exists( bowtie2_dir ) ):
+            handler_util.setupWorkingDir( self.__LOGGER, bowtie2_dir ) 
+        # Set the common Params
+        common_params = {'ws_client' : Workspace(url=self.__WS_URL, token=ctx['token']),
+                         'hs_client' : HandleService(url=self.__HS_URL, token=ctx['token']),
+                         'user_token' : ctx['token']
+                        }
+
+        self.__LOGGER.info( "Bowtie2Call_runeach" )
+
+        bt = Bowtie2( self.__LOGGER, bowtie2_dir, self.__SERVICES )
+        bt.common_params = common_params
+
+        returnVal = bt.runEach( task )
+
+
+        #END Bowtie2Call_runEach
+
+        # At some point might do deeper type checking...
+        if not isinstance(returnVal, dict):
+            raise ValueError('Method Bowtie2Call_runEach return value ' +
+                             'returnVal is not type dict as required.')
+        # return the results
+        return [returnVal]
+
+    def Bowtie2Call_collect(self, ctx, collect_params):
+        """
+        :param collect_params: instance of type
+           "Bowtie2Call_collectInputParams" -> structure: parameter
+           "global_params" of type "Bowtie2Call_globalInputParams"
+           (*******************) -> structure: parameter "ws_id" of String,
+           parameter "sampleset_id" of String, parameter "genome_id" of
+           String, parameter "bowtie_index" of String, parameter "phred33" of
+           String, parameter "phred64" of String, parameter "local" of
+           String, parameter "very-fast" of String, parameter "fast" of
+           String, parameter "very-sensitive" of String, parameter
+           "sensitive" of String, parameter "very-fast-local" of String,
+           parameter "very-sensitive-local" of String, parameter "fast-local"
+           of String, parameter "fast-sensitive" of String, parameter
+           "input_result_pairs" of list of type "Bowtie2Call_InputResultPair"
+           (************************) -> structure: parameter "input" of type
+           "Bowtie2Call_runEachInput" -> structure: parameter
+           "input_arguments" of tuple of size 1: type "Bowtie2Call_task" ->
+           structure: parameter "job_id" of String, parameter "label" of
+           String, parameter "ws_id" of String, parameter "reads_type" of
+           String, parameter "genome_id" of String, parameter "bowtie2_dir"
+           of String, parameter "annotation_id" of String, parameter
+           "sampleset_id" of String, parameter "bowtie2_index" of String,
+           parameter "result" of type "Bowtie2Call_runEachResult"
+           (************************) -> structure: parameter
+           "alignmentset_id" of String, parameter "output_name" of String
+        :returns: instance of type "Bowtie2Call_globalResult" -> structure:
+           parameter "output" of unspecified object, parameter "workspace" of
+           String
+        """
+        # ctx is the context object
+        # return variables are: returnVal
+        #BEGIN Bowtie2Call_collect
+
+        self.__LOGGER.info( "in Bowtie2Call_collect, collect_params is" )
+        self.__LOGGER.info( pformat( collect_params ) )
+
+        if not os.path.exists( self.__SCRATCH ): os.makedirs(self.__SCRATCH)
+        bowtie2_dir = os.path.join( self.__SCRATCH, "tmp" )
+        #handler_util.setupWorkingDir( self.__LOGGER, tophat_dir ) 
+        # Set the common Params
+
+        common_params = {'ws_client' : Workspace(url=self.__WS_URL, token=ctx['token']),
+                         'hs_client' : HandleService(url=self.__HS_URL, token=ctx['token']),
+                         'user_token' : ctx['token']
+                        }
+
+        # Check whether to call Tophat collect() single or set subclass
+        if ( collect_params['global_params']['is_sample_set'] == 1 ):
+                 self.__LOGGER.info( "Bowtie2Call_prepare SampleSet Case" )
+                 bt = Bowtie2SampleSet( self.__LOGGER, bowtie2_dir, self.__SERVICES )
+                 returnVal = bt.collect( common_params, collect_params )
+        else:
+                 self.__LOGGER.info( "Bowtie2Call_prepare Sample Case" )
+                 bt = Bowtie2Sample( self.__LOGGER, bowtie2_dir, self.__SERVICES )
+                 returnVal = bt.collect( common_params, collect_params )
+
+        #END Bowtie2Call_collect
+
+        # At some point might do deeper type checking...
+        if not isinstance(returnVal, dict):
+            raise ValueError('Method Bowtie2Call_collect return value ' +
                              'returnVal is not type dict as required.')
         # return the results
         return [returnVal]
@@ -705,8 +896,8 @@ class KBaseRNASeq:
            parameter "label" of String, parameter "tophat_dir" of String,
            parameter "ws_id" of String, parameter "reads_type" of String,
            parameter "annotation_id" of String, parameter "sampleset_id" of
-           String, parameter "gtf_file" of String, parameter "bowtie_index"
-           of String
+           String, parameter "gtf_file" of String, parameter "ws_gtf" of
+           String, parameter "bowtie_index" of String
         """
         # ctx is the context object
         # return variables are: returnVal
@@ -769,7 +960,8 @@ class KBaseRNASeq:
            parameter "tophat_dir" of String, parameter "ws_id" of String,
            parameter "reads_type" of String, parameter "annotation_id" of
            String, parameter "sampleset_id" of String, parameter "gtf_file"
-           of String, parameter "bowtie_index" of String
+           of String, parameter "ws_gtf" of String, parameter "bowtie_index"
+           of String
         :returns: instance of type "TophatCall_runEachResult"
            (*****************************) -> structure: parameter
            "sample_set_id" of String, parameter "output_name" of String
@@ -777,9 +969,6 @@ class KBaseRNASeq:
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN TophatCall_runEach
-
-        #QUESTION: is it necessary to invoke TopHatSampleSet.runEach() or TopHatSample.runEach()
-        # can we just invoke TopHat.runEach()
 
         self.__LOGGER.info( "in TophatCall_runEach, task is" )
         self.__LOGGER.info( pformat( task ) )
@@ -793,19 +982,6 @@ class KBaseRNASeq:
                          'hs_client' : HandleService(url=self.__HS_URL, token=ctx['token']),
                          'user_token' : ctx['token']
                         }
-        # Check to Call Tophat in Set mode or Single mode
-        #wsc = common_params['ws_client']
-        #obj_info = wsc.get_object_info_new({"objects": [{'name': params['sampleset_id'], 'workspace': params['ws_id']}]})
-        #obj_type = obj_info[0][2].split('-')[0]
-        #
-        #if obj_type == 'KBaseRNASeq.RNASeqSampleSet': 
-        #        self.__LOGGER.info("TophatCall_prepare SampleSet Case")
-        #        tss = TophatSampleSet(self.__LOGGER, tophat_dir, self.__SERVICES)
-        #        returnVal = tss.runEach( task )
-        #else:
-        #        self.__LOGGER.info("TophatCall_prepare Sample Case")
-        #        ts = TophatSample(self.__LOGGER, tophat_dir, self.__SERVICES)
-        #        returnVal = ts.runEach( task )
 
         self.__LOGGER.info("TophatCall_runeach")
 
@@ -849,10 +1025,11 @@ class KBaseRNASeq:
            parameter "label" of String, parameter "tophat_dir" of String,
            parameter "ws_id" of String, parameter "reads_type" of String,
            parameter "annotation_id" of String, parameter "sampleset_id" of
-           String, parameter "gtf_file" of String, parameter "bowtie_index"
-           of String, parameter "result" of type "TophatCall_runEachResult"
-           (*****************************) -> structure: parameter
-           "sample_set_id" of String, parameter "output_name" of String
+           String, parameter "gtf_file" of String, parameter "ws_gtf" of
+           String, parameter "bowtie_index" of String, parameter "result" of
+           type "TophatCall_runEachResult" (*****************************) ->
+           structure: parameter "sample_set_id" of String, parameter
+           "output_name" of String
         :returns: instance of type "TophatCall_globalResult" -> structure:
            parameter "output" of unspecified object, parameter "workspace" of
            String
@@ -997,7 +1174,11 @@ class KBaseRNASeq:
            structure: parameter "tasks" of list of type
            "StringTieCall_runEachInput" -> structure: parameter
            "input_arguments" of tuple of size 1: type "StringTieCall_task" ->
-           structure:
+           structure: parameter "job_id" of String, parameter "gtf_file" of
+           String, parameter "ws_id" of String, parameter "genome_id" of
+           String, parameter "stringtie_dir" of String, parameter
+           "annotation_id" of String, parameter "sample_id" of String,
+           parameter "alignmentset_id" of String
         """
         # ctx is the context object
         # return variables are: returnVal
@@ -1045,6 +1226,11 @@ class KBaseRNASeq:
     def StringTieCall_runEach(self, ctx, task):
         """
         :param task: instance of type "StringTieCall_task" -> structure:
+           parameter "job_id" of String, parameter "gtf_file" of String,
+           parameter "ws_id" of String, parameter "genome_id" of String,
+           parameter "stringtie_dir" of String, parameter "annotation_id" of
+           String, parameter "sample_id" of String, parameter
+           "alignmentset_id" of String
         :returns: instance of type "StringTieCall_runEachResult"
            (**************************) -> structure: parameter
            "alignmentset_id" of String, parameter "output_name" of String
@@ -1104,7 +1290,11 @@ class KBaseRNASeq:
            (**************************) -> structure: parameter "input" of
            type "StringTieCall_runEachInput" -> structure: parameter
            "input_arguments" of tuple of size 1: type "StringTieCall_task" ->
-           structure: , parameter "result" of type
+           structure: parameter "job_id" of String, parameter "gtf_file" of
+           String, parameter "ws_id" of String, parameter "genome_id" of
+           String, parameter "stringtie_dir" of String, parameter
+           "annotation_id" of String, parameter "sample_id" of String,
+           parameter "alignmentset_id" of String, parameter "result" of type
            "StringTieCall_runEachResult" (**************************) ->
            structure: parameter "alignmentset_id" of String, parameter
            "output_name" of String
@@ -1191,7 +1381,7 @@ class KBaseRNASeq:
                 params['is_alignment_set'] = 0
                 #sts = CufflinksSample(self.__LOGGER, cufflinks_dir, self.__SERVICES)
                 #returnVal = sts.run(common_params,params)
-        returnVal = cuff.run( ctx['module'], ctx['method'], common_params, params)
+        returnVal = cuff.run( ctx['module'], ctx['method'], common_params, params )
 
         handler_util.cleanup( self.__LOGGER, cufflinks_dir )
         #END CufflinksCall

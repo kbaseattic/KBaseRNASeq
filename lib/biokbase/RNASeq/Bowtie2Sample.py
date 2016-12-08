@@ -39,55 +39,69 @@ class Bowtie2Sample(Bowtie2):
         #self.sampleset_info = None
         self.num_threads = 1
 
-    def prepare(self): 
+    def prepare( self, common_params, method_params ): 
+        self.logger.info( "in Bowtie2Sample.prepare(), common_params are ")
+        self.logger.info( pformat( common_params ) )
+        self.logger.info( " and method_params are" )
+        self.logger.info( pformat( method_params ) )
+
         # for quick testing, we recover parameters here
-        ws_client = self.common_params['ws_client']
-        hs = self.common_params['hs_client']
-        params = self.method_params
+        ws_client = common_params['ws_client']
+        hs = common_params['hs_client']
+        params = method_params
         logger = self.logger
-        token = self.common_params['user_token']
+        token = common_params['user_token']
         bowtie2_dir = self.directory
 
         try:
-               sample,bowtie_index = ws_client.get_objects(
-                                        [{ 'name' : params['sampleset_id'], 'workspace' : params['ws_id']},
-                                        { 'name' : params['bowtie_index'], 'workspace' : params['ws_id']}])
-               self.sample =sample
+               sample, bowtie_index = ws_client.get_objects(
+                                        [ { 'name' : params['sampleset_id'], 'workspace' : params['ws_id']},
+                                          { 'name' : params['bowtie_index'], 'workspace' : params['ws_id']} ] )
+               #self.sample = sample
         except Exception,e:
                logger.exception("".join(traceback.format_exc()))
                raise ValueError(" Error Downloading objects from the workspace ")
             ### Get obejct IDs
-        sample_info,bowtie_index_info = ws_client.get_object_info_new({"objects": [
-                                           {'name': params['sampleset_id'], 'workspace': params['ws_id']},
-                                           {'name': params['bowtie_index'], 'workspace': params['ws_id']}
-                                           ]})
-        self.sample_info = sample_info
+        sample_info, bowtie_index_info = ws_client.get_object_info_new(
+                                               { "objects": [
+                                                             {'name': params['sampleset_id'], 'workspace': params['ws_id']},
+                                                             {'name': params['bowtie_index'], 'workspace': params['ws_id']}
+                                                            ]
+                                               } )
+        #self.sample_info = sample_info
         ### Get the workspace object ids for the objects ###
         sample_id = str(sample_info[6]) + '/' + str(sample_info[0]) + '/' + str(sample_info[4])
         bowtie_index_id = str(bowtie_index_info[6]) + '/' + str(bowtie_index_info[0]) + '/' + str(bowtie_index_info[4])
         sample_type = sample_info[2].split('-')[0]
-	lib_types = ['KBaseAssembly.SingleEndLibrary', 'KBaseAssembly.PairedEndLibrary']
+        lib_types = ['KBaseAssembly.SingleEndLibrary', 'KBaseAssembly.PairedEndLibrary']
         ### Check if the Library objects exist in the same workspace
         if not sample_type in lib_types: #'KBaseAssembly.SingleEndLibrary' or sample_type != 'KBaseAssembly.PairedEndLibrary':
             raise Bowtie2SampleException('Either of the Library typed objects SingleEndLibrary or PairedEndLibrary is required')
         r_label = 'Single'
-	### Get the Bw index file
-	
-	bw_index_files = script_util.check_and_download_existing_handle_obj(logger,ws_client,self.urls,params['ws_id'],params['bowtie_index'],"KBaseRNASeq.Bowtie2Indexes",bowtie2_dir,token)
-	try:
+        ### Get the Bw index file
+
+        bw_index_files = script_util.check_and_download_existing_handle_obj( logger,
+                                                                             ws_client,
+                                                                             self.urls,
+                                                                             params['ws_id'],
+                                                                             params['bowtie_index'],
+                                                                             "KBaseRNASeq.Bowtie2Indexes",
+                                                                             bowtie2_dir,
+                                                                             token )
+        try:
                 logger.info("Unzipping Bowtie2 Indices")
-                script_util.unzip_files(logger,os.path.join(bowtie2_dir,bw_index_files),bowtie2_dir)
+                script_util.unzip_files( logger, os.path.join(bowtie2_dir,bw_index_files),bowtie2_dir )
                 mv_dir= handler_util.get_dir(bowtie2_dir)
                 if mv_dir is not None:
-                        script_util.move_files(logger,mv_dir,bowtie2_dir)
+                        script_util.move_files( logger,mv_dir,bowtie2_dir)
         except Exception, e:
                 logger.error("".join(traceback.format_exc()))
                 raise Exception("Unzip indexfile error: Please contact help@kbase.us")
-	### Build Index for the fasta file 
+        ### Build Index for the fasta file 
         fasta_file =os.path.join(bowtie2_dir,handler_util.get_file_with_suffix(bowtie2_dir,".fa")+".fa")
         bowtie2base =os.path.join(bowtie2_dir,handler_util.get_file_with_suffix(bowtie2_dir,".fa"))
         bowtie2base_cmd = '{0} {1}'.format(fasta_file,bowtie2base)
-	try:
+        try:
             logger.info("Building Index for Hisat2 {0}".format(bowtie2base_cmd))
             cmdline_output = script_util.runProgram(logger,"bowtie2-build",bowtie2base_cmd,None,bowtie2_dir)
         except Exception,e:
@@ -95,32 +109,49 @@ class Bowtie2Sample(Bowtie2):
         ### Check if GTF object exists in the workspace pull the gtf
         ref_id = bowtie_index['data']['genome_id']
         genome_name = ws_client.get_object_info_new({"objects": [{'ref' : ref_id }] })[0][1]
-	ws_gtf = genome_name+"_GTF"
-	gtf_file = script_util.check_and_download_existing_handle_obj(logger,ws_client,self.urls,params['ws_id'],ws_gtf,"KBaseRNASeq.GFFAnnotation",bowtie2_dir,token)
+        ws_gtf = genome_name+"_GTF"
+        gtf_file = script_util.check_and_download_existing_handle_obj(logger,ws_client,self.urls,params['ws_id'],ws_gtf,"KBaseRNASeq.GFFAnnotation",bowtie2_dir,token)
         if gtf_file is None:
              rnaseq_util.create_gtf_annotation_from_genome(logger,ws_client,hs,self.urls,params['ws_id'],ref_id,genome_name,bowtie2_dir,token)
-	# Determine the num_threads provided by the user otherwise default the number of threads to 2
+        # Determine the num_threads provided by the user otherwise default the number of threads to 2
         self.num_jobs = 1
         logger.info(" Number of threads used by each process {0}".format(self.num_threads))
-	task_param = {'job_id' : params['sampleset_id'],
-                      'label' : r_label,
-                      'ws_id' : params['ws_id'],
-                      'reads_type' : sample_type,
-                      'bowtie2_dir' : self.directory,
-                      'annotation_id': ref_id,
-                      'sampleset_id' : None
+        task_param = {'input_arguments' :  
+                          [
+                             {'job_id' : params['sampleset_id'],
+                             'label' : r_label,
+                             'ws_id' : params['ws_id'],
+                             'reads_type' : sample_type,
+                             'bowtie2_dir' : self.directory,
+                             'annotation_id': ref_id,
+                             'sampleset_id' : None,
+                             'bowtie_index' : params['bowtie_index']
+                             }
+                          ]
                       }
-	self.task_list.append(task_param)
-	
-		
-    def collect(self) :
+        self.task_list.append( task_param )
+
+        return( self.task_list )
+
+
+    def collect( self, common_params, collect_params ) :
+        self.logger.info( "in Bowtie2Sample.collect(), common_params are " )
+        self.logger.info( pformat( common_params ) )
+        self.logger.info( " and collect_params are" )
+        self.logger.info( pformat( collect_params ) )
+
         # do with 
-        alignment_name = self.method_params['sampleset_id']+"_bowtie2_AlignmentSet"
+        alignment_name = collect_params['sampleset_id']+"_bowtie2_AlignmentSet"
         self.logger.info(" Creating Report for Alignment {0}".format(alignment_name))
-	single_read , single_alignment = self.results[0]
+        single_read , single_alignment = self.results[0]
+        global_params = collect_params['global_params']
+        input_result_pairs = collect_params['input_result_pairs']
+        single_read = input_result_pairs[0]['result']['read_sample']
+        single_alignment = input_result_pairs[0]['result']['output_name']
+
         # TODO: Split alignment set and report method
-	sref = self.common_params['ws_client'].get_object_info_new({"objects": [{'name':single_alignment, 'workspace': self.method_params['ws_id']}]})[0]
-	self.returnVal = { 'output'  : single_alignment ,'workspace' : self.method_params['ws_id']}
+        sref = self.common_params['ws_client'].get_object_info_new({"objects": [{'name':single_alignment, 'workspace': self.method_params['ws_id']}]})[0]
+        returnVal = { 'output'  : single_alignment ,'workspace' : self.method_params['ws_id']}
 #        reportObj = {'objects_created':[{'ref' :str(sref[6]) + '/' + str(sref[0]) + '/' + str(sref[4]),
 #                                                 'description' : "RNA-seq Alignment for reads Sample: {0}".format(single_read)}],
 #                                                 'text_message': "RNA-seq Alignment for reads Sample: {0}".format(single_read)}

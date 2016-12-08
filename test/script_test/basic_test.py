@@ -133,19 +133,19 @@ class TestRNASeqMethods(TestRNASeqMethodsSetup):
 #                output =json.load(o)
 #        pprint(output)
 #
- def test_e(self):
-       print("\n\n----------- test CufflinksCall ----------")
-       out =call(["run_KBaseRNASeq.sh",
-                  "test/script_test/test_cufflinks_main_set.input.json",
-                  "test/script_test/test_cufflinks_main_set.output.json",
-                  "test/script_test/token.txt"])
-
-       # print error code of Implementation
-       print(out);
-
-       with open('test/script_test/test_cufflinks_main_set.output.json') as o:
-                output =json.load(o)
-       pprint(output)
+# def test_e(self):
+#       print("\n\n----------- test CufflinksCall ----------")
+#       out =call(["run_KBaseRNASeq.sh",
+#                  "test/script_test/test_cufflinks_main_set.input.json",
+#                  "test/script_test/test_cufflinks_main_set.output.json",
+#                  "test/script_test/token.txt"])
+#
+#       # print error code of Implementation
+#       print(out);
+#
+#       with open('test/script_test/test_cufflinks_main_set.output.json') as o:
+#                output =json.load(o)
+#       pprint(output)
 
 
 # def test_e(self):
@@ -162,6 +162,21 @@ class TestRNASeqMethods(TestRNASeqMethodsSetup):
 #        with open('test/script_test/test_analysis1_cufflinks_output.json') as o:
 #                output =json.load(o)
 #        pprint(output)
+
+ def test_ee(self):
+        print("\n\n----------- test StringtieCall ----------")
+
+        out =call(["run_KBaseRNASeq.sh",
+        "test/script_test/test_stringtie_main_set.input.json",
+        "test/script_test/test_stringtie_main_set.output.json",
+        "test/script_test/token.txt"])
+
+        # print error code of Implementation
+        print(out);
+
+        with open('test/script_test/test_stringtie_main_set.output.json') as o:
+                output =json.load(o)
+        pprint(output)
 
 # def test_ee(self):
 #        print("\n\n----------- test StringtieCall ----------")
