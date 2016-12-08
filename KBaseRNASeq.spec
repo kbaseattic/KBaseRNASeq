@@ -420,35 +420,112 @@
   async funcdef CreateRNASeqSampleSet(CreateRNASeqSampleSetParams params)
         returns(RNASeqSampleSet) authentication required;
 
-   typedef structure {
-        string ws_id;
-        string reference;
-        string output_obj_name;
-        } Bowtie2IndexParams;
+        /*******************/
+        /* Bowtie2 Methods */
+        /*******************/
 
-  async funcdef BuildBowtie2Index(Bowtie2IndexParams params)
-     returns(ResultsToReport) authentication required;
 
-   typedef structure {
-        string ws_id;
-        string sampleset_id;
-        string genome_id;
-        string bowtie_index;
-        string phred33;
-        string phred64;
-        string local;
-        string very-fast;
-        string fast;
-        string very-sensitive;
-        string sensitive;
-        string very-fast-local;
-        string very-sensitive-local;
-        string fast-local;
-        string fast-sensitive;
-        } Bowtie2Params;
+        typedef structure {
+             string ws_id;
+             string reference;
+             string output_obj_name;
+             } Bowtie2IndexParams;
 
-  async funcdef Bowtie2Call(Bowtie2Params params) 
-     returns(ResultsToReport) authentication required;
+        async funcdef BuildBowtie2Index(Bowtie2IndexParams params)
+             returns(ResultsToReport) authentication required;
+
+        /*********************/
+        /* Bowtie2 main call */
+        /*********************/
+
+        typedef structure {
+             string ws_id;
+             string sampleset_id;
+             string genome_id;
+             string bowtie_index;
+             string phred33;
+             string phred64;
+             string local;
+             string very-fast;
+             string fast;
+             string very-sensitive;
+             string sensitive;
+             string very-fast-local;
+             string very-sensitive-local;
+             string fast-local;
+             string fast-sensitive;
+             } Bowtie2Call_globalInputParams;
+
+        async funcdef Bowtie2Call( Bowtie2Call_globalInputParams params ) 
+            returns( ResultsToReport ) authentication required;
+
+        /**************************/
+        /* Bowtie2_prepare method */
+        /**************************/
+
+        typedef structure {
+                Bowtie2Call_globalInputParams global_input_params;
+        } Bowtie2Call_prepareInputParams;
+
+        typedef structure {
+                string job_id;          /* s_align */
+                string label;           /* condition */
+                string ws_id;
+                string reads_type;
+                string genome_id;
+                string bowtie2_dir;
+                string annotation_id;
+                string sampleset_id;
+                string bowtie2_index;
+        } Bowtie2Call_task;
+
+        typedef structure {
+                tuple<Bowtie2Call_task> input_arguments;
+        } Bowtie2Call_runEachInput;
+
+        typedef structure {
+                list<Bowtie2Call_runEachInput> tasks;
+        } Bowtie2Call_prepareSchedule;
+        
+        funcdef Bowtie2Call_prepare( Bowtie2Call_prepareInputParams prepare_params )
+             returns( Bowtie2Call_prepareSchedule ) authentication required;
+
+
+        /**************************/
+        /* Bowtie2_runEach method */
+        /**************************/
+
+        typedef structure {
+            string  sample_id;
+            string  output_name;
+        } Bowtie2Call_runEachResult;
+
+        async funcdef Bowtie2Call_runEach( Bowtie2Call_task task ) 
+             returns( Bowtie2Call_runEachResult ) authentication required;
+
+
+        /**************************/
+        /* Bowtie2_collect method */
+        /**************************/
+
+        typedef structure {
+                Bowtie2Call_runEachInput input;
+                Bowtie2Call_runEachResult result;
+        } Bowtie2Call_InputResultPair;
+
+        typedef structure {
+                Bowtie2Call_globalInputParams global_params;
+                list<Bowtie2Call_InputResultPair> input_result_pairs;
+        } Bowtie2Call_collectInputParams;
+
+        typedef structure {
+            UnspecifiedObject  output;
+            string             workspace;
+        } Bowtie2Call_globalResult;
+
+        funcdef  Bowtie2Call_collect( Bowtie2Call_collectInputParams collect_params )
+             returns( Bowtie2Call_globalResult ) authentication required;
+
 
        /******************/
        /* Hisat2 Methods */

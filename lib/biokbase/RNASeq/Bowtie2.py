@@ -22,12 +22,13 @@ try:
 except:
     from biokbase.AbstractHandle.Client import AbstractHandle as HandleService
 from biokbase.RNASeq.ExecutionBase import ExecutionBase
-#import ExecutionBase.ExecutionBase as ExecutionBase
+from biokbase.RNASeq.KBParallelExecutionBase import KBParallelExecutionBase
+
 
 class Bowtie2Exception(Exception):
     pass
 
-class Bowtie2(ExecutionBase): 
+class Bowtie2(KBParallelExecutionBase): 
 
     def __init__(self, logger, directory, urls):
         pprint(self.__class__)
@@ -36,17 +37,22 @@ class Bowtie2(ExecutionBase):
         # user defined shared variables across methods
         #self.sample = None
         #self.sampleset_info = None
-        self.num_threads = None
-	self.tool_used = "Bowtie2"
-	self.tool_version = "2.2.6"
+        #self.num_threads = None
+        self.num_threads = 1
+        self.tool_used = "Bowtie2"
+        self.tool_version = "2.2.6"
 
-    def runEach(self,task_params):
+    def runEach( self, task_params ):
+        self.logger.info( "in Bowtie2.runEach(), task_params are" )
+        self.logger.info( pformat( task_params ) )
+
         ws_client = self.common_params['ws_client']
         hs = self.common_params['hs_client']
-        params = self.method_params
+        params = task_params
         logger = self.logger
         token = self.common_params['user_token']
-        
+        logger.info("common_params: " + pformat(self.common_params, indent=4))
+
         read_sample = task_params['job_id']
         condition = task_params['label']
         directory = task_params['bowtie2_dir']
@@ -55,12 +61,42 @@ class Bowtie2(ExecutionBase):
         genome_id = task_params['annotation_id']
         sampleset_id = task_params['sampleset_id']
 
-        print "Downloading Read Sample{0}".format(read_sample)
+        #print "Downloading Read Sample{0}".format(read_sample)
         logger.info("Downloading Read Sample{0}".format(read_sample))
+
+        # fetch Bowtie2 index (files) if its not in the work directory already
+        if ( handler_util.get_file_with_suffix(directory,".rev.1.bt2") == None ):
+                self.logger.info( "Bowtie2 index files not present, now retrieveing {0}".format( params['bowtie_index'] ) )
+                try:
+                       bowtie_index = ws_client.get_objects(
+                                                [ { 'name' : params['bowtie_index'], 'workspace' : params['ws_id']} ] )[0]
+                       #self.sample = sample
+                except Exception,e:
+                       logger.exception("".join(traceback.format_exc()))
+                       raise ValueError(" Error Downloading objects from the workspace ")
+
+                bw_index_files = script_util.check_and_download_existing_handle_obj( logger,
+                                                                                     ws_client,
+                                                                                     self.urls,
+                                                                                     params['ws_id'],
+                                                                                     params['bowtie_index'],
+                                                                                     "KBaseRNASeq.Bowtie2Indexes",
+                                                                                     bowtie2_dir,
+                                                                                     token )
+                try:
+                        logger.info( "Unzipping Bowtie2 Indices" )
+                        script_util.unzip_files( logger, os.path.join(bowtie2_dir,bw_index_files),bowtie2_dir )
+                        mv_dir = handler_util.get_dir( bowtie2_dir )
+                        if mv_dir is not None:
+                                script_util.move_files( logger, mv_dir, bowtie2_dir )
+                except Exception, e:
+                        logger.error("".join(traceback.format_exc()))
+                        raise Exception("Unzip indexfile error: Please contact help@kbase.us")
+
         try:
-                r_sample = ws_client.get_objects(
-                                        [{ 'name' : read_sample, 'workspace' : ws_id}])[0]
-                r_sample_info = ws_client.get_object_info_new({"objects": [{'name': read_sample, 'workspace': ws_id}]})[0]
+                r_sample = ws_client.get_objects( [ { 'name' : read_sample, 'workspace' : ws_id } ] )[0]
+                                        
+                r_sample_info = ws_client.get_object_info_new( {"objects": [ {'name': read_sample, 'workspace': ws_id} ] } )[0]
                 sample_type = r_sample_info[2].split('-')[0]
                 input_direc = os.path.join(directory,read_sample.split('.')[0]+"_bowtie2_input")
                 if not os.path.exists(input_direc): os.mkdir(input_direc)
@@ -69,11 +105,11 @@ class Bowtie2(ExecutionBase):
                 if not os.path.exists(output_dir): os.mkdir(output_dir)
                 base = handler_util.get_file_with_suffix(directory,".rev.1.bt2")
                 bowtie2_base =os.path.join(directory,base)
-	
+
                 ### Adding advanced options to Bowtie2Call
                 bowtie2_cmd = ''
                 bowtie2_cmd += ( ' -p {0}'.format(self.num_threads))
-		if('quality_score' in params and params['quality_score'] is not None): bowtie2_cmd += ( ' --'+params['quality_score'])
+                if('quality_score' in params and params['quality_score'] is not None): bowtie2_cmd += ( ' --'+params['quality_score'])
                 if('alignment_type' in params and params['alignment_type'] is not None): bowtie2_cmd += ( ' --'+params['alignment_type'] )
                 if('preset_options' in params and params['preset_options'] is not None ) and ('alignment_type' in params and params['alignment_type'] is not None):
                         if (params['alignment_type'] == 'local'):
@@ -91,7 +127,12 @@ class Bowtie2(ExecutionBase):
                         read_id = r_sample['data']['handle']['id']
                         read_name =  r_sample['data']['handle']['file_name']
                         try:
-                                script_util.download_file_from_shock(self.logger, shock_service_url=self.urls['shock_service_url'], shock_id=read_id,filename=read_name, directory=input_direc,token=token)
+                                script_util.download_file_from_shock( self.logger, 
+                                                                      shock_service_url=self.urls['shock_service_url'], 
+                                                                      shock_id=read_id,
+                                                                      filename=read_name, 
+                                                                      directory=input_direc,
+                                                                      token=token )
                                 bowtie2_cmd += " -U {0} -x {1} -S {2}".format(os.path.join(input_direc,read_name),bowtie2_base,out_file)
                         except Exception,e:
                                 self.logger.exception(e)
@@ -104,8 +145,18 @@ class Bowtie2(ExecutionBase):
                         read2_id = r_sample['data']['handle_2']['id']
                         read2_name = r_sample['data']['handle_2']['file_name']
                         try:
-                                script_util.download_file_from_shock(self.logger, shock_service_url=self.urls['shock_service_url'], shock_id=read1_id,filename=read1_name, directory=input_direc,token=token)
-                                script_util.download_file_from_shock(self.logger, shock_service_url=self.urls['shock_service_url'], shock_id=read2_id,filename=read2_name, directory=input_direc,token=token)
+                                script_util.download_file_from_shock( self.logger, 
+                                                                      shock_service_url=self.urls['shock_service_url'], 
+                                                                      shock_id=read1_id,
+                                                                      filename=read1_name, 
+                                                                      directory=input_direc,
+                                                                      token=token )
+                                script_util.download_file_from_shock( self.logger, 
+                                                                      shock_service_url=self.urls['shock_service_url'], 
+                                                                      shock_id=read2_id,
+                                                                      filename=read2_name, 
+                                                                      directory=input_direc,
+                                                                      token=token )
                                 bowtie2_cmd += " -1 {0} -2 {1} -x {2} -S {3}".format(os.path.join(input_direc,read1_name),os.path.join(output_dir,read2_name),bowtie2_base,out_file)
                         except Exception,e:
                                 raise Exception( "Unable to download shock file , {0} or {1}".format(read1_name,read2_name))
@@ -116,7 +167,13 @@ class Bowtie2(ExecutionBase):
                         raise Exception("Failed to run command {0}".format(bowtie2_cmd))
                 try:
                         stats_data = {}
-                        stats_data = script_util.extractAlignmentStatsInfo(self.logger,"bowtie2",ws_client,ws_id,None,cmdline_output['stderr'],None)
+                        stats_data = script_util.extractAlignmentStatsInfo( self.logger,
+                                                                            "bowtie2",
+                                                                            ws_client,
+                                                                            ws_id,
+                                                                            None,
+                                                                            cmdline_output['stderr'],
+                                                                            None )
                         bam_file = os.path.join(output_dir,"accepted_hits_unsorted.bam")
                         logger.info("Executing: sam_to_bam  {0}".format(bam_file))
                         sam_to_bam = "view -bS -o {0} {1}".format(bam_file,out_file)
@@ -141,11 +198,21 @@ class Bowtie2(ExecutionBase):
                 except Exception, e:
                         raise Exception("Failed to upload zipped output file".format(out_file_path))
                 #### Replace version with get_version command#####
-		logger.info("Preparing output object")
-                bowtie2_out = { "file" : bowtie2_handle ,"size" : os.path.getsize(out_file_path), "aligned_using" : self.tool_used ,  "aligner_version" :self.tool_version , 'library_type' : lib_type , 'condition' : condition ,'read_sample_id': read_sample, 'genome_id' : genome_id , "alignment_stats" : stats_data }
+                logger.info("Preparing output object")
+                bowtie2_out = { 'file'            : bowtie2_handle,
+                                'size'            : os.path.getsize(out_file_path),
+                                'aligned_using'   : self.tool_used,
+                                'aligner_version' : self.tool_version, 
+                                'library_type'    : lib_type, 
+                                'condition'       : condition,
+                                'read_sample_id'  : read_sample, 
+                                'genome_id'       : genome_id,
+                                'alignment_stats' : stats_data 
+                             }
                 if not sampleset_id is None: bowtie2_out['sampleset_id'] = sampleset_id
-                pprint(bowtie2_out)
-		try:
+                self.logger.info( "Bowtie2_out is")
+                self.logger.info( pformat(bowtie2_out) )
+                try:
                         res= ws_client.save_objects(
                                         {"workspace":ws_id,
                                          "objects": [{
@@ -154,7 +221,7 @@ class Bowtie2(ExecutionBase):
                                          "name":output_name}
                                         ]})
                 except Exception, e:
-			raise Exception(e)
+                        raise Exception(e)
                         #logger.exception("Failed to save alignment to workspace")
                         raise Exception("Failed to save alignment to workspace")
         except Exception, e:
@@ -166,6 +233,6 @@ class Bowtie2(ExecutionBase):
                 if os.path.exists(output_dir): shutil.rmtree(output_dir)
                 ret = script_util.if_obj_exists(None,ws_client,ws_id,"KBaseRNASeq.RNASeqAlignment",[output_name])
                 if not ret is None:
-                    return (read_sample,output_name)
+                    return { 'read_sample': read_sample, 'output_name': output_name }
                 #else
         return None
