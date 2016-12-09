@@ -84,7 +84,7 @@ class KBaseRNASeq:
     ######################################### noqa
     VERSION = "0.0.2"
     GIT_URL = "https://github.com/sean-mccorkle/KBaseRNASeq.git"
-    GIT_COMMIT_HASH = "808fb7ce29d4173758472b88b3a64274da126021"
+    GIT_COMMIT_HASH = "8fa63d6cac7e6369c2099aeca6e2da7186bc9fa9"
 
     #BEGIN_CLASS_HEADER
     __TEMP_DIR = 'temp'
@@ -480,8 +480,8 @@ class KBaseRNASeq:
            String, parameter "annotation_id" of String, parameter
            "sampleset_id" of String, parameter "bowtie2_index" of String
         :returns: instance of type "Bowtie2Call_runEachResult"
-           (************************) -> structure: parameter
-           "alignmentset_id" of String, parameter "output_name" of String
+           (************************) -> structure: parameter "sample_id" of
+           String, parameter "output_name" of String
         """
         # ctx is the context object
         # return variables are: returnVal
@@ -541,8 +541,8 @@ class KBaseRNASeq:
            of String, parameter "annotation_id" of String, parameter
            "sampleset_id" of String, parameter "bowtie2_index" of String,
            parameter "result" of type "Bowtie2Call_runEachResult"
-           (************************) -> structure: parameter
-           "alignmentset_id" of String, parameter "output_name" of String
+           (************************) -> structure: parameter "sample_id" of
+           String, parameter "output_name" of String
         :returns: instance of type "Bowtie2Call_globalResult" -> structure:
            parameter "output" of unspecified object, parameter "workspace" of
            String
