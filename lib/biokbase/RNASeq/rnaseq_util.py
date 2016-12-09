@@ -41,13 +41,13 @@ def get_fa_from_genome(logger,ws_client,urls,ws_id,directory,genome_name):
          #fasta_file = os.path.basename(fasta_file)
     	 #return (genome_id, fasta_file)
     except Exception, e:
-	 raise Exception(e)
+         logger.exception(e)
 	 raise Exception("Unable to Create FASTA file from Genome : {0}".format(genome_name))
     finally:
-	 #if os.path.exists(output_file): os.remove(output_file)
-	 temp_fa = os.path.join(directory,handler_util.get_file_with_suffix(directory,"_temp.fa")+"._temp.fa")
-	 print temp_fa
-	 if os.path.exists(temp_fa): os.remove(temp_fa)
+	 if os.path.exists(fasta_file): #os.remove(output_file)
+	     temp_fa = os.path.join(directory,handler_util.get_file_with_suffix(directory,"_temp.fa")+"._temp.fa")
+	     logger.debug (temp_fa)
+	     if os.path.exists(temp_fa): os.remove(temp_fa)
 	  
     	 return (genome_id, fasta_file)
     return None
@@ -84,7 +84,9 @@ def create_gtf_annotation_from_genome(logger,ws_client,hs_client,urls,ws_id,geno
                 	except Exception as e:
                    		raise Exception("Error Converting the GFF file to GTF using gffread {0},{1}".format(gtf_cmd,"".join(traceback.format_exc())))
 		else:
+                        logger.info("GTF handled by GAU")
 			gtf_path = file_path
+                logger.info("gtf file : " + gtf_path)
                 if os.path.exists(gtf_path):
                                annotation_handle = hs_client.upload(gtf_path)
                                a_handle = { "handle" : annotation_handle ,"size" : os.path.getsize(gtf_path), 'genome_id' : genome_ref}
