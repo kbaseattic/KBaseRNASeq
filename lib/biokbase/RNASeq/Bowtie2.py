@@ -85,10 +85,10 @@ class Bowtie2(KBParallelExecutionBase):
                                                                                      token )
                 try:
                         logger.info( "Unzipping Bowtie2 Indices" )
-                        script_util.unzip_files( logger, os.path.join(bowtie2_dir,bw_index_files),bowtie2_dir )
-                        mv_dir = handler_util.get_dir( bowtie2_dir )
+                        script_util.unzip_files( logger, os.path.join( directory, bw_index_files ), directory )
+                        mv_dir = handler_util.get_dir( directory )
                         if mv_dir is not None:
-                                script_util.move_files( logger, mv_dir, bowtie2_dir )
+                                script_util.move_files( logger, mv_dir, directory )
                 except Exception, e:
                         logger.error("".join(traceback.format_exc()))
                         raise Exception("Unzip indexfile error: Please contact help@kbase.us")
