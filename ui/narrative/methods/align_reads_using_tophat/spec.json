@@ -200,7 +200,7 @@
           "target_property" : "service_ver"
         },
         {
-          "constant_value" : 1,
+          "constant_value" : 0,
           "target_property" :"is_local" 
         },
         {
