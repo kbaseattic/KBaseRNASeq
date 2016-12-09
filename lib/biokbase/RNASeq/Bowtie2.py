@@ -81,7 +81,7 @@ class Bowtie2(KBParallelExecutionBase):
                                                                                      params['ws_id'],
                                                                                      params['bowtie_index'],
                                                                                      "KBaseRNASeq.Bowtie2Indexes",
-                                                                                     bowtie2_dir,
+                                                                                     directory,
                                                                                      token )
                 try:
                         logger.info( "Unzipping Bowtie2 Indices" )
