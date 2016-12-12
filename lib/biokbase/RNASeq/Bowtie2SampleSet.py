@@ -41,28 +41,35 @@ class Bowtie2SampleSet(Bowtie2):
         #self.num_threads = None
 
 
-    def prepare(self): 
+    def prepare( self, common_params, method_params ): 
+        self.logger.info( "in Bowtie2SampleSet.prepare(), common_params are ")
+        self.logger.info( pformat( common_params ) )
+        self.logger.info( " and method_params are" )
+        self.logger.info( pformat( method_params ) )
+
         # for quick testing, we recover parameters here
-        ws_client = self.common_params['ws_client']
-        hs = self.common_params['hs_client']
-        params = self.method_params
+        ws_client = common_params['ws_client']
+        hs = common_params['hs_client']
+        params = method_params
         logger = self.logger
-        token = self.common_params['user_token']
+        token = common_params['user_token']
         bowtie2_dir = self.directory
 
         try:
-	       sample,bowtie_index = ws_client.get_objects( 
-                                        [{ 'name' : params['sampleset_id'], 'workspace' : params['ws_id']}, 
-                                        { 'name' : params['bowtie_index'], 'workspace' : params['ws_id']}]) 
-               self.sample =sample 
+               sample, bowtie_index = ws_client.get_objects( 
+                                        [ { 'name' : params['sampleset_id'], 'workspace' : params['ws_id']}, 
+                                          { 'name' : params['bowtie_index'], 'workspace' : params['ws_id']} ] ) 
+               self.sample = sample 
         except Exception,e:
                logger.exception("".join(traceback.format_exc()))
                raise ValueError(" Error Downloading objects from the workspace ")
             ### Get obejct IDs
-        sampleset_info,bowtie_index_info = ws_client.get_object_info_new({"objects": [
-                                           {'name': params['sampleset_id'], 'workspace': params['ws_id']},
-                                           {'name': params['bowtie_index'], 'workspace': params['ws_id']}
-                                           ]})
+        sampleset_info, bowtie_index_info = ws_client.get_object_info_new(
+                                                {"objects": [
+                                                              {'name': params['sampleset_id'], 'workspace': params['ws_id']},
+                                                              {'name': params['bowtie_index'], 'workspace': params['ws_id']}
+                                                            ]
+                                                } )
         ### Get the workspace object ids for the objects ###
         sampleset_id = str(sampleset_info[6]) + '/' + str(sampleset_info[0]) + '/' + str(sampleset_info[4])
         bowtie_index_id = str(bowtie_index_info[6]) + '/' + str(bowtie_index_info[0]) + '/' + str(bowtie_index_info[4])
@@ -85,7 +92,14 @@ class Bowtie2SampleSet(Bowtie2):
             raise Bowtie2SampleSetException('Missing Library objects {0} in the {1}. please copy them and run this method'.format(",".join(missing_objs),params['ws_id']))
  
         self.num_jobs = len(reads)
-	bw_index_files = script_util.check_and_download_existing_handle_obj(logger,ws_client,self.urls,params['ws_id'],params['bowtie_index'],"KBaseRNASeq.Bowtie2Indexes",bowtie2_dir,token)
+        bw_index_files = script_util.check_and_download_existing_handle_obj( logger,
+                                                                             ws_client,
+                                                                             self.urls,
+                                                                             params['ws_id'],
+                                                                             params['bowtie_index'],
+                                                                             "KBaseRNASeq.Bowtie2Indexes",
+                                                                             bowtie2_dir,
+                                                                             token )
         try:
                 logger.info("Unzipping Bowtie2 Indices")
                 script_util.unzip_files(logger,os.path.join(bowtie2_dir,bw_index_files),bowtie2_dir)
@@ -106,38 +120,82 @@ class Bowtie2SampleSet(Bowtie2):
             raise Exception("Failed to run command {0}".format(bowtie2base_cmd))
         ### Check if GTF object exists in the workspace pull the gtf
         ref_id = bowtie_index['data']['genome_id']
-        genome_name = ws_client.get_object_info_new({"objects": [{'ref' : ref_id }] })[0][1]
-        ws_gtf = genome_name+"_GTF"
-        gtf_file = script_util.check_and_download_existing_handle_obj(logger,ws_client,self.urls,params['ws_id'],ws_gtf,"KBaseRNASeq.GFFAnnotation",bowtie2_dir,token)
-        if gtf_file is None:
-	     rnaseq_util.create_gtf_annotation_from_genome(logger,ws_client,hs,self.urls,params['ws_id'],ref_id,genome_name,bowtie2_dir,token)
+        # the following was commented out by Sean - I don't see that gtf is needed by Bowtie2
+        #genome_name = ws_client.get_object_info_new({"objects": [{'ref' : ref_id }] })[0][1]
+        #ws_gtf = genome_name+"_GTF"
+        #gtf_file = script_util.check_and_download_existing_handle_obj(logger,ws_client,self.urls,params['ws_id'],ws_gtf,"KBaseRNASeq.GFFAnnotation",bowtie2_dir,token)
+        #if gtf_file is None:
+        #     rnaseq_util.create_gtf_annotation_from_genome(logger,ws_client,hs,self.urls,params['ws_id'],ref_id,genome_name,bowtie2_dir,token)
  
         count = 0
         logger.info(" Number of threads used by each process {0}".format(self.num_threads))
         for i in reads:
             try:
                     label = r_label[count]
-                    task_param = {'job_id' : i,
-                                  'label' : r_label[count],
-                                  'ws_id' : params['ws_id'],
-                                  'reads_type' : reads_type,
-                                  'bowtie2_dir' : self.directory,
-                                  'annotation_id': ref_id, # Changed annotation_id to ref_id for genome object 
-                                  'sampleset_id' : sampleset_id
+                    task_param = { 'input_arguments' :  
+                                          [
+                                           {'job_id'       : i,
+                                            'label'        : r_label[count],
+                                            'ws_id'        : params['ws_id'],
+                                            'reads_type'   : reads_type,
+                                            'bowtie2_dir'  : self.directory,
+                                            'annotation_id': ref_id, # Changed annotation_id to ref_id for genome object 
+                                            'sampleset_id' : sampleset_id,
+                                            'bowtie_index' : params['bowtie_index']
+                                           }
+                                          ] 
                                  }
                     self.task_list.append(task_param)
                     count = count + 1
             except Exception,e:
                     raise
 
+        return( self.task_list )
 
-    def collect(self) :
+
+    def collect( self, common_params, collect_params ) :
+        self.logger.info( "in Bowtie2SampleSet.collect(), common_params are " )
+        self.logger.info( pformat( common_params ) )
+        self.logger.info( " and method_params are" )
+        self.logger.info( pformat( collect_params ) )
+
         # do with 
-        alignmentSet_name = self.method_params['sampleset_id']+"_bowtie2_AlignmentSet"
+        global_params = collect_params['global_params']
+        input_result_pairs = collect_params['input_result_pairs']
+
+        alignmentSet_name = global_params['sampleset_id']+"_bowtie2_AlignmentSet"
         self.logger.info(" Creating AlignmentSet for the Alignments {0}".format(alignmentSet_name))
+
+        # get sample list from WS sampleset object
+        sampleset_id = input_result_pairs[0]['input']['input_arguments'][0]['sampleset_id']
+        self.logger.info( " Getting sampleset {0} from workspace {1}".format( sampleset_id, global_params['ws_id'] ))
+        ws_client = common_params['ws_client']
+        try:
+               sample = ws_client.get_objects( [ { 'ref'    : sampleset_id
+                                                   #'workspace' : global_params['ws_id']
+                                                   } ] 
+                                              )[0]
+        except Exception,e:
+               self.logger.exception("".join(traceback.format_exc()))
+               raise ValueError(" Error Downloading objects from the workspace ")
+        self.logger.info( "got this back for sample:")
+        self.logger.info( pformat( sample ) )
+
+
         # TODO: Split alignment set and report method
-        reportObj=rnaseq_util.create_RNASeq_AlignmentSet_and_build_report(self.logger,self.common_params['ws_client'],self.method_params['ws_id'],self.sample['data']['sample_ids'],self.task_list[0]['sampleset_id'],self.task_list[0]['annotation_id'],None,self.results,alignmentSet_name)
-	self.returnVal = { 'output'  : alignmentSet_name ,'workspace' : self.method_params['ws_id']}
+        reportObj = rnaseq_util.create_RNASeq_AlignmentSet_and_build_report( self.logger,
+                                                                             common_params['ws_client'],
+                                                                             global_params['ws_id'],
+                                                                             sample['data']['sample_ids'],
+                                                                             input_result_pairs[0]['input']['input_arguments'][0]['sampleset_id'],
+                                                                             input_result_pairs[0]['input']['input_arguments'][0]['annotation_id'],
+                                                                             None,
+                                                                             input_result_pairs,
+                                                                             alignmentSet_name )
+
+        returnVal = { 'output'  : alignmentSet_name ,'workspace' : global_params['ws_id'] }
+
+        return( returnVal )
 #        reportName = 'Align_Reads_using_Hisat2_'+str(hex(uuid.getnode()))
 #        report_info = self.common_params['ws_client'].save_objects({
 #                                                'id':self.sampleset_info[6],

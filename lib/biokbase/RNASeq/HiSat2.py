@@ -12,6 +12,7 @@ import handler_utils as handler_util
 from biokbase.workspace.client import Workspace
 from biokbase.auth import Token
 import multiprocessing as mp
+from biokbase.RNASeq import rnaseq_util
 import doekbase.data_api
 from doekbase.data_api.annotation.genome_annotation.api import GenomeAnnotationAPI , GenomeAnnotationClientAPI
 from doekbase.data_api.sequence.assembly.api import AssemblyAPI , AssemblyClientAPI
@@ -53,6 +54,7 @@ class HiSat2(ExecutionBase):
         read_sample = task_params['job_id']
         condition = task_params['label']
         directory = task_params['hisat2_dir']
+        hisat2_dir = task_params['hisat2_dir']
         ws_id = task_params['ws_id']
         reads_type = task_params['reads_type']
         genome_id = task_params['annotation_id']
@@ -70,8 +72,23 @@ class HiSat2(ExecutionBase):
                 output_dir = os.path.join(directory,output_name)
                 if not os.path.exists(output_dir): os.mkdir(output_dir)
                 print directory
+                pprint (self.urls)
+
+
+                # TODO: download only hs2 index from shock instead of rebuilding
+                if not os.path.exists(params['gtf_file']):  # there might be better method as used in the later as gtf file is not currently used.
+                    ref_id , fasta_file =  rnaseq_util.get_fa_from_genome(logger,ws_client,self.urls,params['ws_id'],hisat2_dir,params['genome_id'])
+                    hisat2base = os.path.basename(fasta_file)
+                    hisat2base_cmd = '{0} {1}'.format(fasta_file,hisat2base)
+                    try:
+                        logger.info("Building Index for Hisat2 {0}".format(hisat2base_cmd))
+                        cmdline_output = script_util.runProgram(logger,"hisat2-build",hisat2base_cmd,None,hisat2_dir)
+                    except Exception,e:
+                        raise Exception("Failed to run command {0}".format(hisat2base_cmd))
+
                 base = handler_util.get_file_with_suffix(directory,".1.ht2")
                 print base
+                logger.info("HS2 base file: " + base)
                 hisat2_base =os.path.join(directory,base)
                 ### Adding advanced options to Bowtie2Call
                 hisat2_cmd = ''

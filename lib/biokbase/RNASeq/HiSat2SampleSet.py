@@ -97,10 +97,11 @@ class HiSat2SampleSet(HiSat2):
         except Exception,e:
             raise Exception("Failed to run command {0}".format(hisat2base_cmd))
 
-        ws_gtf = params['genome_id']+"_GTF"
+        ws_gtf = params['genome_id']+"_GTF_Annotation"
         gtf_file = script_util.check_and_download_existing_handle_obj(logger,ws_client,self.urls,params['ws_id'],ws_gtf,"KBaseRNASeq.GFFAnnotation",hisat2_dir,token)
         if gtf_file is None:
-	     rnaseq_util.create_gtf_annotation_from_genome(logger,ws_client,hs,self.urls,params['ws_id'],ref_id,params['genome_id'],hisat2_dir,token)
+	     gtf_file = rnaseq_util.create_gtf_annotation_from_genome(logger,ws_client,hs,self.urls,params['ws_id'],ref_id,params['genome_id'],hisat2_dir,token)
+             
  
         count = 0
         logger.info(" Number of threads used by each process {0}".format(self.num_threads))

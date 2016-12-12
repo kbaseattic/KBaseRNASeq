@@ -41,13 +41,13 @@ def get_fa_from_genome(logger,ws_client,urls,ws_id,directory,genome_name):
          #fasta_file = os.path.basename(fasta_file)
     	 #return (genome_id, fasta_file)
     except Exception, e:
-	 raise Exception(e)
+         logger.exception(e)
 	 raise Exception("Unable to Create FASTA file from Genome : {0}".format(genome_name))
     finally:
-	 #if os.path.exists(output_file): os.remove(output_file)
-	 temp_fa = os.path.join(directory,handler_util.get_file_with_suffix(directory,"_temp.fa")+"._temp.fa")
-	 print temp_fa
-	 if os.path.exists(temp_fa): os.remove(temp_fa)
+	 if os.path.exists(fasta_file): #os.remove(output_file)
+	     temp_fa = os.path.join(directory,handler_util.get_file_with_suffix(directory,"_temp.fa")+"._temp.fa")
+	     logger.debug (temp_fa)
+	     if os.path.exists(temp_fa): os.remove(temp_fa)
 	  
     	 return (genome_id, fasta_file)
     return None
@@ -84,7 +84,9 @@ def create_gtf_annotation_from_genome(logger,ws_client,hs_client,urls,ws_id,geno
                 	except Exception as e:
                    		raise Exception("Error Converting the GFF file to GTF using gffread {0},{1}".format(gtf_cmd,"".join(traceback.format_exc())))
 		else:
+                        logger.info("GTF handled by GAU")
 			gtf_path = file_path
+                logger.info("gtf file : " + gtf_path)
                 if os.path.exists(gtf_path):
                                annotation_handle = hs_client.upload(gtf_path)
                                a_handle = { "handle" : annotation_handle ,"size" : os.path.getsize(gtf_path), 'genome_id' : genome_ref}
@@ -102,25 +104,33 @@ def create_gtf_annotation_from_genome(logger,ws_client,hs_client,urls,ws_id,geno
     return gtf_path
 
 def create_RNASeq_AlignmentSet_and_build_report(logger,ws_client,ws_id,sample_list,sampleset_id,genome_id,bowtie2index_id,results,alignmentSet_name):
-	 results =  [ ret for ret in results if not ret is None ]
-	 if len(results) < 2:
-	  	raise ValueError("Not enough alignments got created for a AlignmentSet obj")
-	 set_obj = { 'sampleset_id' :sampleset_id ,'genome_id' : genome_id}
-	 if not bowtie2index_id is None:
-		set_obj['bowtie2_index'] = bowtie2index_id
+         results =  [ ret for ret in results if not ret is None ]
+         if len(results) < 2:
+                raise ValueError("Not enough alignments got created for a AlignmentSet obj")
+         set_obj = { 'sampleset_id' :sampleset_id ,'genome_id' : genome_id}
+         if not bowtie2index_id is None:
+                set_obj['bowtie2_index'] = bowtie2index_id
          sids=[]
          m_alignments = []
          alignments = []
-	 m_align_names = []
-	 output_objs = []
-	 num_samples = len(sample_list)
-	 num_results = len(results)
-	 num_failed = num_samples - num_results
-	 run_list = [ k for (k,v) in results ]
-	 print run_list
-	 failed_list = [k for k in sample_list if k not in run_list ]
-	 print  "\n".join(failed_list)
-         for sid,s_alignments in results:
+         m_align_names = []
+         output_objs = []
+         num_samples = len(sample_list)
+         num_results = len(results)
+         num_failed = num_samples - num_results
+         run_list = [ k for (k,v) in results ]
+         logger.info( " create_RNASeq_AlignmentSet_and ..  run_list:")
+         logger.info(  pformat( run_list ) )
+         failed_list = [k for k in sample_list if k not in run_list ]
+         logger.info( " create_RNASeq_AlignmentSet_and .. failed_list:")
+         logger.info( pformat( failed_list ) )
+         logger.info( " create_RNASeq_AlignmentSet_and .. results:")
+         logger.info( pformat( results ))
+         #for sid,s_alignments in results:
+         for respair in results:
+                    sid = respair['result']['read_sample']
+                    s_alignments = respair['result']['output_name']
+                    logger.info( "create_RNASeq_AlignmentSet_and .. sid <{0}> s_alignments <{0}>".format( sid, s_alignments ) )
                     a_ref = ws_client.get_object_info_new({"objects": [{'name':s_alignments, 'workspace': ws_id}]})[0]
                     a_id = str(a_ref[6]) + '/' + str(a_ref[0]) + '/' + str(a_ref[4])
                     m_alignments.append({sid : a_id})
@@ -131,9 +141,9 @@ def create_RNASeq_AlignmentSet_and_build_report(logger,ws_client,ws_id,sample_li
          set_obj['read_sample_ids']= sids
          set_obj['sample_alignments']= alignments
          set_obj['mapped_alignments_ids']=m_alignments
-	 set_obj['mapped_rnaseq_alignments'] = m_align_names
+         set_obj['mapped_rnaseq_alignments'] = m_align_names
          try:
-        	logger.info( "Saving AlignmentSet object to  workspace")
+                logger.info( "Saving AlignmentSet object to  workspace")
                 res= ws_client.save_objects(
                                         {"workspace":ws_id,
                                          "objects": [{
@@ -143,21 +153,21 @@ def create_RNASeq_AlignmentSet_and_build_report(logger,ws_client,ws_id,sample_li
                                         ]})[0]
                                                                 
                 output_objs.append({'ref': str(res[6]) + '/' + str(res[0]) + '/' + str(res[4]),'description' : "Set of Alignments for Sampleset : {0}".format(sampleset_id)})
-	 except Exception as e:
+         except Exception as e:
                     logger.exception(e)
                     raise Exception("Failed Saving AlignmentSet to Workspace") 
-	 ### Build Report obj ###
-	 report = []
-	 report.append("Total number of reads : {0}".format(str(num_samples)))
-	 report.append("Number of reads ran successfully : {0}".format(str(num_results)))
-	 report.append("Number of reads failed during this run : {0}".format(str(num_failed))) 
-	 if len(failed_list) != 0:
-		report.append("List of reads failed in this run : {0}".format("\n".join(failed_list)))
-	 reportObj = {
+         ### Build Report obj ###
+         report = []
+         report.append("Total number of reads : {0}".format(str(num_samples)))
+         report.append("Number of reads ran successfully : {0}".format(str(num_results)))
+         report.append("Number of reads failed during this run : {0}".format(str(num_failed))) 
+         if len(failed_list) != 0:
+                report.append("List of reads failed in this run : {0}".format("\n".join(failed_list)))
+         reportObj = {
                       'objects_created':output_objs,
                       'text_message':'\n'.join(report)
                      }
-	 return reportObj
+         return reportObj
 
 
 def create_RNASeq_AlignmentSet_and_build_report4kbp(logger,ws_client,ws_id,sampleset_id,genome_id,bowtie2index_id,results,alignmentSet_name):

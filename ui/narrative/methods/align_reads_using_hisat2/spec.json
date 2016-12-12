@@ -227,6 +227,14 @@
           "target_property" : "ws_id"
         },
         {
+          "constant_value" : "dev",
+          "target_property" : "service_ver"
+        },
+        {
+          "constant_value" : 1,
+          "target_property" :"is_local" 
+        },
+        {
           "input_parameter" : "sampleset_id",
           "target_property" : "sampleset_id"
         },
