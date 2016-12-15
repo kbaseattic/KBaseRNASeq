@@ -196,6 +196,10 @@ class CufflinksSampleSet(Cufflinks):
 
 
         reportObj = rnaseq_util.create_RNASeq_ExpressionSet_and_build_report( self.logger,
+                                                                              common_params['user_token'],
+                                                                              self.directory,
+                                                                              0,   #  ballgown_mode,  false for now
+                                                                              0,   #   skip_reads_with_no_ref,
                                                                               common_params['ws_client'],
                                                                               tool_used,
                                                                               tool_version,

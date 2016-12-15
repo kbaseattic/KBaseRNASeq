@@ -188,17 +188,30 @@ class StringTieSampleSet(StringTie):
         sampleset_id = align_obj['data']['sampleset_id']
 
         # TODO: Split alignment set and report method
+
+        task0 = input_result_pairs[0]['input']['input_arguments'][0]
+
+        ballgown_mode = 0
+        if ( 'ballgown_mode' in task0 ):
+            ballgown_mode = task0['ballgown_mode']
+
+        skip_reads_with_no_ref = 0
+        if ( 'skip_reads_with_no_ref' in task0 ):
+            skip_reads_with_no_ref = task0['skip_reads_with_no_ref']
+
         reportObj = rnaseq_util.create_RNASeq_ExpressionSet_and_build_report( self.logger,
                                                                               common_params['user_token'],
                                                                               self.directory,
+                                                                              ballgown_mode,
+                                                                              skip_reads_with_no_ref,
                                                                               common_params['ws_client'],
                                                                               self.tool_used,
                                                                               self.tool_version,
                                                                               None, #  self.tool_opts, # QUESTION: what to do?
                                                                               global_params['ws_id'],
                                                                               align_names,
-                                                                              input_result_pairs[0]['input']['input_arguments'][0]['alignmentset_id'],
-                                                                              input_result_pairs[0]['input']['input_arguments'][0]['genome_id'],
+                                                                              task0['alignmentset_id'],
+                                                                              task0['genome_id'],
                                                                               sampleset_id,
                                                                               results,
                                                                               expressionSet_name )

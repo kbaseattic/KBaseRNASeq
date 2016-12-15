@@ -234,6 +234,8 @@ def create_RNASeq_AlignmentSet_and_build_report4kbp(logger,ws_client,ws_id,sampl
 def create_RNASeq_ExpressionSet_and_build_report( logger,
                                                   token,
                                                   directory,
+                                                  ballgown_mode,
+                                                  skip_reads_with_no_ref,
                                                   ws_client,
                                                   tool_used, 
                                                   tool_version,
@@ -273,32 +275,33 @@ def create_RNASeq_ExpressionSet_and_build_report( logger,
          # should we make this handle the option if no -e or -B on stringtie?  
 
          # needs a test for stringtie vs cufflinks
-         for a_name, e_name in results:
-                    expr = ws_client.get_objects( [ { 'name' : e_name, 'workspace': ws_id } ] )[0]
-                    logger.info( "expr file handle for e_name {0}".format( e_name ) )
-                    logger.info( pformat( expr["data"]["file"]) )
-                    try:
-                            # needs help here - safest way to create new directory
-                            subdir = os.path.join( directory, e_name )
-                            os.mkdir( subdir )
-                            script_util.download_file_from_shock( logger, 
-                                                                  shock_service_url=expr["data"]["file"]["url"], 
-                                                                  shock_id=expr["data"]["file"]["id"],
-                                                                  filename=expr["data"]["file"]["file_name"],
-                                                                  directory=subdir,
-                                                                  token=token )
-                            file_path = os.path.join( directory, expr["data"]["file"]["file_name"] )
-                            logger.info( "retrieved file handle path {0}".format( expr["data"]["file"]["file_name"] ) )
-                            # needs work here
-                            os.chdir( subdir )
-                            os.system( 'unzip *.zip' )
-                            os.chdir( ".."  )
-                    except Exception,e:
-                            raise Exception( "Unable to download shock file, {0}".format( expr["data"]["file"]["file_name"] ))
-         # this needs work
-         os.system( "/kb/dev_container/modules/SeanKBaseRNASeq/prepDE.py -i {0}".format( directory ) )
-
-         # TODO - save prepDE output to workspace
+         if ( ballgown_mode == 1 ):
+                 for a_name, e_name in results:
+                            expr = ws_client.get_objects( [ { 'name' : e_name, 'workspace': ws_id } ] )[0]
+                            logger.info( "expr file handle for e_name {0}".format( e_name ) )
+                            logger.info( pformat( expr["data"]["file"]) )
+                            try:
+                                    # needs help here - safest way to create new directory
+                                    subdir = os.path.join( directory, e_name )
+                                    os.mkdir( subdir )
+                                    script_util.download_file_from_shock( logger, 
+                                                                          shock_service_url=expr["data"]["file"]["url"], 
+                                                                          shock_id=expr["data"]["file"]["id"],
+                                                                          filename=expr["data"]["file"]["file_name"],
+                                                                          directory=subdir,
+                                                                          token=token )
+                                    file_path = os.path.join( directory, expr["data"]["file"]["file_name"] )
+                                    logger.info( "retrieved file handle path {0}".format( expr["data"]["file"]["file_name"] ) )
+                                    # needs work here
+                                    os.chdir( subdir )
+                                    os.system( 'unzip *.zip' )
+                                    os.chdir( ".."  )
+                            except Exception,e:
+                                    raise Exception( "Unable to download shock file, {0}".format( expr["data"]["file"]["file_name"] ))
+                 # this needs work
+                 os.system( "/kb/dev_container/modules/SeanKBaseRNASeq/prepDE.py -i {0}".format( directory ) )
+        
+                 # TODO - save prepDE output to workspace
 
 
          for a_name, e_name in results:
