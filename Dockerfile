@@ -39,7 +39,8 @@ RUN \
   sh /kb/deps/kb_hisat2/install-hisat.sh && \
   sh /kb/deps/kb_cufflinks/install-cufflinks.sh && \
   sh /kb/deps/kb_stringTie/install-stringtie.sh && \
-  sh /kb/deps/kb_tableMaker/install-tablemaker.sh
+  sh /kb/deps/kb_tableMaker/install-tablemaker.sh && \
+  sh /kb/deps/kb_misc/install-prepDE.sh
 
 COPY ./ /kb/module
 RUN \
@@ -56,12 +57,6 @@ WORKDIR /kb/module
 RUN mkdir -p /kb/module/work
 RUN pip install --upgrade requests==2.7.0
 RUN pip freeze | grep requests
-
-# install prepDE.py
-RUN \
-  cd /kb/deployment/bin && \
-  curl 'https://ccb.jhu.edu/software/stringtie/dl/prepDE.py' -O && \
-  chmod a+rx prepDE.py
 
 ENTRYPOINT [ "./scripts/entrypoint.sh" ]
 CMD [ ]
