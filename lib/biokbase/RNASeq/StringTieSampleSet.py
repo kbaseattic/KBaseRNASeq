@@ -131,15 +131,17 @@ class StringTieSampleSet(StringTie):
             for sample_name, alignment_id in i.items():
                     task_param = { "input_arguments":
                                     [
-                                      { 'job_id'          : alignment_id,
-                                        'gtf_file'        : gtf_file,
-                                        'ws_gtf'          : ws_gtf,
-                                        'ws_id'           : params['ws_id'],
-                                        'genome_id'       : genome_id,
-                                        'stringtie_dir'   : self.directory,
-                                        'annotation_id'   : gtf_id,
-                                        'sample_id'       : sample_name,
-                                        'alignmentset_id' : alignmentset_id 
+                                      { 'job_id'                 : alignment_id,
+                                        'gtf_file'               : gtf_file,
+                                        'ws_gtf'                 : ws_gtf,
+                                        'ws_id'                  : params['ws_id'],
+                                        'genome_id'              : genome_id,
+                                        'stringtie_dir'          : self.directory,
+                                        'annotation_id'          : gtf_id,
+                                        'sample_id'              : sample_name,
+                                        'alignmentset_id'        : alignmentset_id,
+                                        'ballgown_mode'          : 1,
+                                        'skip_reads_with_no_ref' : 1
                                       }
                                     ]
                                   }
@@ -187,6 +189,8 @@ class StringTieSampleSet(StringTie):
 
         # TODO: Split alignment set and report method
         reportObj = rnaseq_util.create_RNASeq_ExpressionSet_and_build_report( self.logger,
+                                                                              common_params['user_token'],
+                                                                              self.directory,
                                                                               common_params['ws_client'],
                                                                               self.tool_used,
                                                                               self.tool_version,

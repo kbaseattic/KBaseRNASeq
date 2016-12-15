@@ -56,5 +56,12 @@ WORKDIR /kb/module
 RUN mkdir -p /kb/module/work
 RUN pip install --upgrade requests==2.7.0
 RUN pip freeze | grep requests
+
+# install prepDE.py
+RUN \
+  cd /kb/deployment/bin && \
+  curl 'https://ccb.jhu.edu/software/stringtie/dl/prepDE.py' -O && \
+  chmod a+rx prepDE.py
+
 ENTRYPOINT [ "./scripts/entrypoint.sh" ]
 CMD [ ]
