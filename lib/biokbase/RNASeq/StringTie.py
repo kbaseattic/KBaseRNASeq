@@ -35,7 +35,7 @@ class StringTie(KBParallelExecutionBase):
         # user defined shared variables across methods
         #self.sample = None
         #self.sampleset_info = None
-        self.num_threads = None
+        self.num_threads = 1
         self.tool_used = "StringTie"
         self.tool_version = "1.2.3"
 
@@ -194,9 +194,9 @@ class StringTie(KBParallelExecutionBase):
                 logger.exception("".join(traceback.format_exc()))
                 raise Exception("Error executing stringtie {0},{1}".format(cufflinks_command,directory))
         finally:
-                if os.path.exists(out_file_path): os.remove(out_file_path)
-                if os.path.exists(output_dir): shutil.rmtree(output_dir)
-                if os.path.exists(input_direc): shutil.rmtree(input_direc)
+                #if os.path.exists(out_file_path): os.remove(out_file_path)
+                #if os.path.exists(output_dir): shutil.rmtree(output_dir)
+                #if os.path.exists(input_direc): shutil.rmtree(input_direc)
                 ret = script_util.if_obj_exists(None,ws_client,ws_id,"KBaseRNASeq.RNASeqExpression",[output_name])
                 if not ret is None:
                     #return (alignment_name, output_name )
