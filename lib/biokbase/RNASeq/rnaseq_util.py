@@ -302,7 +302,7 @@ def create_RNASeq_ExpressionSet_and_build_report( logger,
                             except Exception,e:
                                     raise Exception( "Unable to download shock file, {0}".format( expr["data"]["file"]["file_name"] ))
                  # this needs work
-                 os.system( "/kb/dev_container/modules/SeanKBaseRNASeq/prepDE.py -i {0}".format( directory ) )
+                 os.system( "prepDE.py -i {0}".format( directory ) )
         
                  # TODO - save prepDE output to workspace
 
