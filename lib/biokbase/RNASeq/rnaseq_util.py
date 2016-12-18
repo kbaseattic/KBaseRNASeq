@@ -282,7 +282,10 @@ def create_RNASeq_ExpressionSet_and_build_report( logger,
                             logger.info( pformat( expr["data"]["file"]) )
                             try:
                                     # needs help here - safest way to create new directory
+                                    # specifically:  what to do if subdir already exists?   raise error?
                                     subdir = os.path.join( directory, e_name )
+                                    logger.info( "subdir is {0}".format( subdir ))
+                                    logger.info( "token is {0}".format(token) )
                                     os.mkdir( subdir )
                                     script_util.download_file_from_shock( logger, 
                                                                           shock_service_url=expr["data"]["file"]["url"], 
@@ -292,7 +295,7 @@ def create_RNASeq_ExpressionSet_and_build_report( logger,
                                                                           token=token )
                                     file_path = os.path.join( directory, expr["data"]["file"]["file_name"] )
                                     logger.info( "retrieved file handle path {0}".format( expr["data"]["file"]["file_name"] ) )
-                                    # needs work here
+                                    # needs work here, error catching etc
                                     os.chdir( subdir )
                                     os.system( 'unzip *.zip' )
                                     os.chdir( ".."  )
@@ -317,7 +320,7 @@ def create_RNASeq_ExpressionSet_and_build_report( logger,
          set_obj['mapped_expression_objects']= m_expr_names
          set_obj['mapped_expression_ids'] = m_expr_ids
          try:
-                logger.info( "Saving AlignmentSet object to  workspace")
+                logger.info( "Saving    ExpressionSet object to  workspace")
                 res= ws_client.save_objects(
                                         {"workspace":ws_id,
                                          "objects": [{
@@ -325,22 +328,30 @@ def create_RNASeq_ExpressionSet_and_build_report( logger,
                                          "data":set_obj,
                                          "name":expressionSet_name}
                                         ]})[0]
-                                                                
+                logger.info( "save objects res is:" )
+                logger.info( pformat( res ) )
                 output_objs.append({'ref': str(res[6]) + '/' + str(res[0]) + '/' + str(res[4]),'description' : "Set of Expression objects for AlignmentSet : {0}".format(alignmentset_id)})
          except Exception as e:
                     logger.exception("".join(traceback.format_exc()))
                     raise Exception("Failed Saving ExpressionSet to Workspace") 
          ### Build Report obj ###
+
          report = []
          report.append("Total number of alignments given : {0}".format(str(num_samples)))
          report.append("Number of assemblies ran successfully : {0}".format(str(num_results)))
          report.append("Number of  assemblies failed during this run : {0}".format(str(num_failed))) 
+         logger.info( "report list is")
+         logger.info( pformat( report ) )
+         logger.info( "length of failed list is {0}".format( len(failed_list) ))
          if len(failed_list) != 0:
                 report.append("List of reads failed in this run : {0}".format("\n".join(failed_list)))
          reportObj = {
                       'objects_created':output_objs,
                       'text_message':'\n'.join(report)
                      }
+         logger.info( "reportObj is")
+         logger.info( pformat( reportObj ))
+
          return reportObj
 
 

@@ -1327,7 +1327,8 @@ class KBaseRNASeq:
                  self.__LOGGER.info( "StringTieCall_prepare Sample Case" )
                  st = StringTieSample( self.__LOGGER, stringtie_dir, self.__SERVICES )
                  returnVal = st.collect( common_params, collect_params )
-
+        self.__LOGGER.info( "Back in StringTileCall_collect, return val is ")
+        self.__LOGGER.info( pformat( returnVal ) )
         #END StringTieCall_collect
 
         # At some point might do deeper type checking...

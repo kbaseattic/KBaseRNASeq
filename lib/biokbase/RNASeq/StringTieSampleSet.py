@@ -216,6 +216,8 @@ class StringTieSampleSet(StringTie):
                                                                               results,
                                                                               expressionSet_name )
         returnVal = { 'output'  : expressionSet_name ,'workspace' : global_params['ws_id'] }
+        self.logger.info( "in StringTieSampleSet_collect, returnVal is" )
+        self.logger.info( pformat( returnVal ))
 
         return( returnVal )
 #	reportName = 'Align_Reads_using_Hisat2_'+str(hex(uuid.getnode()))
