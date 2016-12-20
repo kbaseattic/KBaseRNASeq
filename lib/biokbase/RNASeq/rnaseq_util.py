@@ -13,6 +13,7 @@ from doekbase.data_api.sequence.assembly.api import AssemblyAPI, AssemblyClientA
 from biokbase.RNASeq import handler_utils as handler_util
 from biokbase.RNASeq import script_util
 from pprint import pprint,pformat
+from operator import itemgetter
 
 def get_fa_from_genome(logger,ws_client,urls,ws_id,directory,genome_name):
     ref_info = ws_client.get_object_info_new({"objects": [{'name': genome_name, 'workspace': ws_id}]})[0]
@@ -231,6 +232,104 @@ def create_RNASeq_AlignmentSet_and_build_report4kbp(logger,ws_client,ws_id,sampl
                      }
 	 return reportObj
 
+
+#
+# reads tab-separated stringtie gene output file and returns dictionary of
+#            ftable[gene_id] = {"fpkm": value, "tpm": value }
+#
+def load_stringtie_expr_file( file ):
+
+    with open( file, "r'") as f:
+        first_line = f.next()
+        # check column heading
+
+        column_headings = re.split( r'\t+', first_line.rstrip() )
+        if ( len( column_headings ) != 9 ) or ( itemgetter( 0, 7, 8 )(column_headings) != ('Gene ID','FPKM', 'TPM' ) ):
+            raise Exception( "load_expr_file: file {0} sdoes not have right format".format( file ))
+
+        sample_expr = {}
+        line_no = 1
+        ftable = {}   # fill this with entries ftable[gene_id] = { "fpkm": value, "tpm": value }
+        for line in f:
+            line_no = line_no + 1
+            row = re.split( r'\t+', line.rstrip() )   
+            gene_id, fpkm, tpm = itemgetter( 0, 7, 8 )(row)
+            # error if gene_id null
+            if ( gene_id == ""  ):    # check
+                raise Exception( "load_stringtie_expr_file: empty gene_id line {0} file {1}".format( line_no, file ) )
+            if ( gene_id in ftable ):
+                raise Exception( "load_stringtie_expr_file: duplicate gene_id line {0} file {1}".format( line_no, file ) )
+
+            # TODO: handle Nan, NA and empty values of fpkm, tpm here!!!!
+
+            ftable[gene_id] = { "fpkm": fpkm, "tpm": tpm }
+
+    return( ftable )
+
+
+def create_and_load_expression_matrix( logger, ws_client, ws_id, genome_ref, em_name ):
+
+    set_list = []
+    ftable_list = []
+    all_rows = {}    # build a dictionary of keys only which is a union of all row ids (gene_ids)
+
+    #  probably this list of sample subdirectories should be passed to this subroutine
+    for f in os.listdir( '.' ):
+        if ( os.path.isdir( f ) ):    # QUESTION:  maybe we want to place addtional constraint on subdirectory
+            logger.info( "create_and_load_expression_matrix: checking subdir{0}".format( f ) )
+            expr_file = f + "/" + "genes.fpkm_tracking"
+            if ( os.path.isfile ):
+                set_list.append( f )
+                ftable = load_stringtie_expr_file( expr_file )
+                for r in ftable.keys():
+                    all_rows[r] = None
+                ftable_list.append( ftable )
+
+    # create expression object
+
+    eo = {
+          "genome_ref" : genome_ref,
+          "scale" : "1.0",
+          "type" : "untransformed",      # QUESTION: What to do here?
+          "data" : {
+                    "row_ids" : [],
+                    "values" : [],
+                    "col_ids" : []
+                   },
+          "feature_mapping" : {}
+         }
+    
+    eo["data"]["col_ids"] = set_list
+
+    logger.info( "loading eo")
+    logger.info( pformat( eo ) )
+    for gene_id in all_rows.keys():
+        eo["feature_mapping"][gene_id] = gene_id
+        eo["data"]["row_ids"].append( gene_id )
+        row = []
+        for ft in ftable_list:
+            row.append( float( ft[gene_id]["tpm"]) )
+        eo["data"]["values"].append( row )
+        eo["feature_mapping"][gene_id] = gene_id   # QUESTION: What to do here?
+
+    try:
+        logger.info( "saving eo em_name {0}".format( em_name ))
+        ret = ws_client.save_objects( { 'workspace' : ws_id,
+                                        'objects' : [
+                                                      { 'type' : 'KBaseFeatureValues.ExpressionMatrix',
+                                                        'data' : eo,
+                                                        'name' : em_name
+                                                      }
+                                                    ]
+                                      }
+                                    )
+        logger.info( "ws save return:")
+        logger.info( pformat( ret ) )
+    except Exception as e:
+        logger.exception(e)
+        raise Exception( "Failed Saving Expression Matrix to Workspace" ) 
+
+
 def create_RNASeq_ExpressionSet_and_build_report( logger,
                                                   token,
                                                   directory,
@@ -302,10 +401,10 @@ def create_RNASeq_ExpressionSet_and_build_report( logger,
                             except Exception,e:
                                     raise Exception( "Unable to download shock file, {0}".format( expr["data"]["file"]["file_name"] ))
                  # this needs work
-                 os.system( "prepDE.py -i {0}".format( directory ) )
-        
-                 # TODO - save prepDE output to workspace
-
+                 #os.system( "prepDE.py -i {0}".format( directory ) )
+                 genome_ref = genome_id # "1218/2/1"      # TODO get this for real  (genome_id maybe?)
+                 em_name = 'test_name'        # TODO screate this for reald
+                 create_and_load_expression_matrix( logger, ws_client, ws_id, genome_ref, em_name )
 
          for a_name, e_name in results:
                     a_ref,e_ref = ws_client.get_object_info_new( {"objects": [ {'name':a_name, 'workspace': ws_id},
