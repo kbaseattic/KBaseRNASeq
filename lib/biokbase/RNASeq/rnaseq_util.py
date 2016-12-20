@@ -233,61 +233,44 @@ def create_RNASeq_AlignmentSet_and_build_report4kbp(logger,ws_client,ws_id,sampl
 	 return reportObj
 
 
-#
-# reads tab-separated stringtie gene output file and returns dictionary of
-#            ftable[gene_id] = {"fpkm": value, "tpm": value }
-#
-def load_stringtie_expr_file( file ):
 
-    with open( file, "r'") as f:
-        first_line = f.next()
-        # check column heading
+def create_and_load_expression_matrix( logger, ws_client, ws_id, genome_ref, em_name, col_names, tables ):
 
-        column_headings = re.split( r'\t+', first_line.rstrip() )
-        if ( len( column_headings ) != 9 ) or ( itemgetter( 0, 7, 8 )(column_headings) != ('Gene ID','FPKM', 'TPM' ) ):
-            raise Exception( "load_expr_file: file {0} sdoes not have right format".format( file ))
-
-        sample_expr = {}
-        line_no = 1
-        ftable = {}   # fill this with entries ftable[gene_id] = { "fpkm": value, "tpm": value }
-        for line in f:
-            line_no = line_no + 1
-            row = re.split( r'\t+', line.rstrip() )   
-            gene_id, fpkm, tpm = itemgetter( 0, 7, 8 )(row)
-            # error if gene_id null
-            if ( gene_id == ""  ):    # check
-                raise Exception( "load_stringtie_expr_file: empty gene_id line {0} file {1}".format( line_no, file ) )
-            if ( gene_id in ftable ):
-                raise Exception( "load_stringtie_expr_file: duplicate gene_id line {0} file {1}".format( line_no, file ) )
-
-            # TODO: handle Nan, NA and empty values of fpkm, tpm here!!!!
-
-            ftable[gene_id] = { "fpkm": fpkm, "tpm": tpm }
-
-    return( ftable )
-
-
-def create_and_load_expression_matrix( logger, ws_client, ws_id, genome_ref, em_name ):
+    #  Note:  col_names order MUST correspond to tables order
 
     set_list = []
     ftable_list = []
     all_rows = {}    # build a dictionary of keys only which is a union of all row ids (gene_ids)
 
-    #  probably this list of sample subdirectories should be passed to this subroutine
-    for f in os.listdir( '.' ):
-        if ( os.path.isdir( f ) ):    # QUESTION:  maybe we want to place addtional constraint on subdirectory
-            logger.info( "create_and_load_expression_matrix: checking subdir{0}".format( f ) )
-            expr_file = f + "/" + "genes.fpkm_tracking"
-            if ( os.path.isfile ):
-                set_list.append( f )
-                ftable = load_stringtie_expr_file( expr_file )
-                for r in ftable.keys():
-                    all_rows[r] = None
-                ftable_list.append( ftable )
+    #  create a table with (1) a union set of all rows and (2) each row the value fields from the
+    #  individual table for that row
 
-    # create expression object
+    # QUESTION:  should we worry about null or empty values of gene_ids here?
 
-    eo = {
+    #logger.info( "***** length of tables is {0}".format( len( tables )))
+    for table in tables:
+        for r in table.keys():
+            all_rows[r] = []
+
+    for gene_id in all_rows.keys():
+        row = []
+        for table in tables:
+            if ( gene_id in table ):
+                #logger.info( "append " + gene_id )
+                #logger.info( pformat( table[gene_id]))
+                           #all_rows[gene_id].append( table[gene_id] )
+                row.append( table[gene_id] )
+            else:
+                #logger.info( "append  0" )
+                row.append( 0 )
+            all_rows[gene_id] = row
+            #logger.info( all_rows[gene_id])
+
+
+
+    # create expression matrix object
+
+    emo= {
           "genome_ref" : genome_ref,
           "scale" : "1.0",
           "type" : "untransformed",      # QUESTION: What to do here?
@@ -298,26 +281,25 @@ def create_and_load_expression_matrix( logger, ws_client, ws_id, genome_ref, em_
                    },
           "feature_mapping" : {}
          }
-    
-    eo["data"]["col_ids"] = set_list
 
-    logger.info( "loading eo")
-    logger.info( pformat( eo ) )
+
+    # we need to load row-by-row to preserve the order
+    logger.info( "loading emo")
+
+    emo["data"]["col_ids"] = set_list
+
     for gene_id in all_rows.keys():
-        eo["feature_mapping"][gene_id] = gene_id
-        eo["data"]["row_ids"].append( gene_id )
-        row = []
-        for ft in ftable_list:
-            row.append( float( ft[gene_id]["tpm"]) )
-        eo["data"]["values"].append( row )
-        eo["feature_mapping"][gene_id] = gene_id   # QUESTION: What to do here?
+        emo["feature_mapping"][gene_id] = gene_id
+        emo["data"]["row_ids"].append( gene_id )
+        emo["data"]["values"].append( all_rows[gene_id] )
+        emo["feature_mapping"][gene_id] = gene_id   # QUESTION: What to do here?
 
     try:
-        logger.info( "saving eo em_name {0}".format( em_name ))
+        logger.info( "saving emo em_name {0}".format( em_name ))
         ret = ws_client.save_objects( { 'workspace' : ws_id,
                                         'objects' : [
                                                       { 'type' : 'KBaseFeatureValues.ExpressionMatrix',
-                                                        'data' : eo,
+                                                        'data' : emo,
                                                         'name' : em_name
                                                       }
                                                     ]
@@ -346,79 +328,89 @@ def create_RNASeq_ExpressionSet_and_build_report( logger,
                                                   sampleset_id,
                                                   results,
                                                   expressionSet_name ):
-         results =  [ ret for ret in results if not ret is None ]
-         logger.info( "create_RNASeq_ExpressionSet, results:")
-         logger.info( pformat(results ) )
-         if len(results) < 2:
+        results =  [ ret for ret in results if not ret is None ]
+        logger.info( "create_RNASeq_ExpressionSet, results:")
+        logger.info( pformat(results ) )
+        if len(results) < 2:
                 raise ValueError("Not enough expression results to create a ExpressionSet object")
-         set_obj = { 'tool_used': tool_used, 
-                     'tool_version': tool_version,
-                     'alignmentSet_id' : alignmentset_id ,
-                     'genome_id' : genome_id,
-                     'sampleset_id' : sampleset_id }
-         if not tool_opts is None:
+        set_obj = { 'tool_used': tool_used, 
+                    'tool_version': tool_version,
+                    'alignmentSet_id' : alignmentset_id ,
+                    'genome_id' : genome_id,
+                    'sampleset_id' : sampleset_id }
+        if not tool_opts is None:
                 set_obj['tool_opts'] = tool_opts
-         sids=[]
-         condition = []
-         expr_ids = []
-         m_expr_names= []
-         m_expr_ids = []
-         output_objs = []
-         num_samples = len(alignment_list)
-         num_results = len(results)
-         num_failed = num_samples - num_results
-         run_list = [ k for (k,v) in results ]
-         failed_list = [k for k in alignment_list if k not in run_list ]
+        sids=[]
+        condition = []
+        expr_ids = []
+        m_expr_names= []
+        m_expr_ids = []
+        output_objs = []
+        num_samples = len(alignment_list)
+        num_results = len(results)
+        num_failed = num_samples - num_results
+        run_list = [ k for (k,v) in results ]
+        failed_list = [k for k in alignment_list if k not in run_list ]
 
-         # pull zip files for the expressions 
-         # should we make this handle the option if no -e or -B on stringtie?  
+        # TODO:  better handling for failed sets
 
-         # needs a test for stringtie vs cufflinks
-         if ( ballgown_mode == 1 ):
-                 for a_name, e_name in results:
-                            expr = ws_client.get_objects( [ { 'name' : e_name, 'workspace': ws_id } ] )[0]
-                            logger.info( "expr file handle for e_name {0}".format( e_name ) )
-                            logger.info( pformat( expr["data"]["file"]) )
-                            try:
-                                    # needs help here - safest way to create new directory
-                                    # specifically:  what to do if subdir already exists?   raise error?
-                                    subdir = os.path.join( directory, e_name )
-                                    logger.info( "subdir is {0}".format( subdir ))
-                                    logger.info( "token is {0}".format(token) )
-                                    os.mkdir( subdir )
-                                    script_util.download_file_from_shock( logger, 
-                                                                          shock_service_url=expr["data"]["file"]["url"], 
-                                                                          shock_id=expr["data"]["file"]["id"],
-                                                                          filename=expr["data"]["file"]["file_name"],
-                                                                          directory=subdir,
-                                                                          token=token )
-                                    file_path = os.path.join( directory, expr["data"]["file"]["file_name"] )
-                                    logger.info( "retrieved file handle path {0}".format( expr["data"]["file"]["file_name"] ) )
-                                    # needs work here, error catching etc
-                                    os.chdir( subdir )
-                                    os.system( 'unzip *.zip' )
-                                    os.chdir( ".."  )
-                            except Exception,e:
-                                    raise Exception( "Unable to download shock file, {0}".format( expr["data"]["file"]["file_name"] ))
-                 # this needs work
-                 #os.system( "prepDE.py -i {0}".format( directory ) )
-                 genome_ref = genome_id # "1218/2/1"      # TODO get this for real  (genome_id maybe?)
-                 em_name = 'test_name'        # TODO screate this for reald
-                 create_and_load_expression_matrix( logger, ws_client, ws_id, genome_ref, em_name )
+        if ( ballgown_mode == 1 ):
+                try:
+                    logger.info( "*********getting expression set {0} from workspace*******".format( expressionSet_name ))
+                    expr_set = ws_client.get_objects( [ { 'name' : expressionSet_name, 'workspace': ws_id } ] )[0]
+                    logger.info( pformat( expr_set ))
+                except Exception,e:
+                    raise Exception( "Unable to download expression set {0} from workspace {1}".format( expressionSet_name, ws_id ))
 
-         for a_name, e_name in results:
-                    a_ref,e_ref = ws_client.get_object_info_new( {"objects": [ {'name':a_name, 'workspace': ws_id},
-                                                                               {'name':e_name, 'workspace': ws_id} ] } )
-                    a_id = str(a_ref[6]) + '/' + str(a_ref[0]) + '/' + str(a_ref[4])
-                    e_id = str(e_ref[6]) + '/' + str(e_ref[0]) + '/' + str(e_ref[4])
-                    m_expr_ids.append({a_id : e_id})
-                    m_expr_names.append({a_name : e_name})
-                    output_objs.append({'ref' : e_id , 'description': "RNA-seq Alignment for reads Sample :  {0}".format(a_name)})
-                    expr_ids.append(e_id)
-         set_obj['sample_expression_ids']= expr_ids
-         set_obj['mapped_expression_objects']= m_expr_names
-         set_obj['mapped_expression_ids'] = m_expr_ids
-         try:
+                eo_names = []
+                for meo in expr_set["data"]["mapped_expression_objects"]:
+                    eo_names.append( meo.values()[0] )
+
+                #logger.info( "*********eo_names ")
+                #logger.info( pformat( eo_names ) )
+                fpkm_tables = []
+                tpm_tables = []
+                set_names = []
+                for eo_name in eo_names:
+                    try:
+                        logger.info( "*********getting expression set {0} from workspace*******".format( eo_name ))
+                        expr = ws_client.get_objects( [ { 'name' : eo_name, 'workspace': ws_id } ] )[0]
+                    except:
+                        raise Exception( "Unable to download expression object {0} from workspace {1}".format( eo_name, ws_id ) )
+                    set_names.append( eo_name )
+                    num_interp = expr["data"]["numerical_interpretation"]
+                    if ( num_interp != "FPKM" ):
+                        raise Exception( "Did not get expected FPKM value from numerical interpretation key from Expression object {0}, instead got ".format(eo_name, num_interp) )
+
+                    pr_comments = expr["data"]["processing_comments"]     # log2 Normalized
+                    fpkm_table = expr["data"]["expression_levels"]    # QUESTION: is this really FPKM levels?
+                    tpm_table = expr["data"]["tpm_expression_levels"]
+                    logger.info( "pr_comments are {0}".format( pr_comments ))
+                    logger.info( "FPKM keycount: {0}".format( len(fpkm_table.keys()) ))
+                    logger.info( "TPM keycount: {0}".format( len(tpm_table.keys()) ))
+
+                    fpkm_tables.append( fpkm_table )
+                    tpm_tables.append( tpm_table )
+
+                genome_ref = genome_id     #  QUESTION: this gets through upload process-  is it correct?
+                em_base_name = expressionSet_name 
+                create_and_load_expression_matrix( logger, ws_client, ws_id, genome_ref, em_base_name + "FPKM_expr_matrix", set_names, fpkm_tables )
+                create_and_load_expression_matrix( logger, ws_client, ws_id, genome_ref, em_base_name + "TPM_expr_matrix", set_names, tpm_tables )
+
+
+        for a_name, e_name in results:
+                a_ref,e_ref = ws_client.get_object_info_new( {"objects": [ {'name':a_name, 'workspace': ws_id},
+                                                                           {'name':e_name, 'workspace': ws_id} ] } )
+                a_id = str(a_ref[6]) + '/' + str(a_ref[0]) + '/' + str(a_ref[4])
+                e_id = str(e_ref[6]) + '/' + str(e_ref[0]) + '/' + str(e_ref[4])
+                m_expr_ids.append({a_id : e_id})
+                m_expr_names.append({a_name : e_name})
+                output_objs.append({'ref' : e_id , 'description': "RNA-seq Alignment for reads Sample :  {0}".format(a_name)})
+                expr_ids.append(e_id)
+        set_obj['sample_expression_ids']= expr_ids
+        set_obj['mapped_expression_objects']= m_expr_names
+        set_obj['mapped_expression_ids'] = m_expr_ids
+        try:
                 logger.info( "Saving    ExpressionSet object to  workspace")
                 res= ws_client.save_objects(
                                         {"workspace":ws_id,
@@ -430,28 +422,28 @@ def create_RNASeq_ExpressionSet_and_build_report( logger,
                 logger.info( "save objects res is:" )
                 logger.info( pformat( res ) )
                 output_objs.append({'ref': str(res[6]) + '/' + str(res[0]) + '/' + str(res[4]),'description' : "Set of Expression objects for AlignmentSet : {0}".format(alignmentset_id)})
-         except Exception as e:
+        except Exception as e:
                     logger.exception("".join(traceback.format_exc()))
                     raise Exception("Failed Saving ExpressionSet to Workspace") 
          ### Build Report obj ###
 
-         report = []
-         report.append("Total number of alignments given : {0}".format(str(num_samples)))
-         report.append("Number of assemblies ran successfully : {0}".format(str(num_results)))
-         report.append("Number of  assemblies failed during this run : {0}".format(str(num_failed))) 
-         logger.info( "report list is")
-         logger.info( pformat( report ) )
-         logger.info( "length of failed list is {0}".format( len(failed_list) ))
-         if len(failed_list) != 0:
+        report = []
+        report.append("Total number of alignments given : {0}".format(str(num_samples)))
+        report.append("Number of assemblies ran successfully : {0}".format(str(num_results)))
+        report.append("Number of  assemblies failed during this run : {0}".format(str(num_failed))) 
+        logger.info( "report list is")
+        logger.info( pformat( report ) )
+        logger.info( "length of failed list is {0}".format( len(failed_list) ))
+        if len(failed_list) != 0:
                 report.append("List of reads failed in this run : {0}".format("\n".join(failed_list)))
-         reportObj = {
+        reportObj = {
                       'objects_created':output_objs,
                       'text_message':'\n'.join(report)
-                     }
-         logger.info( "reportObj is")
-         logger.info( pformat( reportObj ))
+                    }
+        logger.info( "reportObj is")
+        logger.info( pformat( reportObj ))
 
-         return reportObj
+        return reportObj
 
 
 def extractAlignmentStatsInfo(logger,tool_used,ws_client,ws_id,sample_id,result,stats_obj_name):
