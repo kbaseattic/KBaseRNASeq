@@ -106,7 +106,7 @@ class Bowtie2(ExecutionBase):
                         try:
                                 script_util.download_file_from_shock(self.logger, shock_service_url=self.urls['shock_service_url'], shock_id=read1_id,filename=read1_name, directory=input_direc,token=token)
                                 script_util.download_file_from_shock(self.logger, shock_service_url=self.urls['shock_service_url'], shock_id=read2_id,filename=read2_name, directory=input_direc,token=token)
-                                bowtie2_cmd += " -1 {0} -2 {1} -x {2} -S {3}".format(os.path.join(input_direc,read1_name),os.path.join(output_dir,read2_name),bowtie2_base,out_file)
+                                bowtie2_cmd += " -1 {0} -2 {1} -x {2} -S {3}".format(os.path.join(input_direc,read1_name),os.path.join(input_direc,read2_name),bowtie2_base,out_file)
                         except Exception,e:
                                 raise Exception( "Unable to download shock file , {0} or {1}".format(read1_name,read2_name))
                 try:
