@@ -108,7 +108,7 @@ class HiSat2(ExecutionBase):
                         try:
                                 script_util.download_file_from_shock(self.logger, shock_service_url=self.urls['shock_service_url'], shock_id=read1_id,filename=read1_name, directory=input_direc,token=token)
                                 script_util.download_file_from_shock(self.logger, shock_service_url=self.urls['shock_service_url'], shock_id=read2_id,filename=read2_name, directory=input_direc,token=token)
-                                hisat2_cmd += " -1 {0} -2 {1} -x {2} -S {3}".format(os.path.join(input_direc,read1_name),os.path.join(input_dir,read2_name),hisat2_base,out_file)
+                                hisat2_cmd += " -1 {0} -2 {1} -x {2} -S {3}".format(os.path.join(input_direc,read1_name),os.path.join(input_direc,read2_name),hisat2_base,out_file)
                         except Exception,e:
                                 self.logger.exception(e)
                                 raise Exception( "Unable to download shock file , {0} or {1}".format(read1_name,read2_name))
