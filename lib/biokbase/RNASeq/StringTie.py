@@ -35,7 +35,7 @@ class StringTie(KBParallelExecutionBase):
         # user defined shared variables across methods
         #self.sample = None
         #self.sampleset_info = None
-        self.num_threads = None
+        self.num_threads = 1
         self.tool_used = "StringTie"
         self.tool_version = "1.2.3"
 

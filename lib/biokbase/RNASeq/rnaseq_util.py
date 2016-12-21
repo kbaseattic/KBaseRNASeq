@@ -13,6 +13,7 @@ from doekbase.data_api.sequence.assembly.api import AssemblyAPI, AssemblyClientA
 from biokbase.RNASeq import handler_utils as handler_util
 from biokbase.RNASeq import script_util
 from pprint import pprint,pformat
+from operator import itemgetter
 
 def get_fa_from_genome(logger,ws_client,urls,ws_id,directory,genome_name):
     ref_info = ws_client.get_object_info_new({"objects": [{'name': genome_name, 'workspace': ws_id}]})[0]
@@ -231,7 +232,91 @@ def create_RNASeq_AlignmentSet_and_build_report4kbp(logger,ws_client,ws_id,sampl
                      }
 	 return reportObj
 
+
+
+def create_and_load_expression_matrix( logger, ws_client, ws_id, genome_ref, em_name, col_names, tables ):
+
+    #  Note:  col_names order MUST correspond to tables order
+
+    set_list = []
+    ftable_list = []
+    all_rows = {}    # build a dictionary of keys only which is a union of all row ids (gene_ids)
+
+    #  create a table with (1) a union set of all rows and (2) each row the value fields from the
+    #  individual table for that row
+
+    # QUESTION:  should we worry about null or empty values of gene_ids here?
+
+    #logger.info( "***** length of tables is {0}".format( len( tables )))
+    for table in tables:
+        for r in table.keys():
+            all_rows[r] = []
+
+    for gene_id in all_rows.keys():
+        row = []
+        for table in tables:
+            if ( gene_id in table ):
+                #logger.info( "append " + gene_id )
+                #logger.info( pformat( table[gene_id]))
+                           #all_rows[gene_id].append( table[gene_id] )
+                row.append( table[gene_id] )
+            else:
+                #logger.info( "append  0" )
+                row.append( 0 )
+            all_rows[gene_id] = row
+            #logger.info( all_rows[gene_id])
+
+
+
+    # create expression matrix object
+
+    emo= {
+          "genome_ref" : genome_ref,
+          "scale" : "1.0",
+          "type" : "untransformed",      # QUESTION: What to do here?
+          "data" : {
+                    "row_ids" : [],
+                    "values" : [],
+                    "col_ids" : []
+                   },
+          "feature_mapping" : {}
+         }
+
+
+    # we need to load row-by-row to preserve the order
+    logger.info( "loading emo")
+
+    emo["data"]["col_ids"] = set_list
+
+    for gene_id in all_rows.keys():
+        emo["feature_mapping"][gene_id] = gene_id
+        emo["data"]["row_ids"].append( gene_id )
+        emo["data"]["values"].append( all_rows[gene_id] )
+        emo["feature_mapping"][gene_id] = gene_id   # QUESTION: What to do here?
+
+    try:
+        logger.info( "saving emo em_name {0}".format( em_name ))
+        ret = ws_client.save_objects( { 'workspace' : ws_id,
+                                        'objects' : [
+                                                      { 'type' : 'KBaseFeatureValues.ExpressionMatrix',
+                                                        'data' : emo,
+                                                        'name' : em_name
+                                                      }
+                                                    ]
+                                      }
+                                    )
+        logger.info( "ws save return:")
+        logger.info( pformat( ret ) )
+    except Exception as e:
+        logger.exception(e)
+        raise Exception( "Failed Saving Expression Matrix to Workspace" ) 
+
+
 def create_RNASeq_ExpressionSet_and_build_report( logger,
+                                                  token,
+                                                  directory,
+                                                  ballgown_mode,
+                                                  skip_reads_with_no_ref,
                                                   ws_client,
                                                   tool_used, 
                                                   tool_version,
@@ -243,43 +328,92 @@ def create_RNASeq_ExpressionSet_and_build_report( logger,
                                                   sampleset_id,
                                                   results,
                                                   expressionSet_name ):
-         results =  [ ret for ret in results if not ret is None ]
-         logger.info( "create_RNASeq_ExpressionSet, results:")
-         logger.info( pformat(results ) )
-         if len(results) < 2:
+        results =  [ ret for ret in results if not ret is None ]
+        logger.info( "create_RNASeq_ExpressionSet, results:")
+        logger.info( pformat(results ) )
+        if len(results) < 2:
                 raise ValueError("Not enough expression results to create a ExpressionSet object")
-         set_obj = { 'tool_used': tool_used, 
-                     'tool_version': tool_version,
-                     'alignmentSet_id' : alignmentset_id ,
-                     'genome_id' : genome_id,
-                     'sampleset_id' : sampleset_id }
-         if not tool_opts is None:
+        set_obj = { 'tool_used': tool_used, 
+                    'tool_version': tool_version,
+                    'alignmentSet_id' : alignmentset_id ,
+                    'genome_id' : genome_id,
+                    'sampleset_id' : sampleset_id }
+        if not tool_opts is None:
                 set_obj['tool_opts'] = tool_opts
-         sids=[]
-         condition = []
-         expr_ids = []
-         m_expr_names= []
-         m_expr_ids = []
-         output_objs = []
-         num_samples = len(alignment_list)
-         num_results = len(results)
-         num_failed = num_samples - num_results
-         run_list = [ k for (k,v) in results ]
-         failed_list = [k for k in alignment_list if k not in run_list ]
-         for a_name, e_name in results:
-                    a_ref,e_ref = ws_client.get_object_info_new( {"objects": [ {'name':a_name, 'workspace': ws_id},
-                                                                               {'name':e_name, 'workspace': ws_id} ] } )
-                    a_id = str(a_ref[6]) + '/' + str(a_ref[0]) + '/' + str(a_ref[4])
-                    e_id = str(e_ref[6]) + '/' + str(e_ref[0]) + '/' + str(e_ref[4])
-                    m_expr_ids.append({a_id : e_id})
-                    m_expr_names.append({a_name : e_name})
-                    output_objs.append({'ref' : e_id , 'description': "RNA-seq Alignment for reads Sample :  {0}".format(a_name)})
-                    expr_ids.append(e_id)
-         set_obj['sample_expression_ids']= expr_ids
-         set_obj['mapped_expression_objects']= m_expr_names
-         set_obj['mapped_expression_ids'] = m_expr_ids
-         try:
-                logger.info( "Saving AlignmentSet object to  workspace")
+        sids=[]
+        condition = []
+        expr_ids = []
+        m_expr_names= []
+        m_expr_ids = []
+        output_objs = []
+        num_samples = len(alignment_list)
+        num_results = len(results)
+        num_failed = num_samples - num_results
+        run_list = [ k for (k,v) in results ]
+        failed_list = [k for k in alignment_list if k not in run_list ]
+
+        # TODO:  better handling for failed sets
+
+        # Prepare expression matrices from FPKM and TPM expression values that
+        # were collected in the individual ExpressionObj members  of the ExpressionSet
+        # (For StringTie and Cufflinks)
+
+        try:
+            logger.info( "*********getting expression set {0} from workspace*******".format( expressionSet_name ))
+            expr_set = ws_client.get_objects( [ { 'name' : expressionSet_name, 'workspace': ws_id } ] )[0]
+            logger.info( pformat( expr_set ))
+        except Exception,e:
+            raise Exception( "Unable to download expression set {0} from workspace {1}".format( expressionSet_name, ws_id ))
+
+        eo_names = []
+        for meo in expr_set["data"]["mapped_expression_objects"]:
+            eo_names.append( meo.values()[0] )
+
+        fpkm_tables = []
+        tpm_tables = []
+        set_names = []
+        for eo_name in eo_names:
+            try:
+                logger.info( "*********getting expression set {0} from workspace*******".format( eo_name ))
+                expr = ws_client.get_objects( [ { 'name' : eo_name, 'workspace': ws_id } ] )[0]
+            except:
+                raise Exception( "Unable to download expression object {0} from workspace {1}".format( eo_name, ws_id ) )
+            set_names.append( eo_name )
+            num_interp = expr["data"]["numerical_interpretation"]
+            if ( num_interp != "FPKM" ):
+                raise Exception( "Did not get expected FPKM value from numerical interpretation key from Expression object {0}, instead got ".format(eo_name, num_interp) )
+
+            pr_comments = expr["data"]["processing_comments"]     # log2 Normalized
+            fpkm_table = expr["data"]["expression_levels"]    # QUESTION: is this really FPKM levels?
+            tpm_table = expr["data"]["tpm_expression_levels"]
+            logger.info( "pr_comments are {0}".format( pr_comments ))
+            logger.info( "FPKM keycount: {0}".format( len(fpkm_table.keys()) ))
+            logger.info( "TPM keycount: {0}".format( len(tpm_table.keys()) ))
+
+            fpkm_tables.append( fpkm_table )
+            tpm_tables.append( tpm_table )
+
+        genome_ref = genome_id     #  QUESTION: this gets through upload process-  is it correct?
+        em_base_name = expressionSet_name 
+        create_and_load_expression_matrix( logger, ws_client, ws_id, genome_ref, em_base_name + "FPKM_expr_matrix", set_names, fpkm_tables )
+        create_and_load_expression_matrix( logger, ws_client, ws_id, genome_ref, em_base_name + "TPM_expr_matrix", set_names, tpm_tables )
+
+        # create and save RNASeqExpressionSet object
+
+        for a_name, e_name in results:
+                a_ref,e_ref = ws_client.get_object_info_new( {"objects": [ {'name':a_name, 'workspace': ws_id},
+                                                                           {'name':e_name, 'workspace': ws_id} ] } )
+                a_id = str(a_ref[6]) + '/' + str(a_ref[0]) + '/' + str(a_ref[4])
+                e_id = str(e_ref[6]) + '/' + str(e_ref[0]) + '/' + str(e_ref[4])
+                m_expr_ids.append({a_id : e_id})
+                m_expr_names.append({a_name : e_name})
+                output_objs.append({'ref' : e_id , 'description': "RNA-seq Alignment for reads Sample :  {0}".format(a_name)})
+                expr_ids.append(e_id)
+        set_obj['sample_expression_ids']= expr_ids
+        set_obj['mapped_expression_objects']= m_expr_names
+        set_obj['mapped_expression_ids'] = m_expr_ids
+        try:
+                logger.info( "Saving    ExpressionSet object to  workspace")
                 res= ws_client.save_objects(
                                         {"workspace":ws_id,
                                          "objects": [{
@@ -287,23 +421,32 @@ def create_RNASeq_ExpressionSet_and_build_report( logger,
                                          "data":set_obj,
                                          "name":expressionSet_name}
                                         ]})[0]
-                                                                
+                logger.info( "save objects res is:" )
+                logger.info( pformat( res ) )
                 output_objs.append({'ref': str(res[6]) + '/' + str(res[0]) + '/' + str(res[4]),'description' : "Set of Expression objects for AlignmentSet : {0}".format(alignmentset_id)})
-         except Exception as e:
+        except Exception as e:
                     logger.exception("".join(traceback.format_exc()))
                     raise Exception("Failed Saving ExpressionSet to Workspace") 
+
          ### Build Report obj ###
-         report = []
-         report.append("Total number of alignments given : {0}".format(str(num_samples)))
-         report.append("Number of assemblies ran successfully : {0}".format(str(num_results)))
-         report.append("Number of  assemblies failed during this run : {0}".format(str(num_failed))) 
-         if len(failed_list) != 0:
+
+        report = []
+        report.append("Total number of alignments given : {0}".format(str(num_samples)))
+        report.append("Number of assemblies ran successfully : {0}".format(str(num_results)))
+        report.append("Number of  assemblies failed during this run : {0}".format(str(num_failed))) 
+        logger.info( "report list is")
+        logger.info( pformat( report ) )
+        logger.info( "length of failed list is {0}".format( len(failed_list) ))
+        if len(failed_list) != 0:
                 report.append("List of reads failed in this run : {0}".format("\n".join(failed_list)))
-         reportObj = {
+        reportObj = {
                       'objects_created':output_objs,
                       'text_message':'\n'.join(report)
-                     }
-         return reportObj
+                    }
+        logger.info( "reportObj is")
+        logger.info( pformat( reportObj ))
+
+        return reportObj
 
 
 def extractAlignmentStatsInfo(logger,tool_used,ws_client,ws_id,sample_id,result,stats_obj_name):
