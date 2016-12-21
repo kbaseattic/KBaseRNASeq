@@ -354,49 +354,51 @@ def create_RNASeq_ExpressionSet_and_build_report( logger,
 
         # TODO:  better handling for failed sets
 
-        if ( ballgown_mode == 1 ):
-                try:
-                    logger.info( "*********getting expression set {0} from workspace*******".format( expressionSet_name ))
-                    expr_set = ws_client.get_objects( [ { 'name' : expressionSet_name, 'workspace': ws_id } ] )[0]
-                    logger.info( pformat( expr_set ))
-                except Exception,e:
-                    raise Exception( "Unable to download expression set {0} from workspace {1}".format( expressionSet_name, ws_id ))
+        # Prepare expression matrices from FPKM and TPM expression values that
+        # were collected in the individual ExpressionObj members  of the ExpressionSet
+        # (For StringTie and Cufflinks)
 
-                eo_names = []
-                for meo in expr_set["data"]["mapped_expression_objects"]:
-                    eo_names.append( meo.values()[0] )
+        try:
+            logger.info( "*********getting expression set {0} from workspace*******".format( expressionSet_name ))
+            expr_set = ws_client.get_objects( [ { 'name' : expressionSet_name, 'workspace': ws_id } ] )[0]
+            logger.info( pformat( expr_set ))
+        except Exception,e:
+            raise Exception( "Unable to download expression set {0} from workspace {1}".format( expressionSet_name, ws_id ))
 
-                #logger.info( "*********eo_names ")
-                #logger.info( pformat( eo_names ) )
-                fpkm_tables = []
-                tpm_tables = []
-                set_names = []
-                for eo_name in eo_names:
-                    try:
-                        logger.info( "*********getting expression set {0} from workspace*******".format( eo_name ))
-                        expr = ws_client.get_objects( [ { 'name' : eo_name, 'workspace': ws_id } ] )[0]
-                    except:
-                        raise Exception( "Unable to download expression object {0} from workspace {1}".format( eo_name, ws_id ) )
-                    set_names.append( eo_name )
-                    num_interp = expr["data"]["numerical_interpretation"]
-                    if ( num_interp != "FPKM" ):
-                        raise Exception( "Did not get expected FPKM value from numerical interpretation key from Expression object {0}, instead got ".format(eo_name, num_interp) )
+        eo_names = []
+        for meo in expr_set["data"]["mapped_expression_objects"]:
+            eo_names.append( meo.values()[0] )
 
-                    pr_comments = expr["data"]["processing_comments"]     # log2 Normalized
-                    fpkm_table = expr["data"]["expression_levels"]    # QUESTION: is this really FPKM levels?
-                    tpm_table = expr["data"]["tpm_expression_levels"]
-                    logger.info( "pr_comments are {0}".format( pr_comments ))
-                    logger.info( "FPKM keycount: {0}".format( len(fpkm_table.keys()) ))
-                    logger.info( "TPM keycount: {0}".format( len(tpm_table.keys()) ))
+        fpkm_tables = []
+        tpm_tables = []
+        set_names = []
+        for eo_name in eo_names:
+            try:
+                logger.info( "*********getting expression set {0} from workspace*******".format( eo_name ))
+                expr = ws_client.get_objects( [ { 'name' : eo_name, 'workspace': ws_id } ] )[0]
+            except:
+                raise Exception( "Unable to download expression object {0} from workspace {1}".format( eo_name, ws_id ) )
+            set_names.append( eo_name )
+            num_interp = expr["data"]["numerical_interpretation"]
+            if ( num_interp != "FPKM" ):
+                raise Exception( "Did not get expected FPKM value from numerical interpretation key from Expression object {0}, instead got ".format(eo_name, num_interp) )
 
-                    fpkm_tables.append( fpkm_table )
-                    tpm_tables.append( tpm_table )
+            pr_comments = expr["data"]["processing_comments"]     # log2 Normalized
+            fpkm_table = expr["data"]["expression_levels"]    # QUESTION: is this really FPKM levels?
+            tpm_table = expr["data"]["tpm_expression_levels"]
+            logger.info( "pr_comments are {0}".format( pr_comments ))
+            logger.info( "FPKM keycount: {0}".format( len(fpkm_table.keys()) ))
+            logger.info( "TPM keycount: {0}".format( len(tpm_table.keys()) ))
 
-                genome_ref = genome_id     #  QUESTION: this gets through upload process-  is it correct?
-                em_base_name = expressionSet_name 
-                create_and_load_expression_matrix( logger, ws_client, ws_id, genome_ref, em_base_name + "FPKM_expr_matrix", set_names, fpkm_tables )
-                create_and_load_expression_matrix( logger, ws_client, ws_id, genome_ref, em_base_name + "TPM_expr_matrix", set_names, tpm_tables )
+            fpkm_tables.append( fpkm_table )
+            tpm_tables.append( tpm_table )
 
+        genome_ref = genome_id     #  QUESTION: this gets through upload process-  is it correct?
+        em_base_name = expressionSet_name 
+        create_and_load_expression_matrix( logger, ws_client, ws_id, genome_ref, em_base_name + "FPKM_expr_matrix", set_names, fpkm_tables )
+        create_and_load_expression_matrix( logger, ws_client, ws_id, genome_ref, em_base_name + "TPM_expr_matrix", set_names, tpm_tables )
+
+        # create and save RNASeqExpressionSet object
 
         for a_name, e_name in results:
                 a_ref,e_ref = ws_client.get_object_info_new( {"objects": [ {'name':a_name, 'workspace': ws_id},
@@ -425,6 +427,7 @@ def create_RNASeq_ExpressionSet_and_build_report( logger,
         except Exception as e:
                     logger.exception("".join(traceback.format_exc()))
                     raise Exception("Failed Saving ExpressionSet to Workspace") 
+
          ### Build Report obj ###
 
         report = []
