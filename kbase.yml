@@ -4,8 +4,11 @@ module-name:
 module-version:
     0.0.2
 
-module-description:
-    KBase module for the RNASeq service
+module-description: |
+    <p>This is a KBase module for RNA-seq utilities.</p>
+    <p>Each app is part of
+    the <a href="http://kbase.us/rna-seq/">KBase RNA-seq Pipeline</a>
+    and they are not intended as standalone apps.</p>
 
 service-language:
     python
