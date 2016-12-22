@@ -392,7 +392,7 @@ def create_RNASeq_ExpressionSet_and_build_report( logger,
             fpkm_tables.append( fpkm_table )
 
             tpm_table = None                                  # Cufflinks doesn't generate TPM
-            if "tmp_expression_levels" in expr["data"]:      # so we need to check for this key
+            if "tpm_expression_levels" in expr["data"]:      # so we need to check for this key
                 tpm_table = expr["data"]["tpm_expression_levels"]
                 logger.info( "TPM keycount: {0}".format( len(tpm_table.keys()) ))
                 tpm_tables.append( tpm_table )
