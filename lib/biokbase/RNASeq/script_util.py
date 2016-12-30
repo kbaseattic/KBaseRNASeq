@@ -61,7 +61,14 @@ def check_and_download_existing_handle_obj(logger,ws_client,urls,ws_id,ws_object
 	     return None
 	return file_path
 
-def if_ws_obj_exists(logger,ws_client,ws_id,o_type,obj_l):
+def if_ws_obj_exists_notype(logger,ws_client,ws_id,obj_l):
+    existing_names = None
+    obj_list = ws_client.list_objects( {"workspaces" : [ws_id ] ,'showHidden' : 1})
+    obj_names = [i[1] for i in obj_list]
+    existing_names = [i for i in obj_l if i in obj_names]
+    return existing_names
+
+def if_ws_obj_exists(logger,ws_client,ws_id,o_type, obj_l):
     existing_names = None
     obj_list = ws_client.list_objects( {"workspaces" : [ws_id ] ,"type" : o_type,'showHidden' : 1})
     obj_names = [i[1] for i in obj_list]

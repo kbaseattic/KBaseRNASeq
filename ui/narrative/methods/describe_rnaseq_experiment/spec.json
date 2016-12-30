@@ -67,7 +67,7 @@
     "default_values" : [ "" ],
     "field_type" : "text",
     "text_options" : {
-      "valid_ws_types" : [ "KBaseAssembly.SingleEndLibrary","KBaseAssembly.PairedEndLibrary" ] 
+      "valid_ws_types" : [ "KBaseAssembly.SingleEndLibrary","KBaseAssembly.PairedEndLibrary", "KBaseFile.SingleEndLibrary","KBaseFile.PairedEndLibrary"] 
     }
   },{
     "id" : "condition",
