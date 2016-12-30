@@ -105,14 +105,14 @@ class HiSat2(ExecutionBase):
                 if sample_type == 'KBaseAssembly.PairedEndLibrary' or sample_type == 'KBaseFile.PairedEndLibrary':
                         lib_type = 'PairedEnd'
                         if sample_type == 'KBaseAssembly.PairedEndLibrary':
-                            if('orientation' in params and params['orientation'] is not None): bowtie2_cmd += ( ' --'+params['orientation'])
+                            if('orientation' in params and params['orientation'] is not None): hisat2_cmd += ( ' --'+params['orientation'])
                             read1_id = r_sample['data']['handle_1']['id']
                             read1_name = r_sample['data']['handle_1']['file_name']
                             read2_id = r_sample['data']['handle_2']['id']
                             read2_name = r_sample['data']['handle_2']['file_name']
                         else:
                             # TODO: the following can be read from PEL object
-                            if('orientation' in params and params['orientation'] is not None): bowtie2_cmd += ( ' --'+params['orientation'])
+                            if('orientation' in params and params['orientation'] is not None): hisat2_cmd += ( ' --'+params['orientation'])
                             read1_id = r_sample['data']['lib_1']['file']['id']
                             read1_name = r_sample['data']['lib_1']['file']['file_name']
                             read2_id = r_sample['data']['lib_2']['file']['id']
