@@ -105,10 +105,10 @@ class Tophat(ExecutionBase):
                         else:
                             # TODO: the following can be read from PEL object
                             if('orientation' in params and params['orientation'] is not None): tophat_cmd += ( ' --'+params['orientation'])
-                            read1_id = r_sample['data']['lib_1']['file']['id']
-                            read1_name = r_sample['data']['lib_1']['file']['file_name']
-                            read2_id = r_sample['data']['lib_2']['file']['id']
-                            read2_name = r_sample['data']['lib_2']['file']['file_name']
+                            read1_id = r_sample['data']['lib1']['file']['id']
+                            read1_name = r_sample['data']['lib1']['file']['file_name']
+                            read2_id = r_sample['data']['lib2']['file']['id']
+                            read2_name = r_sample['data']['lib2']['file']['file_name']
                         try:
                                 script_util.download_file_from_shock(self.logger, shock_service_url=self.urls['shock_service_url'], shock_id=read1_id,filename=read1_name, directory=directory,token=token)
                                 script_util.download_file_from_shock(self.logger, shock_service_url=self.urls['shock_service_url'], shock_id=read2_id,filename=read2_name, directory=directory,token=token)
