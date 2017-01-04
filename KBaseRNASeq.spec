@@ -514,6 +514,54 @@
 async funcdef StringTieCall(StringTieParams params)
     returns (ResultsToReport) authentication required;
 
+    /***************************************/
+    /* HISAT2 + StringTie "express" method */
+    /***************************************/
+
+    typedef structure {
+        string hi_quality_score;
+        int hi_skip;
+        int hi_trim3;
+        int hi_trim5;
+        int hi_np;
+        int hi_minins;
+	int hi_maxins;
+        string hi_orientation;
+        int hi_min_intron_length;
+	int hi_max_intron_length;
+	bool hi_no_spliced_alignment;
+        bool hi_transcriptome_mapping_only;
+        string hi_tailor_alignments;
+   } ExpressHisat2_Options;
+
+    typedef structure {
+        string st_label;
+        float st_min_isoform_abundance;
+        int st_a_juncs;
+        int st_min_length;
+        float st_j_min_reads;
+        float st_c_min_read_coverage;
+        int st_gap_sep_value;
+        bool st_disable_trimming;
+        bool st_ballgown_mode;
+        bool st_skip_reads_with_no_ref;
+        string st_merge;
+    } ExpressStringTie_Options;
+
+    typedef structure {
+        string ws_id;
+        string sampleset_id;
+        string genome_id;
+        ExpressHisat2_Options hi_options;
+        bool run_stringtie;
+        ExpressStringTie_Options st_options;
+        string output_alignment_set_name;
+        string output_expression_matrix_name;
+    } Hisat2StringTieParams;
+
+    async funcdef Hisat2StringTieCall( Hisat2StringTieParams params ) returns(ResultsToReport) authentication required;
+
+
 typedef structure{
 	string ws_id;
 	string sample_alignment;
