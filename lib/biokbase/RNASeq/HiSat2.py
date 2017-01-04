@@ -88,33 +88,47 @@ class HiSat2(ExecutionBase):
                 if('tailor_alignments' in params and params['tailor_alignments'] is not None): 
                     hisat2_cmd += ( ' --'+params['tailor_alignments'])
                 out_file = output_dir +"/accepted_hits.sam"
-                if sample_type  == 'KBaseAssembly.SingleEndLibrary':
+                if sample_type  == 'KBaseAssembly.SingleEndLibrary' or sample_type  == 'KBaseFile.SingleEndLibrary':
                         lib_type = 'SingleEnd'
-                        read_id = r_sample['data']['handle']['id']
-                        read_name =  r_sample['data']['handle']['file_name']
+                        if sample_type == 'KBaseAssembly.SingleEndLibrary':
+                            read_id = r_sample['data']['handle']['id']
+                            read_name =  r_sample['data']['handle']['file_name']
+                        else:
+                            read_id = r_sample['data']['lib']['file']['id']
+                            read_name =  r_sample['data']['lib']['file']['file_name']
                         try:
                                 script_util.download_file_from_shock(self.logger, shock_service_url=self.urls['shock_service_url'], shock_id=read_id,filename=read_name, directory=input_direc,token=token)
                                 hisat2_cmd += " -U {0} -x {1} -S {2}".format(os.path.join(input_direc,read_name),hisat2_base,out_file)
                         except Exception,e:
                                 self.logger.exception(e)
                                 raise Exception( "Unable to download shock file , {0}".format(read_name))
-                if sample_type == 'KBaseAssembly.PairedEndLibrary':
+                if sample_type == 'KBaseAssembly.PairedEndLibrary' or sample_type == 'KBaseFile.PairedEndLibrary':
                         lib_type = 'PairedEnd'
-                        if('orientation' in params and params['orientation'] is not None): hisat2_cmd += ( ' --'+params['orientation'])
-                        read1_id = r_sample['data']['handle_1']['id']
-                        read1_name = r_sample['data']['handle_1']['file_name']
-                        read2_id = r_sample['data']['handle_2']['id']
-                        read2_name = r_sample['data']['handle_2']['file_name']
+                        if sample_type == 'KBaseAssembly.PairedEndLibrary':
+                            if('orientation' in params and params['orientation'] is not None): hisat2_cmd += ( ' --'+params['orientation'])
+                            read1_id = r_sample['data']['handle_1']['id']
+                            read1_name = r_sample['data']['handle_1']['file_name']
+                            read2_id = r_sample['data']['handle_2']['id']
+                            read2_name = r_sample['data']['handle_2']['file_name']
+                        else:
+                            # TODO: the following can be read from PEL object
+                            if('orientation' in params and params['orientation'] is not None): hisat2_cmd += ( ' --'+params['orientation'])
+                            read1_id = r_sample['data']['lib1']['file']['id']
+                            read1_name = r_sample['data']['lib1']['file']['file_name']
+                            read2_id = r_sample['data']['lib2']['file']['id']
+                            read2_name = r_sample['data']['lib2']['file']['file_name']
                         try:
                                 script_util.download_file_from_shock(self.logger, shock_service_url=self.urls['shock_service_url'], shock_id=read1_id,filename=read1_name, directory=input_direc,token=token)
                                 script_util.download_file_from_shock(self.logger, shock_service_url=self.urls['shock_service_url'], shock_id=read2_id,filename=read2_name, directory=input_direc,token=token)
-                                hisat2_cmd += " -1 {0} -2 {1} -x {2} -S {3}".format(os.path.join(input_direc,read1_name),os.path.join(output_dir,read2_name),hisat2_base,out_file)
+                                hisat2_cmd += " -1 {0} -2 {1} -x {2} -S {3}".format(os.path.join(input_direc,read1_name),os.path.join(input_direc,read2_name),hisat2_base,out_file)
                         except Exception,e:
+                                logger.exception(e)
                                 raise Exception( "Unable to download shock file , {0} or {1}".format(read1_name,read2_name))
                 try:
                         self.logger.info("Executing: hisat2 {0}".format(hisat2_cmd))
                         cmdline_output = script_util.runProgram(self.logger,"hisat2",hisat2_cmd,None,directory)
                 except Exception,e:
+                        logger.exception(e)
                         raise Exception("Failed to run command {0}".format(hisat2_cmd))
                 try:
                         stats_data = {}
@@ -128,20 +142,25 @@ class HiSat2(ExecutionBase):
                         sort_bam_cmd  = "sort {0} {1}".format(bam_file,final_bam_prefix)
                         script_util.runProgram(self.logger,"samtools",sort_bam_cmd,None,directory)
                 except Exception,e:
+                        logger.exception(e)
                         raise Exception("Error Running the hisat2 command {0},{1} {2}".format(hisat2_cmd,directory," ".join(traceback.print_exc())))
 
+                script_util.check_disk_space(self.logger)
                 # Zip tophat folder
                 out_file_path = os.path.join(directory,"%s.zip" % output_name)
                 try:
                         logger.info("Zipping the output files".format(out_file_path))
                         script_util.zip_files(self.logger, output_dir,out_file_path)
                 except Exception, e:
+                        logger.exception(e)
                         raise Exception("Failed to compress the index: {0}".format(out_file_path))
                 ## Upload the file using handle service
                 try:
                         hisat2_handle = hs.upload(out_file_path)
                 except Exception, e:
+                        logger.exception(e)
                         raise Exception("Failed to upload zipped output file".format(out_file_path))
+                script_util.check_disk_space(self.logger)
                 #### Replace version with get_version command#####
 		logger.info("Preparing output object")
                 hisat2_out = { "file" : hisat2_handle ,"size" : os.path.getsize(out_file_path), "aligned_using" : "hisat2" , "aligner_version" : "2.2.6" , 'library_type' : lib_type , 'condition' : condition ,'read_sample_id': read_sample, 'genome_id' : genome_id , "alignment_stats" : stats_data }
@@ -156,10 +175,12 @@ class HiSat2(ExecutionBase):
                                          "name":output_name}
                                         ]})
                 except Exception, e:
+                        logger.exception(e)
 			raise Exception(e)
                         #logger.exception("Failed to save alignment to workspace")
                         raise Exception("Failed to save alignment to workspace")
         except Exception, e:
+                        logger.exception(e)
                         #logger.exception("Failed to create hisat2 Alignment {0}".format(" ".join(traceback.print_exc())))
                         raise Exception("Failed to create hisat2 Alignment {0}".format(" ".join(traceback.print_exc())))
         finally:

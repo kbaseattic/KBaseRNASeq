@@ -28,10 +28,26 @@ except:
 from biokbase.workspace.client import Workspace
 from AssemblyUtil.AssemblyUtilClient import AssemblyUtil
 from GenomeFileUtil.GenomeFileUtilClient import GenomeFileUtil
+from DataFileUtil.DataFileUtilClient import DataFileUtil
 import doekbase.data_api
 from doekbase.data_api.annotation.genome_annotation.api import GenomeAnnotationAPI, GenomeAnnotationClientAPI
 from doekbase.data_api.sequence.assembly.api import AssemblyAPI, AssemblyClientAPI
 import datetime
+
+
+def check_sys_stat(logger):
+    check_disk_space(logger)
+    check_memory_usage(logger)
+    check_cpu_usage(logger)
+
+def check_disk_space(logger):
+    runProgram(logger=logger, progName="df", argStr="-h")
+def check_memory_usage(logger):
+    runProgram(logger=logger, progName="vmstat", argStr="-s")
+def check_cpu_usage(logger):
+    runProgram(logger=logger, progName="mpstat", argStr="-P ALL")
+
+	       
 
 def if_obj_exists(logger,ws_client,ws_id,o_type,obj_l):
     obj_list = ws_client.list_objects( {"workspaces" : [ws_id ] ,"type" : o_type,'showHidden' : 1})
@@ -61,7 +77,14 @@ def check_and_download_existing_handle_obj(logger,ws_client,urls,ws_id,ws_object
 	     return None
 	return file_path
 
-def if_ws_obj_exists(logger,ws_client,ws_id,o_type,obj_l):
+def if_ws_obj_exists_notype(logger,ws_client,ws_id,obj_l):
+    existing_names = None
+    obj_list = ws_client.list_objects( {"workspaces" : [ws_id ] ,'showHidden' : 1})
+    obj_names = [i[1] for i in obj_list]
+    existing_names = [i for i in obj_l if i in obj_names]
+    return existing_names
+
+def if_ws_obj_exists(logger,ws_client,ws_id,o_type, obj_l):
     existing_names = None
     obj_list = ws_client.list_objects( {"workspaces" : [ws_id ] ,"type" : o_type,'showHidden' : 1})
     obj_names = [i[1] for i in obj_list]
@@ -597,22 +620,6 @@ def download_file_from_shock(logger,
     to a file on disk.
     """
 
-    header = dict()
-    header["Authorization"] = "Oauth {0}".format(token)
-    #logger.info("Downloading shock node {0}/node/{1}".format(shock_service_url,shock_id))
-
-    metadata_response = requests.get("{0}/node/{1}?verbosity=metadata".format(shock_service_url, shock_id), headers=header, stream=True, verify=True)
-    shock_metadata = metadata_response.json()['data']
-    if shock_metadata is not None:
-    	shockFileName = shock_metadata['file']['name']
-    	shockFileSize = shock_metadata['file']['size']
-    metadata_response.close()
-        
-    download_url = "{0}/node/{1}?download_raw".format(shock_service_url, shock_id)
-    try: 
-    	data = requests.get(download_url, headers=header, stream=True, verify=True)
-    except Exception,e:
-	print(traceback.format_exc())
     if filename is not None:
         shockFileName = filename
 
@@ -621,23 +628,11 @@ def download_file_from_shock(logger,
     else:
         filePath = shockFileName
 
-    if filesize is not None:
-	shockFileSize = filesize
+    #shock_service_url is from config
+    dfu = DataFileUtil(os.environ['SDK_CALLBACK_URL'], token=token)
+    return dfu.shock_to_file({"shock_id" : shock_id, "file_path":filePath, "unpack" : None})
 
-    chunkSize = shockFileSize/4
-    
-    maxChunkSize = 2**30
-    
-    if chunkSize > maxChunkSize:
-        chunkSize = maxChunkSize
-    
-    f = io.open(filePath, 'wb')
-    try:
-        for chunk in data.iter_content(chunkSize):
-            f.write(chunk)
-    finally:
-        data.close()
-        f.close()      
+
 
 def download_shock_files(logger,shock_url,directory,dict_of_files,token):
 	for name, fid in dict_of_files.items():
@@ -678,37 +673,10 @@ def upload_file_to_shock(logger,
     Use HTTP multi-part POST to save a file to a SHOCK instance.
     """
 
-    if token is None:
-        raise Exception("Authentication token required!")
     
-    #build the header
-    header = dict()
-    header["Authorization"] = "Oauth {0}".format(token)
-
-    if filePath is None:
-        raise Exception("No file given for upload to SHOCK!")
-
-    dataFile = open(os.path.abspath(filePath), 'r')
-    m = MultipartEncoder(fields={'attributes_str': json.dumps(attributes), 'upload': (os.path.split(filePath)[-1], dataFile)})
-    header['Content-Type'] = m.content_type
-
-    logger.info("Sending {0} to {1}".format(filePath,shock_service_url))
-    try:
-        response = requests.post(shock_service_url + "/node", headers=header, data=m, allow_redirects=True, verify=ssl_verify)
-        dataFile.close()
-    except:
-        dataFile.close()
-        raise    
-
-    if not response.ok:
-        response.raise_for_status()
-
-    result = response.json()
-
-    if result['error']:            
-        raise Exception(result['error'][0])
-    else:
-        return result["data"]    
+    #shock_service_url is from config
+    dfu = DataFileUtil(os.environ['SDK_CALLBACK_URL'], token=token)
+    return dfu.file_to_shock({"file_path":filePath, "attributes": json.dumps(attributes), "unpack" : None})
 
 def shock_node_2b_public(logger,
                          node_id = None,
@@ -907,9 +875,11 @@ def runProgram(logger=None,
         # keep this until your code is stable for easier debugging
         if logger is not None and result is not None and len(result) > 0:
             logger.info(result)
-	    print result
+        else:
+            print result
         if logger is not None and stderr is not None and len(stderr) > 0:
             logger.info(stderr)
+        else:
 	    print stderr
 
         # Check returncode for success/failure

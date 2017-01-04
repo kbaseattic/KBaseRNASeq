@@ -76,9 +76,7 @@ class HiSat2SampleSet(HiSat2):
         reads = sample['data']['sample_ids']
         r_label = sample['data']['condition']
         reads_type= sample['data']['Library_type']
-        if reads_type == 'PairedEnd': r_type = 'KBaseAssembly.PairedEndLibrary'
-        else: r_type = 'KBaseAssembly.SingleEndLibrary'
-        e_ws_objs = script_util.if_ws_obj_exists(None,ws_client,params['ws_id'],r_type,reads)
+        e_ws_objs = script_util.if_ws_obj_exists_notype(None,ws_client,params['ws_id'],reads)
         missing_objs = [i for i in reads if not i in e_ws_objs]
         if len(e_ws_objs) != len(reads):
             raise HiSat2SampleSetException('Missing Library objects {0} in the {1}. please copy them and run this method'.format(",".join(missing_objs),params['ws_id']))
@@ -116,10 +114,12 @@ class HiSat2SampleSet(HiSat2):
                     count = count + 1
             except Exception,e:
                     raise
+        script_util.check_disk_space(self.logger)
 
 
     def collect(self) :
         # do with 
+        script_util.check_sys_stat(self.logger)
         alignmentSet_name = self.method_params['sampleset_id']+"_hisat2_AlignmentSet"
         self.logger.info(" Creating AlignmentSet for the Alignments {0}".format(alignmentSet_name))
         # TODO: Split alignment set and report method

@@ -1,4 +1,5 @@
 #include <KBaseAssembly.spec>
+#include <KBaseFile.spec>
 
  module KBaseRNASeq{
 

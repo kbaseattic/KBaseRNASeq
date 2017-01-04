@@ -29,7 +29,7 @@ RUN \
 # Insert apt-get instructions here to install
 # any required dependencies for your module.
 # -----------------------------------------
-RUN apt-get update && apt-get install -y unzip gcc bzip2 ncurses-dev
+RUN apt-get update && apt-get install -y unzip gcc bzip2 ncurses-dev sysstat
 RUN pip install mpipe
 WORKDIR /kb/module
 COPY ./deps /kb/deps

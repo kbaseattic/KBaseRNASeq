@@ -88,11 +88,13 @@ deploy-service: deploy-libs2 deploy-executable-script deploy-service-scripts dep
 
 deploy-libs2:
 	kb-sdk install AssemblyUtil
+	kb-sdk install DataFileUtil
 	@echo "Deploying libs to target: $(TARGET)"
 	mkdir -p $(TARGET)/lib/biokbase
 	rsync -vrh lib/biokbase/$(MODULE) $(TARGET)/lib/biokbase/.
 	rsync -vrh lib/AssemblyUtil $(TARGET)/lib/.
 	rsync -vrh lib/GenomeFileUtil $(TARGET)/lib/.
+	rsync -vrh lib/DataFileUtil $(TARGET)/lib/.
 
 deploy-executable-script:
 	@echo "Installing executable scripts to target: $(TARGET)/bin"
@@ -158,6 +160,7 @@ deploy-libs2:
 	rsync -vrh lib/biokbase/$(MODULE) $(TARGET)/lib/biokbase/.
 	rsync -vrh lib/AssemblyUtil $(TARGET)/lib/.
 	rsync -vrh lib/GenomeFileUtil $(TARGET)/lib/.
+	rsync -vrh lib/DataFileUtil $(TARGET)/lib/.
 
 deploy-executable-script:
 	@echo "Installing executable scripts to target: $(TARGET)/bin"

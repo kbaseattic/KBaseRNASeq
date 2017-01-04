@@ -188,12 +188,12 @@ class KBaseRNASeq:
 	    if len(params["condition"]) != out_obj['num_samples']:
 		raise ValueError("Please specify a treatment label for each sample in the RNA-seq SampleSet. Please enter the same label for the replicates in a sample type")
 	    ## Validation to Check if the user is loading the same type as specified above
-	    if params["Library_type"] == 'PairedEnd' : lib_type = 'KBaseAssembly.PairedEndLibrary'
-	    else: lib_type = 'KBaseAssembly.SingleEndLibrary'
+	    if params["Library_type"] == 'PairedEnd' : lib_type = ['KBaseAssembly.PairedEndLibrary', 'KBaseFile.PairedEndLibrary']
+	    else: lib_type = ['KBaseAssembly.SingleEndLibrary', 'KBaseFile.SingleEndLibrary']
 	    for i in sample_ids:
 	    	s_info = ws_client.get_object_info_new({"objects": [{'name': i, 'workspace': params['ws_id']}]})
                 obj_type = s_info[0][2].split('-')[0]
-		if obj_type != lib_type:
+		if not (obj_type in lib_type):
 			raise ValueError("Library_type mentioned : {0}. Please add only {1} typed objects in Reads fields".format(lib_type,lib_type)) 
 	
    	    ## Code to Update the Provenance; make it a function later

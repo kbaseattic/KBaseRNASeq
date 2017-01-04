@@ -65,7 +65,7 @@ class HiSat2Sample(HiSat2):
         sample_id = str(sample_info[6]) + '/' + str(sample_info[0]) + '/' + str(sample_info[4])
         annotation_id = str(annotation_info[6]) + '/' + str(annotation_info[0]) + '/' + str(annotation_info[4])
         sample_type = sample_info[2].split('-')[0]
-	lib_types = ['KBaseAssembly.SingleEndLibrary', 'KBaseAssembly.PairedEndLibrary']
+	lib_types = ['KBaseAssembly.SingleEndLibrary', 'KBaseAssembly.PairedEndLibrary','KBaseFile.SingleEndLibrary', 'KBaseFile.PairedEndLibrary']
         ### Check if the Library objects exist in the same workspace
         if not sample_type in lib_types: #'KBaseAssembly.SingleEndLibrary' or sample_type != 'KBaseAssembly.PairedEndLibrary':
             raise HiSat2SampleException('Either of the Library typed objects SingleEndLibrary or PairedEndLibrary is required')

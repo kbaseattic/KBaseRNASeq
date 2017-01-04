@@ -77,9 +77,7 @@ class Bowtie2SampleSet(Bowtie2):
         reads = sample['data']['sample_ids']
         r_label = sample['data']['condition']
         reads_type= sample['data']['Library_type']
-        if reads_type == 'PairedEnd': r_type = 'KBaseAssembly.PairedEndLibrary'
-        else: r_type = 'KBaseAssembly.SingleEndLibrary'
-        e_ws_objs = script_util.if_ws_obj_exists(None,ws_client,params['ws_id'],r_type,reads)
+        e_ws_objs = script_util.if_ws_obj_exists_notype(None,ws_client,params['ws_id'],reads) # removed read type as it will be added only if it satisfies input types
         missing_objs = [i for i in reads if not i in e_ws_objs]
         if len(e_ws_objs) != len(reads):
             raise Bowtie2SampleSetException('Missing Library objects {0} in the {1}. please copy them and run this method'.format(",".join(missing_objs),params['ws_id']))
