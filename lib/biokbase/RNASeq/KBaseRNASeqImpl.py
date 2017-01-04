@@ -139,6 +139,8 @@ class KBaseRNASeq:
         self.__LOGGER.addHandler(streamHandler)
         self.__LOGGER.info("Logger was set")
 
+        script_util.check_sys_stat(self.__LOGGER)
+
         #END_CONSTRUCTOR
         pass
     
