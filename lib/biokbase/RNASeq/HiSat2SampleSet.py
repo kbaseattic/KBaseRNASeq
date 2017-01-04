@@ -114,10 +114,12 @@ class HiSat2SampleSet(HiSat2):
                     count = count + 1
             except Exception,e:
                     raise
+        script_util.check_disk_space(self.logger)
 
 
     def collect(self) :
         # do with 
+        script_util.check_sys_stat(self.logger)
         alignmentSet_name = self.method_params['sampleset_id']+"_hisat2_AlignmentSet"
         self.logger.info(" Creating AlignmentSet for the Alignments {0}".format(alignmentSet_name))
         # TODO: Split alignment set and report method

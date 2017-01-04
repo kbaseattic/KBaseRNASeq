@@ -34,6 +34,21 @@ from doekbase.data_api.annotation.genome_annotation.api import GenomeAnnotationA
 from doekbase.data_api.sequence.assembly.api import AssemblyAPI, AssemblyClientAPI
 import datetime
 
+
+def check_sys_stat(logger):
+    check_disk_space(logger)
+    check_memory_usage(logger)
+    check_cpu_usage(logger)
+
+def check_disk_space(logger):
+    runProgram(logger=logger, progName="df", argStr="-h")
+def check_memory_usage(logger):
+    runProgram(logger=logger, progName="vmstat", argStr="-s")
+def check_cpu_usage(logger):
+    runProgram(logger=logger, progName="mpstat", argStr="-P ALL")
+
+	       
+
 def if_obj_exists(logger,ws_client,ws_id,o_type,obj_l):
     obj_list = ws_client.list_objects( {"workspaces" : [ws_id ] ,"type" : o_type,'showHidden' : 1})
     obj_names = [i[1] for i in obj_list]
@@ -860,9 +875,11 @@ def runProgram(logger=None,
         # keep this until your code is stable for easier debugging
         if logger is not None and result is not None and len(result) > 0:
             logger.info(result)
-	    print result
+        else:
+            print result
         if logger is not None and stderr is not None and len(stderr) > 0:
             logger.info(stderr)
+        else:
 	    print stderr
 
         # Check returncode for success/failure
