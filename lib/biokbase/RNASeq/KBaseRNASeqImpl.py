@@ -553,6 +553,53 @@ class KBaseRNASeq:
         # return the results
         return [returnVal]
 
+    def Hisat2StringTieCall(self, ctx, params):
+        """
+        :param params: instance of type "Hisat2StringTieParams" -> structure:
+           parameter "ws_id" of String, parameter "sampleset_id" of String,
+           parameter "genome_id" of String, parameter "hi_options" of type
+           "ExpressHisat2_Options" (*************************************) ->
+           structure: parameter "hi_quality_score" of String, parameter
+           "hi_skip" of Long, parameter "hi_trim3" of Long, parameter
+           "hi_trim5" of Long, parameter "hi_np" of Long, parameter
+           "hi_minins" of Long, parameter "hi_maxins" of Long, parameter
+           "hi_orientation" of String, parameter "hi_min_intron_length" of
+           Long, parameter "hi_max_intron_length" of Long, parameter
+           "hi_no_spliced_alignment" of type "bool" (indicates true or false
+           values, false <= 0, true >=1), parameter
+           "hi_transcriptome_mapping_only" of type "bool" (indicates true or
+           false values, false <= 0, true >=1), parameter
+           "hi_tailor_alignments" of String, parameter "run_stringtie" of
+           type "bool" (indicates true or false values, false <= 0, true
+           >=1), parameter "st_options" of type "ExpressStringTie_Options" ->
+           structure: parameter "st_label" of String, parameter
+           "st_min_isoform_abundance" of Double, parameter "st_a_juncs" of
+           Long, parameter "st_min_length" of Long, parameter
+           "st_j_min_reads" of Double, parameter "st_c_min_read_coverage" of
+           Double, parameter "st_gap_sep_value" of Long, parameter
+           "st_disable_trimming" of type "bool" (indicates true or false
+           values, false <= 0, true >=1), parameter "st_ballgown_mode" of
+           type "bool" (indicates true or false values, false <= 0, true
+           >=1), parameter "st_skip_reads_with_no_ref" of type "bool"
+           (indicates true or false values, false <= 0, true >=1), parameter
+           "st_merge" of String, parameter "output_alignment_set_name" of
+           String, parameter "output_expression_matrix_name" of String
+        :returns: instance of type "ResultsToReport" (Object for Report type)
+           -> structure: parameter "report_name" of String, parameter
+           "report_ref" of String
+        """
+        # ctx is the context object
+        # return variables are: returnVal
+        #BEGIN Hisat2StringTieCall
+        #END Hisat2StringTieCall
+
+        # At some point might do deeper type checking...
+        if not isinstance(returnVal, dict):
+            raise ValueError('Method Hisat2StringTieCall return value ' +
+                             'returnVal is not type dict as required.')
+        # return the results
+        return [returnVal]
+
     def CufflinksCall(self, ctx, params):
         """
         :param params: instance of type "CufflinksParams" -> structure:
