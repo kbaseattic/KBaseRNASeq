@@ -139,9 +139,7 @@ class StringTieSampleSet(StringTie):
                                         'stringtie_dir'          : self.directory,
                                         'annotation_id'          : gtf_id,
                                         'sample_id'              : sample_name,
-                                        'alignmentset_id'        : alignmentset_id,
-                                        'ballgown_mode'          : 1,
-                                        'skip_reads_with_no_ref' : 1
+                                        'alignmentset_id'        : alignmentset_id
                                       }
                                     ]
                                   }

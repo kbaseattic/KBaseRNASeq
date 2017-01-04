@@ -379,24 +379,29 @@ def create_RNASeq_ExpressionSet_and_build_report( logger,
             except:
                 raise Exception( "Unable to download expression object {0} from workspace {1}".format( eo_name, ws_id ) )
             set_names.append( eo_name )
+
             num_interp = expr["data"]["numerical_interpretation"]
             if ( num_interp != "FPKM" ):
                 raise Exception( "Did not get expected FPKM value from numerical interpretation key from Expression object {0}, instead got ".format(eo_name, num_interp) )
 
             pr_comments = expr["data"]["processing_comments"]     # log2 Normalized
-            fpkm_table = expr["data"]["expression_levels"]    # QUESTION: is this really FPKM levels?
-            tpm_table = expr["data"]["tpm_expression_levels"]
             logger.info( "pr_comments are {0}".format( pr_comments ))
-            logger.info( "FPKM keycount: {0}".format( len(fpkm_table.keys()) ))
-            logger.info( "TPM keycount: {0}".format( len(tpm_table.keys()) ))
 
+            fpkm_table = expr["data"]["expression_levels"]    # QUESTION: is this really FPKM levels?
+            logger.info( "FPKM keycount: {0}".format( len(fpkm_table.keys()) ))
             fpkm_tables.append( fpkm_table )
-            tpm_tables.append( tpm_table )
+
+            tpm_table = None                                  # Cufflinks doesn't generate TPM
+            if "tpm_expression_levels" in expr["data"]:      # so we need to check for this key
+                tpm_table = expr["data"]["tpm_expression_levels"]
+                logger.info( "TPM keycount: {0}".format( len(tpm_table.keys()) ))
+                tpm_tables.append( tpm_table )
 
         genome_ref = genome_id     #  QUESTION: this gets through upload process-  is it correct?
         em_base_name = expressionSet_name 
         create_and_load_expression_matrix( logger, ws_client, ws_id, genome_ref, em_base_name + "FPKM_expr_matrix", set_names, fpkm_tables )
-        create_and_load_expression_matrix( logger, ws_client, ws_id, genome_ref, em_base_name + "TPM_expr_matrix", set_names, tpm_tables )
+        if ( tpm_table != None ):
+            create_and_load_expression_matrix( logger, ws_client, ws_id, genome_ref, em_base_name + "TPM_expr_matrix", set_names, tpm_tables )
 
         # create and save RNASeqExpressionSet object
 
