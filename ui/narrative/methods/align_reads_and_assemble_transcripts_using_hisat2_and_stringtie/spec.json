@@ -401,48 +401,6 @@
                 "checked_value": 1,
                 "unchecked_value": 0
             }
-        },
-        {
-            "id": "st_ballgown_mode",
-            "optional": false,
-            "advanced": true,
-            "allow_multiple": false,
-            "default_values": [
-                "0"
-            ],
-            "field_type": "checkbox",
-            "checkbox_options": {
-                "checked_value": 1,
-                "unchecked_value": 0
-            }
-        },
-        {
-            "id": "st_skip_reads_with_no_ref",
-            "optional": true,
-            "advanced": true,
-            "allow_multiple": false,
-            "default_values": [
-                "0"
-            ],
-            "field_type": "checkbox",
-            "checkbox_options": {
-                "checked_value": 1,
-                "unchecked_value": 0
-            }
-        },
-        {
-            "id": "st_merge",
-            "optional": true,
-            "advanced": true,
-            "allow_multiple": false,
-            "default_values": [
-                "0"
-            ],
-            "field_type": "checkbox",
-            "checkbox_options": {
-                "checked_value": 1,
-                "unchecked_value": 0
-            }
         }
     ],
     "parameter-groups": [
@@ -478,10 +436,7 @@
                 "st_j_min_reads",
                 "st_c_min_read_coverage",
                 "st_gap_sep_value",
-                "st_disable_trimming",
-                "st_ballgown_mode",
-                "st_skip_reads_with_no_ref",
-                "st_merge"
+                "st_disable_trimming"
             ],
             "optional": true,
             "allow_multiple": false,

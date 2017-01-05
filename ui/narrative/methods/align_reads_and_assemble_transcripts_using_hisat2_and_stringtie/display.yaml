@@ -167,21 +167,6 @@ parameters :
       Disable Trimming
     short-hint : |
       Disable trimming at the ends of the assembled transcripts.
-  st_ballgown_mode :
-    ui-name : |
-      Enable Ballgown Input Table Files
-    short-hint : |
-      With this option StringTie can be used as a direct replacement of the tablemaker program included with the Ballgown distribution. 
-  st_skip_reads_with_no_ref :
-    ui-name : |
-      Skip Reads 
-    short-hint : |
-      Skip Reads with no reference transcript.
-  st_merge :
-    ui-name : |
-      Transcript merge mode
-    short-hint : |
-      Transcript merge mode.              
 
 parameter-groups:
   hi_options :
@@ -208,6 +193,8 @@ description : |
     <p>STringTie is a successor of Cufflinks that is faster and provides more accurate reconstruction of genes and expression level. It accepts aligned RNA-seq reads from HISAT2, TopHat2 or Bowtie2 and assembles the alignments into a parsimonious set of transcripts. It then estimates the relative abundances of these transcripts based on how many reads support each one, taking into account biases in library preparation protocols.</p>
 
     <p>The StringTie output object contains GTF and FPKM files. The GTF file contains annotated transcripts assembled by StringTie whereas the FPKM file gives the normalized abundance of each transcript expressed in fragments per kilobase of exon per million fragments mapped (FPKM) and transcripts per kilobase million (TPM). The StringTie Table Histogram tab displays the abundance of normalized gene expression value in both log2(FPKM+1) and log2(TPM+1).</p>
+
+    <p>This method runs StringTie three times:  once to assemble transcripts, a second time to merge the assembled transcripts, and a third time to produce read coverage tables.
 
   <p><strong>NOTE:</strong> This method is one of the steps of the <a href= "http://kbase.us/rna-seq/"> KBase RNA-seq Pipeline </a>, however it can also be run standalone for one or more RNA-seq samples.</p>
 

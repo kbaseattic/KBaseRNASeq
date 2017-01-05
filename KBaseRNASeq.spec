@@ -543,9 +543,6 @@ async funcdef StringTieCall(StringTieParams params)
         float st_c_min_read_coverage;
         int st_gap_sep_value;
         bool st_disable_trimming;
-        bool st_ballgown_mode;
-        bool st_skip_reads_with_no_ref;
-        string st_merge;
     } ExpressStringTie_Options;
 
     typedef structure {

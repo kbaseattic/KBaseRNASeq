@@ -591,6 +591,140 @@ class KBaseRNASeq:
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN Hisat2StringTieCall
+        # start making report
+        reportObj = {'objects_created':[],
+                     'text_message':''}
+        reportObj['text_message'] += "Running HISAT2 + StringTie method\n"
+        self.__LOGGER.info("Running HISAT2 + StringTie method")
+
+        # Set up Hisat2 call
+        # 1) Don't explicitly set num_threads, since that will be
+        #    set automatically
+        # 2) There is no way to set the output alignment set name
+        #    (which should be params['output_alignment_set_name']);
+        #    instead, this gets set to 
+        #    params['sampleset_id']+"_hisat2_AlignmentSet"
+        hisat2_params = {'ws_id' : params['ws_id'],
+                         'sampleset_id' : params['sampleset_id'],
+                         'genome_id' : params['genome_id'],
+                         'quality_score' : params['hi_options']['hi_quality_score'],
+                         'skip' : params['hi_options']['hi_skip'],
+                         'trim3' : params['hi_options']['hi_trim3'],
+                         'trim5' : params['hi_options']['hi_trim5'],
+                         'np' : params['hi_options']['hi_np'],
+                         'minins' : params['hi_options']['hi_minins'],
+                         'maxins' : params['hi_options']['hi_maxins'],
+                         'orientation' : params['hi_options']['hi_orientation'],
+                         'min_intron_length' : params['hi_options']['hi_min_intron_length'],
+                         'max_intron_length' : params['hi_options']['hi_max_intron_length'],
+                         'no_spliced_alignment' : params['hi_options']['hi_no_spliced_alignment'],
+                         'transcriptome_mapping_only' : params['hi_options']['hi_transcriptome_mapping_only'],
+                         'tailor_alignments' : params['hi_options']['hi_tailor_alignments']
+                     }
+        reportObj['text_message'] += "Calling HISAT2\n"
+        self.__LOGGER.info("Calling HISAT2")
+        hisat2_rv = self.Hisat2Call(ctx, hisat2_params)[0]
+        # note that Hisat2Call currently doesn't actually make a report.
+        # if it did, we'd want to append it to our report
+        reportObj['text_message'] += "HISAT2 finished\n"
+        self.__LOGGER.info("HISAT2 finished")
+
+        if params['run_stringtie']:
+            # Set up 1st StringTie call to assemble transcripts
+            # 1) don't explicitly set num_threads, since that will be
+            #    set automatically
+            # 2) sample_alignment appears to be unused, or changed
+            #    to alignmentset_id
+            # 3) There is no way to set the output alignment set name
+            #    (which should be params['output_alignment_set_name']);
+            #    instead, this gets set to 
+            #    params['sampleset_id']+"_hisat2_AlignmentSet_stringtie_AlignmentSet"
+            stringtie_params = {'ws_id' : params['ws_id'],
+                                'alignmentset_id' : params['sampleset_id']+"_hisat2_AlignmentSet",
+                                'sample_alignment' : params['sampleset_id']+"_hisat2_AlignmentSet",
+                                'label' : params['st_options']['st_label'],
+                                'min_isoform_abundance' : params['st_options']['st_min_isoform_abundance'],
+                                'a_juncs' : params['st_options']['st_a_juncs'],
+                                'min_length' : params['st_options']['st_min_length'],
+                                'j_min_reads' : params['st_options']['st_j_min_reads'],
+                                'c_min_read_coverage' : params['st_options']['st_c_min_read_coverage'],
+                                'gap_sep_value' : params['st_options']['st_gap_sep_value'],
+                                'disable_trimming' : params['st_options']['st_disable_trimming'],
+                                'ballgown_mode' : False,
+                                'skip_reads_with_no_ref' : False,
+                                'merge' : False
+                            }
+            reportObj['text_message'] += "Calling StringTie to assemble transcripts\n"
+            self.__LOGGER.info("Calling StringTie to assemble transcripts")
+            stringtie_rv = self.StringTieCall(ctx, stringtie_params)[0]
+            # note that StringTieCall currently doesn't actually make a report.
+            # if it did, we'd want to append it to our report
+            reportObj['text_message'] += "StringTie finished\n"
+            self.__LOGGER.info("StringTie finished")
+
+            # Set up 2nd StringTie call to merge transcripts
+            # Note that the user probably wants different values for
+            # these parameters the 2nd time; we'll need a
+            # different parameter group for the --merge calls
+            # that includes other parameters like -F, -T, etc
+            stringtie_params = {'ws_id' : params['ws_id'],
+                                'alignmentset_id' : params['sampleset_id']+"_hisat2_AlignmentSet_stringtie_AlignmentSet",
+                                'sample_alignment' : params['sampleset_id']+"_hisat2_AlignmentSet_stringtie_AlignmentSet",
+                                'label' : params['st_options']['st_label'],
+                                'min_isoform_abundance' : params['st_options']['st_min_isoform_abundance'],
+                                'min_length' : params['st_options']['st_min_length'],
+                                'c_min_read_coverage' : params['st_options']['st_c_min_read_coverage'],
+                                'ballgown_mode' : False,
+                                'skip_reads_with_no_ref' : False,
+                                'merge' : True
+                            }
+            reportObj['text_message'] += "Calling StringTie to merge transcripts\n"
+            self.__LOGGER.info("Calling StringTie to merge transcripts")
+            stringtie_rv = self.StringTieCall(ctx, stringtie_params)[0]
+            # note that StringTieCall currently doesn't actually make a report.
+            # if it did, we'd want to append it to our report
+            reportObj['text_message'] += "StringTie finished\n"
+            self.__LOGGER.info("StringTie finished")
+
+            # Set up 3rd StringTie call to create the read coverage tables
+            # This may need a 3rd set of parameters?
+            stringtie_params = {'ws_id' : params['ws_id'],
+                                'alignmentset_id' : params['sampleset_id']+"_hisat2_AlignmentSet_stringtie_AlignmentSet_stringtie_AlignmentSet",
+                                'sample_alignment' : params['sampleset_id']+"_hisat2_AlignmentSet_stringtie_AlignmentSet_stringtie_AlignmentSet",
+                                'label' : params['st_options']['st_label'],
+                                'min_isoform_abundance' : params['st_options']['st_min_isoform_abundance'],
+                                'a_juncs' : params['st_options']['st_a_juncs'],
+                                'min_length' : params['st_options']['st_min_length'],
+                                'j_min_reads' : params['st_options']['st_j_min_reads'],
+                                'c_min_read_coverage' : params['st_options']['st_c_min_read_coverage'],
+                                'gap_sep_value' : params['st_options']['st_gap_sep_value'],
+                                'disable_trimming' : params['st_options']['st_disable_trimming'],
+                                'ballgown_mode' : True,
+                                'skip_reads_with_no_ref' : True,
+                                'merge' : False
+                            }
+            reportObj['text_message'] += "Calling StringTie to create read coverage tables\n"
+            self.__LOGGER.info("Calling StringTie to create read coverage tables")
+            stringtie_rv = self.StringTieCall(ctx, stringtie_params)[0]
+            # note that StringTieCall currently doesn't actually make a report.
+            # if it did, we'd want to append it to our report
+            reportObj['text_message'] += "StringTie finished\n"
+            self.__LOGGER.info("StringTie finished")
+
+            # Finally, we want to run prepDE.py
+            # to create the expression matrix.
+            # There used to be a method called
+            # createExpressionMatrix, but it's now gone?
+            # Not implementing this for now.
+            
+        # save the report
+        # don't do this for now, since adding a report client would
+        # be a larger change than we want to merge in one step
+        # report = KBaseReport(self.__callbackURL, token=ctx['token'], service_ver='dev')
+        # report_info = report.create({'report':reportObj, 'workspace_name':params['ws_id']})
+
+        # returnVal = { 'report_name': report_info['name'], 'report_ref': report_info['ref'] }
+        returnVal = {}
         #END Hisat2StringTieCall
 
         # At some point might do deeper type checking...
