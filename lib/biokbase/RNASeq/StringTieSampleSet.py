@@ -53,7 +53,7 @@ class StringTieSampleSet(StringTie):
                                         [{'name' : params['alignmentset_id'],'workspace' : params['ws_id']}])[0]
                a_sampleset_info = ws_client.get_object_info_new({"objects" : 
                                         [{'name' : params['alignmentset_id'],'workspace' : params['ws_id']}]})[0]
-               self.alignmentset_info =  a_sampleset_info
+               self.alignmentset_info = a_sampleset_info
                a_sampleset_id = str(a_sampleset_info[6]) + '/' + str(a_sampleset_info[0]) + '/' + str(a_sampleset_info[4])	
                alignmentset_id = a_sampleset_id
         except Exception,e:
@@ -129,7 +129,7 @@ class StringTieSampleSet(StringTie):
                                                                               self.tool_opts,
                                                                               self.method_params['ws_id'],
                                                                               self.align_names,
-                                                                              self.task_list[0]['alignmentset_id'],s
+                                                                              self.task_list[0]['alignmentset_id'],
                                                                               self.task_list[0]['genome_id'],
                                                                               self.sampleset_id,
                                                                               self.results,
