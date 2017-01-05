@@ -55,7 +55,7 @@ class StringTieSampleSet(StringTie):
                                         [{'name' : params['alignmentset_id'],'workspace' : params['ws_id']}]})[0]
                self.alignmentset_info =  a_sampleset_info
                a_sampleset_id = str(a_sampleset_info[6]) + '/' + str(a_sampleset_info[0]) + '/' + str(a_sampleset_info[4])	
-        alignmentset_id = a_sampleset_id
+               alignmentset_id = a_sampleset_id
         except Exception,e:
                logger.exception("".join(traceback.format_exc()))
                raise Exception("Error Downloading objects from the workspace ")
