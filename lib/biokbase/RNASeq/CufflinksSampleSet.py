@@ -120,7 +120,7 @@ class CufflinksSampleSet(Cufflinks):
                                                                               self.sampleset_id,
                                                                               self.results,
                                                                               expressionSet_name,
-                                                                              hide_TPM = 0
+                                                                              hide_TPM = 1
                                                                             )
         self.returnVal = { 'output'  : expressionSet_name ,'workspace' : self.method_params['ws_id']}
 

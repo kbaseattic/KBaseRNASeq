@@ -743,8 +743,8 @@ def parse_FPKMtracking( filename, tool, metric) :
 #
 def parse_FPKMtracking_calc_TPM( filename ) :
 
-    fkpm_dict = {}
-    tmp_dict = {}
+    fpkm_dict = {}
+    tpm_dict = {}
     gene_col = 0
     fpkm_col = 9
     sum_fpkm = 0.0

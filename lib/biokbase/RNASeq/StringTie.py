@@ -8,6 +8,7 @@ import parallel_tools as parallel
 from mpipe import OrderedStage , Pipeline
 import contig_id_mapping as c_mapping 
 import script_util
+import rnaseq_util
 import handler_utils as handler_util
 from biokbase.workspace.client import Workspace
 from biokbase.auth import Token
