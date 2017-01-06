@@ -8,6 +8,7 @@ import parallel_tools as parallel
 from mpipe import OrderedStage , Pipeline
 import contig_id_mapping as c_mapping 
 import script_util
+import rnaseq_util
 import handler_utils as handler_util
 from biokbase.workspace.client import Workspace
 from biokbase.auth import Token
@@ -37,8 +38,8 @@ class Cufflinks(ExecutionBase):
         #self.sample = None
         #self.sampleset_info = None
         self.num_threads = None
-	self.tool_used = "Cufflinks"
-	self.tool_version = "1.2.3"
+        self.tool_used = "Cufflinks"
+        self.tool_version = "1.2.3"
 
     def runEach(self,task_params):
         ws_client = self.common_params['ws_client']
@@ -55,7 +56,7 @@ class Cufflinks(ExecutionBase):
         sample_id = task_params['sample_id']
         alignmentset_id = task_params['alignmentset_id']
         ws_id = task_params['ws_id']
-    
+
         print "Downloading Sample Alignment from workspace {0}".format(s_alignment)
         logger.info("Downloading Sample Alignment from workspace {0}".format(s_alignment))
         alignment_name = ws_client.get_object_info([{"ref" :s_alignment}],includeMetadata=None)[0][1]
@@ -78,10 +79,10 @@ class Cufflinks(ExecutionBase):
                 raise Exception( "Unable to download shock file, {0},{1}".format(a_filename,"".join(traceback.format_exc())))
            try:
                 input_dir = os.path.join(input_direc,alignment_name)
-		if not os.path.exists(input_dir): os.mkdir(input_dir)
+                if not os.path.exists(input_dir): os.mkdir(input_dir)
                 script_util.unzip_files(logger,os.path.join(input_direc,a_filename), input_dir)
            except Exception, e:
-		raise Exception(e)
+                raise Exception(e)
                 logger.error("".join(traceback.format_exc()))
                 raise Exception("Unzip alignment files  error: Please contact help@kbase.us")
 
@@ -89,7 +90,7 @@ class Cufflinks(ExecutionBase):
                 ### Adding advanced options to tophat command
            tool_opts = { k:str(v) for k,v in params.iteritems() if not k in ('ws_id','alignmentset_id', 'num_threads') and v is not None  }
            cufflinks_command = (' -p '+str(self.num_threads))
-	   if 'max_intron_length' in params and params['max_intron_length'] is not None:
+           if 'max_intron_length' in params and params['max_intron_length'] is not None:
                cufflinks_command += (' --max-intron-length '+str(params['max_intron_length']))
            if 'min_intron_length' in params and params['min_intron_length'] is not None:
                cufflinks_command += (' --min-intron-length '+str(params['min_intron_length']))
@@ -102,7 +103,7 @@ class Cufflinks(ExecutionBase):
            print "Executing: cufflinks {0}".format(cufflinks_command)
            ret = script_util.runProgram(None,"cufflinks",cufflinks_command,None,directory)
            result = ret["result"]
-	   for line in result.splitlines(False):
+           for line in result.splitlines(False):
                        self.logger.info(line)
                        stderr = ret["stderr"]
                        prev_value = ''
@@ -117,13 +118,16 @@ class Cufflinks(ExecutionBase):
                                       prev_value = ''
                                       self.logger.info(line)
 
-	   ##Parse output files
+           ##Parse output files
            try:
-	 	g_output_file = os.path.join(output_dir,"genes.fpkm_tracking")
-                exp_dict = script_util.parse_FPKMtracking(g_output_file,'Cufflinks','FPKM')
+                g_output_file = os.path.join( output_dir, "genes.fpkm_tracking" )
+                #exp_dict = rnaseq_util.parse_FPKMtracking( g_output_file, 'Cufflinks', 'FPKM' )
                 #tpm_exp_dict = script_util.parse_FPKMtracking(g_output_file,'Cufflinks','TPM')
+                # Cufflinks doesn't produce TPM, we infer from FPKM 
+                # (see discussion @ https://www.biostars.org/p/160989/)
+                exp_dict, tpm_exp_dict = rnaseq_util.parse_FPKMtracking_calc_TPM( g_output_file )
            except Exception,e:
-	        raise Exception(e)
+                raise Exception(e)
                 logger.exception("".join(traceback.format_exc()))
                 raise Exception("Error parsing FPKMtracking")
         ##  compress and upload to shock
@@ -133,32 +137,32 @@ class Cufflinks(ExecutionBase):
                 out_file_path = os.path.join(directory,"%s.zip" % output_name)
                 script_util.zip_files(logger,output_dir,out_file_path)
            except Exception,e:
-	        raise Exception(e)
+                raise Exception(e)
                 logger.exception("".join(traceback.format_exc()))
                 raise Exception("Error executing cufflinks")
            try:
                 handle = hs.upload(out_file_path)
            except Exception, e:
-	        raise Exception(e)
+                raise Exception(e)
                 logger.exception("".join(traceback.format_exc()))
                 raise Exception("Error while zipping the output objects: {0}".format(out_file_path))
                 ## Save object to workspace
            try:
                 logger.info("Saving cufflinks object to workspace")
-                es_obj = { 'id' : output_name,
-                           'type' : 'RNA-Seq',
+                es_obj = { 'id'                       : output_name,
+                           'type'                     : 'RNA-Seq',
                            'numerical_interpretation' : 'FPKM',
-                           'expression_levels' : exp_dict,
-                           #'tpm_expression_levels' : tpm_exp_dict,
-                           'processing_comments' : "log2 Normalized",
-                           'genome_id' : genome_id,
-                           'annotation_id' : annotation_id,
-                           'condition' : condition,
-                           'mapped_rnaseq_alignment' : { sample_id : s_alignment },
-                           'tool_used' : self.tool_used,
-                           'tool_version' : self.tool_version,
-                           'tool_opts' : tool_opts,
-                           'file' : handle
+                           'expression_levels'        : exp_dict,
+                           'tpm_expression_levels'    : tpm_exp_dict,
+                           'processing_comments'      : "log2 Normalized",
+                           'genome_id'                : genome_id,
+                           'annotation_id'            : annotation_id,
+                           'condition'                : condition,
+                           'mapped_rnaseq_alignment'  : { sample_id : s_alignment },
+                           'tool_used'                : self.tool_used,
+                           'tool_version'             : self.tool_version,
+                           'tool_opts'                : tool_opts,
+                           'file'                     : handle
                          }
 
                 res= ws_client.save_objects(
