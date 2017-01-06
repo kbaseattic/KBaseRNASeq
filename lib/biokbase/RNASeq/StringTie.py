@@ -117,8 +117,8 @@ class StringTie(ExecutionBase):
            ret = script_util.runProgram(None,"stringtie",stringtie_command,None,directory)
            ##Parse output files
            try:
-                exp_dict = script_util.parse_FPKMtracking( g_output_file, 'StringTie', 'FPKM' )
-                tpm_exp_dict = script_util.parse_FPKMtracking( g_output_file, 'StringTie', 'TPM' )
+                exp_dict = rnaseq_util.parse_FPKMtracking( g_output_file, 'StringTie', 'FPKM' )
+                tpm_exp_dict = rnaseq_util.parse_FPKMtracking( g_output_file, 'StringTie', 'TPM' )
            except Exception,e:
                 raise Exception(e)
                 logger.exception("".join(traceback.format_exc()))

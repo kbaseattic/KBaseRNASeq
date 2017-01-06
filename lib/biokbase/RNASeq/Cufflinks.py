@@ -8,6 +8,7 @@ import parallel_tools as parallel
 from mpipe import OrderedStage , Pipeline
 import contig_id_mapping as c_mapping 
 import script_util
+import rnaseq_util
 import handler_utils as handler_util
 from biokbase.workspace.client import Workspace
 from biokbase.auth import Token
@@ -120,8 +121,11 @@ class Cufflinks(ExecutionBase):
            ##Parse output files
            try:
                 g_output_file = os.path.join( output_dir, "genes.fpkm_tracking" )
-                exp_dict = script_util.parse_FPKMtracking( g_output_file, 'Cufflinks', 'FPKM' )
+                #exp_dict = rnaseq_util.parse_FPKMtracking( g_output_file, 'Cufflinks', 'FPKM' )
                 #tpm_exp_dict = script_util.parse_FPKMtracking(g_output_file,'Cufflinks','TPM')
+                # Cufflinks doesn't produce TPM, we infer from FPKM 
+                # (see discussion @ https://www.biostars.org/p/160989/)
+                exp_dict, tpm_exp_dict = rnaseq_util.parse_FPKMtracking_calc_TPM( g_output_file )
            except Exception,e:
                 raise Exception(e)
                 logger.exception("".join(traceback.format_exc()))
@@ -145,20 +149,20 @@ class Cufflinks(ExecutionBase):
                 ## Save object to workspace
            try:
                 logger.info("Saving cufflinks object to workspace")
-                es_obj = { 'id' : output_name,
-                           'type' : 'RNA-Seq',
+                es_obj = { 'id'                       : output_name,
+                           'type'                     : 'RNA-Seq',
                            'numerical_interpretation' : 'FPKM',
-                           'expression_levels' : exp_dict,
-                           #'tpm_expression_levels' : tpm_exp_dict,
-                           'processing_comments' : "log2 Normalized",
-                           'genome_id' : genome_id,
-                           'annotation_id' : annotation_id,
-                           'condition' : condition,
-                           'mapped_rnaseq_alignment' : { sample_id : s_alignment },
-                           'tool_used' : self.tool_used,
-                           'tool_version' : self.tool_version,
-                           'tool_opts' : tool_opts,
-                           'file' : handle
+                           'expression_levels'        : exp_dict,
+                           'tpm_expression_levels'    : tpm_exp_dict,
+                           'processing_comments'      : "log2 Normalized",
+                           'genome_id'                : genome_id,
+                           'annotation_id'            : annotation_id,
+                           'condition'                : condition,
+                           'mapped_rnaseq_alignment'  : { sample_id : s_alignment },
+                           'tool_used'                : self.tool_used,
+                           'tool_version'             : self.tool_version,
+                           'tool_opts'                : tool_opts,
+                           'file'                     : handle
                          }
 
                 res= ws_client.save_objects(
