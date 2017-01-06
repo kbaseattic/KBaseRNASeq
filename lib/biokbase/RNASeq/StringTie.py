@@ -8,6 +8,7 @@ import parallel_tools as parallel
 from mpipe import OrderedStage , Pipeline
 import contig_id_mapping as c_mapping 
 import script_util
+import rnaseq_util
 import handler_utils as handler_util
 from biokbase.workspace.client import Workspace
 from biokbase.auth import Token
@@ -117,8 +118,8 @@ class StringTie(ExecutionBase):
            ret = script_util.runProgram(None,"stringtie",stringtie_command,None,directory)
            ##Parse output files
            try:
-                exp_dict = script_util.parse_FPKMtracking( g_output_file, 'StringTie', 'FPKM' )
-                tpm_exp_dict = script_util.parse_FPKMtracking( g_output_file, 'StringTie', 'TPM' )
+                exp_dict = rnaseq_util.parse_FPKMtracking( g_output_file, 'StringTie', 'FPKM' )
+                tpm_exp_dict = rnaseq_util.parse_FPKMtracking( g_output_file, 'StringTie', 'TPM' )
            except Exception,e:
                 raise Exception(e)
                 logger.exception("".join(traceback.format_exc()))

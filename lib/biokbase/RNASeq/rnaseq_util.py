@@ -98,7 +98,7 @@ def create_gtf_annotation_from_genome(logger,ws_client,hs_client,urls,ws_id,geno
                                          "type":"KBaseRNASeq.GFFAnnotation",
                                          "data":a_handle,
                                          "name":genome_name+"_GTF_Annotation",
-                                        "hidden":1}
+                                         "hidden":1}
                                         ]})
     except Exception as e:
                 raise ValueError("Generating GTF file from Genome Annotation object Failed :  {}".format("".join(traceback.format_exc())))
@@ -163,7 +163,7 @@ def create_RNASeq_AlignmentSet_and_build_report(logger,ws_client,ws_id,sample_li
          return reportObj
 
 
-def store_table2exp_mat(logger, ws_client, tables, genome_ref, set_names, em_name, ws_id):
+def store_table2exp_mat(logger, ws_client, tables, genome_ref, set_names, em_name, ws_id, hidden = 0):
     all_rows = {}    # build a dictionary of keys only which is a union of all row ids (gene_ids)
     #logger.info( "***** length of tables is {0}".format( len( tables )))
     for table in tables:
@@ -211,7 +211,8 @@ def store_table2exp_mat(logger, ws_client, tables, genome_ref, set_names, em_nam
                                         'objects' : [
                                                       { 'type' : 'KBaseFeatureValues.ExpressionMatrix',
                                                         'data' : emo,
-                                                        'name' : em_name
+                                                        'name' : em_name,
+                                                        'hidden' : hidden
                                                       }
                                                     ]
                                       }
@@ -221,7 +222,7 @@ def store_table2exp_mat(logger, ws_client, tables, genome_ref, set_names, em_nam
         logger.exception(e)
         raise Exception( "Failed Saving Expression Matrix to Workspace" ) 
 
-def create_and_load_expression_matrix( logger, ws_client, ws_id, expressionSet_name, genome_ref):
+def create_and_load_expression_matrix( logger, ws_client, ws_id, expressionSet_name, genome_ref, hide_TPM ):
 
         try:
             logger.info( "*********getting expression set {0} from workspace*******".format( expressionSet_name ))
@@ -267,12 +268,24 @@ def create_and_load_expression_matrix( logger, ws_client, ws_id, expressionSet_n
 
         em_base_name = expressionSet_name 
 
-        store_table2exp_mat(logger, ws_client, fpkm_tables, genome_ref, set_names, "{0}_FPKM_ExpressionMatrix".format(expressionSet_name), ws_id)
+        store_table2exp_mat(logger, ws_client, fpkm_tables, genome_ref, set_names, "{0}_FPKM_ExpressionMatrix".format(expressionSet_name), ws_id )
         if ( tpm_table != None ):
-            store_table2exp_mat(logger, ws_client, tpm_tables, genome_ref, set_names, "{0}_TPM_ExpressionMatrix".format(expressionSet_name), ws_id)
+            store_table2exp_mat(logger, ws_client, tpm_tables, genome_ref, set_names, "{0}_TPM_ExpressionMatrix".format(expressionSet_name), ws_id, hide_TPM )
 
 
-def create_RNASeq_ExpressionSet_and_build_report(logger,ws_client,tool_used, tool_version,tool_opts,ws_id,alignment_list,alignmentset_id,genome_id,sampleset_id,results,expressionSet_name):
+def create_RNASeq_ExpressionSet_and_build_report( logger,
+                                                  ws_client,
+                                                  tool_used,
+                                                  tool_version,
+                                                  tool_opts,
+                                                  ws_id,
+                                                  alignment_list,
+                                                  alignmentset_id,
+                                                  genome_id,
+                                                  sampleset_id,
+                                                  results,
+                                                  expressionSet_name,
+                                                  hide_TPM = 0 ):
 
         results =  [ ret for ret in results if not ret is None ]
         logger.info( "create_RNASeq_ExpressionSet, results:")
@@ -321,7 +334,7 @@ def create_RNASeq_ExpressionSet_and_build_report(logger,ws_client,tool_used, too
 
         try:
                logger.info("Creating ExpressionMatrix object")
-               create_and_load_expression_matrix( logger, ws_client, ws_id, expressionSet_name, genome_id)
+               create_and_load_expression_matrix( logger, ws_client, ws_id, expressionSet_name, genome_id, hide_TPM )
         except Exception as e:
                    logger.exception(e)
                    raise e
@@ -704,3 +717,50 @@ def getExpressionHistogram(obj,obj_name,num_of_bins,ws_id,output_obj_name):
                                      ]
                                      })
                 
+
+# This was moved in from script_util.py (5 Jan 2017 mccorkle)
+#
+def parse_FPKMtracking( filename, tool, metric) :
+    result={}
+    pos1= 0
+    if tool == 'StringTie':
+        if metric == 'FPKM': pos2 = 7
+        if metric == 'TPM': pos2 = 8
+    if tool == 'Cufflinks':
+        pos2 = 9
+    with open(filename) as f:
+        next(f)
+        for line in f:
+            larr = line.split("\t")
+            if larr[pos1] != "":
+                result[larr[pos1]] = math.log( float(larr[pos2]) + 1, 2 )
+    return result
+
+# 
+# added to provide TPM expression for cufflinks output
+# Cufflinks doesn't produce TPM, we infer from FPKM 
+# (see discussion @ https://www.biostars.org/p/160989/)
+#
+def parse_FPKMtracking_calc_TPM( filename ) :
+
+    fpkm_dict = {}
+    tpm_dict = {}
+    gene_col = 0
+    fpkm_col = 9
+    sum_fpkm = 0.0
+    with open( filename ) as f:
+        next( f )
+        for line in f:
+            larr = line.split("\t")
+            gene_id = larr[gene_col]
+            if gene_id != "":
+                fpkm = float( larr[fpkm_col] )
+                sum_fpkm = sum_fpkm + fpkm
+                fpkm_dict[gene_id] = math.log( fpkm + 1, 2 )
+                tpm_dict[gene_id] = fpkm
+
+    for g in tpm_dict:
+        tpm_dict[g] = math.log( ( tpm_dict[g] / sum_fpkm ) * 1e6 + 1, 2 )
+
+    return  fpkm_dict, tpm_dict
+
