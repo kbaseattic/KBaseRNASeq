@@ -725,7 +725,7 @@ class KBaseRNASeq:
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN DiffExpCallforBallgown
-	user_token=ctx['token']
+        user_token=ctx['token']
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
         hs = HandleService(url=self.__HS_URL, token=user_token)
         #try:
@@ -733,7 +733,7 @@ class KBaseRNASeq:
         diffexp_dir = os.path.join(self.__SCRATCH,"tmp")
         handler_util.setupWorkingDir(self.__LOGGER,diffexp_dir)
         returnVal = call_diffExpCallforBallgown.runMethod(self.__LOGGER,user_token,ws_client,hs,self.__SERVICES,diffexp_dir,params)
-	print returnVal
+        print returnVal
         #except Exception,e:
         #         self.__LOGGER.exception("".join(traceback.format_exc()))
          #        raise KBaseRNASeqException("Error Running StringTieCall")
