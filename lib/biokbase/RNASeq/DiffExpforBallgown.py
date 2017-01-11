@@ -3,7 +3,7 @@ from mpipe import OrderedStage , Pipeline
 import glob, json, uuid, logging  , time ,datetime 
 import subprocess, threading,traceback
 from collections import OrderedDict
-from pprint import pprint , pformat
+from pprint import pprint, pformat
 import parallel_tools as parallel
 from mpipe import OrderedStage , Pipeline
 import contig_id_mapping as c_mapping 
@@ -36,32 +36,37 @@ class DiffExpforBallgown(ExecutionBase):
 
         # user defined shared variables across methods
         self.num_threads = None
-	self.tool_used = None
-	self.tool_version = None
+        self.tool_used = None
+        self.tool_version = None
     
     def prepare(self):
         # for quick testing, we recover parameters here
+        self.logger( 'in DiffExpfoBallgown.prepare(), method params are')
+        self.logger( pformat( self.method_params ) )
+
         ws_client = self.common_params['ws_client']
         hs = self.common_params['hs_client']
         params = self.method_params
         logger = self.logger
         token = self.common_params['user_token']
         diffexp_dir = self.directory
-	self.details = rnaseq_util.get_details_for_diff_exp(logger,ws_client,hs,params['ws_id'],self.urls,diffexp_dir,params['expressionset_id'],token)
-    	self.num_threads = mp.cpu_count()
-	self.num_jobs = 1
-	als = [] 
-	for l in self.details['labels']:
-		rep_files=[ (os.path.join(diffexp_dir+'/'+l,sub+'/accepted_hits.bam'), os.path.join(diffexp_dir+'/'+l,sub+'/transcripts.gtf')) for sub in os.listdir(os.path.join(diffexp_dir,l)) if os.path.isdir(os.path.join(diffexp_dir,l+'/'+sub))]
+        self.details = rnaseq_util.get_details_for_diff_exp(logger,ws_client,hs,params['ws_id'],self.urls,diffexp_dir,params['expressionset_id'],token)
+        self.logger( 'back from get_details_for_diff_exp(), details are')
+        self.logger( pformat( self.details ) )
+        self.num_threads = mp.cpu_count()
+        self.num_jobs = 1
+        als = [] 
+        for l in self.details['labels']:
+                rep_files=[ (os.path.join(diffexp_dir+'/'+l,sub+'/accepted_hits.bam'), os.path.join(diffexp_dir+'/'+l,sub+'/transcripts.gtf')) for sub in os.listdir(os.path.join(diffexp_dir,l)) if os.path.isdir(os.path.join(diffexp_dir,l+'/'+sub))]
                 #rep_files=",".join([ os.path.join(diffexp_dir+'/'+l,sub+'/accepted_hits.bam') for sub in os.listdir(os.path.join(diffexp_dir,l)) if os.path.isdir(os.path.join(diffexp_dir,l+'/'+sub))])
                 als += rep_files
-	### Call Cuffmerge function
+        ### Call Cuffmerge function
         used_tool = self.details['used_tool']
-	merge_dir = os.path.join(diffexp_dir,"merge")
+        merge_dir = os.path.join(diffexp_dir,"merge")
         if used_tool == 'StringTie':
            run_tool =  "StringTie"
            tool_version = "1.2.3"
-           merged_gtf = rnaseq_util.call_stringtiemerge(diffexp_dir,merge_dir,self.num_threads,self.details['gtf_file'],self.details['gtf_list_file'])
+           #merged_gtf = rnaseq_util.call_stringtiemerge(diffexp_dir,merge_dir,self.num_threads,self.details['gtf_file'],self.details['gtf_list_file'])
         elif used_tool == 'Cufflinks':
            merged_gtf = rnaseq_util.call_cuffmerge(diffexp_dir,merge_dir,num_threads,gtf_file,self.details['gtf_list_file'])
            run_tool = "Tablemaker"
@@ -70,31 +75,36 @@ class DiffExpforBallgown(ExecutionBase):
 
         self.bam_files = " ".join([i for i in als])
         self.t_labels = ",".join(self.details['labels'])
-	ballgown_dir = os.path.join(diffexp_dir,"ballgown")
+        ballgown_dir = os.path.join(diffexp_dir,"ballgown")
         if not os.path.exists(ballgown_dir): os.mkdir(ballgown_dir)
-	### Make Input_dir from expression_file_name
-	
+        ### Make Input_dir from expression_file_name
+        
         self.task_list = [self.__class__]
-	
-		
+        self.logger( 'exiting ')
+
+
     def runEach(self,task_list):
-	 ### Call Cuffmerge function
-	 used_tool = self.details['used_tool']
-	 if used_tool == 'StringTie':
-           merged_gtf = rnaseq_util.call_stringtiemerge(diffexp_dir,merge_dir,num_threads,self.details['gtf_file'],assembly_file)
-           run_tool =  "StringTie"
-           tool_version = "1.2.3"
+         ### Call Cuffmerge function
+         used_tool = self.details['used_tool']
+         self.logger(  'in DiffExpfoBallgown.runEach()' )
+         if used_tool == 'StringTie':
+           #merged_gtf = rnaseq_util.call_stringtiemerge(diffexp_dir,merge_dir,num_threads,self.details['gtf_file'],assembly_file)
+           #run_tool =  "StringTie"
+           #tool_version = "1.2.3"
+           # For now, take no action for StringTie processing
+           self.logger( 'Exiting immediately - StringTie case' )
+           return
          elif used_tool == 'Cufflinks':
            merged_gtf = rnaseq_util.call_cuffmerge(diffexp_dir,merge_dir,num_threads,gtf_file,assembly_file)
            run_tool = "Tablemaker" 
-	   tool_version = '2.0.9'
-	 cuffmerge_dir = os.path.join(self.directory,"cuffmerge")
-	 merged_gtf = rnaseq_util.call_cuffmerge(self.directory,cuffmerge_dir,self.num_threads,self.details['gtf_file'],self.details['gtf_list_file'])
-	 ### Run DiffExpforBallgown
-	 output_dir = os.path.join(self.directory,self.method_params['output_obj_name'])
-	 diffexp_command = (' -p '+str(self.num_threads))
+           tool_version = '2.0.9'
+         cuffmerge_dir = os.path.join(self.directory,"cuffmerge")
+         merged_gtf = rnaseq_util.call_cuffmerge(self.directory,cuffmerge_dir,self.num_threads,self.details['gtf_file'],self.details['gtf_list_file'])
+         ### Run DiffExpforBallgown
+         output_dir = os.path.join(self.directory,self.method_params['output_obj_name'])
+         diffexp_command = (' -p '+str(self.num_threads))
 
-	 ### Setting Advanced parameters for DiffExpforBallgown
+         ### Setting Advanced parameters for DiffExpforBallgown
 
          if('time_series' in self.method_params and self.method_params['time_series'] != 0) : diffexp_command += (' -T ')
          if('min_alignment_count' in self.method_params and self.method_params['min_alignment_count'] is not None ) : diffexp_command += (' -c '+str(self.method_params['min_alignment_count']))
@@ -106,9 +116,9 @@ class DiffExpforBallgown(ExecutionBase):
                 self.logger.info("Executing: diffexp {0}".format(diffexp_command))
                 ret = script_util.runProgram(None,"diffexp",diffexp_command,None,self.directory)
                 result = ret["result"]
-		#error =  ret['stderr']
-		#print result
-		for line in result.splitlines(False):
+                #error =  ret['stderr']
+                #print result
+                for line in result.splitlines(False):
                        self.logger.info(line)
                        stderr = ret["stderr"]
                        prev_value = ''
@@ -123,9 +133,9 @@ class DiffExpforBallgown(ExecutionBase):
                                       prev_value = ''
                                       self.logger.info(line)
          except Exception,e:
-		raise Exception(e)
+                raise Exception(e)
                 raise Exception("Error executing diffexp {0},{1}".format(diffexp_command,e))
-	 try:
+         try:
                  self.logger.info("Zipping DiffExpforBallgown output")
                  out_file_path = os.path.join(self.directory,"{0}.zip".format(self.method_params['output_obj_name']))
                  script_util.zip_files(self.logger,output_dir,out_file_path)
@@ -136,7 +146,7 @@ class DiffExpforBallgown(ExecutionBase):
          except Exception, e:
                  print " ".join(traceback.print_exc())
                  raise Exception("Failed to upload the DiffExpforBallgown output files: {0}".format(out_file_path))
-	 ## Save object to workspace
+         ## Save object to workspace
          try:
                  self.logger.info("Saving DiffExpforBallgown object to workspace")
                  self.cm_obj = { "tool_used" : self.tool_used,
@@ -149,16 +159,37 @@ class DiffExpforBallgown(ExecutionBase):
                             "file" : handle
                            }
                  print self.cm_obj
-	 except Exception , e:
-		raise Exception("Error Running DiffExpforBallgown {0} ".format(e))
-		
+         except Exception , e:
+                raise Exception("Error Running DiffExpforBallgown {0} ".format(e))
+
 
     def collect(self) :
-	 output_name = self.method_params['output_obj_name']
-	 res1= self.common_params['ws_client'].save_objects(
+        self.logger.info( 'in DiffExpforBallgown.collect')
+        output_name = self.method_params['output_obj_name']
+
+        try:
+            e_sample = ws_client.get_objects( [ {'name' : params['expressionset_id'],
+                                                 'workspace' : params['ws_id']
+                                                 }
+                                              ])[0]
+        except Exception,e:
+            logger.exception("".join(traceback.format_exc()))
+            raise Exception("Error Downloading objects from the workspace ")
+        ## Get the Input object type and info #
+        e_sample_info = ws_client.get_object_info_new({"objects": [{'name': params['expressionset_id'], 'workspace': params['ws_id']}]})[0]
+        e_sample_type = e_sample_info[2].split('-')[0]
+        expressionset_id = str(e_sample_info[6]) + '/' + str(e_sample_info[0]) + '/' + str(e_sample_info[4])
+        alignmentset_id = e_sample['data']['alignmentSet_id'] 
+        sampleset_id = e_sample['data']['sampleset_id']
+        expression_ids = e_sample['data']['sample_expression_ids']
+        num_samples = len(expression_ids)
+        if num_samples < 2:
+           raise ValueError("Please ensure you have atleast 2 expressions to run diffExpCallforBallgown in Set mode")
+         # 1) need expression set
+        res1 = self.common_params['ws_client'].save_objects(
                                      {"workspace":self.method_params['ws_id'],
                                       "objects": [{
                                       "type":"KBaseRNASeq.RNASeqDifferentialExpression",
                                       "data":self.cm_obj,
                                       "name":output_name}]})
-         returnVal = { 'output'  : output_name ,'workspace' : self.method_params['ws_id']}
+        returnVal = { 'output'  : output_name ,'workspace' : self.method_params['ws_id']}
