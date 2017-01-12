@@ -684,8 +684,8 @@ class KBaseRNASeq:
             # different parameter group for the --merge calls
             # that includes other parameters like -F, -T, etc
             # stringtie_params = {'ws_id' : params['ws_id'],
-            #                     'alignmentset_id' : params['sampleset_id']+"_hisat2_alignment_stringtie_alignment",
-            #                     'sample_alignment' : params['sampleset_id']+"_hisat2_alignment_stringtie_alignment",
+            #                     'alignmentset_id' : ???
+            #                     'sample_alignment' : ???
             #                     'label' : params['st_options']['st_label'],
             #                     'min_isoform_abundance' : params['st_options']['st_min_isoform_abundance'],
             #                     'min_length' : params['st_options']['st_min_length'],
@@ -705,8 +705,8 @@ class KBaseRNASeq:
             # Set up 3rd StringTie call to create the read coverage tables
             # This may need a 3rd set of parameters?
             # stringtie_params = {'ws_id' : params['ws_id'],
-            #                     'alignmentset_id' : params['sampleset_id']+"_hisat2_alignment_stringtie_alignment_stringtie_alignment",
-            #                     'sample_alignment' : params['sampleset_id']+"_hisat2_alignment_stringtie_alignment_stringtie_alignment",
+            #                     'alignmentset_id' : ???
+            #                     'sample_alignment' : ???
             #                     'label' : params['st_options']['st_label'],
             #                     'min_isoform_abundance' : params['st_options']['st_min_isoform_abundance'],
             #                     'a_juncs' : params['st_options']['st_a_juncs'],
