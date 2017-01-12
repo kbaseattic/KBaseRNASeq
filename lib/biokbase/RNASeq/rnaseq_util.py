@@ -14,6 +14,7 @@ from biokbase.RNASeq import handler_utils as handler_util
 from biokbase.RNASeq import script_util
 from pprint import pprint,pformat
 from operator import itemgetter
+import subprocess
 
 def get_fa_from_genome(logger,ws_client,urls,ws_id,directory,genome_name):
     ref_info = ws_client.get_object_info_new({"objects": [{'name': genome_name, 'workspace': ws_id}]})[0]
@@ -505,6 +506,124 @@ def get_details_for_diff_exp(logger,ws_client,hs,ws_id,urls,directory,expression
         output_obj['gtf_list_file'] = assembly_file
         print output_obj
         return output_obj        
+
+# This downloads and unzips in a separate directory the stringtie output from each expression object
+# in the given expression set, and verifies that it has the correct files for ballgown to run
+# (*.ctab).  Each directory name is prefixed by the given dir_prefix so that the ballgown call can
+# use it to specify the input directories to ballgown
+
+
+def download_for_ballgown( logger, ws_client, hs, ws_id, urls, directory, dir_prefix, expressionset_id, token ):
+        try:
+           expression_set = ws_client.get_objects( [ { 'name'      : expressionset_id,
+                                                       'workspace' : ws_id }
+                                                   ] )[0]
+
+        except Exception,e:
+           raise Exception( "".join(traceback.format_exc() ))
+        ### Getting all the set ids and genome_id
+        output_obj = {}
+        #expression_set_info = ws_client.get_object_info_new({"objects": [{'name' : expressionset_id, 'workspace': ws_id}]})[0] 
+        #output_obj['expressionset_id'] =  str(expression_set_info[6]) + '/' + str(expression_set_info[0]) + '/' + str(expression_set_info[4])
+        #output_obj['sampleset_id'] =  expression_set['data']['sampleset_id']
+        #output_obj['alignmentset_id'] = expression_set['data']['alignmentSet_id'] 
+        #output_obj['genome_id'] = expression_set['data']['genome_id']
+        #output_obj['genome_name'] = ws_client.get_object_info([{"ref" :output_obj['genome_id']}],includeMetadata=None)[0][1]
+        #ws_gtf = output_obj['genome_name']+"_GTF_Annotation"
+    
+        ### Check if GTF object exists in the workspace pull the gtf
+        #ws_gtf = output_obj['genome_name']+"_GTF"
+        #gtf_file = script_util.check_and_download_existing_handle_obj(logger,ws_client,urls,ws_id,ws_gtf,"KBaseRNASeq.GFFAnnotation",directory,token)
+        #print 'GTF file is  ' +  gtf_file
+        #if gtf_file is None:
+        #     create_gtf_annotation_from_genome(logger,ws_client,hs,urls,ws_id,output_obj['genome_id'],output_obj['genome_name'],directory,token)
+        #output_obj['gtf_file'] = gtf_file
+        ### Getting the expression objects and alignment objects
+        m_expr_ids = expression_set['data']['mapped_expression_ids']
+        if len(m_expr_ids)  < 2:
+           raise ValueError("Error the ExpressionSet object has less than 2 expression samples. Kindly check your reads files and repeat the previous step (Cufflinks)")
+        output_obj['labels'] = []
+        #output_obj['alignments'] = []   
+        output_obj['subdirs'] = []
+        counter = 0
+        #assembly_file = os.path.join( directory, "assembly_gtf.txt" )
+        #list_file = open( assembly_file, 'w' )
+        for i in m_expr_ids:                  
+            for a_id, e_id in i.items():
+                #files = {}
+                #a_obj,e_obj = ws_client.get_objects(
+                #                     [{'ref' : a_id},{'ref': e_id}])
+                a_obj= ws_client.get_objects( [ {'ref' : a_id} ] )[0]
+                zipfile = a_obj['data']['file']['file_name']
+                shock_id = a_obj['data']['file']['id']
+                ### Get the condition name, replicate_id , shock_id and shock_filename
+                condition = a_obj['data']['condition']                                            # Question: can we use this for group!?
+                if 'replicate_id' in a_obj['data'] : replicate_id = a_obj['data']['replicate_id']
+                #files[a_obj['data']['file']['file_name']] = a_obj['data']['file']['id']
+                #files[e_obj['data']['file']['file_name']] = e_obj['data']['file']['id']
+                if not condition in output_obj['labels']: 
+                    output_obj['labels'].append( condition )
+                else:
+                    counter += 1 #### comment it when replicate_id is available from methods
+
+                subdir = os.path.join( directory, dir_prefix, condition, str(counter) ) ### Comment this line when replicate_id is available from the methods
+
+                output_obj['subdirs'].append( subdir )
+                if not os.path.exists( subdir ): 
+                    os.makedirs( subdir )
+                try:
+                    script_util.download_file_from_shock( logger = logger, 
+                                                          shock_service_url = urls['shock_service_url'], 
+                                                          shock_service_id = shock_id,
+                                                          filename = zipfile,
+                                                          directory = subdir, 
+                                                          token = token )
+                    #script_util.download_shock_files( logger, urls['shock_service_url'], s_path, files, token )
+                except Exception,e:
+                    raise Exception( "Unable to download shock file, {0}".format(e))
+                try:
+                    script_util.unzip_files( logger, 
+                                             os.path.join( subdir, zipfile ),
+                                             subdir )
+                    #script_util.unzip_files(logger,os.path.join(s_path,e_obj['data']['file']['file_name']),s_path)
+                    #e_file_path =  os.path.join(s_path,"transcripts.gtf")
+                    #a_file_path = os.path.join( s_path, "accepted_hits.bam" )
+                    #if os.path.exists(a_file_path) : 
+                    #         print a_file_path
+                    #         output_obj['alignments'].append(a_file_path)
+                    #if os.path.exists(e_file_path) : list_file.write("{0}\n".format(e_file_path))
+                except Exception, e:
+                    raise Exception("".join(traceback.format_exc()))
+
+        #list_file.close()
+        #output_obj['gtf_list_file'] = assembly_file
+        print output_obj
+        return output_obj        
+
+def  run_ballgown_diff_exp( logger, rscripts_dir, dir_prefix, group_str, output_csv ):
+        #
+        # This assumes the ballgown is the CWD.
+        # pattern is "st"
+
+        #  1) Need to make a generic "Run rscript program"
+        #  2) is this the best way to run the R script (subprocess Popen?)
+        # Make call to execute the system.
+
+        rcmd_list = [ 'Rscript', os.path.join( rscripts_dir, 'ballgown_fpkmgenematrix.R' ),
+                      '--ballgown_dir', '.',
+                      '--sample_dir_pat', dir_prefix,
+                      '--experiment_groups', group_str,
+                      '--out_csvfile', output_csv 
+                    ] 
+        rcmd_str = " ".join(str(x) for x in ropts)
+        openedprocess = subprocess.Popen( rcmd_str, shell=True, stdout=subprocess.PIPE )
+        openedprocess.wait()
+        #Make sure the openedprocess.returncode is zero (0)
+        if openedprocess.returncode != 0:
+            logger.info( "R script did not return normally, return code - "
+                + str(openedprocess.returncode))
+            raise Exception( "Rscript failure" )
+
 
 def call_cuffmerge(working_dir,directory,num_threads,gtf_file,list_file):
          #cuffmerge_dir = os.path.join(directory,"cuffmerge")
