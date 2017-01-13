@@ -357,6 +357,10 @@ class Application(object):
                              name='KBaseRNASeq.StringTieCall',
                              types=[dict])
         self.method_authentication['KBaseRNASeq.StringTieCall'] = 'required'
+        self.rpc_service.add(impl_KBaseRNASeq.Hisat2StringTieCall,
+                             name='KBaseRNASeq.Hisat2StringTieCall',
+                             types=[dict])
+        self.method_authentication['KBaseRNASeq.Hisat2StringTieCall'] = 'required'
         self.rpc_service.add(impl_KBaseRNASeq.CufflinksCall,
                              name='KBaseRNASeq.CufflinksCall',
                              types=[dict])
