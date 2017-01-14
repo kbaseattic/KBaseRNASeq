@@ -193,17 +193,17 @@ class KBaseRNASeq:
 	    if params["Library_type"] == 'PairedEnd' : lib_type = ['KBaseAssembly.PairedEndLibrary', 'KBaseFile.PairedEndLibrary']
 	    else: lib_type = ['KBaseAssembly.SingleEndLibrary', 'KBaseFile.SingleEndLibrary']
 	    for i in sample_ids:
-	    	s_info = ws_client.get_object_info_new({"objects": [{'name': i, 'workspace': params['ws_id']}]})
+	    	s_info = script_util.ws_get_obj_info(self.__LOGGER, ws_client, params['ws_id'], i)
                 obj_type = s_info[0][2].split('-')[0]
 		if not (obj_type in lib_type):
-			raise ValueError("Library_type mentioned : {0}. Please add only {1} typed objects in Reads fields".format(lib_type,lib_type)) 
+			raise ValueError("Library_type mentioned : {0}. Please add only {1} typed objects in Reads fields".format(params["Library_type"],params["Library_type"])) 
 	
    	    ## Code to Update the Provenance; make it a function later
             provenance = [{}]
             if 'provenance' in ctx:
                 provenance = ctx['provenance']
             #add additional info to provenance here, in this case the input data object reference
-            provenance[0]['input_ws_objects']=[ params['ws_id']+'/'+sample for sample in sample_ids]
+            provenance[0]['input_ws_objects']=sample_ids
 	    
 	    #Saving RNASeqSampleSet to Workspace
 	    self.__LOGGER.info("Saving {0} object to workspace".format(params['sampleset_id']))
@@ -252,7 +252,7 @@ class KBaseRNASeq:
         	if 'provenance' in ctx:
             		provenance = ctx['provenance']
         	# add additional info to provenance here, in this case the input data object reference
-        	provenance[0]['input_ws_objects']=[params['ws_id']+'/'+params['reference']]
+        	provenance[0]['input_ws_objects']=[params['reference']]
 		
 		try:
 			ref_id, outfile_ref_name = rnaseq_util.get_fa_from_genome(self.__LOGGER,ws_client,self.__SERVICES,params['ws_id'],bowtie_dir,params['reference'])
@@ -369,8 +369,7 @@ class KBaseRNASeq:
 
         # Check to Call Bowtie2 in Set mode or Single mode
         wsc = common_params['ws_client']
-        readsobj_info = wsc.get_object_info_new({"objects": [{'name': params['sampleset_id'], 'workspace': params['ws_id']}]})
-        readsobj_type = readsobj_info[0][2].split('-')[0]
+        readsobj_type = script_util.ws_get_type_name(self.__LOGGER, wsc, params['ws_id'], params['sampleset_id'])
         if readsobj_type == 'KBaseRNASeq.RNASeqSampleSet':
                 self.__LOGGER.info("Bowtie2 SampleSet Case")
                 bw2ss = Bowtie2SampleSet(self.__LOGGER, bowtie2_dir, self.__SERVICES)
@@ -425,8 +424,7 @@ class KBaseRNASeq:
 
 	# Check to Call HiSat2 in Set mode or Single mode
 	wsc = common_params['ws_client']
-	readsobj_info = wsc.get_object_info_new({"objects": [{'name': params['sampleset_id'], 'workspace': params['ws_id']}]})
-        readsobj_type = readsobj_info[0][2].split('-')[0]
+        readsobj_type = script_util.ws_get_type_name(self.__LOGGER, wsc, params['ws_id'], params['sampleset_id'])
 	if readsobj_type == 'KBaseRNASeq.RNASeqSampleSet':	
 		self.__LOGGER.info("HiSat2 SampleSet Case")
         	hs2ss = HiSat2SampleSet(self.__LOGGER, hisat2_dir, self.__SERVICES)
@@ -480,8 +478,9 @@ class KBaseRNASeq:
 
 	# Check to Call Tophat in Set mode or Single mode
 	wsc = common_params['ws_client']
-	obj_info = wsc.get_object_info_new({"objects": [{'name': params['sampleset_id'], 'workspace': params['ws_id']}]})
-        obj_type = obj_info[0][2].split('-')[0]
+        #readsobj_info = script_util.ws_get_obj_info(self.__LOGGER, wsc, params['ws_id'], params['sampleset_id'])
+        #obj_type = obj_info[0][2].split('-')[0]
+        obj_type = script_util.ws_get_type_name(self.__LOGGER, wsc, params['ws_id'], params['sampleset_id'])
 	if obj_type == 'KBaseRNASeq.RNASeqSampleSet':	
 		self.__LOGGER.info("Tophat SampleSet Case")
         	tss = TophatSampleSet(self.__LOGGER, tophat_dir, self.__SERVICES)
@@ -536,7 +535,8 @@ class KBaseRNASeq:
 
 	# Check to Call StringTie in Set mode or Single mode
 	wsc = common_params['ws_client']
-	obj_info = wsc.get_object_info_new({"objects": [{'name': params['alignmentset_id'], 'workspace': params['ws_id']}]})
+	#obj_info = wsc.get_object_info_new({"objects": [{'name': params['alignmentset_id'], 'workspace': params['ws_id']}]})
+        obj_info = script_util.ws_get_obj_info(self.__LOGGER, wsc, params['ws_id'], params['alignmentset_id'])
         obj_type = obj_info[0][2].split('-')[0]
 	if obj_type == 'KBaseRNASeq.RNASeqAlignmentSet':	
 		self.__LOGGER.info("StringTie AlignmentSet Case")
@@ -583,7 +583,7 @@ class KBaseRNASeq:
 
         # Check to Call Cufflinks in Set mode or Single mode
         wsc = common_params['ws_client']
-        obj_info = wsc.get_object_info_new({"objects": [{'name': params['alignmentset_id'], 'workspace': params['ws_id']}]})
+        obj_info = script_util.ws_get_obj_info(self.__LOGGER, wsc, params['ws_id'], params['alignmentset_id'])
         obj_type = obj_info[0][2].split('-')[0]
         if obj_type == 'KBaseRNASeq.RNASeqAlignmentSet':
                 self.__LOGGER.info("Cufflinks AlignmentSet Case")

@@ -51,31 +51,36 @@ class TophatSampleSet(Tophat):
         tophat_dir = self.directory
 
         try:
-               sample ,bowtie_index = ws_client.get_objects(
-                                        [{'name' : params['sampleset_id'],'workspace' : params['ws_id']},
-					{ 'name' : params['bowtie_index'], 'workspace' : params['ws_id']}])
+               #sample ,bowtie_index = ws_client.get_objects(
+               #                         [{'name' : params['sampleset_id'],'workspace' : params['ws_id']},
+               #                          { 'name' : params['bowtie_index'], 'workspace' : params['ws_id']}])
+               sample = script_util.ws_get_obj(logger, ws_client, params['ws_id'],params['sampleset_id'])[0]
+               bowtie_index = script_util.ws_get_obj(logger, ws_client, params['ws_id'],params['bowtie_index'])[0]
                self.sample = sample
         except Exception,e:
                logger.exception("".join(traceback.format_exc()))
                raise ValueError(" Error Downloading objects from the workspace ")
         ### Get object Info and IDs
-        sample_info = ws_client.get_object_info_new({"objects": [{'name': params['sampleset_id'], 'workspace': params['ws_id']}]})[0]
-        sample_type = sample_info[2].split('-')[0]
+        #sample_info = ws_client.get_object_info_new({"objects": [{'name': params['sampleset_id'], 'workspace': params['ws_id']}]})[0]
+        #sample_type = sample_info[2].split('-')[0]
 
         # SampleSet
         reads = sample['data']['sample_ids']
         reads_type= sample['data']['Library_type']
-        e_ws_objs = script_util.if_ws_obj_exists_notype(None,ws_client,params['ws_id'],reads)
-        missing_objs = [i for i in reads if not i in e_ws_objs]
-        if len(e_ws_objs) != len(reads):
-           raise ValueError('Missing Library objects {0} in the {1}. please copy them and run this method'.format(",".join(missing_objs),params['ws_id']))
+        # Note: do not need the following as we support ws reference
+        #e_ws_objs = script_util.if_ws_obj_exists_notype(None,ws_client,params['ws_id'],reads)
+        #missing_objs = [i for i in reads if not i in e_ws_objs]
+        #if len(e_ws_objs) != len(reads):
+        #   raise ValueError('Missing Library objects {0} in the {1}. please copy them and run this method'.format(",".join(missing_objs),params['ws_id']))
 
 
 
 	### Get obejct IDs
-        bowtie2_index_info,sampleset_info = ws_client.get_object_info_new({"objects": [{'name': params['bowtie_index'], 'workspace': params['ws_id']},{'name': params['sampleset_id'], 'workspace': params['ws_id']}]})
-        self.bowtie2index_id = str(bowtie2_index_info[6]) + '/' + str(bowtie2_index_info[0]) + '/' + str(bowtie2_index_info[4])  
-        sampleset_id = str(sampleset_info[6]) + '/' + str(sampleset_info[0]) + '/' + str(sampleset_info[4]) 
+        #bowtie2_index_info,sampleset_info = ws_client.get_object_info_new({"objects": [{'name': params['bowtie_index'], 'workspace': params['ws_id']},{'name': params['sampleset_id'], 'workspace': params['ws_id']}]})
+        #self.bowtie2index_id = str(bowtie2_index_info[6]) + '/' + str(bowtie2_index_info[0]) + '/' + str(bowtie2_index_info[4])  
+        #sampleset_id = str(sampleset_info[6]) + '/' + str(sampleset_info[0]) + '/' + str(sampleset_info[4]) 
+        self.bowtie2index_id = script_util.ws_get_ref(logger, ws_client, params['ws_id'], params['bowtie_index'])
+        sampleset_id = script_util.ws_get_ref(logger, ws_client, params['ws_id'], params['sampleset_id'])
         bw_id = bowtie_index['data']['handle']['id'] 
         bw_name =  bowtie_index['data']['handle']['file_name']
         genome_id = bowtie_index['data']['genome_id']
@@ -99,24 +104,29 @@ class TophatSampleSet(Tophat):
 	### Check if the gtf object exists in the workspace
         ### Only run create_gtf_annotation if object doesnt exist
 	ws_gtf = annotation_gtf+"_GTF_Annotation"
-	ret = script_util.if_obj_exists(None,ws_client,params['ws_id'],"KBaseRNASeq.GFFAnnotation",[ws_gtf])
-        if not ret is None:
-            logger.info("GFF Annotation Exist for Genome Annotation {0}.... Skipping step ".format(annotation_gtf))
-	    annot_name,annot_id = ret[0]
-            gtf_obj=ws_client.get_objects([{'ref' : annot_id}])[0]
-            gtf_id=gtf_obj['data']['handle']['id']
-            gtf_name=gtf_obj['data']['handle']['file_name']
-            try:
-               script_util.download_file_from_shock(logger, shock_service_url=self.urls['shock_service_url'], shock_id=gtf_id,filename=gtf_name, directory=tophat_dir,token=token)
-               gtf_file = os.path.join(tophat_dir,gtf_name)
-            except Exception,e:
-	       logger.exception(e)
-               raise Exception( "Unable to download shock file, {0}".format(gtf_name))  
- 	else:		
-	    gtf_file =rnaseq_util.create_gtf_annotation_from_genome(logger,ws_client,hs,self.urls,params['ws_id'],genome_id,annotation_gtf,tophat_dir,token)		
+
+        gtf_file = script_util.check_and_download_existing_handle_obj(logger,ws_client,self.urls,params['ws_id'],ws_gtf,"KBaseRNASeq.GFFAnnotation",tophat_dir,token)
+        if gtf_file is None:
+	     gtf_file = rnaseq_util.create_gtf_annotation_from_genome(logger,ws_client,hs,self.urls,params['ws_id'],ref_id,genome_name,tophat_dir,token)
+	#ret = script_util.if_obj_exists(None,ws_client,params['ws_id'],"KBaseRNASeq.GFFAnnotation",[ws_gtf]) # this line should be safe from reference
+        #if not ret is None:
+        #    logger.info("GFF Annotation Exist for Genome Annotation {0}.... Skipping step ".format(annotation_gtf))
+	#    annot_name,annot_id = ret[0]
+        #    gtf_obj=ws_client.get_objects([{'ref' : annot_id}])[0]
+        #    gtf_id=gtf_obj['data']['handle']['id']
+        #    gtf_name=gtf_obj['data']['handle']['file_name']
+        #    try:
+        #       script_util.download_file_from_shock(logger, shock_service_url=self.urls['shock_service_url'], shock_id=gtf_id,filename=gtf_name, directory=tophat_dir,token=token)
+        #       gtf_file = os.path.join(tophat_dir,gtf_name)
+        #    except Exception,e:
+	#       logger.exception(e)
+        #       raise Exception( "Unable to download shock file, {0}".format(gtf_name))  
+ 	#else:		
+	#    gtf_file =rnaseq_util.create_gtf_annotation_from_genome(logger,ws_client,hs,self.urls,params['ws_id'],genome_id,annotation_gtf,tophat_dir,token)		
+
 	# Determine the num_threads provided by the user otherwise default the number of threads to 2
-        reads = sample['data']['sample_ids']
-        reads_type= sample['data']['Library_type']
+        #reads = sample['data']['sample_ids'] # duplicated lines
+        #reads_type= sample['data']['Library_type'] # duplicated lines
         r_label = sample['data']['condition']
         self.num_jobs =  len(reads)
 
@@ -130,7 +140,7 @@ class TophatSampleSet(Tophat):
                                   'ws_id' : params['ws_id'],
                                   'reads_type' : reads_type,
                                   'tophat_dir' : self.directory,
-				  'gtf_file' : gtf_file,
+				  'gtf_file' : gtf_file, # TODO: double check newly created file gtf_file is path or not
                                   'annotation_id': genome_id,
                                   'sampleset_id' : sampleset_id
                                  }

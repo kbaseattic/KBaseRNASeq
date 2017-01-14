@@ -58,10 +58,12 @@ class Bowtie2(ExecutionBase):
         print "Downloading Read Sample{0}".format(read_sample)
         logger.info("Downloading Read Sample{0}".format(read_sample))
         try:
-                r_sample = ws_client.get_objects(
-                                        [{ 'name' : read_sample, 'workspace' : ws_id}])[0]
-                r_sample_info = ws_client.get_object_info_new({"objects": [{'name': read_sample, 'workspace': ws_id}]})[0]
-                sample_type = r_sample_info[2].split('-')[0]
+                #r_sample = ws_client.get_objects(
+                #                        [{ 'name' : read_sample, 'workspace' : ws_id}])[0]
+                r_sample = script_util.ws_get_obj(logger,ws_client, ws_id, read_sample)[0]
+                #r_sample_info = ws_client.get_object_info_new({"objects": [{'name': read_sample, 'workspace': ws_id}]})[0]
+                #sample_type = r_sample_info[2].split('-')[0]
+                sample_type = script_util.ws_get_type_name(logger, ws_client, ws_id, read_sample)
                 input_direc = os.path.join(directory,read_sample.split('.')[0]+"_bowtie2_input")
                 if not os.path.exists(input_direc): os.mkdir(input_direc)
                 output_name = read_sample.split('.')[0]+"_bowtie2_alignment"
@@ -86,41 +88,61 @@ class Bowtie2(ExecutionBase):
                 if('maxins' in params and params['maxins'] is not None): bowtie2_cmd += ( ' --maxins '+str(params['maxins']))
 
                 out_file = output_dir +"/accepted_hits.sam"
+                ####
+                try:
+                        sample_ref = script_util.ws_get_ref(self.logger, ws_client, ws_id, read_sample)
+                        ds = script_util.ru_reads_download(self.logger, sample_ref,input_direc, token)
+                except Exception,e:
+                        self.logger.exception(e)
+                        raise Exception( "Unable to download reads file , {0}".format(read_sample))
                 if sample_type  == 'KBaseAssembly.SingleEndLibrary' or sample_type  == 'KBaseFile.SingleEndLibrary':
                         lib_type = 'SingleEnd'
-                        if sample_type == 'KBaseAssembly.SingleEndLibrary':
-                            read_id = r_sample['data']['handle']['id']
-                            read_name =  r_sample['data']['handle']['file_name']
-                        else:
-                            read_id = r_sample['data']['lib']['file']['id']
-                            read_name =  r_sample['data']['lib']['file']['file_name']
-                        try:
-                                script_util.download_file_from_shock(self.logger, shock_service_url=self.urls['shock_service_url'], shock_id=read_id,filename=read_name, directory=input_direc,token=token)
-                                bowtie2_cmd += " -U {0} -x {1} -S {2}".format(os.path.join(input_direc,read_name),bowtie2_base,out_file)
-                        except Exception,e:
-                                self.logger.exception(e)
-                                raise Exception( "Unable to download shock file , {0}".format(read_name))
+                        bowtie2_cmd += " -U {0} -x {1} -S {2}".format(ds['fwd'],bowtie2_base,out_file)
                 if sample_type == 'KBaseAssembly.PairedEndLibrary' or sample_type == 'KBaseFile.PairedEndLibrary':
                         lib_type = 'PairedEnd'
                         if sample_type == 'KBaseAssembly.PairedEndLibrary':
-                            if('orientation' in params and params['orientation'] is not None): bowtie2_cmd += ( ' --'+params['orientation'])
-                            read1_id = r_sample['data']['handle_1']['id']
-                            read1_name = r_sample['data']['handle_1']['file_name']
-                            read2_id = r_sample['data']['handle_2']['id']
-                            read2_name = r_sample['data']['handle_2']['file_name']
+                            if('orientation' in params and params['orientation'] is not None): hisat2_cmd += ( ' --'+params['orientation'])
                         else:
                             # TODO: the following can be read from PEL object
-                            if('orientation' in params and params['orientation'] is not None): bowtie2_cmd += ( ' --'+params['orientation'])
-                            read1_id = r_sample['data']['lib1']['file']['id']
-                            read1_name = r_sample['data']['lib1']['file']['file_name']
-                            read2_id = r_sample['data']['lib2']['file']['id']
-                            read2_name = r_sample['data']['lib2']['file']['file_name']
-                        try:
-                                script_util.download_file_from_shock(self.logger, shock_service_url=self.urls['shock_service_url'], shock_id=read1_id,filename=read1_name, directory=input_direc,token=token)
-                                script_util.download_file_from_shock(self.logger, shock_service_url=self.urls['shock_service_url'], shock_id=read2_id,filename=read2_name, directory=input_direc,token=token)
-                                bowtie2_cmd += " -1 {0} -2 {1} -x {2} -S {3}".format(os.path.join(input_direc,read1_name),os.path.join(input_direc,read2_name),bowtie2_base,out_file)
-                        except Exception,e:
-                                raise Exception( "Unable to download shock file , {0} or {1}".format(read1_name,read2_name))
+                            if('orientation' in params and params['orientation'] is not None): hisat2_cmd += ( ' --'+params['orientation'])
+                        hisat2_cmd += " -1 {0} -2 {1} -x {2} -S {3}".format(ds['fwd'], ds['rev'],hisat2_base,out_file)
+                        bowtie2_cmd += " -1 {0} -2 {1} -x {2} -S {3}".format(ds['fwd'], ds['rev'],bowtie2_base,out_file)
+                ###
+#                if sample_type  == 'KBaseAssembly.SingleEndLibrary' or sample_type  == 'KBaseFile.SingleEndLibrary':
+#                        lib_type = 'SingleEnd'
+#                        if sample_type == 'KBaseAssembly.SingleEndLibrary':
+#                            read_id = r_sample['data']['handle']['id']
+#                            read_name =  r_sample['data']['handle']['file_name']
+#                        else:
+#                            read_id = r_sample['data']['lib']['file']['id']
+#                            read_name =  r_sample['data']['lib']['file']['file_name']
+#                        try:
+#                                script_util.download_file_from_shock(self.logger, shock_service_url=self.urls['shock_service_url'], shock_id=read_id,filename=read_name, directory=input_direc,token=token)
+#                                bowtie2_cmd += " -U {0} -x {1} -S {2}".format(os.path.join(input_direc,read_name),bowtie2_base,out_file)
+#                        except Exception,e:
+#                                self.logger.exception(e)
+#                                raise Exception( "Unable to download shock file , {0}".format(read_name))
+#                if sample_type == 'KBaseAssembly.PairedEndLibrary' or sample_type == 'KBaseFile.PairedEndLibrary':
+#                        lib_type = 'PairedEnd'
+#                        if sample_type == 'KBaseAssembly.PairedEndLibrary':
+#                            if('orientation' in params and params['orientation'] is not None): bowtie2_cmd += ( ' --'+params['orientation'])
+#                            read1_id = r_sample['data']['handle_1']['id']
+#                            read1_name = r_sample['data']['handle_1']['file_name']
+#                            read2_id = r_sample['data']['handle_2']['id']
+#                            read2_name = r_sample['data']['handle_2']['file_name']
+#                        else:
+#                            # TODO: the following can be read from PEL object
+#                            if('orientation' in params and params['orientation'] is not None): bowtie2_cmd += ( ' --'+params['orientation'])
+#                            read1_id = r_sample['data']['lib1']['file']['id']
+#                            read1_name = r_sample['data']['lib1']['file']['file_name']
+#                            read2_id = r_sample['data']['lib2']['file']['id']
+#                            read2_name = r_sample['data']['lib2']['file']['file_name']
+#                        try:
+#                                script_util.download_file_from_shock(self.logger, shock_service_url=self.urls['shock_service_url'], shock_id=read1_id,filename=read1_name, directory=input_direc,token=token)
+#                                script_util.download_file_from_shock(self.logger, shock_service_url=self.urls['shock_service_url'], shock_id=read2_id,filename=read2_name, directory=input_direc,token=token)
+#                                bowtie2_cmd += " -1 {0} -2 {1} -x {2} -S {3}".format(os.path.join(input_direc,read1_name),os.path.join(input_direc,read2_name),bowtie2_base,out_file)
+#                        except Exception,e:
+#                                raise Exception( "Unable to download shock file , {0} or {1}".format(read1_name,read2_name))
                 try:
                         self.logger.info("Executing: bowtie2 {0}".format(bowtie2_cmd))
                         cmdline_output = script_util.runProgram(self.logger,"bowtie2",bowtie2_cmd,None,directory)

@@ -134,7 +134,8 @@
           "target_property": "Library_type"
 	},{
           "input_parameter": "sample_ids",
-          "target_property": "sample_ids"
+          "target_property": "sample_ids",
+          "target_type_transform": "resolved-ref"
 	},{
           "input_parameter": "condition",
           "target_property": "condition"

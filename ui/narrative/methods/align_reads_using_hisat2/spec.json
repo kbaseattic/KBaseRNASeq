@@ -232,7 +232,8 @@
         },
         {
           "input_parameter" : "genome_id",
-          "target_property" : "genome_id"
+          "target_property" : "genome_id",
+          "target_type_transform": "resolved-ref"
         },
 	{
           "input_parameter" : "num_threads",
