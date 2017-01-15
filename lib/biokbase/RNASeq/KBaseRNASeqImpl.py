@@ -203,7 +203,7 @@ class KBaseRNASeq:
             if 'provenance' in ctx:
                 provenance = ctx['provenance']
             #add additional info to provenance here, in this case the input data object reference
-            provenance[0]['input_ws_objects']=sample_ids
+            provenance[0]['input_ws_objects']=[ script_util.ws_get_ref(self.__LOGGER, ws_client,params['ws_id'],sample) for sample in sample_ids]
 	    
 	    #Saving RNASeqSampleSet to Workspace
 	    self.__LOGGER.info("Saving {0} object to workspace".format(params['sampleset_id']))
