@@ -54,7 +54,7 @@ def ru_reads_download(logger, ref, tdir, token):
     ds = ru.download_reads({"read_libraries" : [ref], "interleaved" : "false"})
     ds['fwd'] = os.path.join(tdir, ds['files'][ref]['files']['fwd_name'])
     shutil.move(ds['files'][ref]['files']['fwd'],ds['fwd'])
-    if ds['files'][ref]['files']['otype'] == 'paired':
+    if ds['files'][ref]['files']['type'] == 'paired':
         if ds['files'][ref]['files']['rev_name'] is None:
             ds['rev'] = os.path.join(tdir, 'rev.fastq')
         else:
