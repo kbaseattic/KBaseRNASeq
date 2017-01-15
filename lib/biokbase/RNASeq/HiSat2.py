@@ -94,6 +94,7 @@ class HiSat2(ExecutionBase):
                 try:
                         sample_ref = script_util.ws_get_ref(self.logger, ws_client, ws_id, read_sample)
                         ds = script_util.ru_reads_download(self.logger, sample_ref,input_direc, token)
+                        self.logger.info(ds)
                 except Exception,e:
                         self.logger.exception(e)
                         raise Exception( "Unable to download reads file , {0}".format(read_sample))
