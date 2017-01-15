@@ -41,8 +41,7 @@
           "target_property": "ws_id"
         },{
           "input_parameter": "input_genome",
-          "target_property": "reference",
-          "target_type_transform": "resolved-ref"
+          "target_property": "reference"
         },{
           "input_parameter": "out_index_name",
           "target_property": "output_obj_name"
