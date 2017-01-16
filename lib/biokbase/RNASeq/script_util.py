@@ -48,17 +48,24 @@ def check_memory_usage(logger):
 def check_cpu_usage(logger):
     runProgram(logger=logger, progName="mpstat", argStr="-P ALL")
 
+def trim_gz(name):
+    if name.endswith(".gz"):
+      return name.split('.')[:-1]
+    else:
+      return name
 
 def ru_reads_download(logger, ref, tdir, token):
     ru = ReadsUtils(url=os.environ['SDK_CALLBACK_URL'], token=token)
     ds = ru.download_reads({"read_libraries" : [ref], "interleaved" : "false"})
-    ds['fwd'] = os.path.join(tdir, ds['files'][ref]['files']['fwd_name'])
+    
+    #ds['fwd'] = os.path.join(tdir, trim_gz(ds['files'][ref]['files']['fwd_name']))
+    ds['fwd'] = os.path.join(tdir, os.path.basename(ds['files'][ref]['files']['fwd']))
     shutil.move(ds['files'][ref]['files']['fwd'],ds['fwd'])
     if ds['files'][ref]['files']['type'] == 'paired':
         if ds['files'][ref]['files']['rev_name'] is None:
             ds['rev'] = os.path.join(tdir, 'rev.fastq')
         else:
-            ds['rev'] = os.path.join(tdir, ds['files'][ref]['files']['rev_name'])
+            ds['rev'] = os.path.join(tdir, os.path.basename(ds['files'][ref]['files']['rev']))
         shutil.move(ds['files'][ref]['files']['rev'],ds['rev'])
     return ds
 
