@@ -59,6 +59,21 @@ class TestRNASeqMethods(TestRNASeqMethodsSetup):
 #                output =json.load(o)
 #        pprint(output)
 #
+ def test_02(self):
+        print("\n\n----------- test HiSat2 PEL ----------")
+
+        out =call(["./bin/run_KBaseRNASeq.sh",
+        "test/script_test/test_analysis2_hisat2_pel_input.json",
+        "test/script_test/test_analysis2_hisat2_pel_output.json",
+        "test/script_test/token.txt"])
+
+        # print error code of Implementation
+        print(out);
+
+        with open('test/script_test/test_analysis2_hisat2_pel_output.json') as o:
+                output =json.load(o)
+        pprint(output)
+
 # def test_a(self):
 #        print("\n\n----------- test SetupRNASeqAnalysis ----------")
 #
@@ -104,20 +119,20 @@ class TestRNASeqMethods(TestRNASeqMethodsSetup):
 #               output =json.load(o)
 #       pprint(output)
 
- def test_Bowtie2Call(self):
-        print("\n\n----------- test Bowtie2Call ----------")
-
-        out =call(["run_KBaseRNASeq.sh",
-        "test/script_test/test_analysis2_bowtie2_input.json",
-        "test/script_test/test_analysis2_bowtie2_output.json",
-        "test/script_test/token.txt"])
-
-        # print error code of Implementation
-        print(out);
-
-        with open('test/script_test/test_analysis2_bowtie2_output.json') as o:
-                output =json.load(o)
-        pprint(output)
+# def test_Bowtie2Call(self):
+#        print("\n\n----------- test Bowtie2Call ----------")
+#
+#        out =call(["run_KBaseRNASeq.sh",
+#        "test/script_test/test_analysis2_bowtie2_input.json",
+#        "test/script_test/test_analysis2_bowtie2_output.json",
+#        "test/script_test/token.txt"])
+#
+#        # print error code of Implementation
+#        print(out);
+#
+#        with open('test/script_test/test_analysis2_bowtie2_output.json') as o:
+#                output =json.load(o)
+#        pprint(output)
 
 # def test_Bowtie2Call(self):
 #        print("\n\n----------- test Bowtie2Call ----------")
