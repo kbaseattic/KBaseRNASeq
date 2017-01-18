@@ -30,9 +30,9 @@ class CufflinksException(Exception):
 
 class Cufflinks(ExecutionBase): 
 
-    def __init__(self, logger, directory, urls):
+    def __init__(self, logger, directory, urls, max_cores):
         pprint(self.__class__)
-        super(Cufflinks, self).__init__(logger, directory, urls)
+        super(Cufflinks, self).__init__(logger, directory, urls, max_cores)
 
         # user defined shared variables across methods
         #self.sample = None

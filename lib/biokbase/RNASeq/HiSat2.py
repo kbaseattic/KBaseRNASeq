@@ -29,9 +29,9 @@ class HiSat2Exception(Exception):
 
 class HiSat2(ExecutionBase): 
 
-    def __init__(self, logger, directory, urls):
+    def __init__(self, logger, directory, urls, max_cores):
         pprint(self.__class__)
-        super(HiSat2, self).__init__(logger, directory, urls)
+        super(HiSat2, self).__init__(logger, directory, urls, max_cores)
 
         # user defined shared variables across methods
         #self.sample = None

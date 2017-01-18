@@ -32,8 +32,8 @@ class HiSat2SampleSetException(Exception):
 
 class HiSat2SampleSet(HiSat2): 
 
-    def __init__(self, logger, directory, urls):
-        super(HiSat2SampleSet, self).__init__(logger, directory, urls)
+    def __init__(self, logger, directory, urls, max_cores):
+        super(HiSat2SampleSet, self).__init__(logger, directory, urls, max_cores)
 
         # user defined shared variables across methods
         self.sample = None

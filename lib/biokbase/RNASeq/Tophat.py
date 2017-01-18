@@ -29,9 +29,9 @@ class TophatException(Exception):
 
 class Tophat(ExecutionBase): 
 
-    def __init__(self, logger, directory, urls):
+    def __init__(self, logger, directory, urls, max_cores):
         pprint(self.__class__)
-        super(Tophat, self).__init__(logger, directory, urls)
+        super(Tophat, self).__init__(logger, directory, urls, max_cores)
 
         # user defined shared variables across methods
         #self.sample = None

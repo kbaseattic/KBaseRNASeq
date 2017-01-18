@@ -31,8 +31,8 @@ class TophatSampleException(Exception):
 
 class TophatSample(Tophat): 
 
-    def __init__(self, logger, directory, urls):
-        super(TophatSample, self).__init__(logger, directory, urls)
+    def __init__(self, logger, directory, urls, max_cores):
+        super(TophatSample, self).__init__(logger, directory, urls, max_cores)
         # user defined shared variables across methods
 	self.bowtie2index_id = None
         self.num_threads = 1

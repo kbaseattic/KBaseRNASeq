@@ -32,8 +32,8 @@ class TophatSampleSetException(Exception):
 
 class TophatSampleSet(Tophat): 
 
-    def __init__(self, logger, directory, urls):
-        super(TophatSampleSet, self).__init__(logger, directory, urls)
+    def __init__(self, logger, directory, urls, max_cores):
+        super(TophatSampleSet, self).__init__(logger, directory, urls, max_cores)
 
         # user defined shared variables across methods
         self.sample = None

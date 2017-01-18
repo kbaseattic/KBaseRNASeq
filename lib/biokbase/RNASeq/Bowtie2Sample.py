@@ -31,9 +31,9 @@ class Bowtie2SampleException(Exception):
 
 class Bowtie2Sample(Bowtie2): 
 
-    def __init__(self, logger, directory, urls):
+    def __init__(self, logger, directory, urls, max_cores):
         #super(Bowtie2Sample, self).__init__(logger, directory, urls)
-        super(self.__class__ , self).__init__(logger, directory, urls)
+        super(self.__class__ , self).__init__(logger, directory, urls, max_cores)
         # user defined shared variables across methods
         self.sample_info = None
         #self.sampleset_info = None

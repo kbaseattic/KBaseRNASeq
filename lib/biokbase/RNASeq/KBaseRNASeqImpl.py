@@ -101,6 +101,8 @@ class KBaseRNASeq:
         #BEGIN_CONSTRUCTOR
 	 # This is where config variable for deploy.cfg are available
         #pprint(config)
+        if 'max_cores' in config:
+              self.__MAX_CORES= int(config['max_cores'])
         if 'ws_url' in config:
               self.__WS_URL = config['ws_url']
         if 'shock_url' in config:
@@ -427,10 +429,10 @@ class KBaseRNASeq:
         readsobj_type = script_util.ws_get_type_name(self.__LOGGER, wsc, params['ws_id'], params['sampleset_id'])
 	if readsobj_type == 'KBaseRNASeq.RNASeqSampleSet':	
 		self.__LOGGER.info("HiSat2 SampleSet Case")
-        	hs2ss = HiSat2SampleSet(self.__LOGGER, hisat2_dir, self.__SERVICES)
+        	hs2ss = HiSat2SampleSet(self.__LOGGER, hisat2_dir, self.__SERVICES, self.__MAX_CORES)
         	returnVal = hs2ss.run(common_params, params)
 	else:
-		hs2ss = HiSat2Sample(self.__LOGGER, hisat2_dir, self.__SERVICES)
+		hs2ss = HiSat2Sample(self.__LOGGER, hisat2_dir, self.__SERVICES, self.__MAX_CORES)
 		returnVal = hs2ss.run(common_params,params)
 	#finally:
         handler_util.cleanup(self.__LOGGER,hisat2_dir)
@@ -483,11 +485,11 @@ class KBaseRNASeq:
         obj_type = script_util.ws_get_type_name(self.__LOGGER, wsc, params['ws_id'], params['sampleset_id'])
 	if obj_type == 'KBaseRNASeq.RNASeqSampleSet':	
 		self.__LOGGER.info("Tophat SampleSet Case")
-        	tss = TophatSampleSet(self.__LOGGER, tophat_dir, self.__SERVICES)
+        	tss = TophatSampleSet(self.__LOGGER, tophat_dir, self.__SERVICES, self.__MAX_CORES)
         	returnVal = tss.run(common_params, params)
 	else:
 		self.__LOGGER.info("Tophat Sample Case")
-		ts = TophatSample(self.__LOGGER, tophat_dir, self.__SERVICES)
+		ts = TophatSample(self.__LOGGER, tophat_dir, self.__SERVICES, self.__MAX_CORES)
 		returnVal = ts.run(common_params,params)
         handler_util.cleanup(self.__LOGGER,tophat_dir)
 
@@ -540,10 +542,10 @@ class KBaseRNASeq:
         obj_type = obj_info[0][2].split('-')[0]
 	if obj_type == 'KBaseRNASeq.RNASeqAlignmentSet':	
 		self.__LOGGER.info("StringTie AlignmentSet Case")
-        	sts = StringTieSampleSet(self.__LOGGER, stringtie_dir, self.__SERVICES)
+        	sts = StringTieSampleSet(self.__LOGGER, stringtie_dir, self.__SERVICES, self.__MAX_CORES)
         	returnVal = sts.run(common_params, params)
 	else:
-		sts = StringTieSample(self.__LOGGER, stringtie_dir, self.__SERVICES)
+		sts = StringTieSample(self.__LOGGER, stringtie_dir, self.__SERVICES, self.__MAX_CORES)
 		returnVal = sts.run(common_params,params)
         handler_util.cleanup(self.__LOGGER,stringtie_dir)
         #END StringTieCall
@@ -782,10 +784,10 @@ class KBaseRNASeq:
         obj_type = obj_info[0][2].split('-')[0]
         if obj_type == 'KBaseRNASeq.RNASeqAlignmentSet':
                 self.__LOGGER.info("Cufflinks AlignmentSet Case")
-                sts = CufflinksSampleSet(self.__LOGGER, cufflinks_dir, self.__SERVICES)
+                sts = CufflinksSampleSet(self.__LOGGER, cufflinks_dir, self.__SERVICES, self.__MAX_CORES)
                 returnVal = sts.run(common_params, params)
         else:
-		sts = CufflinksSample(self.__LOGGER, cufflinks_dir, self.__SERVICES)
+		sts = CufflinksSample(self.__LOGGER, cufflinks_dir, self.__SERVICES, self.__MAX_CORES)
                 returnVal = sts.run(common_params,params)
         handler_util.cleanup(self.__LOGGER,cufflinks_dir)
         #END CufflinksCall
@@ -859,7 +861,7 @@ class KBaseRNASeq:
         if 'num_threads' in params and params['num_threads'] is not None:
             common_params['num_threads'] = params['num_threads']
 
-	cuff = Cuffdiff(self.__LOGGER, cuffdiff_dir, self.__SERVICES)
+	cuff = Cuffdiff(self.__LOGGER, cuffdiff_dir, self.__SERVICES, self.__MAX_CORES)
         returnVal = cuff.run(common_params, params)
 
 	#finally:
