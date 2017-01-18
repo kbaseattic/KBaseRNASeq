@@ -55,7 +55,7 @@ class TestRNASeqMethods(TestRNASeqMethodsSetup):
 
         with open('test/script_test/test_analysis2_express_output.json') as o:
                 output =json.load(o)
-        print(outut)
+        print(output)
 
 # def test_01(self):
 #        print("\n\n----------- test HiSat2 ----------")
