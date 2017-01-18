@@ -55,7 +55,7 @@ class TestRNASeqMethods(TestRNASeqMethodsSetup):
 
         with open('test/script_test/test_analysis2_express_output.json') as o:
                 output =json.load(o)
-        print(outut);
+        print(outut)
 
 # def test_01(self):
 #        print("\n\n----------- test HiSat2 ----------")
@@ -72,7 +72,8 @@ class TestRNASeqMethods(TestRNASeqMethodsSetup):
 #                output =json.load(o)
 #        pprint(output)
 #
- def test_02(self):
+
+  def test_02(self):
         print("\n\n----------- test HiSat2 PEL ----------")
 
         out =call(["./bin/run_KBaseRNASeq.sh",
@@ -81,7 +82,7 @@ class TestRNASeqMethods(TestRNASeqMethodsSetup):
         "test/script_test/token.txt"])
 
         # print error code of Implementation
-        print(out);
+        print(out)
 
         with open('test/script_test/test_analysis2_hisat2_pel_output.json') as o:
                 output =json.load(o)
