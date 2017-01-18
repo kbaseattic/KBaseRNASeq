@@ -51,22 +51,26 @@ class HiSat2SampleSet(HiSat2):
         hisat2_dir = self.directory
 
         try:
-               sample,annotation_name = ws_client.get_objects(
-                                        [{ 'name' : params['sampleset_id'], 'workspace' : params['ws_id']},
-                                        { 'name' : params['genome_id'], 'workspace' : params['ws_id']}])
+               #sample,annotation_name = ws_client.get_objects(
+               #                         [{ 'name' : params['sampleset_id'], 'workspace' : params['ws_id']},
+               #                         { 'name' : params['genome_id'], 'workspace' : params['ws_id']}])
+               sample = script_util.ws_get_obj(logger, ws_client, params['ws_id'],params['sampleset_id'])[0]
+               annotation_name = script_util.ws_get_obj(logger, ws_client, params['ws_id'],params['genome_id'])[0]
                self.sample = sample
         except Exception,e:
                logger.exception("".join(traceback.format_exc()))
                raise ValueError(" Error Downloading objects from the workspace ")
         ### Get object Info and IDs
-        sampleset_info,annotation_info = ws_client.get_object_info_new({"objects": [
-                                           {'name': params['sampleset_id'], 'workspace': params['ws_id']},
-                                           {'name': params['genome_id'], 'workspace': params['ws_id']}
-                                           ]})
+        #sampleset_info,annotation_info = ws_client.get_object_info_new({"objects": [
+        #                                   {'name': params['sampleset_id'], 'workspace': params['ws_id']},
+        #                                   {'name': params['genome_id'], 'workspace': params['ws_id']}
+        #                                   ]})
+        sampleset_info = script_util.ws_get_obj_info(logger, ws_client, params['ws_id'], params['sampleset_id'])[0]
         self.sampleset_info = sampleset_info
         ### Get the workspace object ids for the objects ###
         sampleset_id = str(sampleset_info[6]) + '/' + str(sampleset_info[0]) + '/' + str(sampleset_info[4])
-        annotation_id = str(annotation_info[6]) + '/' + str(annotation_info[0]) + '/' + str(annotation_info[4])
+        #annotation_id = str(annotation_info[6]) + '/' + str(annotation_info[0]) + '/' + str(annotation_info[4])
+        annotation_id = script_util.ws_get_ref(logger, ws_client, params['ws_id'], params['genome_id'])
         sample_type = sampleset_info[2].split('-')[0]
 
         ### Check if the Library objects exist in the same workspace
@@ -76,10 +80,10 @@ class HiSat2SampleSet(HiSat2):
         reads = sample['data']['sample_ids']
         r_label = sample['data']['condition']
         reads_type= sample['data']['Library_type']
-        e_ws_objs = script_util.if_ws_obj_exists_notype(None,ws_client,params['ws_id'],reads)
-        missing_objs = [i for i in reads if not i in e_ws_objs]
-        if len(e_ws_objs) != len(reads):
-            raise HiSat2SampleSetException('Missing Library objects {0} in the {1}. please copy them and run this method'.format(",".join(missing_objs),params['ws_id']))
+        #e_ws_objs = script_util.if_ws_obj_exists_notype(None,ws_client,params['ws_id'],reads)
+        #missing_objs = [i for i in reads if not i in e_ws_objs]
+        #if len(e_ws_objs) != len(reads):
+        #    raise HiSat2SampleSetException('Missing Library objects {0} in the {1}. please copy them and run this method'.format(",".join(missing_objs),params['ws_id']))
  
         self.num_jobs = len(reads)
 	ref_id , fasta_file =  rnaseq_util.get_fa_from_genome(logger,ws_client,self.urls,params['ws_id'],hisat2_dir,params['genome_id'])

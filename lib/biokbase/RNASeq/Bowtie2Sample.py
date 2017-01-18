@@ -49,18 +49,22 @@ class Bowtie2Sample(Bowtie2):
         bowtie2_dir = self.directory
 
         try:
-               sample,bowtie_index = ws_client.get_objects(
-                                        [{ 'name' : params['sampleset_id'], 'workspace' : params['ws_id']},
-                                        { 'name' : params['bowtie_index'], 'workspace' : params['ws_id']}])
+               #sample,bowtie_index = ws_client.get_objects(
+               #                         [{ 'name' : params['sampleset_id'], 'workspace' : params['ws_id']},
+               #                         { 'name' : params['bowtie_index'], 'workspace' : params['ws_id']}])
+               sample = script_util.ws_get_obj(logger, ws_client, params['ws_id'],params['sampleset_id'])[0]
+               bowtie_index = script_util.ws_get_obj(logger, ws_client, params['ws_id'],params['bowtie_index'])[0]
                self.sample =sample
         except Exception,e:
                logger.exception("".join(traceback.format_exc()))
                raise ValueError(" Error Downloading objects from the workspace ")
             ### Get obejct IDs
-        sample_info,bowtie_index_info = ws_client.get_object_info_new({"objects": [
-                                           {'name': params['sampleset_id'], 'workspace': params['ws_id']},
-                                           {'name': params['bowtie_index'], 'workspace': params['ws_id']}
-                                           ]})
+        #sample_info,bowtie_index_info = ws_client.get_object_info_new({"objects": [
+        #                                   {'name': params['sampleset_id'], 'workspace': params['ws_id']},
+        #                                   {'name': params['bowtie_index'], 'workspace': params['ws_id']}
+        #                                   ]})
+        sample_info = script_util.ws_get_obj_info(logger, ws_client, params['ws_id'], params['sampleset_id'])[0]
+        bowtie_index_info = script_util.ws_get_obj_info(logger, ws_client, params['ws_id'], params['bowtie_index'])[0]
         self.sample_info = sample_info
         ### Get the workspace object ids for the objects ###
         sample_id = str(sample_info[6]) + '/' + str(sample_info[0]) + '/' + str(sample_info[4])
@@ -119,7 +123,7 @@ class Bowtie2Sample(Bowtie2):
         self.logger.info(" Creating Report for Alignment {0}".format(alignment_name))
 	single_read , single_alignment = self.results[0]
         # TODO: Split alignment set and report method
-	sref = self.common_params['ws_client'].get_object_info_new({"objects": [{'name':single_alignment, 'workspace': self.method_params['ws_id']}]})[0]
+	#sref = self.common_params['ws_client'].get_object_info_new({"objects": [{'name':single_alignment, 'workspace': self.method_params['ws_id']}]})[0]
 	self.returnVal = { 'output'  : single_alignment ,'workspace' : self.method_params['ws_id']}
 #        reportObj = {'objects_created':[{'ref' :str(sref[6]) + '/' + str(sref[0]) + '/' + str(sref[4]),
 #                                                 'description' : "RNA-seq Alignment for reads Sample: {0}".format(single_read)}],
