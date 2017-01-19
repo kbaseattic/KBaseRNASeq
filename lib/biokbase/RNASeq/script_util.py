@@ -55,8 +55,11 @@ def trim_gz(name):
       return name
 
 def ru_reads_download(logger, ref, tdir, token):
+    check_disk_space(logger)
+    logger.info("{0} will be downloaded and transferred to {1}".format(ref,tdir))
     ru = ReadsUtils(url=os.environ['SDK_CALLBACK_URL'], token=token)
     ds = ru.download_reads({"read_libraries" : [ref], "interleaved" : "false"})
+    logger.info("{0} will be downloaded and transferred to {1}".format(ref,tdir))
     
     #ds['fwd'] = os.path.join(tdir, trim_gz(ds['files'][ref]['files']['fwd_name']))
     ds['fwd'] = os.path.join(tdir, os.path.basename(ds['files'][ref]['files']['fwd']))
@@ -67,6 +70,7 @@ def ru_reads_download(logger, ref, tdir, token):
         else:
             ds['rev'] = os.path.join(tdir, os.path.basename(ds['files'][ref]['files']['rev']))
         shutil.move(ds['files'][ref]['files']['rev'],ds['rev'])
+    logger.info("{0} will be downloaded and transferred to {1}".format(ref,tdir))
     return ds
 
 
