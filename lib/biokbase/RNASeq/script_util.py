@@ -34,6 +34,7 @@ from doekbase.data_api.annotation.genome_annotation.api import GenomeAnnotationA
 from doekbase.data_api.sequence.assembly.api import AssemblyAPI, AssemblyClientAPI
 import datetime
 
+from ReadsUtils.ReadsUtilsClient import ReadsUtils
 
 def check_sys_stat(logger):
     check_disk_space(logger)
@@ -47,6 +48,61 @@ def check_memory_usage(logger):
 def check_cpu_usage(logger):
     runProgram(logger=logger, progName="mpstat", argStr="-P ALL")
 
+def trim_gz(name):
+    if name.endswith(".gz"):
+      return name.split('.')[:-1]
+    else:
+      return name
+
+def ru_reads_download(logger, ref, tdir, token):
+    ru = ReadsUtils(url=os.environ['SDK_CALLBACK_URL'], token=token)
+    ds = ru.download_reads({"read_libraries" : [ref], "interleaved" : "false"})
+    
+    #ds['fwd'] = os.path.join(tdir, trim_gz(ds['files'][ref]['files']['fwd_name']))
+    ds['fwd'] = os.path.join(tdir, os.path.basename(ds['files'][ref]['files']['fwd']))
+    shutil.move(ds['files'][ref]['files']['fwd'],ds['fwd'])
+    if ds['files'][ref]['files']['type'] == 'paired':
+        if ds['files'][ref]['files']['rev_name'] is None:
+            ds['rev'] = os.path.join(tdir, 'rev.fastq')
+        else:
+            ds['rev'] = os.path.join(tdir, os.path.basename(ds['files'][ref]['files']['rev']))
+        shutil.move(ds['files'][ref]['files']['rev'],ds['rev'])
+    return ds
+
+
+###
+# Workspace helper functions
+###
+# ws_id is default ws_id and it will be ignored obj_id is ws reference type "ws/obj/ver"
+def ws_get_obj_info(logger, ws_client, ws_id, obj_id):
+    if '/' in obj_id:
+        return ws_client.get_object_info_new({"objects": [{'ref': obj_id}]})
+    else:
+        return ws_client.get_object_info_new({"objects": [{'name': obj_id, 'workspace': ws_id}]})
+
+def ws_get_ref(logger, ws_client, ws_id, obj_id):
+    if '/' in obj_id:
+        return obj_id
+    else:
+        info = ws_client.get_object_info_new({"objects": [{'name': obj_id, 'workspace': ws_id}]})[0]
+        return "{0}/{1}/{2}".format(info[6],info[0],info[4])
+
+def ws_get_type_name(logger, ws_client, ws_id, obj_id):
+    info = ws_get_obj_info(logger,ws_client, ws_id, obj_id)[0]
+    return info[2].split('-')[0]
+
+# translate ref to ws name and object name pair
+# if it is object name, it returns the same ws name and object name
+def ws_translate2name(logger, ws_client, default_ws_id, obj_id):
+    info = ws_get_obj_info(logger, ws_client, default_ws_id, obj_id)
+    return [info[0][7], info[0][1], info[0][4]]
+
+def ws_get_obj(logger, ws_client, ws_id, obj_id):
+    if '/' in obj_id:
+        return ws_client.get_objects([{'ref': obj_id}])
+    else:
+        logger.info("{0}:{1}".format(ws_id, obj_id))
+        return ws_client.get_objects([{'name': obj_id, 'workspace': ws_id}])
 	       
 
 def if_obj_exists(logger,ws_client,ws_id,o_type,obj_l):
@@ -61,20 +117,20 @@ def if_obj_exists(logger,ws_client,ws_id,o_type,obj_l):
     return obj_ids
 
 def check_and_download_existing_handle_obj(logger,ws_client,urls,ws_id,ws_object_name,ws_obj_type,directory,token):
-	ret = if_obj_exists(logger,ws_client,ws_id,ws_obj_type,[ws_object_name])
-        if not ret is None:
-            logger.info("Object {0} exists in the workspace  {1}".format(ws_object_name,ws_id))
-            obj_name,obj_id = ret[0]
-            obj_info=ws_client.get_objects([{'ref' : obj_id}])[0]
-            handle_id=obj_info['data']['handle']['id']
-            handle_name=obj_info['data']['handle']['file_name']
-            try:
-                     download_file_from_shock(logger, shock_service_url=urls['shock_service_url'], shock_id=handle_id,filename=handle_name,directory=directory,token=token)
-                     file_path = os.path.join(directory,handle_name)
-            except Exception,e:
-                        raise Exception( "Unable to download shock file, {0}".format(handle_name))
-	else:
-	     return None
+        try:
+            obj_id = ws_get_ref(logger, ws_client, ws_id, ws_object_name)
+        except Exception, e:
+            return None
+
+        logger.info("Object {0} exists".format(obj_id))
+        obj_info=ws_client.get_objects([{'ref' : obj_id}])[0]
+        handle_id=obj_info['data']['handle']['id']
+        handle_name=obj_info['data']['handle']['file_name']
+        try:
+                 download_file_from_shock(logger, shock_service_url=urls['shock_service_url'], shock_id=handle_id,filename=handle_name,directory=directory,token=token)
+                 file_path = os.path.join(directory,handle_name)
+        except Exception,e:
+                    raise Exception( "Unable to download shock file, {0}".format(handle_name))
 	return file_path
 
 def if_ws_obj_exists_notype(logger,ws_client,ws_id,obj_l):

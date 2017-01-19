@@ -102,6 +102,8 @@ class KBaseRNASeq:
         #BEGIN_CONSTRUCTOR
         # This is where config variable for deploy.cfg are available
         #pprint(config)
+        if 'max_cores' in config:
+              self.__MAX_CORES= int(config['max_cores'])
         if 'ws_url' in config:
               self.__WS_URL = config['ws_url']
         if 'shock_url' in config:
@@ -196,17 +198,17 @@ class KBaseRNASeq:
 	    if params["Library_type"] == 'PairedEnd' : lib_type = ['KBaseAssembly.PairedEndLibrary', 'KBaseFile.PairedEndLibrary']
 	    else: lib_type = ['KBaseAssembly.SingleEndLibrary', 'KBaseFile.SingleEndLibrary']
 	    for i in sample_ids:
-	    	s_info = ws_client.get_object_info_new({"objects": [{'name': i, 'workspace': params['ws_id']}]})
+	    	s_info = script_util.ws_get_obj_info(self.__LOGGER, ws_client, params['ws_id'], i)
                 obj_type = s_info[0][2].split('-')[0]
 		if not (obj_type in lib_type):
-			raise ValueError("Library_type mentioned : {0}. Please add only {1} typed objects in Reads fields".format(lib_type,lib_type)) 
+			raise ValueError("Library_type mentioned : {0}. Please add only {1} typed objects in Reads fields".format(params["Library_type"],params["Library_type"])) 
 	
    	    ## Code to Update the Provenance; make it a function later
             provenance = [{}]
             if 'provenance' in ctx:
                 provenance = ctx['provenance']
             #add additional info to provenance here, in this case the input data object reference
-            provenance[0]['input_ws_objects']=[ params['ws_id']+'/'+sample for sample in sample_ids]
+            provenance[0]['input_ws_objects']=[ script_util.ws_get_ref(self.__LOGGER, ws_client,params['ws_id'],sample) for sample in sample_ids]
 	    
 	    #Saving RNASeqSampleSet to Workspace
 	    self.__LOGGER.info("Saving {0} object to workspace".format(params['sampleset_id']))
@@ -255,7 +257,7 @@ class KBaseRNASeq:
         	if 'provenance' in ctx:
             		provenance = ctx['provenance']
         	# add additional info to provenance here, in this case the input data object reference
-        	provenance[0]['input_ws_objects']=[params['ws_id']+'/'+params['reference']]
+        	provenance[0]['input_ws_objects']=[params['reference']]
 		
 		try:
 			ref_id, outfile_ref_name = rnaseq_util.get_fa_from_genome(self.__LOGGER,ws_client,self.__SERVICES,params['ws_id'],bowtie_dir,params['reference'])
@@ -372,8 +374,7 @@ class KBaseRNASeq:
 
         # Check to Call Bowtie2 in Set mode or Single mode
         wsc = common_params['ws_client']
-        readsobj_info = wsc.get_object_info_new({"objects": [{'name': params['sampleset_id'], 'workspace': params['ws_id']}]})
-        readsobj_type = readsobj_info[0][2].split('-')[0]
+        readsobj_type = script_util.ws_get_type_name(self.__LOGGER, wsc, params['ws_id'], params['sampleset_id'])
         if readsobj_type == 'KBaseRNASeq.RNASeqSampleSet':
                 self.__LOGGER.info("Bowtie2 SampleSet Case")
                 bw2ss = Bowtie2SampleSet(self.__LOGGER, bowtie2_dir, self.__SERVICES)
@@ -428,14 +429,13 @@ class KBaseRNASeq:
 
 	# Check to Call HiSat2 in Set mode or Single mode
 	wsc = common_params['ws_client']
-	readsobj_info = wsc.get_object_info_new({"objects": [{'name': params['sampleset_id'], 'workspace': params['ws_id']}]})
-        readsobj_type = readsobj_info[0][2].split('-')[0]
+        readsobj_type = script_util.ws_get_type_name(self.__LOGGER, wsc, params['ws_id'], params['sampleset_id'])
 	if readsobj_type == 'KBaseRNASeq.RNASeqSampleSet':	
 		self.__LOGGER.info("HiSat2 SampleSet Case")
-        	hs2ss = HiSat2SampleSet(self.__LOGGER, hisat2_dir, self.__SERVICES)
+        	hs2ss = HiSat2SampleSet(self.__LOGGER, hisat2_dir, self.__SERVICES, self.__MAX_CORES)
         	returnVal = hs2ss.run(common_params, params)
 	else:
-		hs2ss = HiSat2Sample(self.__LOGGER, hisat2_dir, self.__SERVICES)
+		hs2ss = HiSat2Sample(self.__LOGGER, hisat2_dir, self.__SERVICES, self.__MAX_CORES)
 		returnVal = hs2ss.run(common_params,params)
 	#finally:
         handler_util.cleanup(self.__LOGGER,hisat2_dir)
@@ -483,15 +483,16 @@ class KBaseRNASeq:
 
 	# Check to Call Tophat in Set mode or Single mode
 	wsc = common_params['ws_client']
-	obj_info = wsc.get_object_info_new({"objects": [{'name': params['sampleset_id'], 'workspace': params['ws_id']}]})
-        obj_type = obj_info[0][2].split('-')[0]
+        #readsobj_info = script_util.ws_get_obj_info(self.__LOGGER, wsc, params['ws_id'], params['sampleset_id'])
+        #obj_type = obj_info[0][2].split('-')[0]
+        obj_type = script_util.ws_get_type_name(self.__LOGGER, wsc, params['ws_id'], params['sampleset_id'])
 	if obj_type == 'KBaseRNASeq.RNASeqSampleSet':	
 		self.__LOGGER.info("Tophat SampleSet Case")
-        	tss = TophatSampleSet(self.__LOGGER, tophat_dir, self.__SERVICES)
+        	tss = TophatSampleSet(self.__LOGGER, tophat_dir, self.__SERVICES, self.__MAX_CORES)
         	returnVal = tss.run(common_params, params)
 	else:
 		self.__LOGGER.info("Tophat Sample Case")
-		ts = TophatSample(self.__LOGGER, tophat_dir, self.__SERVICES)
+		ts = TophatSample(self.__LOGGER, tophat_dir, self.__SERVICES, self.__MAX_CORES)
 		returnVal = ts.run(common_params,params)
         handler_util.cleanup(self.__LOGGER,tophat_dir)
 
@@ -539,14 +540,15 @@ class KBaseRNASeq:
 
 	# Check to Call StringTie in Set mode or Single mode
 	wsc = common_params['ws_client']
-	obj_info = wsc.get_object_info_new({"objects": [{'name': params['alignmentset_id'], 'workspace': params['ws_id']}]})
+	#obj_info = wsc.get_object_info_new({"objects": [{'name': params['alignmentset_id'], 'workspace': params['ws_id']}]})
+        obj_info = script_util.ws_get_obj_info(self.__LOGGER, wsc, params['ws_id'], params['alignmentset_id'])
         obj_type = obj_info[0][2].split('-')[0]
 	if obj_type == 'KBaseRNASeq.RNASeqAlignmentSet':	
 		self.__LOGGER.info("StringTie AlignmentSet Case")
-        	sts = StringTieSampleSet(self.__LOGGER, stringtie_dir, self.__SERVICES)
+        	sts = StringTieSampleSet(self.__LOGGER, stringtie_dir, self.__SERVICES, self.__MAX_CORES)
         	returnVal = sts.run(common_params, params)
 	else:
-		sts = StringTieSample(self.__LOGGER, stringtie_dir, self.__SERVICES)
+		sts = StringTieSample(self.__LOGGER, stringtie_dir, self.__SERVICES, self.__MAX_CORES)
 		returnVal = sts.run(common_params,params)
         handler_util.cleanup(self.__LOGGER,stringtie_dir)
         #END StringTieCall
@@ -554,6 +556,201 @@ class KBaseRNASeq:
         # At some point might do deeper type checking...
         if not isinstance(returnVal, dict):
             raise ValueError('Method StringTieCall return value ' +
+                             'returnVal is not type dict as required.')
+        # return the results
+        return [returnVal]
+
+    def Hisat2StringTieCall(self, ctx, params):
+        """
+        :param params: instance of type "Hisat2StringTieParams" -> structure:
+           parameter "ws_id" of String, parameter "sampleset_id" of String,
+           parameter "genome_id" of String, parameter "hi_options" of type
+           "ExpressHisat2_Options" (*************************************) ->
+           structure: parameter "hi_quality_score" of String, parameter
+           "hi_skip" of Long, parameter "hi_trim3" of Long, parameter
+           "hi_trim5" of Long, parameter "hi_np" of Long, parameter
+           "hi_minins" of Long, parameter "hi_maxins" of Long, parameter
+           "hi_orientation" of String, parameter "hi_min_intron_length" of
+           Long, parameter "hi_max_intron_length" of Long, parameter
+           "hi_no_spliced_alignment" of type "bool" (indicates true or false
+           values, false <= 0, true >=1), parameter
+           "hi_transcriptome_mapping_only" of type "bool" (indicates true or
+           false values, false <= 0, true >=1), parameter
+           "hi_tailor_alignments" of String, parameter "run_stringtie" of
+           type "bool" (indicates true or false values, false <= 0, true
+           >=1), parameter "st_options" of type "ExpressStringTie_Options" ->
+           structure: parameter "st_label" of String, parameter
+           "st_min_isoform_abundance" of Double, parameter "st_a_juncs" of
+           Long, parameter "st_min_length" of Long, parameter
+           "st_j_min_reads" of Double, parameter "st_c_min_read_coverage" of
+           Double, parameter "st_gap_sep_value" of Long, parameter
+           "st_disable_trimming" of type "bool" (indicates true or false
+           values, false <= 0, true >=1), parameter "st_ballgown_mode" of
+           type "bool" (indicates true or false values, false <= 0, true
+           >=1), parameter "st_skip_reads_with_no_ref" of type "bool"
+           (indicates true or false values, false <= 0, true >=1), parameter
+           "st_merge" of String, parameter "output_alignment_set_name" of
+           String, parameter "output_expression_matrix_name" of String
+        :returns: instance of type "ResultsToReport" (Object for Report type)
+           -> structure: parameter "report_name" of String, parameter
+           "report_ref" of String
+        """
+        # ctx is the context object
+        # return variables are: returnVal
+        #BEGIN Hisat2StringTieCall
+        # start making report
+        reportObj = {'objects_created':[],
+                     'text_message':''}
+        reportObj['text_message'] += "Running HISAT2 + StringTie method\n"
+        self.__LOGGER.info("Running HISAT2 + StringTie method")
+
+        # Set up Hisat2 call
+        # 1) Don't explicitly set num_threads, since that will be
+        #    set automatically
+        # 2) There is no way to set the output alignment set name
+        #    (which should be params['output_alignment_set_name']);
+        #    instead, this gets set based on the
+        #    params['sampleset_id'] input name, and is returned
+        #    from the call as returnVal['output']
+        hisat2_params = {'ws_id' : params['ws_id'],
+                         'sampleset_id' : params['sampleset_id'],
+                         'genome_id' : params['genome_id'],
+                         'quality_score' : params['hi_options']['hi_quality_score'],
+                         'skip' : params['hi_options']['hi_skip'],
+                         'trim3' : params['hi_options']['hi_trim3'],
+                         'trim5' : params['hi_options']['hi_trim5'],
+                         'np' : params['hi_options']['hi_np'],
+                         'minins' : params['hi_options']['hi_minins'],
+                         'maxins' : params['hi_options']['hi_maxins'],
+                         'orientation' : params['hi_options']['hi_orientation'],
+                         'min_intron_length' : params['hi_options']['hi_min_intron_length'],
+                         'max_intron_length' : params['hi_options']['hi_max_intron_length'],
+                         'no_spliced_alignment' : params['hi_options']['hi_no_spliced_alignment'],
+                         'transcriptome_mapping_only' : params['hi_options']['hi_transcriptome_mapping_only'],
+                         'tailor_alignments' : params['hi_options']['hi_tailor_alignments']
+                     }
+        reportObj['text_message'] += "Calling HISAT2\n"
+        self.__LOGGER.info("Calling HISAT2")
+        hisat2_rv = self.Hisat2Call(ctx, hisat2_params)[0]
+        # note that Hisat2Call currently doesn't actually make a report.
+        # if it did, we'd want to append it to our report
+        reportObj['text_message'] += "HISAT2 finished\n"
+        self.__LOGGER.info("HISAT2 finished")
+        self.__LOGGER.info("HISAT2 output:")
+        pprint(hisat2_rv)
+
+        if params['run_stringtie']:
+            # Set up 1st StringTie call to assemble transcripts
+            # 1) don't explicitly set num_threads, since that will be
+            #    set automatically
+            # 2) sample_alignment appears to be unused, or changed
+            #    to alignmentset_id
+            # 3) There is no way to set the output alignment set name
+            #    (which should be params['output_alignment_set_name']);
+            #    instead, this gets set based on the
+            #    params['alignmentset_id'] input name, and is returned
+            #    from the call as returnVal['output']
+            stringtie_params = {'ws_id' : params['ws_id'],
+                                'alignmentset_id' : hisat2_rv['output'],
+                                'sample_alignment' : hisat2_rv['output'],
+                                'label' : params['st_options']['st_label'],
+                                'min_isoform_abundance' : params['st_options']['st_min_isoform_abundance'],
+                                'a_juncs' : params['st_options']['st_a_juncs'],
+                                'min_length' : params['st_options']['st_min_length'],
+                                'j_min_reads' : params['st_options']['st_j_min_reads'],
+                                'c_min_read_coverage' : params['st_options']['st_c_min_read_coverage'],
+                                'gap_sep_value' : params['st_options']['st_gap_sep_value'],
+                                'disable_trimming' : params['st_options']['st_disable_trimming'],
+                                'ballgown_mode' : False,
+                                'skip_reads_with_no_ref' : False,
+                                'merge' : False
+                            }
+            reportObj['text_message'] += "Calling StringTie to assemble transcripts\n"
+            self.__LOGGER.info("Calling StringTie to assemble transcripts")
+            stringtie_rv = self.StringTieCall(ctx, stringtie_params)[0]
+            pprint(stringtie_rv)
+            # note that StringTieCall currently doesn't actually make a report.
+            # if it did, we'd want to append it to our report
+            reportObj['text_message'] += "StringTie finished\n"
+            self.__LOGGER.info("StringTie finished")
+            self.__LOGGER.info("StringTie output:")
+            pprint(stringtie_rv)
+
+            # At this point, we want to run StringTie two more
+            # times, but the first call is giving me back only
+            # a RNASeqExpression object, not another
+            # RNASeqAlignment object.  Not sure how to proceed!
+
+            #####################################################
+
+            # Set up 2nd StringTie call to merge transcripts
+            # Note that the user probably wants different values for
+            # these parameters the 2nd time; we'll need a
+            # different parameter group for the --merge calls
+            # that includes other parameters like -F, -T, etc
+            # stringtie_params = {'ws_id' : params['ws_id'],
+            #                     'alignmentset_id' : ???
+            #                     'sample_alignment' : ???
+            #                     'label' : params['st_options']['st_label'],
+            #                     'min_isoform_abundance' : params['st_options']['st_min_isoform_abundance'],
+            #                     'min_length' : params['st_options']['st_min_length'],
+            #                     'c_min_read_coverage' : params['st_options']['st_c_min_read_coverage'],
+            #                     'ballgown_mode' : False,
+            #                     'skip_reads_with_no_ref' : False,
+            #                     'merge' : True
+            #                 }
+            # reportObj['text_message'] += "Calling StringTie to merge transcripts\n"
+            # self.__LOGGER.info("Calling StringTie to merge transcripts")
+            # stringtie_rv = self.StringTieCall(ctx, stringtie_params)[0]
+            # # note that StringTieCall currently doesn't actually make a report.
+            # # if it did, we'd want to append it to our report
+            # reportObj['text_message'] += "StringTie finished\n"
+            # self.__LOGGER.info("StringTie finished")
+
+            # Set up 3rd StringTie call to create the read coverage tables
+            # This may need a 3rd set of parameters?
+            # stringtie_params = {'ws_id' : params['ws_id'],
+            #                     'alignmentset_id' : ???
+            #                     'sample_alignment' : ???
+            #                     'label' : params['st_options']['st_label'],
+            #                     'min_isoform_abundance' : params['st_options']['st_min_isoform_abundance'],
+            #                     'a_juncs' : params['st_options']['st_a_juncs'],
+            #                     'min_length' : params['st_options']['st_min_length'],
+            #                     'j_min_reads' : params['st_options']['st_j_min_reads'],
+            #                     'c_min_read_coverage' : params['st_options']['st_c_min_read_coverage'],
+            #                     'gap_sep_value' : params['st_options']['st_gap_sep_value'],
+            #                     'disable_trimming' : params['st_options']['st_disable_trimming'],
+            #                     'ballgown_mode' : True,
+            #                     'skip_reads_with_no_ref' : True,
+            #                     'merge' : False
+            #                }
+            # reportObj['text_message'] += "Calling StringTie to create read coverage tables\n"
+            # self.__LOGGER.info("Calling StringTie to create read coverage tables")
+            # stringtie_rv = self.StringTieCall(ctx, stringtie_params)[0]
+            # # note that StringTieCall currently doesn't actually make a report.
+            # # if it did, we'd want to append it to our report
+            # reportObj['text_message'] += "StringTie finished\n"
+            # self.__LOGGER.info("StringTie finished")
+
+            # Finally, we want to run prepDE.py
+            # to create the expression matrix.
+            # There used to be a method called
+            # createExpressionMatrix, but it's now gone?
+            # Not implementing this for now.
+            
+        # save the report
+        # don't do this for now, since adding a report client would
+        # be a larger change than we want to merge in one step
+        # report = KBaseReport(self.__callbackURL, token=ctx['token'], service_ver='dev')
+        # report_info = report.create({'report':reportObj, 'workspace_name':params['ws_id']})
+
+        # returnVal = { 'report_name': report_info['name'], 'report_ref': report_info['ref'] }
+        returnVal = {}
+        #END Hisat2StringTieCall
+
+        # At some point might do deeper type checking...
+        if not isinstance(returnVal, dict):
+            raise ValueError('Method Hisat2StringTieCall return value ' +
                              'returnVal is not type dict as required.')
         # return the results
         return [returnVal]
@@ -586,14 +783,14 @@ class KBaseRNASeq:
 
         # Check to Call Cufflinks in Set mode or Single mode
         wsc = common_params['ws_client']
-        obj_info = wsc.get_object_info_new({"objects": [{'name': params['alignmentset_id'], 'workspace': params['ws_id']}]})
+        obj_info = script_util.ws_get_obj_info(self.__LOGGER, wsc, params['ws_id'], params['alignmentset_id'])
         obj_type = obj_info[0][2].split('-')[0]
         if obj_type == 'KBaseRNASeq.RNASeqAlignmentSet':
                 self.__LOGGER.info("Cufflinks AlignmentSet Case")
-                sts = CufflinksSampleSet(self.__LOGGER, cufflinks_dir, self.__SERVICES)
+                sts = CufflinksSampleSet(self.__LOGGER, cufflinks_dir, self.__SERVICES, self.__MAX_CORES)
                 returnVal = sts.run(common_params, params)
         else:
-		sts = CufflinksSample(self.__LOGGER, cufflinks_dir, self.__SERVICES)
+		sts = CufflinksSample(self.__LOGGER, cufflinks_dir, self.__SERVICES, self.__MAX_CORES)
                 returnVal = sts.run(common_params,params)
         handler_util.cleanup(self.__LOGGER,cufflinks_dir)
         #END CufflinksCall
@@ -667,7 +864,7 @@ class KBaseRNASeq:
         if 'num_threads' in params and params['num_threads'] is not None:
             common_params['num_threads'] = params['num_threads']
 
-	cuff = Cuffdiff(self.__LOGGER, cuffdiff_dir, self.__SERVICES)
+	cuff = Cuffdiff(self.__LOGGER, cuffdiff_dir, self.__SERVICES, self.__MAX_CORES)
         returnVal = cuff.run(common_params, params)
 
 	#finally:

@@ -31,8 +31,8 @@ class CufflinksSampleException(Exception):
 
 class CufflinksSample(Cufflinks): 
 
-    def __init__(self, logger, directory, urls):
-        super(self.__class__, self).__init__(logger, directory, urls)
+    def __init__(self, logger, directory, urls, max_cores):
+        super(self.__class__, self).__init__(logger, directory, urls, max_cores)
         # user defined shared variables across methods
         self.alignment_info = None
         #self.sampleset_info = None

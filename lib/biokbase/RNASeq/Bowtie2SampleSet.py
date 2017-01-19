@@ -32,8 +32,8 @@ class Bowtie2SampleSetException(Exception):
 
 class Bowtie2SampleSet(Bowtie2): 
 
-    def __init__(self, logger, directory, urls):
-        super(self.__class__, self).__init__(logger, directory, urls)
+    def __init__(self, logger, directory, urls, max_cores):
+        super(self.__class__, self).__init__(logger, directory, urls, max_cores)
 
         # user defined shared variables across methods
         self.sample = None
@@ -51,21 +51,26 @@ class Bowtie2SampleSet(Bowtie2):
         bowtie2_dir = self.directory
 
         try:
-	       sample,bowtie_index = ws_client.get_objects( 
-                                        [{ 'name' : params['sampleset_id'], 'workspace' : params['ws_id']}, 
-                                        { 'name' : params['bowtie_index'], 'workspace' : params['ws_id']}]) 
+	       #sample,bowtie_index = ws_client.get_objects( 
+               #                         [{ 'name' : params['sampleset_id'], 'workspace' : params['ws_id']}, 
+               #                         { 'name' : params['bowtie_index'], 'workspace' : params['ws_id']}]) 
+               sample = script_util.ws_get_obj(logger, ws_client, params['ws_id'],params['sampleset_id'])[0]
+               bowtie_index = script_util.ws_get_obj(logger, ws_client, params['ws_id'],params['bowtie_index'])[0]
                self.sample =sample 
         except Exception,e:
                logger.exception("".join(traceback.format_exc()))
                raise ValueError(" Error Downloading objects from the workspace ")
             ### Get obejct IDs
-        sampleset_info,bowtie_index_info = ws_client.get_object_info_new({"objects": [
-                                           {'name': params['sampleset_id'], 'workspace': params['ws_id']},
-                                           {'name': params['bowtie_index'], 'workspace': params['ws_id']}
-                                           ]})
+        #sampleset_info,bowtie_index_info = ws_client.get_object_info_new({"objects": [
+        #                                   {'name': params['sampleset_id'], 'workspace': params['ws_id']},
+        #                                   {'name': params['bowtie_index'], 'workspace': params['ws_id']}
+        #                                   ]})
+        sampleset_info = script_util.ws_get_obj_info(logger, ws_client, params['ws_id'], params['sampleset_id'])[0]
+        #bowtie_index_info = script_util.ws_get_obj_info(logger, ws_client, params['ws_id'], params['bowtie_index'])[0]
+
         ### Get the workspace object ids for the objects ###
         sampleset_id = str(sampleset_info[6]) + '/' + str(sampleset_info[0]) + '/' + str(sampleset_info[4])
-        bowtie_index_id = str(bowtie_index_info[6]) + '/' + str(bowtie_index_info[0]) + '/' + str(bowtie_index_info[4])
+        #bowtie_index_id = str(bowtie_index_info[6]) + '/' + str(bowtie_index_info[0]) + '/' + str(bowtie_index_info[4])
         self.sampleset_info = sampleset_info
         ### Get the workspace object ids for the objects ###
         sample_type = sampleset_info[2].split('-')[0]

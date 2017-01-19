@@ -29,9 +29,9 @@ class TophatException(Exception):
 
 class Tophat(ExecutionBase): 
 
-    def __init__(self, logger, directory, urls):
+    def __init__(self, logger, directory, urls, max_cores):
         pprint(self.__class__)
-        super(Tophat, self).__init__(logger, directory, urls)
+        super(Tophat, self).__init__(logger, directory, urls, max_cores)
 
         # user defined shared variables across methods
         #self.sample = None
@@ -58,10 +58,12 @@ class Tophat(ExecutionBase):
         print "Downloading Read Sample{0}".format(read_sample)
         logger.info("Downloading Read Sample{0}".format(read_sample))
         try:
-		r_sample = ws_client.get_objects(
-                                        [{ 'name' : read_sample, 'workspace' : ws_id}])[0]
-		r_sample_info = ws_client.get_object_info_new({"objects": [{'name': read_sample, 'workspace': ws_id}]})[0]	
-		sample_type = r_sample_info[2].split('-')[0]
+		#r_sample = ws_client.get_objects(
+                #                        [{ 'name' : read_sample, 'workspace' : ws_id}])[0]
+                r_sample = script_util.ws_get_obj(logger,ws_client, ws_id, read_sample)[0]
+		#r_sample_info = ws_client.get_object_info_new({"objects": [{'name': read_sample, 'workspace': ws_id}]})[0]	
+		#sample_type = r_sample_info[2].split('-')[0]
+                sample_type = script_util.ws_get_type_name(logger, ws_client, ws_id, read_sample)
 		output_name = read_sample.split('.')[0]+"_tophat_alignment"
 		output_dir = os.path.join(directory,output_name)
 	        #if not os.path.exists(output_dir): os.makedirs(output_dir)
@@ -80,41 +82,59 @@ class Tophat(ExecutionBase):
             	if('no_coverage_search' in params and int(params['no_coverage_search']) == 1): tophat_cmd += ' --no-coverage-search'
             	if('preset_options' in params and params['preset_options'] is not None ): tophat_cmd += ' --'+params['preset_options']
                 #out_file = output_dir +"/accepted_hits.sam"
+                try:
+                        sample_ref = script_util.ws_get_ref(self.logger, ws_client, ws_id, read_sample)
+                        ds = script_util.ru_reads_download(self.logger, sample_ref,directory, token)
+                except Exception,e:
+                        self.logger.exception(e)
+                        raise Exception( "Unable to download reads file , {0}".format(read_sample))
                 if sample_type  == 'KBaseAssembly.SingleEndLibrary' or sample_type  == 'KBaseFile.SingleEndLibrary':
                         lib_type = 'SingleEnd'
-                        if sample_type == 'KBaseAssembly.SingleEndLibrary':
-                            read_id = r_sample['data']['handle']['id']
-                            read_name =  r_sample['data']['handle']['file_name']
-                        else:
-                            read_id = r_sample['data']['lib']['file']['id']
-                            read_name =  r_sample['data']['lib']['file']['file_name']
-                        try:
-                                script_util.download_file_from_shock(self.logger, shock_service_url=self.urls['shock_service_url'], shock_id=read_id,filename=read_name, directory=directory,token=token)
-                		tophat_cmd += ' -o {0} -G {1} {2} {3}'.format(output_dir,gtf_file,bowtie2_base,os.path.join(directory,read_name))
-                        except Exception,e:
-                                self.logger.exception(e)
-                                raise Exception( "Unable to download shock file , {0}".format(read_name))
+                	tophat_cmd += ' -o {0} -G {1} {2} {3}'.format(output_dir,gtf_file,bowtie2_base,ds['fwd'])
                 if sample_type == 'KBaseAssembly.PairedEndLibrary' or sample_type == 'KBaseFile.PairedEndLibrary':
                         lib_type = 'PairedEnd'
                         if sample_type == 'KBaseAssembly.PairedEndLibrary':
                             if('orientation' in params and params['orientation'] is not None): tophat_cmd += ( ' --'+params['orientation'])
-                            read1_id = r_sample['data']['handle_1']['id']
-                            read1_name = r_sample['data']['handle_1']['file_name']
-                            read2_id = r_sample['data']['handle_2']['id']
-                            read2_name = r_sample['data']['handle_2']['file_name']
                         else:
                             # TODO: the following can be read from PEL object
                             if('orientation' in params and params['orientation'] is not None): tophat_cmd += ( ' --'+params['orientation'])
-                            read1_id = r_sample['data']['lib1']['file']['id']
-                            read1_name = r_sample['data']['lib1']['file']['file_name']
-                            read2_id = r_sample['data']['lib2']['file']['id']
-                            read2_name = r_sample['data']['lib2']['file']['file_name']
-                        try:
-                                script_util.download_file_from_shock(self.logger, shock_service_url=self.urls['shock_service_url'], shock_id=read1_id,filename=read1_name, directory=directory,token=token)
-                                script_util.download_file_from_shock(self.logger, shock_service_url=self.urls['shock_service_url'], shock_id=read2_id,filename=read2_name, directory=directory,token=token)
-                		tophat_cmd += ' -o {0} -G {1} {2} {3} {4}'.format(output_dir,gtf_file,bowtie2_base,os.path.join(directory,read1_name),os.path.join(directory,read2_name))
-                        except Exception,e:
-                                raise Exception( "Unable to download shock file , {0} or {1}".format(read1_name,read2_name))
+                        tophat_cmd += ' -o {0} -G {1} {2} {3} {4}'.format(output_dir,gtf_file,bowtie2_base,ds['fwd'],ds['rev'])
+
+#                if sample_type  == 'KBaseAssembly.SingleEndLibrary' or sample_type  == 'KBaseFile.SingleEndLibrary':
+#                        lib_type = 'SingleEnd'
+#                        if sample_type == 'KBaseAssembly.SingleEndLibrary':
+#                            read_id = r_sample['data']['handle']['id']
+#                            read_name =  r_sample['data']['handle']['file_name']
+#                        else:
+#                            read_id = r_sample['data']['lib']['file']['id']
+#                            read_name =  r_sample['data']['lib']['file']['file_name']
+#                        try:
+#                                script_util.download_file_from_shock(self.logger, shock_service_url=self.urls['shock_service_url'], shock_id=read_id,filename=read_name, directory=directory,token=token)
+#                		tophat_cmd += ' -o {0} -G {1} {2} {3}'.format(output_dir,gtf_file,bowtie2_base,os.path.join(directory,read_name))
+#                        except Exception,e:
+#                                self.logger.exception(e)
+#                                raise Exception( "Unable to download shock file , {0}".format(read_name))
+#                if sample_type == 'KBaseAssembly.PairedEndLibrary' or sample_type == 'KBaseFile.PairedEndLibrary':
+#                        lib_type = 'PairedEnd'
+#                        if sample_type == 'KBaseAssembly.PairedEndLibrary':
+#                            if('orientation' in params and params['orientation'] is not None): tophat_cmd += ( ' --'+params['orientation'])
+#                            read1_id = r_sample['data']['handle_1']['id']
+#                            read1_name = r_sample['data']['handle_1']['file_name']
+#                            read2_id = r_sample['data']['handle_2']['id']
+#                            read2_name = r_sample['data']['handle_2']['file_name']
+#                        else:
+#                            # TODO: the following can be read from PEL object
+#                            if('orientation' in params and params['orientation'] is not None): tophat_cmd += ( ' --'+params['orientation'])
+#                            read1_id = r_sample['data']['lib1']['file']['id']
+#                            read1_name = r_sample['data']['lib1']['file']['file_name']
+#                            read2_id = r_sample['data']['lib2']['file']['id']
+#                            read2_name = r_sample['data']['lib2']['file']['file_name']
+#                        try:
+#                                script_util.download_file_from_shock(self.logger, shock_service_url=self.urls['shock_service_url'], shock_id=read1_id,filename=read1_name, directory=directory,token=token)
+#                                script_util.download_file_from_shock(self.logger, shock_service_url=self.urls['shock_service_url'], shock_id=read2_id,filename=read2_name, directory=directory,token=token)
+#                		tophat_cmd += ' -o {0} -G {1} {2} {3} {4}'.format(output_dir,gtf_file,bowtie2_base,os.path.join(directory,read1_name),os.path.join(directory,read2_name))
+#                        except Exception,e:
+#                                raise Exception( "Unable to download shock file , {0} or {1}".format(read1_name,read2_name))
                 try:
                         self.logger.info("Executing: tophat {0}".format(tophat_cmd))
                         cmdline_output, cmd_err = script_util.runProgram(self.logger,"tophat",tophat_cmd,None,directory)

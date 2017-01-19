@@ -17,8 +17,10 @@ from operator import itemgetter
 import subprocess
 
 def get_fa_from_genome(logger,ws_client,urls,ws_id,directory,genome_name):
-    ref_info = ws_client.get_object_info_new({"objects": [{'name': genome_name, 'workspace': ws_id}]})[0]
-    genome_id = str(ref_info[6]) + '/' + str(ref_info[0]) + '/' + str(ref_info[4])
+    #ref_info = ws_client.get_object_info_new({"objects": [{'name': genome_name, 'workspace': ws_id}]})[0]
+    #ref_info = script_util.ws_get_object_info(logger, ws_client, ws_id, genome_name)[0]
+    #genome_id = str(ref_info[6]) + '/' + str(ref_info[0]) + '/' + str(ref_info[4])
+    genome_id = script_util.ws_get_ref(logger, ws_client, ws_id, genome_name)
     fasta_file =  os.path.join(directory,genome_name+ ".fa")
     ref = ws_client.get_object_subset(
                                      [{ 'ref' : genome_id ,'included': ['contigset_ref','assembly_ref']}])
@@ -125,8 +127,9 @@ def create_RNASeq_AlignmentSet_and_build_report(logger,ws_client,ws_id,sample_li
          failed_list = [k for k in sample_list if k not in run_list ]
          print  "\n".join(failed_list)
          for sid,s_alignments in results:
-                    a_ref = ws_client.get_object_info_new({"objects": [{'name':s_alignments, 'workspace': ws_id}]})[0]
-                    a_id = str(a_ref[6]) + '/' + str(a_ref[0]) + '/' + str(a_ref[4])
+                    #a_ref = ws_client.get_object_info_new({"objects": [{'name':s_alignments, 'workspace': ws_id}]})[0]
+                    #a_id = str(a_ref[6]) + '/' + str(a_ref[0]) + '/' + str(a_ref[4])
+                    a_id = script_util.ws_get_ref(logger, ws_client, ws_id, s_alignments)
                     m_alignments.append({sid : a_id})
                     m_align_names.append({sid : s_alignments})
                     output_objs.append({'ref' : a_id , 'description': "RNA-seq Alignment for reads Sample :  {0}".format(sid)})

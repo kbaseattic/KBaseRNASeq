@@ -31,8 +31,8 @@ class HiSat2SampleException(Exception):
 
 class HiSat2Sample(HiSat2): 
 
-    def __init__(self, logger, directory, urls):
-        super(HiSat2Sample, self).__init__(logger, directory, urls)
+    def __init__(self, logger, directory, urls, max_cores):
+        super(HiSat2Sample, self).__init__(logger, directory, urls, max_cores)
         # user defined shared variables across methods
         self.sample_info = None
         #self.sampleset_info = None
@@ -48,22 +48,26 @@ class HiSat2Sample(HiSat2):
         hisat2_dir = self.directory
 
         try:
-               sample,annotation_name = ws_client.get_objects(
-                                        [{ 'name' : params['sampleset_id'], 'workspace' : params['ws_id']},
-                                        { 'name' : params['genome_id'], 'workspace' : params['ws_id']}])
+               #sample,annotation_name = ws_client.get_objects(
+               #                         [{ 'name' : params['sampleset_id'], 'workspace' : params['ws_id']},
+               #                         { 'name' : params['genome_id'], 'workspace' : params['ws_id']}])
+               sample = script_util.ws_get_obj(logger, ws_client, params['ws_id'],params['sampleset_id'])[0]
+               annotation_name = script_util.ws_get_obj(logger, ws_client, params['ws_id'],params['genome_id'])[0]
                self.sample =sample 
         except Exception,e:
                logger.exception("".join(traceback.format_exc()))
                raise ValueError(" Error Downloading objects from the workspace ")
         ### Get object Info and  IDs
-        sample_info,annotation_info = ws_client.get_object_info_new({"objects": [
-                                           {'name': params['sampleset_id'], 'workspace': params['ws_id']},
-                                           {'name': params['genome_id'], 'workspace': params['ws_id']}
-                                           ]})
+        #sample_info,annotation_info = ws_client.get_object_info_new({"objects": [
+        #                                   {'name': params['sampleset_id'], 'workspace': params['ws_id']},
+        #                                   {'name': params['genome_id'], 'workspace': params['ws_id']}
+        #                                   ]})
+        sample_info = script_util.ws_get_obj_info(logger, ws_client, params['ws_id'], params['sampleset_id'])[0]
         self.sample_info = sample_info
         ### Get the workspace object ids for the objects ###
         sample_id = str(sample_info[6]) + '/' + str(sample_info[0]) + '/' + str(sample_info[4])
-        annotation_id = str(annotation_info[6]) + '/' + str(annotation_info[0]) + '/' + str(annotation_info[4])
+        #annotation_id = str(annotation_info[6]) + '/' + str(annotation_info[0]) + '/' + str(annotation_info[4])
+        annotation_id = script_util.ws_get_ref(logger, ws_client, params['ws_id'], params['genome_id'])
         sample_type = sample_info[2].split('-')[0]
 	lib_types = ['KBaseAssembly.SingleEndLibrary', 'KBaseAssembly.PairedEndLibrary','KBaseFile.SingleEndLibrary', 'KBaseFile.PairedEndLibrary']
         ### Check if the Library objects exist in the same workspace

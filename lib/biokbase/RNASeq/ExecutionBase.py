@@ -35,7 +35,7 @@ class ExecutionBase(object):
 #need to implement runEach(), optionally prepare(), collect() and writeReport()
     # defaut common parameters
     pl = ['ws_client', 'hs_client', 'user_token'];
-    def __init__(self, logger, directory, urls):
+    def __init__(self, logger, directory, urls, max_cores = 0):
         self.logger = logger # default logger
         self.directory = directory # working directory
         self.urls = urls # service URLs
@@ -52,6 +52,7 @@ class ExecutionBase(object):
 	#self.callback_url = os.environ['SDK_CALLBACK_URL']
         # default parameters
         self.num_cores = mp.cpu_count()
+        self.max_cores = max_cores
 
     def _checkCommonParams(self, common_params):
         for p in self.pl:
@@ -73,7 +74,9 @@ class ExecutionBase(object):
         Optimizes the pool_size and the number of threads for any parallel operation
         """
         print "Optimizing parallel jobs for number ot threads and samples run at a time"
-        print "Parameters passed : no. jobs {0} ,  no. threads {1} , no. cores {2}".format(num_jobs,num_threads,num_cores)
+        print "Parameters passed : no. jobs {0} ,  no. threads {1} , no. cores {2}, core limit {3}".format(num_jobs,num_threads,num_cores, self.max_cores)
+        if max_cores >= 1:
+            num_cores = max_cores
         if num_jobs * num_threads < num_cores:
             while num_jobs * num_threads < num_cores:
                 num_threads = num_threads + 1
@@ -112,7 +115,7 @@ class ExecutionBase(object):
         #self._setCommonParams(common_params)
         self.method_params = method_params
         self.common_params = common_params
-
+        
         # parallel execution common additional preparation
         self.num_threads = 2
         if('num_threads' in common_params and common_params['num_threads'] is not None):
@@ -123,7 +126,7 @@ class ExecutionBase(object):
         self.prepare()
 
         if self.num_cores != 1:
-            pool_size,self.num_threads=self._optimizeParallel(self.num_jobs,self.num_threads,self.num_cores)
+            pool_size,self.num_threads=self._optimizeParallel(self.num_jobs,self.num_threads,self.num_cores, max_cores)
         else:
             pool_size = 1
             self.num_threads = 1

@@ -30,8 +30,8 @@ class CuffdiffException(Exception):
 
 class Cuffdiff(ExecutionBase): 
 
-    def __init__(self, logger, directory, urls):
-        super(self.__class__, self).__init__(logger, directory, urls)
+    def __init__(self, logger, directory, urls, max_cores):
+        super(self.__class__, self).__init__(logger, directory, urls, max_cores)
 
         # user defined shared variables across methods
         self.num_threads = None
