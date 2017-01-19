@@ -553,12 +553,12 @@ def download_for_ballgown( logger, ws_client, hs, ws_id, urls, directory, dir_pr
                 #files = {}
                 #a_obj,e_obj = ws_client.get_objects(
                 #                     [{'ref' : a_id},{'ref': e_id}])
-                a_obj= ws_client.get_objects( [ {'ref' : a_id} ] )[0]
-                zipfile = a_obj['data']['file']['file_name']
-                shock_id = a_obj['data']['file']['id']
+                e_obj= ws_client.get_objects( [ {'ref' : e_id} ] )[0]
+                zipfile = e_obj['data']['file']['file_name']
+                shock_id = e_obj['data']['file']['id']
                 ### Get the condition name, replicate_id , shock_id and shock_filename
-                condition = a_obj['data']['condition']                                            # Question: can we use this for group!?
-                if 'replicate_id' in a_obj['data'] : replicate_id = a_obj['data']['replicate_id']
+                condition = e_obj['data']['condition']                                            # Question: can we use this for group!?
+                if 'replicate_id' in e_obj['data'] : replicate_id = e_obj['data']['replicate_id']
                 #files[a_obj['data']['file']['file_name']] = a_obj['data']['file']['id']
                 #files[e_obj['data']['file']['file_name']] = e_obj['data']['file']['id']
                 if not condition in output_obj['labels']: 
@@ -566,15 +566,15 @@ def download_for_ballgown( logger, ws_client, hs, ws_id, urls, directory, dir_pr
                 else:
                     counter += 1 #### comment it when replicate_id is available from methods
 
-                subdir = os.path.join( directory, dir_prefix, condition, str(counter) ) ### Comment this line when replicate_id is available from the methods
-
+                subdir = os.path.join( directory, dir_prefix + "_" + condition + "_" + str(counter) ) ### Comment this line when replicate_id is available from the methods
+                logger.info( "subdir is {0}".format( subdir ) )
                 output_obj['subdirs'].append( subdir )
                 if not os.path.exists( subdir ): 
                     os.makedirs( subdir )
                 try:
                     script_util.download_file_from_shock( logger = logger, 
                                                           shock_service_url = urls['shock_service_url'], 
-                                                          shock_service_id = shock_id,
+                                                          shock_id = shock_id,
                                                           filename = zipfile,
                                                           directory = subdir, 
                                                           token = token )
@@ -585,6 +585,8 @@ def download_for_ballgown( logger, ws_client, hs, ws_id, urls, directory, dir_pr
                     script_util.unzip_files( logger, 
                                              os.path.join( subdir, zipfile ),
                                              subdir )
+                    logger.info( "listing of {0}".format( subdir ))
+                    logger.info( os.listdir(subdir) )
                     #script_util.unzip_files(logger,os.path.join(s_path,e_obj['data']['file']['file_name']),s_path)
                     #e_file_path =  os.path.join(s_path,"transcripts.gtf")
                     #a_file_path = os.path.join( s_path, "accepted_hits.bam" )
@@ -595,10 +597,17 @@ def download_for_ballgown( logger, ws_client, hs, ws_id, urls, directory, dir_pr
                 except Exception, e:
                     raise Exception("".join(traceback.format_exc()))
 
+                for f in [ 'e2t.ctab', 'e_data.ctab', 'i2t.ctab', 'i_data.ctab', 't_data.ctab' ]:
+                    fullpath = os.path.join( subdir, f )
+                    if ( not os.path.isfile( fullpath ) ):
+                        raise Exception( "error: ballgown input file {0} not found. Can't proceed".format( fullpath ) )
+
         #list_file.close()
         #output_obj['gtf_list_file'] = assembly_file
         print output_obj
         return output_obj        
+
+
 
 def  run_ballgown_diff_exp( logger, rscripts_dir, dir_prefix, group_str, output_csv ):
         #
@@ -615,7 +624,7 @@ def  run_ballgown_diff_exp( logger, rscripts_dir, dir_prefix, group_str, output_
                       '--experiment_groups', group_str,
                       '--out_csvfile', output_csv 
                     ] 
-        rcmd_str = " ".join(str(x) for x in ropts)
+        rcmd_str = " ".join( str(x) for x in rcmd_list )
         openedprocess = subprocess.Popen( rcmd_str, shell=True, stdout=subprocess.PIPE )
         openedprocess.wait()
         #Make sure the openedprocess.returncode is zero (0)

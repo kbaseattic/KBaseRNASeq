@@ -119,8 +119,8 @@ class KBaseRNASeq:
               self.__SVC_PASS = config['svc_pass']
         if 'scripts_dir' in config:
               self.__SCRIPTS_DIR = config['scripts_dir']
-        if 'rscripts' in config:
-              self.__RSCRIPTS_DIR = config['rscripts_dir']
+        #if 'rscripts' in config:
+        #      self.__RSCRIPTS_DIR = config['rscripts_dir']
         if 'force_shock_node_2b_public' in config: # expect 'true' or 'false' string
               self.__PUBLIC_SHOCK_NODE = config['force_shock_node_2b_public']
         self.__CALLBACK_URL = os.environ['SDK_CALLBACK_URL']	
@@ -738,8 +738,8 @@ class KBaseRNASeq:
         # Set the common Params
         common_params = {'ws_client'    : Workspace(url=self.__WS_URL, token=ctx['token']),
                          'hs_client'    : HandleService(url=self.__HS_URL, token=ctx['token']),
-                         'user_token'   : ctx['token'],
-                         'rscripts_dir' : self.__RSCRIPTS_DIR         # QUESTION: is this the right place to pass this?
+                         'user_token'   : ctx['token']
+                         #'rscripts_dir' : self.__RSCRIPTS_DIR         # QUESTION: is this the right place to pass this?
                         }
         # Set the Number of threads if specified 
         if 'num_threads' in params and params['num_threads'] is not None:

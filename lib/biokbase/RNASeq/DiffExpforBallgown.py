@@ -37,7 +37,9 @@ class DiffExpforBallgown(ExecutionBase):
         super(self.__class__, self).__init__(logger, directory, urls)
 
         # user defined shared variables across methods
-        self.num_threads = None
+        #self.num_threads = None
+        self.num_threads = 1
+        self.num_cores = 1
         self.tool_used = None
         self.tool_version = None
 
@@ -56,8 +58,11 @@ class DiffExpforBallgown(ExecutionBase):
         #self.details = rnaseq_util.get_details_for_diff_exp(logger,ws_client,hs,params['ws_id'],self.urls,diffexp_dir,params['expressionset_id'],token)
         #logger.info( 'back from get_details_for_diff_exp(), details are')
         #logger.info( pformat( self.details ) )
-        #self.num_threads = mp.cpu_count()
-        #self.num_jobs = 1
+        self.num_threads = mp.cpu_count()
+        self.num_jobs = 1
+
+        self.details = {}
+        self.details["used_tool"] = "StringTie"    # Question: where does this really get set?
         #als = [] 
         #for l in self.details['labels']:
         #        rep_files=[ (os.path.join(diffexp_dir+'/'+l,sub+'/accepted_hits.bam'), os.path.join(diffexp_dir+'/'+l,sub+'/transcripts.gtf')) for sub in os.listdir(os.path.join(diffexp_dir,l)) if os.path.isdir(os.path.join(diffexp_dir,l+'/'+sub))]
@@ -87,6 +92,7 @@ class DiffExpforBallgown(ExecutionBase):
 
 
     def runEach(self,task_list):
+         logger = self.logger
          ### Call Cuffmerge function
          used_tool = self.details['used_tool']
          logger.info(  'in DiffExpfoBallgown.runEach()' )
@@ -169,7 +175,8 @@ class DiffExpforBallgown(ExecutionBase):
     def collect(self):
         ws_client = self.common_params['ws_client']
         hs = self.common_params['hs_client']
-        rscripts_dir = self.common_params['rscripts_dir']
+        #rscripts_dir = self.common_params['rscripts_dir']
+        rscripts_dir = '/kb/module/rscripts'
         params = self.method_params
         token = self.common_params['user_token']
         diffexp_dir = self.directory
@@ -198,9 +205,10 @@ class DiffExpforBallgown(ExecutionBase):
         logger.info( 'back from download_for_ballgown(), ballgown_sets are')
         logger.info( pformat( ballgown_sets ) )
 
-        raise Exception( "Debug quit")
-
+        group_str = "1100"
         res = rnaseq_util.run_ballgown_diff_exp( logger, rscripts_dir, stringtie_dir_prefix, group_str, output_csv )
+
+        raise Exception( "Debug quit")
 
         #load_diff_matrix( logger, output_csv, output_object_name )    # ws id, etc
 
