@@ -1,0 +1,22 @@
+{
+        "version":"1.1",
+        "method":"KBaseRNASeq.TophatCall_runEach",
+        "context": null,
+        "params":[
+         {
+             "label": "Single-Sample",
+             "gtf_file": "/kb/module/work/tmp/Arabidopsis_Genome_Annotation_GTF.gtf",
+             "annotation_id": "7919/4/2",
+             "ws_id": "single_RNASeq_test",
+             "tophat_dir": "/kb/module/work/tmp",
+             "job_id": "ath_wt_demo_Reads",
+             "bowtie_index": "Arabidopsis_bw_index",
+             "bowtie2index_id": "8053/8/1",
+             "sampleset_id": null,
+             "reads_type": "KBaseAssembly.SingleEndLibrary"
+         }
+       ]
+}
+
+
+
