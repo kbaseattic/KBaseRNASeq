@@ -63,13 +63,13 @@ def ru_reads_download(logger, ref, tdir, token):
     
     #ds['fwd'] = os.path.join(tdir, trim_gz(ds['files'][ref]['files']['fwd_name']))
     ds['fwd'] = os.path.join(tdir, os.path.basename(ds['files'][ref]['files']['fwd']))
-    shutil.move(ds['files'][ref]['files']['fwd'],ds['fwd'])
+    os.rename(ds['files'][ref]['files']['fwd'],ds['fwd'])
     if ds['files'][ref]['files']['type'] == 'paired':
         if ds['files'][ref]['files']['rev_name'] is None:
             ds['rev'] = os.path.join(tdir, 'rev.fastq')
         else:
             ds['rev'] = os.path.join(tdir, os.path.basename(ds['files'][ref]['files']['rev']))
-        shutil.move(ds['files'][ref]['files']['rev'],ds['rev'])
+        os.rename(ds['files'][ref]['files']['rev'],ds['rev'])
     logger.info("{0} will be downloaded and transferred to {1}".format(ref,tdir))
     return ds
 
