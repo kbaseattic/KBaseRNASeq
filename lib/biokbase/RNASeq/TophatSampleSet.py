@@ -67,7 +67,7 @@ class TophatSampleSet(Tophat):
         # SampleSet
         if not (sample_type == 'KBaseRNASeq.RNASeqSampleSet' or sample_type == 'KBaseSets.ReadsSet'):
             raise TophatSampleSetException('RNASeqSampleSet or ReadsSet is required')
-        (reads, r_label) = get_reads_conditions(logger, sample, sample_type)
+        (reads, r_label) = rnaseq_util.get_reads_conditions(logger, sample, sample_type)
         #reads = sample['data']['sample_ids']
         #reads_type= sample['data']['Library_type']
         # Note: do not need the following as we support ws reference

@@ -79,7 +79,7 @@ class HiSat2SampleSet(HiSat2):
         #logger.info("Check if the Library objects do exist in the current workspace")
         #reads = sample['data']['sample_ids']
         #r_label = sample['data']['condition']
-        (reads, r_label) = get_reads_conditions(logger, sample, sample_type)
+        (reads, r_label) = rnaseq_util.get_reads_conditions(logger, sample, sample_type)
         #e_ws_objs = script_util.if_ws_obj_exists_notype(None,ws_client,params['ws_id'],reads)
         #missing_objs = [i for i in reads if not i in e_ws_objs]
         #if len(e_ws_objs) != len(reads):

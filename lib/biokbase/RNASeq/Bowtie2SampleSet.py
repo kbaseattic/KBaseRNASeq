@@ -79,7 +79,7 @@ class Bowtie2SampleSet(Bowtie2):
         if not (sample_type == 'KBaseRNASeq.RNASeqSampleSet' or sample_type == 'KBaseSets.ReadsSet'):
             raise Bowtie2SampleSetException('RNASeqSampleSet or ReadsSet is required')
         #logger.info("Check if the Library objects do exist in the current workspace")
-        (reads, r_label) = get_reads_conditions(logger, sample, sample_type)
+        (reads, r_label) = rnaseq_util.get_reads_conditions(logger, sample, sample_type)
         #reads = sample['data']['sample_ids']
         #r_label = sample['data']['condition']
         #reads_type= sample['data']['Library_type']
