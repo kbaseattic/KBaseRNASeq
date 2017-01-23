@@ -69,7 +69,7 @@ class ExecutionBase(object):
                 self.__dict__[p] = common_params[p]
         
     # TODO: remove argument passing as we defined them
-    def _optimizeParallel(self, num_jobs,num_threads,num_cores):
+    def _optimizeParallel(self, num_jobs,num_threads,num_cores, max_cores):
         """
         Optimizes the pool_size and the number of threads for any parallel operation
         """
@@ -126,7 +126,7 @@ class ExecutionBase(object):
         self.prepare()
 
         if self.num_cores != 1:
-            pool_size,self.num_threads=self._optimizeParallel(self.num_jobs,self.num_threads,self.num_cores, max_cores)
+            pool_size,self.num_threads=self._optimizeParallel(self.num_jobs,self.num_threads,self.num_cores, self.max_cores)
         else:
             pool_size = 1
             self.num_threads = 1
