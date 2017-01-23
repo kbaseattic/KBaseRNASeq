@@ -15,6 +15,20 @@ from biokbase.RNASeq import script_util
 from pprint import pprint,pformat
 from operator import itemgetter
 
+def get_reads_conditions(logger, set_obj, set_type):
+    if set_type == 'KBaseRNASeq.RNASeqSampleSet':
+        reads = set_obj['data']['sample_ids']
+        r_label = set_obj['data']['condition']
+        return (reads, r_label)
+    if set_type == 'KBaseSets.ReadsSet':
+        reads = [item['ref'] for item in set_obj['data']['items']]
+        r_label = [item['label'] for item in set_obj['data']['items']]
+        return (reads, r_label)
+    
+    logger.error("Set object type is not one of  RNASeqSampleSet or ReadsSet : %s" % set_type) 
+    raise Exception("Invalid set object type : %s" % set_type)
+    
+
 def get_fa_from_genome(logger,ws_client,urls,ws_id,directory,genome_name):
     #ref_info = ws_client.get_object_info_new({"objects": [{'name': genome_name, 'workspace': ws_id}]})[0]
     #ref_info = script_util.ws_get_object_info(logger, ws_client, ws_id, genome_name)[0]

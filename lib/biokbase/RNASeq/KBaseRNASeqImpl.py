@@ -372,7 +372,7 @@ class KBaseRNASeq:
         # Check to Call Bowtie2 in Set mode or Single mode
         wsc = common_params['ws_client']
         readsobj_type = script_util.ws_get_type_name(self.__LOGGER, wsc, params['ws_id'], params['sampleset_id'])
-        if readsobj_type == 'KBaseRNASeq.RNASeqSampleSet':
+        if readsobj_type == 'KBaseRNASeq.RNASeqSampleSet' or readsobj_type == 'KBaseSets.ReadsSet':
                 self.__LOGGER.info("Bowtie2 SampleSet Case")
                 bw2ss = Bowtie2SampleSet(self.__LOGGER, bowtie2_dir, self.__SERVICES)
                 returnVal = bw2ss.run(common_params, params)
@@ -427,7 +427,7 @@ class KBaseRNASeq:
 	# Check to Call HiSat2 in Set mode or Single mode
 	wsc = common_params['ws_client']
         readsobj_type = script_util.ws_get_type_name(self.__LOGGER, wsc, params['ws_id'], params['sampleset_id'])
-	if readsobj_type == 'KBaseRNASeq.RNASeqSampleSet':	
+        if readsobj_type == 'KBaseRNASeq.RNASeqSampleSet' or readsobj_type == 'KBaseSets.ReadsSet':
 		self.__LOGGER.info("HiSat2 SampleSet Case")
         	hs2ss = HiSat2SampleSet(self.__LOGGER, hisat2_dir, self.__SERVICES, self.__MAX_CORES)
         	returnVal = hs2ss.run(common_params, params)
@@ -483,7 +483,7 @@ class KBaseRNASeq:
         #readsobj_info = script_util.ws_get_obj_info(self.__LOGGER, wsc, params['ws_id'], params['sampleset_id'])
         #obj_type = obj_info[0][2].split('-')[0]
         obj_type = script_util.ws_get_type_name(self.__LOGGER, wsc, params['ws_id'], params['sampleset_id'])
-	if obj_type == 'KBaseRNASeq.RNASeqSampleSet':	
+        if readsobj_type == 'KBaseRNASeq.RNASeqSampleSet' or readsobj_type == 'KBaseSets.ReadsSet':
 		self.__LOGGER.info("Tophat SampleSet Case")
         	tss = TophatSampleSet(self.__LOGGER, tophat_dir, self.__SERVICES, self.__MAX_CORES)
         	returnVal = tss.run(common_params, params)

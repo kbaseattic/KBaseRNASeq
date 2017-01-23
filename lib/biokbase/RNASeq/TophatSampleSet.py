@@ -61,12 +61,15 @@ class TophatSampleSet(Tophat):
                logger.exception("".join(traceback.format_exc()))
                raise ValueError(" Error Downloading objects from the workspace ")
         ### Get object Info and IDs
-        #sample_info = ws_client.get_object_info_new({"objects": [{'name': params['sampleset_id'], 'workspace': params['ws_id']}]})[0]
-        #sample_type = sample_info[2].split('-')[0]
+        sample_info = script_util.ws_get_obj_info(logger, ws_client, params['ws_id'], params['sampleset_id'])[0]
+        sample_type = sample_info[2].split('-')[0]
 
         # SampleSet
-        reads = sample['data']['sample_ids']
-        reads_type= sample['data']['Library_type']
+        if not (sample_type == 'KBaseRNASeq.RNASeqSampleSet' or sample_type == 'KBaseSets.ReadsSet'):
+            raise TophatSampleSetException('RNASeqSampleSet or ReadsSet is required')
+        (reads, r_label) = get_reads_conditions(logger, sample, sample_type)
+        #reads = sample['data']['sample_ids']
+        #reads_type= sample['data']['Library_type']
         # Note: do not need the following as we support ws reference
         #e_ws_objs = script_util.if_ws_obj_exists_notype(None,ws_client,params['ws_id'],reads)
         #missing_objs = [i for i in reads if not i in e_ws_objs]
@@ -127,7 +130,7 @@ class TophatSampleSet(Tophat):
 	# Determine the num_threads provided by the user otherwise default the number of threads to 2
         #reads = sample['data']['sample_ids'] # duplicated lines
         #reads_type= sample['data']['Library_type'] # duplicated lines
-        r_label = sample['data']['condition']
+        #r_label = sample['data']['condition']
         self.num_jobs =  len(reads)
 
         count = 0
@@ -138,7 +141,6 @@ class TophatSampleSet(Tophat):
                     task_param = {'job_id' : i,
                                   'label' : r_label[count],
                                   'ws_id' : params['ws_id'],
-                                  'reads_type' : reads_type,
                                   'tophat_dir' : self.directory,
 				  'gtf_file' : gtf_file, # TODO: double check newly created file gtf_file is path or not
                                   'annotation_id': genome_id,

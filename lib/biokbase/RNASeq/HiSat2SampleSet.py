@@ -74,12 +74,12 @@ class HiSat2SampleSet(HiSat2):
         sample_type = sampleset_info[2].split('-')[0]
 
         ### Check if the Library objects exist in the same workspace
-        if sample_type != 'KBaseRNASeq.RNASeqSampleSet':
-            raise HiSat2SampleSetException('RNASeqSampleSet is required')
-        logger.info("Check if the Library objects do exist in the current workspace")
-        reads = sample['data']['sample_ids']
-        r_label = sample['data']['condition']
-        reads_type= sample['data']['Library_type']
+        if not (sample_type == 'KBaseRNASeq.RNASeqSampleSet' or sample_type == 'KBaseSets.ReadsSet'):
+            raise HiSat2SampleSetException('RNASeqSampleSet or ReadsSet is required')
+        #logger.info("Check if the Library objects do exist in the current workspace")
+        #reads = sample['data']['sample_ids']
+        #r_label = sample['data']['condition']
+        (reads, r_label) = get_reads_conditions(logger, sample, sample_type)
         #e_ws_objs = script_util.if_ws_obj_exists_notype(None,ws_client,params['ws_id'],reads)
         #missing_objs = [i for i in reads if not i in e_ws_objs]
         #if len(e_ws_objs) != len(reads):
@@ -109,7 +109,6 @@ class HiSat2SampleSet(HiSat2):
                     task_param = {'job_id' : i,
                                   'label' : r_label[count],
                                   'ws_id' : params['ws_id'],
-                                  'reads_type' : reads_type,
                                   'hisat2_dir' : self.directory,
                                   'annotation_id': ref_id, # Changed annotation_id to ref_id for genome object 
                                   'sampleset_id' : sampleset_id
