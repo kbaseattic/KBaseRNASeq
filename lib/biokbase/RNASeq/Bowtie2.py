@@ -51,7 +51,6 @@ class Bowtie2(ExecutionBase):
         condition = task_params['label']
         directory = task_params['bowtie2_dir']
         ws_id = task_params['ws_id']
-        reads_type = task_params['reads_type']
         genome_id = task_params['annotation_id']
         sampleset_id = task_params['sampleset_id']
 

@@ -50,7 +50,6 @@ class Tophat(ExecutionBase):
         condition = task_params['label']
         directory = task_params['tophat_dir']
         ws_id = task_params['ws_id']
-        reads_type = task_params['reads_type']
         genome_id = task_params['annotation_id']
         sampleset_id = task_params['sampleset_id']
 	gtf_file = task_params['gtf_file']
