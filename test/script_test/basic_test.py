@@ -43,20 +43,20 @@ class TestRNASeqMethods(TestRNASeqMethodsSetup):
 #                output =json.load(o)
 #        pprint(output)
 #
-  def test_1(self):
-        print("\n\n----------- test HiSat2+StringTie 'Express' ----------")
-        out =call(["./bin/run_KBaseRNASeq.sh",
-        "test/script_test/test_analysis2_express_input.json",
-        "test/script_test/test_analysis2_express_output.json",
-        "test/script_test/token.txt"])
-
-        # print error code of Implementation
-        print(out);
-
-        with open('test/script_test/test_analysis2_express_output.json') as o:
-                output =json.load(o)
-        print(output)
-
+#  def test_1(self):
+#        print("\n\n----------- test HiSat2+StringTie 'Express' ----------")
+#        out =call(["./bin/run_KBaseRNASeq.sh",
+#        "test/script_test/test_analysis2_express_input.json",
+#        "test/script_test/test_analysis2_express_output.json",
+#        "test/script_test/token.txt"])
+#
+#        # print error code of Implementation
+#        print(out);
+#
+#        with open('test/script_test/test_analysis2_express_output.json') as o:
+#                output =json.load(o)
+#        print(output)
+#
 # def test_01(self):
 #        print("\n\n----------- test HiSat2 ----------")
 #
@@ -71,23 +71,23 @@ class TestRNASeqMethods(TestRNASeqMethodsSetup):
 #        with open('test/script_test/test_analysis2_hisat2_output.json') as o:
 #                output =json.load(o)
 #        pprint(output)
+
+
+# def test_02(self):
+#        print("\n\n----------- test HiSat2 PEL ----------")
 #
-
-  def test_02(self):
-        print("\n\n----------- test HiSat2 PEL ----------")
-
-        out =call(["./bin/run_KBaseRNASeq.sh",
-        "test/script_test/test_analysis2_hisat2_pel_input.json",
-        "test/script_test/test_analysis2_hisat2_pel_output.json",
-        "test/script_test/token.txt"])
-
-        # print error code of Implementation
-        print(out)
-
-        with open('test/script_test/test_analysis2_hisat2_pel_output.json') as o:
-                output =json.load(o)
-        pprint(output)
-
+#        out =call(["./bin/run_KBaseRNASeq.sh",
+#        "test/script_test/test_analysis2_hisat2_pel_input.json",
+#        "test/script_test/test_analysis2_hisat2_pel_output.json",
+#        "test/script_test/token.txt"])
+#
+#        # print error code of Implementation
+#        print(out)
+#
+#        with open('test/script_test/test_analysis2_hisat2_pel_output.json') as o:
+#                output =json.load(o)
+#        pprint(output)
+#
 # def test_a(self):
 #        print("\n\n----------- test SetupRNASeqAnalysis ----------")
 #
@@ -148,20 +148,20 @@ class TestRNASeqMethods(TestRNASeqMethodsSetup):
 #                output =json.load(o)
 #        pprint(output)
 
-# def test_Bowtie2Call(self):
-#        print("\n\n----------- test Bowtie2Call ----------")
-#
-#        out =call(["run_KBaseRNASeq.sh",
-#        "test/script_test/test_analysis1_bowtie2_input.json",
-#        "test/script_test/test_analysis1_bowtie2_output.json",
-#        "test/script_test/token.txt"])
-#
-#        # print error code of Implementation
-#        print(out);
-#
-#        with open('test/script_test/test_analysis1_bowtie2_output.json') as o:
-#                output =json.load(o)
-#        pprint(output)
+ def test_Bowtie2Call(self):
+        print("\n\n----------- test Bowtie2Call ----------")
+
+        out =call(["run_KBaseRNASeq.sh",
+        "test/script_test/test_analysis2_bowtie2_input.json",
+        "test/script_test/test_analysis2_bowtie2_output.json",
+        "test/script_test/token.txt"])
+
+        # print error code of Implementation
+        print(out);
+
+        with open('test/script_test/test_analysis2_bowtie2_output.json') as o:
+                output =json.load(o)
+        pprint(output)
 
 # def test_c(self):
 #        print("\n\n----------- test TophatCall ----------")
@@ -192,7 +192,7 @@ class TestRNASeqMethods(TestRNASeqMethodsSetup):
 #        with open('test/script_test/tophat_output.json') as o:
 #                output =json.load(o)
 #        pprint(output)
-#
+
 # def test_d(self):
 #        print("\n\n----------- test TophatCall ----------")
 #
@@ -223,21 +223,21 @@ class TestRNASeqMethods(TestRNASeqMethodsSetup):
 #                output =json.load(o)
 #        pprint(output)
 #
-  def test_ee(self):
-        print("\n\n----------- test StringtieCall ----------")
-
-        out =call(["run_KBaseRNASeq.sh",
-        "test/script_test/test_analysis1_stringtie_input.json",
-        "test/script_test/test_analysis1_stringtie_output.json",
-        "test/script_test/token.txt"])
-
-        # print error code of Implementation
-        print(out);
-
-        with open('test/script_test/test_analysis1_stringtie_output.json') as o:
-                output =json.load(o)
-        pprint(output)
-
+# def test_ee(self):
+#        print("\n\n----------- test StringtieCall ----------")
+#
+#        out =call(["run_KBaseRNASeq.sh",
+#        "test/script_test/test_analysis1_stringtie_input.json",
+#        "test/script_test/test_analysis1_stringtie_output.json",
+#        "test/script_test/token.txt"])
+#
+#        # print error code of Implementation
+#        print(out);
+#
+#        with open('test/script_test/test_analysis1_stringtie_output.json') as o:
+#                output =json.load(o)
+#        pprint(output)
+#
 # def test_f(self):
 #        print("\n\n----------- test CufflinksCall ----------")
 #

@@ -63,7 +63,8 @@ class Tophat(ExecutionBase):
 		#r_sample_info = ws_client.get_object_info_new({"objects": [{'name': read_sample, 'workspace': ws_id}]})[0]	
 		#sample_type = r_sample_info[2].split('-')[0]
                 sample_type = script_util.ws_get_type_name(logger, ws_client, ws_id, read_sample)
-		output_name = read_sample.split('.')[0]+"_tophat_alignment"
+                sample_name = script_util.ws_get_obj_name(self.logger, ws_client, ws_id, read_sample)
+		output_name = sample_name.split('.')[0].replace("/","_")+"_tophat_alignment"
 		output_dir = os.path.join(directory,output_name)
 	        #if not os.path.exists(output_dir): os.makedirs(output_dir)
             	#out_file = output_dir +"/accepted_hits.sam"

@@ -119,7 +119,10 @@ class Bowtie2Sample(Bowtie2):
 		
     def collect(self) :
         # do with 
-        alignment_name = self.method_params['sampleset_id']+"_bowtie2_AlignmentSet"
+        alignment_name = script_util.ws_get_obj_name(self.logger, 
+                                                     self.common_params['ws_client'], 
+                                                     self.method_params['ws_id'], 
+                                                     self.method_params['sampleset_id']) +"_bowtie2_Alignment"
         self.logger.info(" Creating Report for Alignment {0}".format(alignment_name))
 	single_read , single_alignment = self.results[0]
         # TODO: Split alignment set and report method

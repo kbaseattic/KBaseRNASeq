@@ -62,9 +62,10 @@ class HiSat2(ExecutionBase):
                 #sample_type = r_sample_info[2].split('-')[0]
                 r_sample = script_util.ws_get_obj(self.logger, ws_client, ws_id, read_sample)[0]
                 sample_type = script_util.ws_get_type_name(self.logger, ws_client, ws_id, read_sample)
-                input_direc = os.path.join(directory,read_sample.split('.')[0]+"_hisat2_input")
+                sample_name = script_util.ws_get_obj_name(self.logger, ws_client, ws_id, read_sample)
+                input_direc = os.path.join(directory,sample_name.split('.')[0].replace("/","_")+"_hisat2_input")
                 if not os.path.exists(input_direc): os.mkdir(input_direc)
-                output_name = read_sample.split('.')[0]+"_hisat2_alignment"
+                output_name = sample_name.split('.')[0]+"_hisat2_alignment"
                 output_dir = os.path.join(directory,output_name)
                 if not os.path.exists(output_dir): os.mkdir(output_dir)
                 print directory
@@ -204,9 +205,9 @@ class HiSat2(ExecutionBase):
                         #logger.exception("Failed to create hisat2 Alignment {0}".format(" ".join(traceback.print_exc())))
                         raise Exception("Failed to create hisat2 Alignment {0}".format(" ".join(traceback.print_exc())))
         finally:
-                if os.path.exists(input_direc): shutil.rmtree(input_direc)
-                if os.path.exists(out_file_path): os.remove(out_file_path)
-                if os.path.exists(output_dir): shutil.rmtree(output_dir)
+                if not (input_direc is None) and os.path.exists(input_direc): shutil.rmtree(input_direc)
+                if not (out_file_path is None) and os.path.exists(out_file_path): os.remove(out_file_path)
+                if not (output_dir is None) and os.path.exists(output_dir): shutil.rmtree(output_dir)
                 ret = script_util.if_obj_exists(None,ws_client,ws_id,"KBaseRNASeq.RNASeqAlignment",[output_name])
                 if not ret is None:
                     return (read_sample,output_name)

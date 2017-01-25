@@ -254,7 +254,7 @@ class KBaseRNASeq:
         	if 'provenance' in ctx:
             		provenance = ctx['provenance']
         	# add additional info to provenance here, in this case the input data object reference
-        	provenance[0]['input_ws_objects']=[params['reference']]
+        	provenance[0]['input_ws_objects']=[script_util.ws_get_ref(self.__LOGGER, ws_client, params['ws_id'],params['reference'])]
 		
 		try:
 			ref_id, outfile_ref_name = rnaseq_util.get_fa_from_genome(self.__LOGGER,ws_client,self.__SERVICES,params['ws_id'],bowtie_dir,params['reference'])
@@ -374,10 +374,10 @@ class KBaseRNASeq:
         readsobj_type = script_util.ws_get_type_name(self.__LOGGER, wsc, params['ws_id'], params['sampleset_id'])
         if readsobj_type == 'KBaseRNASeq.RNASeqSampleSet' or readsobj_type == 'KBaseSets.ReadsSet':
                 self.__LOGGER.info("Bowtie2 SampleSet Case")
-                bw2ss = Bowtie2SampleSet(self.__LOGGER, bowtie2_dir, self.__SERVICES)
+                bw2ss = Bowtie2SampleSet(self.__LOGGER, bowtie2_dir, self.__SERVICES, self.__MAX_CORES)
                 returnVal = bw2ss.run(common_params, params)
         else:
-                bw2ss = Bowtie2Sample(self.__LOGGER, bowtie2_dir, self.__SERVICES)
+                bw2ss = Bowtie2Sample(self.__LOGGER, bowtie2_dir, self.__SERVICES, self.__MAX_CORES)
                 returnVal = bw2ss.run(common_params,params)
 	handler_util.cleanup(self.__LOGGER,bowtie2_dir)
         #END Bowtie2Call
@@ -482,7 +482,7 @@ class KBaseRNASeq:
 	wsc = common_params['ws_client']
         #readsobj_info = script_util.ws_get_obj_info(self.__LOGGER, wsc, params['ws_id'], params['sampleset_id'])
         #obj_type = obj_info[0][2].split('-')[0]
-        obj_type = script_util.ws_get_type_name(self.__LOGGER, wsc, params['ws_id'], params['sampleset_id'])
+        readsobj_type = script_util.ws_get_type_name(self.__LOGGER, wsc, params['ws_id'], params['sampleset_id'])
         if readsobj_type == 'KBaseRNASeq.RNASeqSampleSet' or readsobj_type == 'KBaseSets.ReadsSet':
 		self.__LOGGER.info("Tophat SampleSet Case")
         	tss = TophatSampleSet(self.__LOGGER, tophat_dir, self.__SERVICES, self.__MAX_CORES)

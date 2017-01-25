@@ -107,11 +107,14 @@ class HiSat2Sample(HiSat2):
 		
     def collect(self) :
         # do with 
-        alignment_name = self.method_params['sampleset_id']+"_hisat2_AlignmentSet"
+        alignment_name = script_util.ws_get_obj_name(self.logger, 
+                                                     self.common_params['ws_client'], 
+                                                     self.method_params['ws_id'], 
+                                                     self.method_params['sampleset_id']) +"_hisat2_Alignment"
         self.logger.info(" Creating Report for Alignment {0}".format(alignment_name))
 	single_read , single_alignment = self.results[0]
         # TODO: Split alignment set and report method
-	sref = self.common_params['ws_client'].get_object_info_new({"objects": [{'name':single_alignment, 'workspace': self.method_params['ws_id']}]})[0]
+	#sref = self.common_params['ws_client'].get_object_info_new({"objects": [{'name':single_alignment, 'workspace': self.method_params['ws_id']}]})[0]
 	self.returnVal = { 'output'  : single_alignment ,'workspace' : self.method_params['ws_id']}
 #        reportObj = {'objects_created':[{'ref' :str(sref[6]) + '/' + str(sref[0]) + '/' + str(sref[4]),
 #                                                 'description' : "RNA-seq Alignment for reads Sample: {0}".format(single_read)}],
