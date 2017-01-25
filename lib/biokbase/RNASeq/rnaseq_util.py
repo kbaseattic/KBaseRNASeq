@@ -514,9 +514,11 @@ def get_details_for_diff_exp(logger,ws_client,hs,ws_id,urls,directory,expression
 # in the given expression set, and verifies that it has the correct files for ballgown to run
 # (*.ctab).  Each directory name is prefixed by the given dir_prefix so that the ballgown call can
 # use it to specify the input directories to ballgown
-
-
-def download_for_ballgown( logger, ws_client, hs, ws_id, urls, directory, dir_prefix, expressionset_id, token ):
+#
+# This also returns information extracted from the ExpressionSet object which is useful for further 
+# workspace storage (genome_id, etc )
+#
+def get_info_and_download_for_ballgown( logger, ws_client, hs, ws_id, urls, directory, dir_prefix, expressionset_id, token ):
         try:
            expression_set = ws_client.get_objects( [ { 'name'      : expressionset_id,
                                                        'workspace' : ws_id }
@@ -526,14 +528,19 @@ def download_for_ballgown( logger, ws_client, hs, ws_id, urls, directory, dir_pr
            raise Exception( "".join(traceback.format_exc() ))
         ### Getting all the set ids and genome_id
         output_obj = {}
-        #expression_set_info = ws_client.get_object_info_new({"objects": [{'name' : expressionset_id, 'workspace': ws_id}]})[0] 
-        #output_obj['expressionset_id'] =  str(expression_set_info[6]) + '/' + str(expression_set_info[0]) + '/' + str(expression_set_info[4])
+        expression_set_info = ws_client.get_object_info_new({"objects": [{'name' : expressionset_id, 'workspace': ws_id}]})[0] 
+        output_obj['expressionset_id'] =  str(expression_set_info[6]) + '/' + str(expression_set_info[0]) + '/' + str(expression_set_info[4])
         #output_obj['sampleset_id'] =  expression_set['data']['sampleset_id']
         #output_obj['alignmentset_id'] = expression_set['data']['alignmentSet_id'] 
         #output_obj['genome_id'] = expression_set['data']['genome_id']
         #output_obj['genome_name'] = ws_client.get_object_info([{"ref" :output_obj['genome_id']}],includeMetadata=None)[0][1]
         #ws_gtf = output_obj['genome_name']+"_GTF_Annotation"
-    
+
+        # QUESTION:  whats the reason for getting this from object_info and not the object
+        output_obj['genome_id']             = expression_set['data']['genome_id']
+        output_obj['alignmentSet_id']       = expression_set['data']['alignmentSet_id']
+        output_obj['sampleset_id']          = expression_set['data']['sampleset_id']
+        output_obj['sample_expression_ids'] = expression_set['data']['sample_expression_ids']
         ### Check if GTF object exists in the workspace pull the gtf
         #ws_gtf = output_obj['genome_name']+"_GTF"
         #gtf_file = script_util.check_and_download_existing_handle_obj(logger,ws_client,urls,ws_id,ws_gtf,"KBaseRNASeq.GFFAnnotation",directory,token)
@@ -569,7 +576,12 @@ def download_for_ballgown( logger, ws_client, hs, ws_id, urls, directory, dir_pr
                 else:
                     counter += 1 #### comment it when replicate_id is available from methods
 
-                subdir = os.path.join( directory, dir_prefix + "_" + condition + "_" + str(counter) ) ### Comment this line when replicate_id is available from the methods
+                #subdir = os.path.join( directory, dir_prefix + "_" + condition + "_" + str(counter) ) ### Comment this line when replicate_id is available from the methods
+                # Fix this - we're getting expression object name from the zip file
+                if ( zipfile[-4:] != '.zip' ):
+                    raise  Exception( "zip file {0} doesn't seem to have .zip extention, can't form a subdirectory name confidently" )
+
+                subdir = os.path.join( directory, zipfile[0:-4] )
                 logger.info( "subdir is {0}".format( subdir ) )
                 output_obj['subdirs'].append( subdir )
                 if not os.path.exists( subdir ): 
@@ -610,20 +622,40 @@ def download_for_ballgown( logger, ws_client, hs, ws_id, urls, directory, dir_pr
         print output_obj
         return output_obj        
 
-def create_sample_dir_group_file( subdir_list, sample_dir_group_file ):
+# this converts the input group set lists writes a file that can be loaded
+# as a table by the ballgown_fpkmgenematrix.R  script to pass to
+# ballgown to assign group ids to each setn
+
+# this returns an ordered list of group names that corresponds to
+# the input subdir_list
+
+def create_sample_dir_group_file( subdir_list, 
+                                  group1_name,
+                                  group1_set,
+                                  group2_name,
+                                  group2_set,
+                                  sample_dir_group_file ):
         try:
             f = open( sample_dir_group_file, "w")
         except Exception:
             raise Exception( "Can't open file {0} for writing {1}".format( sample_dir_group_file, traceback.format_exc() ) )
+        group_name_list = []
         for subdir in subdir_list:
             # group assignment needs to come from two lists which are inputs,
             # but for now, just look for "WT" ib the subdirectory name.   
             # (THIS NEEDS TO BE FIXED!!!)
-            group = 1
-            if ( re.search( "(^WT|_WT|WT_|WT$)", subdir, re.I ) ):
+            if ( subdir in group1_set ):
                 group = 0
+                group_name_list.append( group1_name )
+            elif ( subdir in group2_set ):
+                group = 1
+                group_name_list.append( group2_name )
+            else:
+                raise Exception( "group error - {0} is not found in either group set".format( subdir ) )
             f.write( "{0}  {1}\n".format( subdir, group ))
         f.close()
+
+        return( group_name_list )
 
 def  run_ballgown_diff_exp( logger, rscripts_dir, directory, sample_dir_group_table_file, ballgown_output_dir, output_csv ):
 
@@ -668,21 +700,19 @@ def  load_ballgown_output_into_ws( logger,
                                    ballgown_output_dir, 
                                    tool_used,
                                    tool_version,
-                                   sample_ids,  # []
-                                   conditions,  # []
+                                   sample_ids,
+                                   conditions,
                                    genome_id,
                                    expressionset_id,
-                                   alignementset_id,
+                                   alignmentset_id,
                                    sampleset_id,
-                                   output_object_name 
+                                   output_object_name
                                  ):
 
-        logger.info( "load_diff_matrix, input file is {0}".format( csv_file ) )
-
         logger.info( "Zipping ballgown output" )
-        zip_file_path = os.path.join( directory, "{0}.zip".format( output_obj_name ) )
+        zip_file_path = os.path.join( directory, "{0}.zip".format( output_object_name ) )
         try:
-            script_util.zip_files( logger, bg_output_dir, zip_file_path )
+            script_util.zip_files( logger, ballgown_output_dir, zip_file_path )
         except Exception,e:
             raise Exception( "Error creating zip file of ballgown output" )
 
@@ -696,7 +726,7 @@ def  load_ballgown_output_into_ws( logger,
 
         de_obj = { "tool_used"        : tool_used,
                    "tool_version"     : tool_version,
-                   "sample_ids"       : sample,
+                   "sample_ids"       : sample_ids,
                    "condition"        : conditions,
                    "genome_id"        : genome_id,
                    "expressionSet_id" : expressionset_id,
