@@ -62,7 +62,8 @@ class DiffExpforBallgown(ExecutionBase):
         self.num_jobs = 1
 
         self.details = {}
-        self.details["used_tool"] = "StringTie"    # Question: where does this really get set?
+        self.details["used_tool"] = "Ballgown (Bioconductor)"    # Question: where does this really get set?
+        self.details["tool_version"] = "3.4"
         #als = [] 
         #for l in self.details['labels']:
         #        rep_files=[ (os.path.join(diffexp_dir+'/'+l,sub+'/accepted_hits.bam'), os.path.join(diffexp_dir+'/'+l,sub+'/transcripts.gtf')) for sub in os.listdir(os.path.join(diffexp_dir,l)) if os.path.isdir(os.path.join(diffexp_dir,l+'/'+sub))]
@@ -173,11 +174,14 @@ class DiffExpforBallgown(ExecutionBase):
 
 
     def collect(self):
+        params    = self.method_params
         ws_client = self.common_params['ws_client']
-        hs = self.common_params['hs_client']
+        hs_client = self.common_params['hs_client']
+
+        ws_id = params['ws_id']
         #rscripts_dir = self.common_params['rscripts_dir']
         rscripts_dir = '/kb/module/rscripts'
-        params = self.method_params
+
         token = self.common_params['user_token']
         diffexp_dir = self.directory
         logger = self.logger
@@ -194,8 +198,8 @@ class DiffExpforBallgown(ExecutionBase):
 
         ballgown_sets = rnaseq_util.download_for_ballgown( logger, 
                                                            ws_client, 
-                                                           hs, 
-                                                           params['ws_id'],
+                                                           hs_client, 
+                                                           ws_id,
                                                            self.urls,
                                                            diffexp_dir,
                                                            stringtie_dir_prefix,
@@ -205,12 +209,40 @@ class DiffExpforBallgown(ExecutionBase):
         logger.info( 'back from download_for_ballgown(), ballgown_sets are')
         logger.info( pformat( ballgown_sets ) )
 
-        group_str = "1100"
-        res = rnaseq_util.run_ballgown_diff_exp( logger, rscripts_dir, diffexp_dir, stringtie_dir_prefix, group_str, output_csv )
+        # incorporate params['group1_set'] and params['group2_set'] which are lists of sample names
+        sample_dir_group_file = "sample_dir_group_table"  # output file
+        rnaseq_util.create_sample_dir_group_file( ballgown_sets['subdirs'], sample_dir_group_file )
 
-        raise Exception( "Debug quit")
+        ballgown_output_dir = os.path.join( diffexp_dir, "ballgown_out" )
+        logger.info( "ballgown output dir is {0}".format( ballgown_output_dir) )
+        handler_util.setupWorkingDir( logger, ballgown_output_dir )
 
-        #load_diff_matrix( logger, ws_client, token, output_csv, output_object_name )    # ws id, etc
+        logger.info( "about to run_ballgown_diff_exp" )
+        rnaseq_util.run_ballgown_diff_exp( logger, rscripts_dir, diffexp_dir, sample_dir_group_file, ballgown_output_dir, output_csv )
+
+        logger.info( "back from run_ballgown_diff_exp, about load into workspace" )
+
+        de_ws_save_obj_data = load_ballgown_output_into_ws( logger, 
+                                                            ws_id,
+                                                            ws_client, 
+                                                            hs_client,
+                                                            token, 
+                                                            directory,
+                                                            ballgown_output_dir, 
+                                                            self.details["used_tool"],
+                                                            self.details["tool_version"],
+                                                            [],     # sample ids
+                                                            [],     # conditions
+                                                            None,   # genome_id
+                                                            None,   # expressionset_id
+                                                            None,   # alignmentset_id
+                                                            None,   # sampleset_id
+                                                            output_object_name 
+                                                          )
+        logger.info( "back from loading ballgown output into workspace, object save data is " )
+        logger.info( pformat( de_ws_save_object_data ) )
+
+        # de_em_save_obj_data = created_and_save_filtered_expr_matrix( )
 
         ##################################        
         #try:
@@ -229,15 +261,10 @@ class DiffExpforBallgown(ExecutionBase):
         #sampleset_id = e_sample['data']['sampleset_id']
         #expression_ids = e_sample['data']['sample_expression_ids']
         #num_samples = len(expression_ids)
-#
+        #
         #if num_samples < 2:
         #   raise ValueError("Please ensure you have atleast 2 expressions to run diffExpCallforBallgown in Set mode")
         ####################################
 
-        res1 = self.common_params['ws_client'].save_objects(
-                                     {"workspace":self.method_params['ws_id'],
-                                      "objects": [{
-                                      "type":"KBaseRNASeq.RNASeqDifferentialExpression",
-                                      "data":self.cm_obj,
-                                      "name":output_name}]})
+
         returnVal = { 'output'  : output_name ,'workspace' : self.method_params['ws_id']}
