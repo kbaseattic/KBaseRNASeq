@@ -696,8 +696,8 @@ def  load_ballgown_output_into_ws( logger,
 
         de_obj = { "tool_used"        : tool_used,
                    "tool_version"     : tool_version,
-                   "sample_ids"       : sample
-                   "condition"        : conditions
+                   "sample_ids"       : sample,
+                   "condition"        : conditions,
                    "genome_id"        : genome_id,
                    "expressionSet_id" : expressionset_id,
                    "alignmentSet_id"  : alignmentset_id,
