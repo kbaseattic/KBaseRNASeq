@@ -95,6 +95,10 @@ def ws_get_type_name(logger, ws_client, ws_id, obj_id):
     info = ws_get_obj_info(logger,ws_client, ws_id, obj_id)[0]
     return info[2].split('-')[0]
 
+def ws_get_obj_name(logger, ws_client, ws_id, obj_id):
+    info = ws_get_obj_info(logger,ws_client, ws_id, obj_id)[0]
+    return info[1].split('-')[0]
+
 # translate ref to ws name and object name pair
 # if it is object name, it returns the same ws name and object name
 def ws_translate2name(logger, ws_client, default_ws_id, obj_id):
@@ -689,7 +693,7 @@ def download_file_from_shock(logger,
         filePath = shockFileName
 
     #shock_service_url is from config
-    dfu = DataFileUtil(os.environ['SDK_CALLBACK_URL'], token=token)
+    dfu = DataFileUtil(os.environ['SDK_CALLBACK_URL'], token=token, service_ver="dev")
     return dfu.shock_to_file({"shock_id" : shock_id, "file_path":filePath, "unpack" : None})
 
 
@@ -724,8 +728,9 @@ def query_shock_node(logger,
 
 
 def upload_file_to_shock(logger,
+                         filePath,
+                         make_handle = True,
                          shock_service_url = None,
-                         filePath = None,
                          attributes = '{}',
                          ssl_verify = True,
                          token = None):
@@ -735,8 +740,9 @@ def upload_file_to_shock(logger,
 
     
     #shock_service_url is from config
-    dfu = DataFileUtil(os.environ['SDK_CALLBACK_URL'], token=token)
-    return dfu.file_to_shock({"file_path":filePath, "attributes": json.dumps(attributes), "unpack" : None})
+    dfu = DataFileUtil(os.environ['SDK_CALLBACK_URL'], token=token, service_ver="dev")
+    return dfu.file_to_shock({"file_path":filePath, "attributes": json.dumps(attributes), "make_handle" : make_handle})
+
 
 def shock_node_2b_public(logger,
                          node_id = None,

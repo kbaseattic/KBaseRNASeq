@@ -1,0 +1,16 @@
+{	
+	"version":"1.1",
+	"method":"KBaseRNASeq.Hisat2Call",
+	"context": null,
+	"params":[
+	{
+	 "ws_id" : "pranjan77:1485197047000",
+	 "sampleset_id" : "wt-hy5" ,
+	 "genome_id" : "3702_PhytozomeV11_TAIR10",
+	 "alignment_type" : null,
+	 "quality_score" : null,
+	 "np" : 1,
+	 "minins" : 0,
+	 "tailor_alignments" : "dta-cufflinks",
+	 "maxins" : 500} ]
+}

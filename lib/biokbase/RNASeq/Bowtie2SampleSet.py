@@ -76,12 +76,13 @@ class Bowtie2SampleSet(Bowtie2):
         sample_type = sampleset_info[2].split('-')[0]
 
         ### Check if the Library objects exist in the same workspace
-        if sample_type != 'KBaseRNASeq.RNASeqSampleSet':
-            raise Bowtie2SampleSetException('RNASeqSampleSet is required')
-        logger.info("Check if the Library objects do exist in the current workspace")
-        reads = sample['data']['sample_ids']
-        r_label = sample['data']['condition']
-        reads_type= sample['data']['Library_type']
+        if not (sample_type == 'KBaseRNASeq.RNASeqSampleSet' or sample_type == 'KBaseSets.ReadsSet'):
+            raise Bowtie2SampleSetException('RNASeqSampleSet or ReadsSet is required')
+        #logger.info("Check if the Library objects do exist in the current workspace")
+        (reads, r_label) = rnaseq_util.get_reads_conditions(logger, sample, sample_type)
+        #reads = sample['data']['sample_ids']
+        #r_label = sample['data']['condition']
+        #reads_type= sample['data']['Library_type']
         e_ws_objs = script_util.if_ws_obj_exists_notype(None,ws_client,params['ws_id'],reads) # removed read type as it will be added only if it satisfies input types
         missing_objs = [i for i in reads if not i in e_ws_objs]
         if len(e_ws_objs) != len(reads):
@@ -123,7 +124,6 @@ class Bowtie2SampleSet(Bowtie2):
                     task_param = {'job_id' : i,
                                   'label' : r_label[count],
                                   'ws_id' : params['ws_id'],
-                                  'reads_type' : reads_type,
                                   'bowtie2_dir' : self.directory,
                                   'annotation_id': ref_id, # Changed annotation_id to ref_id for genome object 
                                   'sampleset_id' : sampleset_id
@@ -136,10 +136,14 @@ class Bowtie2SampleSet(Bowtie2):
 
     def collect(self) :
         # do with 
-        alignmentSet_name = self.method_params['sampleset_id']+"_bowtie2_AlignmentSet"
+        alignmentSet_name = script_util.ws_get_obj_name(self.logger, 
+                                                        self.common_params['ws_client'], 
+                                                        self.method_params['ws_id'], 
+                                                        self.method_params['sampleset_id'])+"_bowtie2_AlignmentSet"
+        #alignmentSet_name = self.method_params['sampleset_id']+"_bowtie2_AlignmentSet"
         self.logger.info(" Creating AlignmentSet for the Alignments {0}".format(alignmentSet_name))
         # TODO: Split alignment set and report method
-        reportObj=rnaseq_util.create_RNASeq_AlignmentSet_and_build_report(self.logger,self.common_params['ws_client'],self.method_params['ws_id'],self.sample['data']['sample_ids'],self.task_list[0]['sampleset_id'],self.task_list[0]['annotation_id'],None,self.results,alignmentSet_name)
+        reportObj=rnaseq_util.create_RNASeq_AlignmentSet_and_build_report(self.logger,self.common_params['ws_client'],self.method_params['ws_id'],rnaseq_util.get_reads(self.logger, self.sample),self.task_list[0]['sampleset_id'],self.task_list[0]['annotation_id'],None,self.results,alignmentSet_name)
 	self.returnVal = { 'output'  : alignmentSet_name ,'workspace' : self.method_params['ws_id']}
 #        reportName = 'Align_Reads_using_Hisat2_'+str(hex(uuid.getnode()))
 #        report_info = self.common_params['ws_client'].save_objects({

@@ -16,7 +16,7 @@
     "default_values" : [ "" ],
     "field_type" : "text",
     "text_options" : {
-      "valid_ws_types" : ["KBaseRNASeq.RNASeqSampleSet","KBaseAssembly.SingleEndLibrary","KBaseAssembly.PairedEndLibrary" ]
+      "valid_ws_types" : ["KBaseSets.ReadsSet", "KBaseRNASeq.RNASeqSampleSet","KBaseAssembly.SingleEndLibrary","KBaseAssembly.PairedEndLibrary" ]
     }
   },{
     "id" : "bowtie_index",

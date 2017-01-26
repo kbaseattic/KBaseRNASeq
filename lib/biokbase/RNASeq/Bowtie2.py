@@ -51,7 +51,6 @@ class Bowtie2(ExecutionBase):
         condition = task_params['label']
         directory = task_params['bowtie2_dir']
         ws_id = task_params['ws_id']
-        reads_type = task_params['reads_type']
         genome_id = task_params['annotation_id']
         sampleset_id = task_params['sampleset_id']
 
@@ -64,9 +63,10 @@ class Bowtie2(ExecutionBase):
                 #r_sample_info = ws_client.get_object_info_new({"objects": [{'name': read_sample, 'workspace': ws_id}]})[0]
                 #sample_type = r_sample_info[2].split('-')[0]
                 sample_type = script_util.ws_get_type_name(logger, ws_client, ws_id, read_sample)
-                input_direc = os.path.join(directory,read_sample.split('.')[0]+"_bowtie2_input")
+                sample_name = script_util.ws_get_obj_name(self.logger, ws_client, ws_id, read_sample)
+                input_direc = os.path.join(directory,sample_name.split('.')[0].replace("/","_")+"_bowtie2_input")
                 if not os.path.exists(input_direc): os.mkdir(input_direc)
-                output_name = read_sample.split('.')[0]+"_bowtie2_alignment"
+                output_name = sample_name.split('.')[0]+"_bowtie2_alignment"
                 output_dir = os.path.join(directory,output_name)
                 if not os.path.exists(output_dir): os.mkdir(output_dir)
                 base = handler_util.get_file_with_suffix(directory,".rev.1.bt2")
@@ -171,7 +171,7 @@ class Bowtie2(ExecutionBase):
                         raise Exception("Failed to compress the index: {0}".format(out_file_path))
                 ## Upload the file using handle service
                 try:
-                        bowtie2_handle = hs.upload(out_file_path)
+                        bowtie2_handle = script_util.upload_file_to_shock(logger,out_file_path)['handle']
                 except Exception, e:
                         raise Exception("Failed to upload zipped output file".format(out_file_path))
                 #### Replace version with get_version command#####

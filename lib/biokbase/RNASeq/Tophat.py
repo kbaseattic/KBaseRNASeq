@@ -50,7 +50,6 @@ class Tophat(ExecutionBase):
         condition = task_params['label']
         directory = task_params['tophat_dir']
         ws_id = task_params['ws_id']
-        reads_type = task_params['reads_type']
         genome_id = task_params['annotation_id']
         sampleset_id = task_params['sampleset_id']
 	gtf_file = task_params['gtf_file']
@@ -64,7 +63,8 @@ class Tophat(ExecutionBase):
 		#r_sample_info = ws_client.get_object_info_new({"objects": [{'name': read_sample, 'workspace': ws_id}]})[0]	
 		#sample_type = r_sample_info[2].split('-')[0]
                 sample_type = script_util.ws_get_type_name(logger, ws_client, ws_id, read_sample)
-		output_name = read_sample.split('.')[0]+"_tophat_alignment"
+                sample_name = script_util.ws_get_obj_name(self.logger, ws_client, ws_id, read_sample)
+		output_name = sample_name.split('.')[0].replace("/","_")+"_tophat_alignment"
 		output_dir = os.path.join(directory,output_name)
 	        #if not os.path.exists(output_dir): os.makedirs(output_dir)
             	#out_file = output_dir +"/accepted_hits.sam"
@@ -160,7 +160,7 @@ class Tophat(ExecutionBase):
                 	raise Exception("Failed to compress the index: {0}".format(out_file_path))
                 ## Upload the file using handle service
                 try:
-                        tophat_handle = hs.upload(out_file_path)
+                        tophat_handle = script_util.upload_file_to_shock(logger,out_file_path)['handle']
                 except Exception, e:
                         raise Exception("Failed to upload zipped output file".format(out_file_path))
                 #### Replace version with get_version command#####
