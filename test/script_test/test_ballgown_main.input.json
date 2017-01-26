@@ -4,10 +4,17 @@
 	"context": null,
 	"params":[ 
                     {
-                     "ws_id"                  : "mccorkle:1484837859347",
-                     "expressionset_id"       : "ath_sample_set_hisat2_AlignmentSet_stringtie_ExpressionSet",
-                     "output_obj_name"        : "second_ballgown_test",
-		     "num_threads"            : 1
+                     "ws_id"                   : "mccorkle:1484837859347",
+                     "expressionset_id"        : "ath_sample_set_hisat2_AlignmentSet_stringtie_ExpressionSet",
+                     "output_obj_name"         : "second_ballgown_test",
+
+                     "fold_scale_type"         : "log2+1",
+                     "alpha_cutoff"            : 0.5,
+                     "fold_change_cutoff"      : 0.0,
+                     "maximum_num_genes"       : 100,
+                     "filtered_expr_matrix"    : "filtered_em_test_1",
+
+		     "num_threads"             : 1
                     }
                  ]	
 }
