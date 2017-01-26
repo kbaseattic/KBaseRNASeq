@@ -263,13 +263,41 @@ class DiffExpforBallgown(ExecutionBase):
         logger.info( "back from loading ballgown output into workspace, object save data is " )
         logger.info( pformat( de_ws_save_obj_data ) )
 
-        #selected_gene_list = filter_genes_diff_expr_matrix( diff_expr_matrix, 
-        #                                                    params['fold_scale_type'], 
-        #                                                    params['alpha_cutoff'], 
-        #                                                    params['log2_fold_change_cutoff'],
-        #                                                    params['maximum_number_of_genes']
-        #
+        selected_gene_list = rnaseq_util.filter_genes_diff_expr_matrix( diff_expr_matrix, 
+                                                                        params['fold_scale_type'], 
+                                                                        params['alpha_cutoff'], 
+                                                                        params['log2_fold_change_cutoff'],
+                                                                        params['maximum_number_of_genes']
+                                                                      )
+        
         #  !!!!! IF selected_gene_list is empty print some kind of message, take no further action
+
+        # get the unfiltered expression matrix
+        em_name = params['expressionset_id'] + "_FPKM_ExpressionMatrix"
+        logger.info( "about to fetch expression matrix  {0}".format( em_name ))
+        try:
+            emw = ws_client.get_objects( [ { "name": em_name, "workspace": ws_id } ] )[0]
+        except:
+            raise Exception( "unable to retrieve expression matrix object {0} from workspace {1}".format( em_name, ws_id  ))
+        logger.info( pformat( emw ) )
+        emo = emw["data"]
+        # filter it
+        filtered_emo = rnaseq_util.filter_expr_matrix_object( emo, selected_gene_list )
+        # save it
+        logger.info( "saving emo em_name {0}".format( em_name ))
+        try:
+            ret = ws_client.save_objects( { 'workspace' : ws_id,
+                                            'objects' : [
+                                                          { 'type'   : 'KBaseFeatureValues.ExpressionMatrix',
+                                                            'data'   : filtered_emo,
+                                                            'name'   : params["filtered_expr_matrix_name"]
+                                                          }
+                                                        ]
+                                          }
+                                        )
+        except:
+            raise Exception( "failed to save object " )
+        logger.info( "ws save return:\n" + pformat(ret))
 
         # THIS NEEDS TO BE AN INPUT PARAMETER IN SPEC FILE
         #iltered_expr_matrix_name = expressionset_id + "_filtered_fpkm"
