@@ -594,21 +594,29 @@ typedef structure{
   async funcdef CuffdiffCall(CuffdiffParams params)
    returns (RNASeqDifferentialExpression) authentication required;
 
+        typedef structure {
+
+            string        group_name1;
+            list<string>  expr_ids1;
+            string        group_name2;
+            list<string>  expr_ids2;
+
+        } ExperimentGroupIDsList;
+
         typedef structure{
-            string              ws_id;
-            RNASeqExpressionSet expressionset_id;
-            string              output_obj_name;
-            int                 num_threads;
-            string              group1_name;
-            string              group2_name;
-            list<string>        group1_set;
-            list<string>        group2_set;
+
+            string                  ws_id;
+            RNASeqExpressionSet     expressionset_id;
+            string                  output_obj_name;
+            int                     num_threads;
+            ExperimentGroupIDsList  expr_ids_list;      
             /* these next parameters filter the members of expression matrix.  good idea to have them here? */
-            string              fold_scale_type;   /* "linear", "log2+1", "log10+1" */
-            float               alpha_cutoff;      /* q value cutoff */
-            float               fold_change_cutoff;
-            int                 maximum_num_genes;
-            string              filtered_expr_matrix;  /* name of output object filtered expression matrix */
+            string                  fold_scale_type;   /* "linear", "log2+1", "log10+1" */
+            float                   alpha_cutoff;      /* q value cutoff */
+            float                   fold_change_cutoff;
+            int                     maximum_num_genes;
+            string                  filtered_expr_matrix;  /* name of output object filtered expression matrix */
+
         } BallgownDifferentialExpParams;
 
   typedef structure {

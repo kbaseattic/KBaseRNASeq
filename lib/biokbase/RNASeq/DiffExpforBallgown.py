@@ -212,24 +212,24 @@ class DiffExpforBallgown(ExecutionBase):
 
         # THIS IS TEMPORARY: REMOVE THIS WHEN group lists of expression object names are actually passed
         # incorporate params['group1_set'] and params['group2_set'] which are lists of sample names
-        params['group1_name'] = "WT"
-        params['group2_name'] = "exp"
-        group1_set = []
-        group2_set = []
-        for subd in ballgown_set_info['subdirs']:
-            if ( re.search( "(^WT|_WT|WT_|WT$)", subd, re.I ) ):
-                group1_set.append( subd )
-            else:
-                group2_set.append( subd )
-        params['group1_set'] = group1_set
-        params['group2_set'] = group2_set
+        #params['group1_name'] = "WT"
+        #params['group2_name'] = "exp"
+        #group1_set = []
+        #group2_set = []
+        #for subd in ballgown_set_info['subdirs']:
+        #    if ( re.search( "(^WT|_WT|WT_|WT$)", subd, re.I ) ):
+        #        group1_set.append( subd )
+        #    else:
+        #        group2_set.append( subd )
+        #params['group1_set'] = group1_set
+        #params['group2_set'] = group2_set
         # END OF TEMPORARY CODE 
         sample_dir_group_file = "sample_dir_group_table"  # output file
         group_list = rnaseq_util.create_sample_dir_group_file( ballgown_set_info['subdirs'], 
-                                                               params['group1_name'],
-                                                               params['group1_set'],
-                                                               params['group2_name'],
-                                                               params['group2_set'],
+                                                               params['expr_ids_list']['group_name1'],
+                                                               params['expr_ids_list']['expr_ids1'],
+                                                               params['expr_ids_list']['group_name2'],
+                                                               params['expr_ids_list']['expr_ids2'],
                                                                sample_dir_group_file )
 
         ballgown_output_dir = os.path.join( diffexp_dir, "ballgown_out" )

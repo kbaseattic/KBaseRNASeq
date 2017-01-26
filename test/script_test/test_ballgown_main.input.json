@@ -8,6 +8,18 @@
                      "expressionset_id"        : "ath_sample_set_hisat2_AlignmentSet_stringtie_ExpressionSet",
                      "output_obj_name"         : "second_ballgown_test",
 
+                     "expr_ids_list"           : {
+                                                  "group_name1":  "WT",
+                                                  "expr_ids1"  : [ 
+                                                                   "WT_rep1_hisat2_stringtie_expression",
+                                                                   "hy5_rep1_hisat2_stringtie_expression"
+                                                                 ],
+                                                  "group_name2":  "hy5",
+                                                  "expr_ids2"  : [ 
+                                                                   "WT_rep2_hisat2_stringtie_expression",
+                                                                   "hy5_rep2_hisat2_stringtie_expression"
+                                                                 ]
+                                                 },
                      "fold_scale_type"         : "log2+1",
                      "alpha_cutoff"            : 0.5,
                      "fold_change_cutoff"      : 0.0,
