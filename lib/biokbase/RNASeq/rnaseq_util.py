@@ -667,17 +667,19 @@ def create_sample_dir_group_file( subdir_list,
             raise Exception( "Can't open file {0} for writing {1}".format( sample_dir_group_file, traceback.format_exc() ) )
         group_name_list = []
         for subdir in subdir_list:
-            # group assignment needs to come from two lists which are inputs,
-            # but for now, just look for "WT" ib the subdirectory name.   
-            # (THIS NEEDS TO BE FIXED!!!)
-            if ( subdir in group1_set ):
+            exp = os.path.basename( subdir )
+            if ( exp in group1_set ):
+                if ( exp in group2_set ):
+                    raise Exception( "group error - {0} is found in both group sets".format( exp ) )
                 group = 0
                 group_name_list.append( group1_name )
-            elif ( subdir in group2_set ):
+            elif ( exp in group2_set ):
+                if ( exp in group1_set ):
+                    raise Exception( "group error - {0} is found in both group sets".format( exp ) )
                 group = 1
                 group_name_list.append( group2_name )
             else:
-                raise Exception( "group error - {0} is not found in either group set".format( subdir ) )
+                raise Exception( "group error - {0} is not found in either group set".format( exp ) )
             f.write( "{0}  {1}\n".format( subdir, group ))
         f.close()
 
