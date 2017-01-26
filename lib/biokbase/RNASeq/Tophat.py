@@ -160,7 +160,7 @@ class Tophat(ExecutionBase):
                 	raise Exception("Failed to compress the index: {0}".format(out_file_path))
                 ## Upload the file using handle service
                 try:
-                        tophat_handle = hs.upload(out_file_path)
+                        tophat_handle = script_util.upload_file_to_shock(logger,out_file_path)['handle']
                 except Exception, e:
                         raise Exception("Failed to upload zipped output file".format(out_file_path))
                 #### Replace version with get_version command#####

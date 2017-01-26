@@ -15,6 +15,16 @@ from biokbase.RNASeq import script_util
 from pprint import pprint,pformat
 from operator import itemgetter
 
+def get_reads(logger, set_obj):
+    if 'sample_ids' in set_obj['data']: # RNASeqSampleSet
+        return set_obj['data']['sample_ids']
+    if 'items' in set_obj['data']: # ReadsSet
+        return [item['ref'] for item in set_obj['data']['items']]
+    else:
+        logger.error("Please use RNASeqSampleSet or ReadsSet :%s" % pformat(set_obj))
+        raise Exception("Please use RNASeqSampleSet or ReadsSet")
+
+
 def get_reads_conditions(logger, set_obj, set_type):
     if set_type == 'KBaseRNASeq.RNASeqSampleSet':
         reads = set_obj['data']['sample_ids']

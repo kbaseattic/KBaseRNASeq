@@ -141,7 +141,7 @@ class Cufflinks(ExecutionBase):
                 logger.exception("".join(traceback.format_exc()))
                 raise Exception("Error executing cufflinks")
            try:
-                handle = hs.upload(out_file_path)
+                handle = script_util.upload_file_to_shock(logger,out_file_path)['handle']
            except Exception, e:
                 raise Exception(e)
                 logger.exception("".join(traceback.format_exc()))

@@ -129,7 +129,7 @@ class HiSat2SampleSet(HiSat2):
                                                         self.method_params['sampleset_id'])+"_hisat2_AlignmentSet"
         self.logger.info(" Creating AlignmentSet for the Alignments {0}".format(alignmentSet_name))
         # TODO: Split alignment set and report method
-        reportObj=rnaseq_util.create_RNASeq_AlignmentSet_and_build_report(self.logger,self.common_params['ws_client'],self.method_params['ws_id'],self.sample['data']['sample_ids'],self.task_list[0]['sampleset_id'],self.task_list[0]['annotation_id'],None,self.results,alignmentSet_name)
+        reportObj=rnaseq_util.create_RNASeq_AlignmentSet_and_build_report(self.logger,self.common_params['ws_client'],self.method_params['ws_id'],rnaseq_util.get_reads(self.logger, self.sample),self.task_list[0]['sampleset_id'],self.task_list[0]['annotation_id'],None,self.results,alignmentSet_name)
 	self.returnVal = { 'output'  : alignmentSet_name ,'workspace' : self.method_params['ws_id']}
 #        reportName = 'Align_Reads_using_Hisat2_'+str(hex(uuid.getnode()))
 #        report_info = self.common_params['ws_client'].save_objects({

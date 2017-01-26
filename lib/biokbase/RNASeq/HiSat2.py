@@ -177,7 +177,8 @@ class HiSat2(ExecutionBase):
                         raise Exception("Failed to compress the index: {0}".format(out_file_path))
                 ## Upload the file using handle service
                 try:
-                        hisat2_handle = hs.upload(out_file_path)
+                        #hisat2_handle = hs.upload(out_file_path)
+                        hisat2_handle = script_util.upload_file_to_shock(logger,out_file_path)['handle']
                 except Exception, e:
                         logger.exception(e)
                         raise Exception("Failed to upload zipped output file".format(out_file_path))
