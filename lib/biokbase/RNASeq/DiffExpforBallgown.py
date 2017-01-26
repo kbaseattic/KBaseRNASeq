@@ -239,8 +239,10 @@ class DiffExpforBallgown(ExecutionBase):
         logger.info( "about to run_ballgown_diff_exp" )
         rnaseq_util.run_ballgown_diff_exp( logger, rscripts_dir, diffexp_dir, sample_dir_group_file, ballgown_output_dir, output_csv )
 
-        logger.info( "back from run_ballgown_diff_exp, about load into workspace" )
+        logger.info( "back from run_ballgown_diff_exp, about to load diff exp matrix file" )
+        diff_expr_matrix = rnaseq_util.load_diff_expr_matrix( ballgown_output_dir, output_csv )    # read file before its zipped
 
+        logger.info( "about to load ballgout output into workspace" )
         de_ws_save_obj_data = rnaseq_util.load_ballgown_output_into_ws( logger, 
                                                                         ws_id,
                                                                         ws_client, 
@@ -261,29 +263,29 @@ class DiffExpforBallgown(ExecutionBase):
         logger.info( "back from loading ballgown output into workspace, object save data is " )
         logger.info( pformat( de_ws_save_obj_data ) )
 
-        # de_em_save_obj_data = created_and_save_filtered_expr_matrix( )
-
-        ##################################        
-        #try:
-        #    e_sample = ws_client.get_objects( [ {'name' : params['expressionset_id'],
-        #                                         'workspace' : params['ws_id']
-        #                                         }
-        #                                      ])[0]
-        #except Exception,e:
-        #    logger.exception("".join(traceback.format_exc()))
-        #    raise Exception("Error Downloading objects from the workspace ")
-        ### Get the Input object type and info #
-        #e_sample_info = ws_client.get_object_info_new({"objects": [{'name': params['expressionset_id'], 'workspace': params['ws_id']}]})[0]
-        #e_sample_type = e_sample_info[2].split('-')[0]
-        #expressionset_id = str(e_sample_info[6]) + '/' + str(e_sample_info[0]) + '/' + str(e_sample_info[4])
-        #alignmentset_id = e_sample['data']['alignmentSet_id'] 
-        #sampleset_id = e_sample['data']['sampleset_id']
-        #expression_ids = e_sample['data']['sample_expression_ids']
-        #num_samples = len(expression_ids)
+        #selected_gene_list = filter_genes_diff_expr_matrix( diff_expr_matrix, 
+        #                                                    params['fold_scale_type'], 
+        #                                                    params['alpha_cutoff'], 
+        #                                                    params['log2_fold_change_cutoff'],
+        #                                                    params['maximum_number_of_genes']
         #
-        #if num_samples < 2:
-        #   raise ValueError("Please ensure you have atleast 2 expressions to run diffExpCallforBallgown in Set mode")
-        ####################################
+        #  !!!!! IF selected_gene_list is empty print some kind of message, take no further action
 
+        # THIS NEEDS TO BE AN INPUT PARAMETER IN SPEC FILE
+        #iltered_expr_matrix_name = expressionset_id + "_filtered_fpkm"
+        #e_em_save_obj_data = created_and_save_filtered_expr_matrix( logger, 
+        #                                                            ws_client, 
+        #                                                            ws_id, 
+        #                                                            token,
+        #                                                            expression_set_name, 
+        #                                                            fold_scale_type,      #"linear", "log2+1", "log10+1" 
+        #                                                            alpha_cutoff,
+        #                                                            q_value_cutoff,
+        #                                                            log2_fold_change_cutoff,
+        #                                                            maximum_num_genes,
+        #                                                            filtered_expr_matrix_name
+        #                                                           )
 
-        returnVal = { 'output'  : output_object_name ,'workspace' : params['ws_id']}
+        returnVal = { 'output'  : output_object_name ,
+                      #'filtered_expression_maxtrix': filtered_expr_matrix_name, 
+                      'workspace' : ws_id }
