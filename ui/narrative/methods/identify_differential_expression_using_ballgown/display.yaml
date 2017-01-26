@@ -62,7 +62,7 @@ parameters :
       Number of Threads
     short-hint : |
       Number of  computational threads to align reads. The default is 2.
-  maxinum__num_genes:
+  maximum_num_genes:
     ui-name : |
         Number of Genes 
     short-hint : |
