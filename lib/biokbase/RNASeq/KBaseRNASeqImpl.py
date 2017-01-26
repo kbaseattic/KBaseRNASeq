@@ -52,6 +52,7 @@ from biokbase.RNASeq.TophatSampleSet import TophatSampleSet
 from biokbase.RNASeq.TophatSample import TophatSample
 from biokbase.RNASeq.CufflinksSampleSet import CufflinksSampleSet
 from biokbase.RNASeq.CufflinksSample import CufflinksSample
+from biokbase.RNASeq.DiffExpforBallgown import DiffExpforBallgown
 
 _KBaseRNASeq__DATA_VERSION = "0.2"
 
@@ -99,7 +100,7 @@ class KBaseRNASeq:
     # be found
     def __init__(self, config):
         #BEGIN_CONSTRUCTOR
-	 # This is where config variable for deploy.cfg are available
+        # This is where config variable for deploy.cfg are available
         #pprint(config)
         if 'max_cores' in config:
               self.__MAX_CORES= int(config['max_cores'])
@@ -107,27 +108,29 @@ class KBaseRNASeq:
               self.__WS_URL = config['ws_url']
         if 'shock_url' in config:
               self.__SHOCK_URL = config['shock_url']
-	if 'hs_url' in config:
-	      self.__HS_URL = config['hs_url']
+        if 'hs_url' in config:
+              self.__HS_URL = config['hs_url']
         if 'temp_dir' in config:
               self.__TEMP_DIR = config['temp_dir']
-	if 'scratch' in config:
-	      self.__SCRATCH= config['scratch']
-	      #print self.__SCRATCH
+        if 'scratch' in config:
+              self.__SCRATCH= config['scratch']
+              #print self.__SCRATCH
         if 'svc_user' in config:
               self.__SVC_USER = config['svc_user']
         if 'svc_pass' in config:
               self.__SVC_PASS = config['svc_pass']
-	if 'scripts_dir' in config:
-	      self.__SCRIPTS_DIR = config['scripts_dir']
-	if 'force_shock_node_2b_public' in config: # expect 'true' or 'false' string
-	      self.__PUBLIC_SHOCK_NODE = config['force_shock_node_2b_public']
-	self.__CALLBACK_URL = os.environ['SDK_CALLBACK_URL']	
-	
-	self.__SERVICES = { 'workspace_service_url' : self.__WS_URL,
-			    'shock_service_url' : self.__SHOCK_URL,
-			    'handle_service_url' : self.__HS_URL, 
-			    'callback_url' : self.__CALLBACK_URL }
+        if 'scripts_dir' in config:
+              self.__SCRIPTS_DIR = config['scripts_dir']
+        #if 'rscripts' in config:
+        #      self.__RSCRIPTS_DIR = config['rscripts_dir']
+        if 'force_shock_node_2b_public' in config: # expect 'true' or 'false' string
+              self.__PUBLIC_SHOCK_NODE = config['force_shock_node_2b_public']
+        self.__CALLBACK_URL = os.environ['SDK_CALLBACK_URL']	
+        
+        self.__SERVICES = { 'workspace_service_url' : self.__WS_URL,
+                            'shock_service_url'     : self.__SHOCK_URL,
+                            'handle_service_url'    : self.__HS_URL, 
+                            'callback_url'          : self.__CALLBACK_URL }
         # logging
         self.__LOGGER = logging.getLogger('KBaseRNASeq')
         if 'log_level' in config:
@@ -923,20 +926,31 @@ class KBaseRNASeq:
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN DiffExpCallforBallgown
-        user_token=ctx['token']
-        ws_client=Workspace(url=self.__WS_URL, token=user_token)
-        hs = HandleService(url=self.__HS_URL, token=user_token)
-        #try:
+
+        self.__LOGGER.info( "in DiffExpCallforBallgown in KBaseRNASeqImpl.py, params are" )
+        self.__LOGGER.info( pformat( params ) )
+        print( "type of self.__LOGGER is " + pformat( type( self.__LOGGER ) ) )
         if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
-        diffexp_dir = os.path.join(self.__SCRATCH,"tmp")
-        handler_util.setupWorkingDir(self.__LOGGER,diffexp_dir)
-        returnVal = call_diffExpCallforBallgown.runMethod(self.__LOGGER,user_token,ws_client,hs,self.__SERVICES,diffexp_dir,params)
-        print returnVal
-        #except Exception,e:
-        #         self.__LOGGER.exception("".join(traceback.format_exc()))
-         #        raise KBaseRNASeqException("Error Running StringTieCall")
-        #finally:
-        handler_util.cleanup(self.__LOGGER,stringtie_dir)
+        diffexp_dir = os.path.join( self.__SCRATCH, "tmp" )
+        handler_util.setupWorkingDir( self.__LOGGER, diffexp_dir ) 
+        # Set the common Params
+        common_params = {'ws_client'    : Workspace(url=self.__WS_URL, token=ctx['token']),
+                         'hs_client'    : HandleService(url=self.__HS_URL, token=ctx['token']),
+                         'user_token'   : ctx['token']
+                         #'rscripts_dir' : self.__RSCRIPTS_DIR         # QUESTION: is this the right place to pass this?
+                        }
+        # Set the Number of threads if specified 
+        if 'num_threads' in params and params['num_threads'] is not None:
+            common_params['num_threads'] = params['num_threads']
+
+        self.__LOGGER.info( "about to create DiffExpforBallgown" )
+        dfb = DiffExpforBallgown( self.__LOGGER, diffexp_dir, self.__SERVICES )
+        returnVal = dfb.run( common_params, params )
+
+        self.__LOGGER.info( "back in n DiffExpCallforBallgown in KBaseRNASeqImpl.py, returnVal is" )
+        self.__LOGGER.info( pformat( returnVal ) )
+
+        handler_util.cleanup( self.__LOGGER, diffexp_dir)
         #END DiffExpCallforBallgown
 
         # At some point might do deeper type checking...

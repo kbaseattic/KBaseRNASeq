@@ -1,0 +1,20 @@
+{
+        "version":"1.1",
+        "method":"KBaseRNASeq.TophatCall",
+        "context": null,
+        "params":[ {
+                    "ws_id"              : "srividya22:1474862362136",
+                    "sampleset_id"       : "micromonas_rnaseq_test1_sampleset" ,
+                    "bowtie_index"       : "GCA_000090985_bw_index",
+                    "read_mismatches"    : null,
+                    "read_gap_length"    : null,
+                    "min_intron_length"  : null,
+                    "num_threads"        : 2,
+                    "no_coverage_search" : 0,
+                    "service_ver"        : "dev",
+                    "is_local"           : 1,
+                    "is_sample_set"      : 1
+                   }
+                ]
+}
+
