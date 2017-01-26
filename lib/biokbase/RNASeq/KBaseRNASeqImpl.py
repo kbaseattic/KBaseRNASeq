@@ -951,7 +951,7 @@ class KBaseRNASeq:
         self.__LOGGER.info( "back in n DiffExpCallforBallgown in KBaseRNASeqImpl.py, returnVal is" )
         self.__LOGGER.info( pformat( returnVal ) )
 
-        handler_util.cleanup( self.__LOGGER, diffexp_dir)
+        handler_util.cleanup( self.__LOGGER, diffexp_dir )
         #END DiffExpCallforBallgown
 
         # At some point might do deeper type checking...
