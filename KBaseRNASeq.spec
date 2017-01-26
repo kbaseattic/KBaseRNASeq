@@ -605,14 +605,19 @@ typedef structure{
             list<string>        group2_set;
             /* these next parameters filter the members of expression matrix.  good idea to have them here? */
             string              fold_scale_type;   /* "linear", "log2+1", "log10+1" */
-            float               alpha_cutoff;
-            float               q_value_cutoff;
-            float               log2_fold_change_cutoff;
+            float               alpha_cutoff;      /* q value cutoff */
+            float               fold_change_cutoff;
             int                 maximum_num_genes;
+            string              filtered_expr_matrix;  /* name of output object filtered expression matrix */
+        } BallgownDifferentialExpParams;
 
-        } DifferentialExpParams;
+  typedef structure {
+        string   diff_expr_object;                  /* RNASeqDifferetialExpression object name */
+        string   filtered_expression_maxtrix;       /* ExpressionMatrix objec name */
+        string   workspace;
+  }   BallgownResult;
 
-  async funcdef DiffExpCallforBallgown(DifferentialExpParams params)
-   returns (RNASeqDifferentialExpression) authentication required;
+  async funcdef DiffExpCallforBallgown( BallgownDifferentialExpParams params )
+     returns ( BallgownResult ) authentication required;
 
 };
