@@ -24,6 +24,11 @@ method-suggestions :
 # Configure the display and description of the parameters
 #
 parameters :
+    sample_n_conditions :
+        ui-name : |
+            RNA-seq sample and condition
+        short-hint : |
+            Please provide sample and condition pair
     sampleset_id :
         ui-name : |
             RNA-seq Sample Set
