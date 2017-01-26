@@ -63,7 +63,7 @@
     "id" : "sample_ids",
     "optional" : false,
     "advanced" : false,
-    "allow_multiple" : true,
+    "allow_multiple" : false,
     "default_values" : [ "" ],
     "field_type" : "text",
     "text_options" : {
@@ -73,7 +73,7 @@
     "id" : "condition",
     "optional" : false,
     "advanced" : false,
-    "allow_multiple" : true,
+    "allow_multiple" : false,
     "default_values" : [ "" ],
     "field_type" : "text"
   },{
@@ -110,6 +110,15 @@
     "default_values" : [ "" ],
     "field_type" : "text"
   }],
+  "parameter-groups": [
+      {
+        "id": "sample_n_conditions",
+        "parameters": ["sample_ids", "condition"],
+        "optional": false,
+        "allow_multiple": true,
+        "with_border": true
+      }
+  ],
   "behavior" : {
     "service-mapping" : {
     	"url" : "",
@@ -133,11 +142,8 @@
           "input_parameter": "Library_type",
           "target_property": "Library_type"
 	},{
-          "input_parameter": "sample_ids",
-          "target_property": "sample_ids"
-	},{
-          "input_parameter": "condition",
-          "target_property": "condition"
+          "input_parameter": "sample_n_conditions",
+          "target_property": "sample_n_conditions"
 	}, {
           "input_parameter": "domain",
           "target_property": "domain"
