@@ -24,11 +24,6 @@ method-suggestions :
 # Configure the display and description of the parameters
 #
 parameters :
-    sample_n_conditions :
-        ui-name : |
-            RNA-seq sample and condition
-        short-hint : |
-            Please provide sample and condition pair
     sampleset_id :
         ui-name : |
             RNA-seq Sample Set
@@ -74,6 +69,13 @@ parameters :
             Publication Details 
         short-hint : |
             The publication details of the data used for RNA-seq experiment
+
+parameter-groups :
+    sample_n_conditions :
+        ui-name : |
+            RNA-seq sample and condition
+        short-hint : |
+            Please provide sample and condition pair
 
 description : |
     <p>This method allows the users to provide the metadata for a set of single-end or paired-end read files to set up an RNA-seq experiment. Note that the user must provide reads for two or more samples.</p>

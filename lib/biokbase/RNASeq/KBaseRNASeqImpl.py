@@ -179,7 +179,7 @@ class KBaseRNASeq:
         # return variables are: returnVal
         #BEGIN CreateRNASeqSampleSet
 	
-        self.__LOGGER(pformat(params))
+        self.__LOGGER.info(pformat(params))
 	user_token=ctx['token']
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
 	hs = HandleService(url=self.__HS_URL, token=user_token)
