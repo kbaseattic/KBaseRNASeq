@@ -314,5 +314,5 @@ class DiffExpforBallgown(ExecutionBase):
         #                                                           )
 
         returnVal = { 'diff_expr_object'           : output_object_name ,
-                      'filtered_expression_maxtrix': filtered_expr_matrix_name, 
+                      'filtered_expression_maxtrix': params["filtered_expr_matrix"], 
                       'workspace'                  : ws_id }
