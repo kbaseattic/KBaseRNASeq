@@ -283,7 +283,7 @@ class KBaseRNASeq:
 	    ## Upload the file using handle service
 		try:
 			#bowtie_handle = hs.upload(out_file_path)
-			bowtie_handle = script_util.upload_file_to_shock(logger,out_file_path)['handle']
+			bowtie_handle = script_util.upload_file_to_shock(self.__LOGGER, out_file_path)['handle']
 		except Exception, e:
 			raise KBaseRNASeqException("Failed to upload the Zipped Bowtie2Indexes file: {0}".format(e))
 	    	bowtie2index = { "handle" : bowtie_handle ,"size" : os.path.getsize(out_file_path),'genome_id' : ref_id}   
