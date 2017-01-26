@@ -1,7 +1,9 @@
 import os
 import re
 import io
+import csv
 import math
+import sys
 import traceback
 import datetime
 import contig_id_mapping as c_mapping
@@ -467,7 +469,7 @@ def get_end(start,leng,strand):
     if strand == '-':
         stop = start - ( leng + 1)
     return stop
-    
+
 def get_details_for_diff_exp(logger,ws_client,hs,ws_id,urls,directory,expressionset_id,token):
         try:
            expression_set = ws_client.get_objects(
@@ -538,9 +540,11 @@ def get_details_for_diff_exp(logger,ws_client,hs,ws_id,urls,directory,expression
 # in the given expression set, and verifies that it has the correct files for ballgown to run
 # (*.ctab).  Each directory name is prefixed by the given dir_prefix so that the ballgown call can
 # use it to specify the input directories to ballgown
-
-
-def download_for_ballgown( logger, ws_client, hs, ws_id, urls, directory, dir_prefix, expressionset_id, token ):
+#
+# This also returns information extracted from the ExpressionSet object which is useful for further 
+# workspace storage (genome_id, etc )
+#
+def get_info_and_download_for_ballgown( logger, ws_client, hs, ws_id, urls, directory, dir_prefix, expressionset_id, token ):
         try:
            expression_set = ws_client.get_objects( [ { 'name'      : expressionset_id,
                                                        'workspace' : ws_id }
@@ -550,14 +554,19 @@ def download_for_ballgown( logger, ws_client, hs, ws_id, urls, directory, dir_pr
            raise Exception( "".join(traceback.format_exc() ))
         ### Getting all the set ids and genome_id
         output_obj = {}
-        #expression_set_info = ws_client.get_object_info_new({"objects": [{'name' : expressionset_id, 'workspace': ws_id}]})[0] 
-        #output_obj['expressionset_id'] =  str(expression_set_info[6]) + '/' + str(expression_set_info[0]) + '/' + str(expression_set_info[4])
+        expression_set_info = ws_client.get_object_info_new({"objects": [{'name' : expressionset_id, 'workspace': ws_id}]})[0] 
+        output_obj['expressionset_id'] =  str(expression_set_info[6]) + '/' + str(expression_set_info[0]) + '/' + str(expression_set_info[4])
         #output_obj['sampleset_id'] =  expression_set['data']['sampleset_id']
         #output_obj['alignmentset_id'] = expression_set['data']['alignmentSet_id'] 
         #output_obj['genome_id'] = expression_set['data']['genome_id']
         #output_obj['genome_name'] = ws_client.get_object_info([{"ref" :output_obj['genome_id']}],includeMetadata=None)[0][1]
         #ws_gtf = output_obj['genome_name']+"_GTF_Annotation"
-    
+
+        # QUESTION:  whats the reason for getting this from object_info and not the object
+        output_obj['genome_id']             = expression_set['data']['genome_id']
+        output_obj['alignmentSet_id']       = expression_set['data']['alignmentSet_id']
+        output_obj['sampleset_id']          = expression_set['data']['sampleset_id']
+        output_obj['sample_expression_ids'] = expression_set['data']['sample_expression_ids']
         ### Check if GTF object exists in the workspace pull the gtf
         #ws_gtf = output_obj['genome_name']+"_GTF"
         #gtf_file = script_util.check_and_download_existing_handle_obj(logger,ws_client,urls,ws_id,ws_gtf,"KBaseRNASeq.GFFAnnotation",directory,token)
@@ -593,7 +602,12 @@ def download_for_ballgown( logger, ws_client, hs, ws_id, urls, directory, dir_pr
                 else:
                     counter += 1 #### comment it when replicate_id is available from methods
 
-                subdir = os.path.join( directory, dir_prefix + "_" + condition + "_" + str(counter) ) ### Comment this line when replicate_id is available from the methods
+                #subdir = os.path.join( directory, dir_prefix + "_" + condition + "_" + str(counter) ) ### Comment this line when replicate_id is available from the methods
+                # Fix this - we're getting expression object name from the zip file
+                if ( zipfile[-4:] != '.zip' ):
+                    raise  Exception( "zip file {0} doesn't seem to have .zip extention, can't form a subdirectory name confidently" )
+
+                subdir = os.path.join( directory, zipfile[0:-4] )
                 logger.info( "subdir is {0}".format( subdir ) )
                 output_obj['subdirs'].append( subdir )
                 if not os.path.exists( subdir ): 
@@ -634,23 +648,61 @@ def download_for_ballgown( logger, ws_client, hs, ws_id, urls, directory, dir_pr
         print output_obj
         return output_obj        
 
+# this converts the input group set lists writes a file that can be loaded
+# as a table by the ballgown_fpkmgenematrix.R  script to pass to
+# ballgown to assign group ids to each setn
 
+# this returns an ordered list of group names that corresponds to
+# the input subdir_list
 
-def  run_ballgown_diff_exp( logger, rscripts_dir, directory, dir_prefix, group_str, output_csv ):
-        #
-        # This assumes the ballgown is the CWD.
-        # pattern is "st"
+def create_sample_dir_group_file( subdir_list, 
+                                  group1_name,
+                                  group1_set,
+                                  group2_name,
+                                  group2_set,
+                                  sample_dir_group_file ):
+        try:
+            f = open( sample_dir_group_file, "w")
+        except Exception:
+            raise Exception( "Can't open file {0} for writing {1}".format( sample_dir_group_file, traceback.format_exc() ) )
+        group_name_list = []
+        for subdir in subdir_list:
+            # group assignment needs to come from two lists which are inputs,
+            # but for now, just look for "WT" ib the subdirectory name.   
+            # (THIS NEEDS TO BE FIXED!!!)
+            if ( subdir in group1_set ):
+                group = 0
+                group_name_list.append( group1_name )
+            elif ( subdir in group2_set ):
+                group = 1
+                group_name_list.append( group2_name )
+            else:
+                raise Exception( "group error - {0} is not found in either group set".format( subdir ) )
+            f.write( "{0}  {1}\n".format( subdir, group ))
+        f.close()
+
+        return( group_name_list )
+
+def  run_ballgown_diff_exp( logger, rscripts_dir, directory, sample_dir_group_table_file, ballgown_output_dir, output_csv ):
+
+        # sample_group_table is a listing of output Stringtie subdirectories,
+        # (full path specification) paired with group label (0 or 1), ie
+        #    /path/WT_rep1_stringtie    0
+        #    /path/WT_rep2_stringtie    0 
+        #    /path/EXP_rep1_stringtie   1
+        #    /path/EXP_rep2_stringtie   1
+        #  (order doesn't matter, but the directory-group correspondance does)
 
         #  1) Need to make a generic "Run rscript program"
         #  2) is this the best way to run the R script (subprocess Popen?)
+
+
         # Make call to execute the system.
 
-        output_csv_fullpath = os.path.join( directory, output_csv )
         rcmd_list = [ 'Rscript', os.path.join( rscripts_dir, 'ballgown_fpkmgenematrix.R' ),
-                      '--ballgown_dir', directory,
-                      '--sample_dir_pat', dir_prefix,
-                      '--experiment_groups', group_str,
-                      '--out_csvfile', output_csv_fullpath
+                      '--sample_dir_group_table', sample_dir_group_table_file,
+                      '--output_dir',  ballgown_output_dir,
+                      '--output_csvfile', output_csv
                     ] 
         rcmd_str = " ".join( str(x) for x in rcmd_list )
         logger.info( "rcmd_string is {0}".format( rcmd_str ) )
@@ -662,12 +714,186 @@ def  run_ballgown_diff_exp( logger, rscripts_dir, directory, dir_prefix, group_s
                 + str(openedprocess.returncode))
             raise Exception( "Rscript failure" )
 
+# reads csv diff expr matrix file from Ballgown and returns as a 
+# dictionary of rows with the gene as key.  Each key gives a row of
+# length three corresponding to fold_change, pval and qval in string form
+# - can include 'NA'
+#
+def  load_diff_expr_matrix( ballgown_output_dir, output_csv ):
+
+        diff_matrix_file = os.path.join( ballgown_output_dir, output_csv )
+
+        if not os.path.isfile( diff_matrix_file ):
+            raise Exception( "differential expression matrix csvfile {0} doesn't exist!".format(diff_matrix_file) )
+
+        n = 0
+        dm = {}
+        with  open( diff_matrix_file, "r" ) as csv_file:
+            csv_rows = csv.reader( csv_file, delimiter="\t", quotechar='"' )
+            for row in csv_rows:
+                n = n + 1
+                if ( n == 1  ):
+                    if ( row != ['id', 'fc', 'pval', 'qval'] ):
+                        raise Exception( "did not get expected column heading from {0}".format( diff_matrix_file ) )
+                else:
+                    if ( len(row) != 4 ):
+                        raise Exception( "did not get 4 elements in row {0} of csv file {1} ".format( n, diff_matrix_file ) )
+                    key = row[0]
+                    # put in checks for NA or numeric for row[1] through 4
+                    if ( key in dm ):
+                        raise Exception( "duplicate key {0} in row {1} of csv file {2} ".format( key, n, diff_matrix_file  ) )
+                    dm[ key ] = row[1:5]
+
+        return dm
+
 # this takes the output_csv generated by run_ballgown_diff_exp() and loads it into
 # an RNASeqDifferentialExpression named output_object_name
 
-#def  load_diff_matrix( logger, ws_client, token, csv_file, output_object_name )
-#        logger.info( "load_diff_matrix, input file is {0}".format( csv_file ) )
-#        logger.
+def  load_ballgown_output_into_ws( logger, 
+                                   ws_id,
+                                   ws_client, 
+                                   hs_client, 
+                                   token, 
+                                   directory, 
+                                   ballgown_output_dir, 
+                                   tool_used,
+                                   tool_version,
+                                   sample_ids,
+                                   conditions,
+                                   genome_id,
+                                   expressionset_id,
+                                   alignmentset_id,
+                                   sampleset_id,
+                                   output_object_name
+                                 ):
+
+        logger.info( "Zipping ballgown output" )
+        zip_file_path = os.path.join( directory, "{0}.zip".format( output_object_name ) )
+        try:
+            script_util.zip_files( logger, ballgown_output_dir, zip_file_path )
+        except Exception,e:
+            raise Exception( "Error creating zip file of ballgown output" )
+
+        logger.info( "Creating handle from ballgown output zip file" )
+        try:
+            handle = hs_client.upload( zip_file_path )
+        except Exception, e:
+            raise Exception( "Error uploading ballgown output zip file to handle service: {0}".format( " ".join( traceback.print_exc() ) ) )
+
+        # create object
+
+        de_obj = { "tool_used"        : tool_used,
+                   "tool_version"     : tool_version,
+                   "sample_ids"       : sample_ids,
+                   "condition"        : conditions,
+                   "genome_id"        : genome_id,
+                   "expressionSet_id" : expressionset_id,
+                   "alignmentSet_id"  : alignmentset_id,
+                   "sampleset_id"     : sampleset_id,
+                   "file"             : handle
+                  }
+
+        objs_save_data = ws_client.save_objects(
+                                      { "workspace":  ws_id,
+                                        "objects":    [
+                                                       {
+                                                        "type":    "KBaseRNASeq.RNASeqDifferentialExpression",
+                                                        "data":    de_obj,
+                                                        "name":    output_object_name
+                                                       } 
+                                                      ]
+                                      }
+                                    )
+        return objs_save_data[0]
+
+
+#  returns a list of gene names from the keys of diff_expr_matrix 
+#  assumed AND logic between all the tests
+
+def  filter_genes_diff_expr_matrix( diff_expr_matrix, 
+                                    scale_type,
+                                    qval_cutoff,
+                                    fold_change_cutoff,     # says this is log2 but we should make it match scale_type  
+                                    max_genes ):
+
+    # verify that qval_cutoff, fold change cutoff is None or numeric.
+    # verify scale_type is an allowed value
+
+    # !!!!! figure out what to do with scale conversion
+
+    if  max_genes == None:
+        max_genes = sys.maxint
+
+    selected = []
+    ngenes = 0
+    for gene in diff_expr_matrix:
+
+        fc, pval, qval = diff_expr_matrix[gene]
+
+        # should NA, NaN fc, qval automatically cause exclusion?
+
+        if ( qval_cutoff != None  ):                # user wants to apply qval_cutoff
+            if qval == 'NA' or qval == "Nan":       # bad values automatically excluded
+                continue 
+            q = make_numeric( qval, "qval, gene {0}".format( gene ) )
+            if ( q < qval_cutoff ):
+                continue
+
+        if ( fold_change_cutoff != None  ):         # user wants to apply fold_change_cutoff
+            if fc == 'NA' or fc  == "Nan":          # bad values automatically excluded
+                continue
+            f = make_numeric( fc, "fc, gene {0}".format( gene ) )
+            if ( f < fold_change_cutoff ):
+                continue
+
+        ngenes = ngenes + 1
+        if  ngenes > max_genes:
+            break
+
+        # if we got here, it made the cut, so add the gene to the list
+        selected.append( gene )
+
+    return  selected
+
+
+def  make_numeric( x, msg ):
+    try:
+        res = float( x )
+    except ValueError:
+        raise Exception( "illegal non-numeric, {0}".format( msg ) )
+    return res
+
+# this weeds out all the data (rows, mappings) in given expression matrix object
+# for genes not in the given selected_list, and returns a new expression matrix object
+
+def filter_expr_matrix_object( emo, selected_list ):
+
+    fmo = {}
+    fmo["type"]            = emo["type"]
+    fmo["scale"]           = emo["scale"]
+    fmo["genome_ref"]      = emo["genome_ref"]
+
+    fmo["data"] = {}
+    fmo["data"]["col_ids"] = emo["data"]["col_ids"]
+    fmo["data"]["row_ids"] = []
+    fmo["data"]["values"]  = []
+
+    nrows = len( emo["data"]["row_ids"] )
+    if nrows != len( emo["data"]["values"]):
+        raise Exception( "filtering expression matrix:  row count mismatch in expression matrix" )
+
+    for i in xrange( nrows ):
+        if emo["data"]["row_ids"][i] in selected_list:
+            fmo["data"]["row_ids"].append( emo["data"]["row_ids"][i] )
+            fmo["data"]["values"].append( emo["data"]["values"][i] )
+
+    fmo["feature_mapping"] = {}
+    for g, v in emo["feature_mapping"].iteritems():
+        if g in selected_list:
+            fmo["feature_mapping"][g] = v
+
+    return fmo
+
 
 def call_cuffmerge(working_dir,directory,num_threads,gtf_file,list_file):
          #cuffmerge_dir = os.path.join(directory,"cuffmerge")

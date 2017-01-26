@@ -4,9 +4,9 @@
 	"context": null,
 	"params":[ 
                     {
-                     "ws_id"                  : "ballgown_tests_1",
-                     "expressionset_id"       : "ath_sampleset_hisat2_AlignmentSet_stringtie_ExpressionSet",
-                     "output_obj_name"        : "first_ballgown_test",
+                     "ws_id"                  : "mccorkle:1484837859347",
+                     "expressionset_id"       : "ath_sample_set_hisat2_AlignmentSet_stringtie_ExpressionSet",
+                     "output_obj_name"        : "second_ballgown_test",
 		     "num_threads"            : 1
                     }
                  ]	

@@ -62,7 +62,8 @@ class DiffExpforBallgown(ExecutionBase):
         self.num_jobs = 1
 
         self.details = {}
-        self.details["used_tool"] = "StringTie"    # Question: where does this really get set?
+        self.details["used_tool"] = "Ballgown (Bioconductor)"    # Question: where does this really get set?
+        self.details["tool_version"] = "3.4"
         #als = [] 
         #for l in self.details['labels']:
         #        rep_files=[ (os.path.join(diffexp_dir+'/'+l,sub+'/accepted_hits.bam'), os.path.join(diffexp_dir+'/'+l,sub+'/transcripts.gtf')) for sub in os.listdir(os.path.join(diffexp_dir,l)) if os.path.isdir(os.path.join(diffexp_dir,l+'/'+sub))]
@@ -96,7 +97,7 @@ class DiffExpforBallgown(ExecutionBase):
          ### Call Cuffmerge function
          used_tool = self.details['used_tool']
          logger.info(  'in DiffExpfoBallgown.runEach()' )
-         if used_tool == 'StringTie':
+         if used_tool == "Ballgown (Bioconductor)":
            #merged_gtf = rnaseq_util.call_stringtiemerge(diffexp_dir,merge_dir,num_threads,self.details['gtf_file'],assembly_file)
            #run_tool =  "StringTie"
            #tool_version = "1.2.3"
@@ -173,16 +174,20 @@ class DiffExpforBallgown(ExecutionBase):
 
 
     def collect(self):
+        params    = self.method_params
         ws_client = self.common_params['ws_client']
-        hs = self.common_params['hs_client']
+        hs_client = self.common_params['hs_client']
+
+        ws_id = params['ws_id']
         #rscripts_dir = self.common_params['rscripts_dir']
         rscripts_dir = '/kb/module/rscripts'
-        params = self.method_params
+
         token = self.common_params['user_token']
         diffexp_dir = self.directory
         logger = self.logger
-        logger.info( 'in DiffExpforBallgown.collect')
-        output_obj_name = self.method_params['output_obj_name']
+        logger.info( 'in DiffExpforBallgown.collect, method params (params) are')
+        logger.info( pformat( params ) )
+        output_object_name = params['output_obj_name']
         output_csv = "ballgown_diffexp.csv"
         stringtie_dir_prefix = "StringTie_outdir_"
 
@@ -192,52 +197,123 @@ class DiffExpforBallgown(ExecutionBase):
         #  2) need a group identifier string i.e. "111000"
         #
 
-        ballgown_sets = rnaseq_util.download_for_ballgown( logger, 
-                                                           ws_client, 
-                                                           hs, 
-                                                           params['ws_id'],
-                                                           self.urls,
-                                                           diffexp_dir,
-                                                           stringtie_dir_prefix,
-                                                           params['expressionset_id'],
-                                                           token
-                                                          )
-        logger.info( 'back from download_for_ballgown(), ballgown_sets are')
-        logger.info( pformat( ballgown_sets ) )
+        ballgown_set_info = rnaseq_util.get_info_and_download_for_ballgown( logger, 
+                                                                            ws_client, 
+                                                                            hs_client, 
+                                                                            ws_id,
+                                                                            self.urls,
+                                                                            diffexp_dir,
+                                                                            stringtie_dir_prefix,
+                                                                            params['expressionset_id'],
+                                                                            token
+                                                                           )
+        logger.info( 'back from download_for_ballgown(), ballgown_set_info are')
+        logger.info( pformat( ballgown_set_info ) )
 
-        group_str = "1100"
-        res = rnaseq_util.run_ballgown_diff_exp( logger, rscripts_dir, diffexp_dir, stringtie_dir_prefix, group_str, output_csv )
+        # THIS IS TEMPORARY: REMOVE THIS WHEN group lists of expression object names are actually passed
+        # incorporate params['group1_set'] and params['group2_set'] which are lists of sample names
+        params['group1_name'] = "WT"
+        params['group2_name'] = "exp"
+        group1_set = []
+        group2_set = []
+        for subd in ballgown_set_info['subdirs']:
+            if ( re.search( "(^WT|_WT|WT_|WT$)", subd, re.I ) ):
+                group1_set.append( subd )
+            else:
+                group2_set.append( subd )
+        params['group1_set'] = group1_set
+        params['group2_set'] = group2_set
+        # END OF TEMPORARY CODE 
+        sample_dir_group_file = "sample_dir_group_table"  # output file
+        group_list = rnaseq_util.create_sample_dir_group_file( ballgown_set_info['subdirs'], 
+                                                               params['group1_name'],
+                                                               params['group1_set'],
+                                                               params['group2_name'],
+                                                               params['group2_set'],
+                                                               sample_dir_group_file )
 
-        raise Exception( "Debug quit")
+        ballgown_output_dir = os.path.join( diffexp_dir, "ballgown_out" )
+        logger.info( "ballgown output dir is {0}".format( ballgown_output_dir) )
+        handler_util.setupWorkingDir( logger, ballgown_output_dir )
 
-        #load_diff_matrix( logger, ws_client, token, output_csv, output_object_name )    # ws id, etc
+        logger.info( "about to run_ballgown_diff_exp" )
+        rnaseq_util.run_ballgown_diff_exp( logger, rscripts_dir, diffexp_dir, sample_dir_group_file, ballgown_output_dir, output_csv )
 
-        ##################################        
-        #try:
-        #    e_sample = ws_client.get_objects( [ {'name' : params['expressionset_id'],
-        #                                         'workspace' : params['ws_id']
-        #                                         }
-        #                                      ])[0]
-        #except Exception,e:
-        #    logger.exception("".join(traceback.format_exc()))
-        #    raise Exception("Error Downloading objects from the workspace ")
-        ### Get the Input object type and info #
-        #e_sample_info = ws_client.get_object_info_new({"objects": [{'name': params['expressionset_id'], 'workspace': params['ws_id']}]})[0]
-        #e_sample_type = e_sample_info[2].split('-')[0]
-        #expressionset_id = str(e_sample_info[6]) + '/' + str(e_sample_info[0]) + '/' + str(e_sample_info[4])
-        #alignmentset_id = e_sample['data']['alignmentSet_id'] 
-        #sampleset_id = e_sample['data']['sampleset_id']
-        #expression_ids = e_sample['data']['sample_expression_ids']
-        #num_samples = len(expression_ids)
-#
-        #if num_samples < 2:
-        #   raise ValueError("Please ensure you have atleast 2 expressions to run diffExpCallforBallgown in Set mode")
-        ####################################
+        logger.info( "back from run_ballgown_diff_exp, about to load diff exp matrix file" )
+        diff_expr_matrix = rnaseq_util.load_diff_expr_matrix( ballgown_output_dir, output_csv )    # read file before its zipped
 
-        res1 = self.common_params['ws_client'].save_objects(
-                                     {"workspace":self.method_params['ws_id'],
-                                      "objects": [{
-                                      "type":"KBaseRNASeq.RNASeqDifferentialExpression",
-                                      "data":self.cm_obj,
-                                      "name":output_name}]})
-        returnVal = { 'output'  : output_name ,'workspace' : self.method_params['ws_id']}
+        logger.info( "about to load ballgout output into workspace" )
+        de_ws_save_obj_data = rnaseq_util.load_ballgown_output_into_ws( logger, 
+                                                                        ws_id,
+                                                                        ws_client, 
+                                                                        hs_client,
+                                                                        token, 
+                                                                        diffexp_dir,
+                                                                        ballgown_output_dir, 
+                                                                        self.details["used_tool"],
+                                                                        self.details["tool_version"],
+                                                                        ballgown_set_info['sample_expression_ids'],  # for sample ids? Is this good?
+                                                                        group_list,                                  # conditions
+                                                                        ballgown_set_info['genome_id'],              # genome_id
+                                                                        ballgown_set_info['expressionset_id'],       # expressionset_id
+                                                                        ballgown_set_info['alignmentSet_id'],        # alignmentset_id
+                                                                        ballgown_set_info['sampleset_id'],           # sampleset_id
+                                                                        output_object_name 
+                                                                      )
+        logger.info( "back from loading ballgown output into workspace, object save data is " )
+        logger.info( pformat( de_ws_save_obj_data ) )
+
+        selected_gene_list = rnaseq_util.filter_genes_diff_expr_matrix( diff_expr_matrix, 
+                                                                        params['fold_scale_type'], 
+                                                                        params['alpha_cutoff'], 
+                                                                        params['log2_fold_change_cutoff'],
+                                                                        params['maximum_number_of_genes']
+                                                                      )
+        
+        #  !!!!! IF selected_gene_list is empty print some kind of message, take no further action
+
+        # get the unfiltered expression matrix
+        em_name = params['expressionset_id'] + "_FPKM_ExpressionMatrix"
+        logger.info( "about to fetch expression matrix  {0}".format( em_name ))
+        try:
+            emw = ws_client.get_objects( [ { "name": em_name, "workspace": ws_id } ] )[0]
+        except:
+            raise Exception( "unable to retrieve expression matrix object {0} from workspace {1}".format( em_name, ws_id  ))
+        logger.info( pformat( emw ) )
+        emo = emw["data"]
+        # filter it
+        filtered_emo = rnaseq_util.filter_expr_matrix_object( emo, selected_gene_list )
+        # save it
+        logger.info( "saving emo em_name {0}".format( em_name ))
+        try:
+            ret = ws_client.save_objects( { 'workspace' : ws_id,
+                                            'objects' : [
+                                                          { 'type'   : 'KBaseFeatureValues.ExpressionMatrix',
+                                                            'data'   : filtered_emo,
+                                                            'name'   : params["filtered_expr_matrix_name"]
+                                                          }
+                                                        ]
+                                          }
+                                        )
+        except:
+            raise Exception( "failed to save object " )
+        logger.info( "ws save return:\n" + pformat(ret))
+
+        # THIS NEEDS TO BE AN INPUT PARAMETER IN SPEC FILE
+        #iltered_expr_matrix_name = expressionset_id + "_filtered_fpkm"
+        #e_em_save_obj_data = created_and_save_filtered_expr_matrix( logger, 
+        #                                                            ws_client, 
+        #                                                            ws_id, 
+        #                                                            token,
+        #                                                            expression_set_name, 
+        #                                                            fold_scale_type,      #"linear", "log2+1", "log10+1" 
+        #                                                            alpha_cutoff,
+        #                                                            q_value_cutoff,
+        #                                                            log2_fold_change_cutoff,
+        #                                                            maximum_num_genes,
+        #                                                            filtered_expr_matrix_name
+        #                                                           )
+
+        returnVal = { 'output'  : output_object_name ,
+                      #'filtered_expression_maxtrix': filtered_expr_matrix_name, 
+                      'workspace' : ws_id }
