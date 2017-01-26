@@ -266,8 +266,8 @@ class DiffExpforBallgown(ExecutionBase):
         selected_gene_list = rnaseq_util.filter_genes_diff_expr_matrix( diff_expr_matrix, 
                                                                         params['fold_scale_type'], 
                                                                         params['alpha_cutoff'], 
-                                                                        params['log2_fold_change_cutoff'],
-                                                                        params['maximum_number_of_genes']
+                                                                        params['fold_change_cutoff'],
+                                                                        params['maximum_num_genes']
                                                                       )
         
         #  !!!!! IF selected_gene_list is empty print some kind of message, take no further action
@@ -279,7 +279,6 @@ class DiffExpforBallgown(ExecutionBase):
             emw = ws_client.get_objects( [ { "name": em_name, "workspace": ws_id } ] )[0]
         except:
             raise Exception( "unable to retrieve expression matrix object {0} from workspace {1}".format( em_name, ws_id  ))
-        logger.info( pformat( emw ) )
         emo = emw["data"]
         # filter it
         filtered_emo = rnaseq_util.filter_expr_matrix_object( emo, selected_gene_list )
@@ -290,7 +289,7 @@ class DiffExpforBallgown(ExecutionBase):
                                             'objects' : [
                                                           { 'type'   : 'KBaseFeatureValues.ExpressionMatrix',
                                                             'data'   : filtered_emo,
-                                                            'name'   : params["filtered_expr_matrix_name"]
+                                                            'name'   : params["filtered_expr_matrix"]
                                                           }
                                                         ]
                                           }
@@ -314,6 +313,6 @@ class DiffExpforBallgown(ExecutionBase):
         #                                                            filtered_expr_matrix_name
         #                                                           )
 
-        returnVal = { 'output'  : output_object_name ,
-                      #'filtered_expression_maxtrix': filtered_expr_matrix_name, 
-                      'workspace' : ws_id }
+        returnVal = { 'diff_expr_object'           : output_object_name ,
+                      'filtered_expression_maxtrix': filtered_expr_matrix_name, 
+                      'workspace'                  : ws_id }
