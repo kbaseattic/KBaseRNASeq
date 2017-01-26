@@ -179,11 +179,12 @@ class KBaseRNASeq:
         # return variables are: returnVal
         #BEGIN CreateRNASeqSampleSet
 	
-        self.__LOGGER.info(pformat(params))
 	user_token=ctx['token']
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
 	hs = HandleService(url=self.__HS_URL, token=user_token)
 	try:
+            params["sample_ids"] = [ item['sample_id'] for item in params['sample_n_conditions'] ]
+            params["condition"] = [ item['condition'] for item in params['sample_n_conditions'] ]
 	    ### Create the working dir for the method; change it to a function call
 	    out_obj = { k:v for k,v in params.iteritems() if not k in ('ws_id')}  	
 	    sample_ids = params["sample_ids"]

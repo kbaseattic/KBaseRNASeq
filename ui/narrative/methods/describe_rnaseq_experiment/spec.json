@@ -60,7 +60,7 @@
       ]
     }
   },{
-    "id" : "sample_ids",
+    "id" : "sample_id",
     "optional" : false,
     "advanced" : false,
     "allow_multiple" : false,
@@ -113,7 +113,7 @@
   "parameter-groups": [
       {
         "id": "sample_n_conditions",
-        "parameters": ["sample_ids", "condition"],
+        "parameters": ["sample_id", "condition"],
         "optional": false,
         "allow_multiple": true,
         "with_border": true

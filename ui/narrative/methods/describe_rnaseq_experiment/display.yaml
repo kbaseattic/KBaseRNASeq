@@ -49,7 +49,7 @@ parameters :
             Treatment Labels
         short-hint : |
             Short label for each sample in the RNA-seq experiment. The treatment labels must be added in the same order as the reads. All replicates for the same treatment must have same label.
-    sample_ids:
+    sample_id:
         ui-name : |
             Reads (Single-end/Paired-end)
         short-hint : |
