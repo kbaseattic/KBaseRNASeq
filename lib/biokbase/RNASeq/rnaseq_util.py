@@ -839,6 +839,38 @@ def  make_numeric( x, msg ):
         raise Exception( "illegal non-numeric, {0}".format( msg ) )
     return res
 
+# this weeds out all the data (rows, mappings) in given expression matrix object
+# for genes not in the given selected_list, and returns a new expression matrix object
+
+def filter_expr_matrix_object( emo, selected_list ):
+
+    fmo = {}
+    fmo["type"]            = emo["type"]
+    fmo["scale"]           = emo["scale"]
+    fmo["genome_ref"]      = emo["genome_ref"]
+
+    fmo["data"] = {}
+    fmo["data"]["col_ids"] = emo["data"]["col_ids"]
+    fmo["data"]["row_ids"] = []
+    fmo["data"]["values"]  = []
+
+    nrows = len( emo["data"]["row_ids"] )
+    if nrows != len( emo["data"]["values"]):
+        raise Exception( "filtering expression matrix:  row count mismatch in expression matrix" )
+
+    for i in xrange( nrows ):
+        if emo["data"]["row_ids"][i] in selected_list:
+            fmo["data"]["row_ids"].append( emo["data"]["row_ids"][i] )
+            fmo["data"]["values"].append( emo["data"]["values"][i] )
+
+    fmo["feature_mapping"] = {}
+    for g, v in emo["feature_mapping"].iteritems():
+        if g in selected_list:
+            fmo["feature_mapping"][g] = v
+
+    return fmo
+
+
 def call_cuffmerge(working_dir,directory,num_threads,gtf_file,list_file):
          #cuffmerge_dir = os.path.join(directory,"cuffmerge")
          print "Entering cuffmerge"
