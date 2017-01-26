@@ -1,0 +1,46 @@
+{
+        "version":"1.1",
+        "method":"KBaseRNASeq.TophatCall_collect",
+        "context": null,
+        "params":[
+                   {
+                    "global_params": {
+                                      "ws_id" : "single_RNASeq_test",
+                                      "sampleset_id" : "ath_wt_demo_Reads" ,
+                                      "bowtie_index" : "Arabidopsis_bw_index",
+                                      "read_mismatches"    : null,
+                                      "read_gap_length"    : null,
+                                      "min_intron_length"  : null,
+                                      "num_threads"        : 2,
+                                      "no_coverage_search" : 0,
+                                      "service_ver"        : "dev",
+                                      "is_local"           : 1,
+                                      "is_sample_set"      : 0
+                                     },
+                    "input_result_pairs": [
+                                            {
+                                              "input":  { "input_arguments": 
+                                                             [
+                                                               {
+                                                                "label": "Single-Sample",
+                                                                "gtf_file": "/kb/module/work/tmp/Arabidopsis_Genome_Annotation_GTF.gtf",
+                                                                "annotation_id": "7919/4/2",
+                                                                "ws_id": "single_RNASeq_test",
+                                                                "tophat_dir": "/kb/module/work/tmp",
+                                                                "job_id": "ath_wt_demo_Reads",
+                                                                "bowtie_index": "Arabidopsis_bw_index",
+                                                                "bowtie2index_id": "8053/8/1",
+                                                                "sampleset_id": null,
+                                                                "reads_type": "KBaseAssembly.SingleEndLibrary"
+                                                               }
+                                                             ]
+                                                        },
+                                              "result": {
+ 					                  "output_name": "ath_wt_demo_Reads_tophat_alignment",
+							  "read_sample": "ath_wt_demo_Reads"
+                                                        }
+                                            }
+                                          ]
+                   }
+                 ]
+}

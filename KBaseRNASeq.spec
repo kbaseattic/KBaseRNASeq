@@ -325,19 +325,19 @@
    @optional tool_opts tool_version sample_ids comments
 */
    typedef structure {
-	string tool_used;
-	string tool_version;
+        string tool_used;
+        string tool_version;
         list<mapping<string opt_name, string opt_value>> tool_opts;	
-      	Handle file;
+        Handle file;
         list<string> sample_ids;
-	list<string> condition;
+        list<string> condition;
         /*ws_genome_annotation_id genome_id;*/
-	string genome_id;
-	ws_expressionSet_id expressionSet_id;
-	ws_alignmentSet_id alignmentSet_id;
+        string genome_id;
+        ws_expressionSet_id expressionSet_id;
+        ws_alignmentSet_id alignmentSet_id;
         ws_Sampleset_id sampleset_id;
-	string comments;
-      	}RNASeqDifferentialExpression;
+        string comments;
+        } RNASeqDifferentialExpression;
 
 /*
     Object for the cummerbund plot
@@ -595,11 +595,22 @@ typedef structure{
    returns (RNASeqDifferentialExpression) authentication required;
 
         typedef structure{
-        string ws_id;
-        RNASeqExpressionSet expressionset_id;
-        string output_obj_name;
-        int num_threads;
-        }DifferentialExpParams;
+            string              ws_id;
+            RNASeqExpressionSet expressionset_id;
+            string              output_obj_name;
+            int                 num_threads;
+            string              group1_name;
+            string              group2_name;
+            list<string>        group1_set;
+            list<string>        group2_set;
+            /* these next parameters filter the members of expression matrix.  good idea to have them here? */
+            string              fold_scale_type;   /* "linear", "log2+1", "log10+1" */
+            float               alpha_cutoff;
+            float               q_value_cutoff;
+            float               log2_fold_change_cutoff;
+            int                 maximum_num_genes;
+
+        } DifferentialExpParams;
 
   async funcdef DiffExpCallforBallgown(DifferentialExpParams params)
    returns (RNASeqDifferentialExpression) authentication required;

@@ -31,6 +31,7 @@ RUN \
 # -----------------------------------------
 RUN apt-get update && apt-get install -y unzip gcc bzip2 ncurses-dev sysstat
 RUN pip install mpipe
+
 WORKDIR /kb/module
 COPY ./deps /kb/deps
 RUN \
@@ -39,7 +40,8 @@ RUN \
   sh /kb/deps/kb_hisat2/install-hisat.sh && \
   sh /kb/deps/kb_cufflinks/install-cufflinks.sh && \
   sh /kb/deps/kb_stringTie/install-stringtie.sh && \
-  sh /kb/deps/kb_tableMaker/install-tablemaker.sh
+  sh /kb/deps/kb_tableMaker/install-tablemaker.sh && \
+  sh /kb/deps/kb_ballgown/install-ballgown.sh
 
 COPY ./ /kb/module
 RUN \

@@ -1,0 +1,22 @@
+{	
+	"version":"1.1",
+	"method":"KBaseRNASeq.CreateRNASeqSampleSet",
+	"context": null,
+	"params":[ 
+                    {
+	             "ws_id"                       : "srividya22:1474862362136",
+	             "sampleset_id"                : "micromonas_rnaseq_test1_sampleset",
+	             "sampleset_desc"              : "first pass at testing algae GFFs from NCBI",
+	             "domain"                      : "euk",
+                     "platform"                    : "Illumina",
+		     "sample_ids"                  : [ "gr_B_srr4131454_2.fastq.gz",
+                                                       "gr_B_srr4131454_2.fastq.gz"
+                                                     ],
+		     "condition"                   : [ "WT", "WT" ],
+	             "source"                      : "NCBI",
+		     "Library_type"                : "PairedEnd",
+		     "publication_id"              : "none",
+		     "string external_source_date" : "not sure"
+                    }
+                 ]	
+}

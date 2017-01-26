@@ -1,0 +1,15 @@
+{	
+	"version":"1.1",
+	"method":"KBaseRNASeq.CufflinksCall_prepare",
+	"context": null,
+	"params":[ 
+                    {
+          	      "global_input_params": {
+			  			"ws_id"            : "single_RNASeq_test",
+			  			"alignmentset_id"  : "Ecoli_SingleEnd_SRR228083_16000_bowtie2_alignment",
+			  			"num_threads"      : 2,
+                                                "is_alignment_set" : 0
+	                                      }
+                     }
+                 ]	
+}

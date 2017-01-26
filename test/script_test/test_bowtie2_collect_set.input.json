@@ -1,0 +1,81 @@
+{
+        "version":"1.1",
+        "method":"KBaseRNASeq.Bowtie2Call_collect",
+        "context": null,
+        "params":[
+                   {
+                    "global_params": {
+                                      "ws_id"              : "srividya22:1474862362136",
+                                      "sampleset_id"       : "rna_test_to_new_genome" ,
+                                      "bowtie_index"       : "Escherichia_coli_K12_bw_index",
+                                      "num_threads"        : 2,
+                                      "service_ver"        : "dev",
+                                      "is_local"           : 1,
+                                      "is_sample_set"      : 1
+                                     },
+                    "input_result_pairs": [
+                                            {
+                                              "input":  { "input_arguments": 
+                                                             [
+                                                               {
+		  			                          "label": "e_8083",
+		  			                          "annotation_id": "11600/5/2",
+		  			                          "ws_id": "srividya22:1474862362136",
+		  			                          "bowtie2_dir": "/kb/module/work/tmp",
+		  			                          "job_id": "Ecoli_SE_8083_R1.fastq",
+		  			                          "bowtie_index": "Escherichia_coli_K12_bw_index",
+		  			                          "sampleset_id": "11600/6/1",
+		  			                          "reads_type": "SingleEnd"
+                                                               }
+                                                             ]
+                                                        },
+                                              "result": {
+                                                          "output_name": "Ecoli_SE_8083_R1_bowtie2_alignment",
+                                                          "read_sample": "Ecoli_SE_8083_R1.fastq"
+                                                        }
+                                            },
+                                            {
+                                              "input":  { "input_arguments": 
+                                                             [
+                                                               {
+		 			                         "label": "e_8085",
+		 			                         "annotation_id": "11600/5/2",
+		 			                         "ws_id": "srividya22:1474862362136",
+		 			                         "bowtie2_dir": "/kb/module/work/tmp",
+		 			                         "job_id": "Ecoli_SE_8085_R1.fastq",
+		 			                         "bowtie_index": "Escherichia_coli_K12_bw_index",
+		 			                         "sampleset_id": "11600/6/1",
+		 			                         "reads_type": "SingleEnd"
+                                                               }
+                                                             ]
+                                                        },
+                                              "result": {
+                                                          "output_name": "Ecoli_SE_8085_R1_bowtie2_alignment",
+                                                          "read_sample": "Ecoli_SE_8085_R1.fastq"
+                                                        }
+                                            },
+                                            {
+                                              "input":  { "input_arguments": 
+                                                             [
+                                                               {
+		  			                        "label": "e_8086",
+		  			                        "annotation_id": "11600/5/2",
+		  			                        "ws_id": "srividya22:1474862362136",
+		  			                        "bowtie2_dir": "/kb/module/work/tmp",
+		  			                        "job_id": "EColi_SE_8086_R1.fastq",
+		  			                        "bowtie_index": "Escherichia_coli_K12_bw_index",
+		  			                        "sampleset_id": "11600/6/1",
+		  			                        "reads_type": "SingleEnd"
+                                                               }
+                                                             ]
+                                                        },
+                                              "result": {
+                                                          "output_name": "EColi_SE_8086_R1_bowtie2_alignment",
+                                                          "read_sample": "EColi_SE_8086_R1.fastq"
+                                                        }
+                                            }
+
+                                          ]
+                   }
+                 ]
+}
