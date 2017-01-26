@@ -1,0 +1,192 @@
+{
+  "ver" : "1.0.0",
+  "authors" : [ ],
+  "contact" : "help@kbase.us",
+  "visible" : true,
+  "categories" : ["active","expression"],
+  "widgets" : {
+    "input" : null,
+    "output" : "kbaseRNASeqAnalysisNew"
+  },
+   "parameters" : [ {
+    "id" : "expressionset_id",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : ["KBaseRNASeq.RNASeqExpressionSet" ]
+    }
+  },{
+    "id" : "output_obj_name",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : ["KBaseRNASeq.RNASeqDifferentialExpression"],
+      "is_output_name": true
+    }
+  },{
+    "id" : "filtered_expr_matrix",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : ["KBaseFeatureValues.ExpressionMatrix"],
+      "is_output_name": true
+    }
+  },{
+    "id" : "expr_ids1",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : true,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : [ "KBaseRNASeq.RNASeqExpression"] 
+    }
+  },{
+    "id" : "expr_ids2",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : true,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : [ "KBaseRNASeq.RNASeqExpression"] 
+    }
+  },{
+    "id" : "group_name1",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : true,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : [ ] 
+    }
+  },{
+    "id" : "group_name2",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : true,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : [ ] 
+    }
+  }, {
+    "id" : "maximum_num_genes",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],    
+    "field_type" : "text",
+    "text_options" : {
+      "validate_as": "int"
+    }
+  }, {
+    "id" : "fold_change_cutoff",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],    
+    "field_type" : "text",
+    "text_options" : {
+      "validate_as": "float"
+    }
+  }, {
+    "id" : "alpha_cutoff",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "1.0" ],    
+    "field_type" : "text",
+    "text_options" : {
+      "validate_as": "float"
+    }
+  }, {
+    "id" : "num_threads",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "2" ],    
+    "field_type" : "text",
+    "text_options" : {
+      "validate_as": "int"
+    }
+ } ],
+  "parameter-groups": [
+      {
+        "id": "expr_ids_list",
+        "parameters": ["group_name1", "expr_ids1", "group_name2", "expr_ids2"],
+        "optional": false,
+        "allow_multiple": false,
+        "with_border": true
+      }
+  ],
+  "behavior" : {
+    "service-mapping" : {
+      "url" : "",
+      "name" : "KBaseRNASeq",
+      "method" : "DiffExpCallforBallgown",
+      "input_mapping" : [
+        {
+          "narrative_system_variable": "workspace",
+          "target_property" : "ws_id"
+        },
+        {
+          "constant_value": "log2",
+          "target_property" : "fold_scale_type"
+        },
+        {
+          "input_parameter" : "expressionset_id",
+          "target_property" : "expressionset_id"
+        },
+        {
+          "input_parameter" : "expr_ids_list",
+          "target_property" : "expr_ids_list"
+        },
+        {
+          "input_parameter" : "alpha_cutoff",
+          "target_property" : "alpha_cutoff"
+        },
+        {
+          "input_parameter" : "fold_change_cutoff",
+          "target_property" : "fold_change_cutoff"
+        },
+        {
+          "input_parameter" : "maximum_num_genes",
+          "target_property" : "maximum_num_genes"
+        },
+        {
+          "input_parameter" : "filtered_expr_matrix",
+          "target_property" : "filtered_expr_matrix"
+        },
+        {
+          "input_parameter" : "output_obj_name",
+          "target_property" : "output_obj_name"
+        },
+        {
+          "input_parameter" : "num_threads",
+          "target_property" : "num_threads"
+        }],
+      "output_mapping" : [
+	{
+          "narrative_system_variable": "workspace",
+          "target_property" : "workspace"
+        },
+	{
+          "service_method_output_path" : [0,"diff_expr_object"],
+          "target_property" : "output"
+        }
+      ]
+    }
+  },
+  "job_id_output_field" : "docker"
+}
