@@ -693,7 +693,7 @@ def download_file_from_shock(logger,
         filePath = shockFileName
 
     #shock_service_url is from config
-    dfu = DataFileUtil(os.environ['SDK_CALLBACK_URL'], token=token, service_ver="dev")
+    dfu = DataFileUtil(os.environ['SDK_CALLBACK_URL'], token=token)
     return dfu.shock_to_file({"shock_id" : shock_id, "file_path":filePath, "unpack" : None})
 
 
@@ -740,7 +740,7 @@ def upload_file_to_shock(logger,
 
     
     #shock_service_url is from config
-    dfu = DataFileUtil(os.environ['SDK_CALLBACK_URL'], token=token, service_ver="dev")
+    dfu = DataFileUtil(os.environ['SDK_CALLBACK_URL'], token=token)
     return dfu.file_to_shock({"file_path":filePath, "attributes": json.dumps(attributes), "make_handle" : make_handle})
 
 

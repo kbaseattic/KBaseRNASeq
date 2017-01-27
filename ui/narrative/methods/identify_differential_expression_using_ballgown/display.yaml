@@ -27,16 +27,64 @@ parameters :
       RNA-seq Expression Set
     short-hint : |
       Select the RNA-seq expression set associated with transcripts assembled by Cufflinks or StringTie.
+  group_name1 :
+    ui-name : |
+      Group 1 Name
+    short-hint : |
+      Provide the first group name
+  group_name2 :
+    ui-name : |
+      Group 2 Name
+    short-hint : |
+      Provide the second group name
+  expr_ids1 :
+    ui-name : |
+      Group 1 Objects
+    short-hint : |
+      Select the first group of RNA-seq Expression objects
+  expr_ids2 :
+    ui-name : |
+      Group 2 Objects
+    short-hint : |
+      Select the second group of RNA-seq Expression objects
   output_obj_name :
     ui-name : |
       Differential Expression Output Name
     short-hint : |
       Provide the name of the differential expression analysis output
+  filtered_expr_matrix :
+    ui-name : |
+      Filtered Expression Matrix
+    short-hint : |
+      Provide the name of filtered Expression Matrix
   num_threads :
     ui-name : |
       Number of Threads
     short-hint : |
       Number of  computational threads to align reads. The default is 2.
+  maximum_num_genes:
+    ui-name : |
+        Number of Genes 
+    short-hint : |
+        Number of genes selected for Expression Matrix
+  fold_change_cutoff:
+      ui-name : |
+          Fold Change Cutoff
+      short-hint : |
+          Absolute value of fold change cutoff
+  alpha_cutoff:
+      ui-name : |
+          Alpha Cutoff
+      short-hint : |
+          q-value (corrected p-value)  cutoff
+
+
+parameter-groups :
+    expr_ids_list :
+        ui-name : |
+            Two Comparison Groups
+        short-hint : |
+            Please provide Expression objects in two different groups
 
 description : |
     <p>This method uses the transcripts for two or more samples obtained from either Cufflinks or StringTie to calculate gene and transcript levels in more than one condition and finds significant changes in the expression levels.</p>
@@ -47,7 +95,7 @@ description : |
     <p><strong>WARNING:</strong> This method is one of the steps of the <a href= "http://kbase.us/rna-seq/"> KBase RNA-seq Pipeline </a> and is not intended to run standalone.</p>
   
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
-    Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Vivek Kumar</p>
+    Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Sean McCorkle, Priya Ranjan, Jim Thomason, Vivek Kumar</p>
     
 publications :
     -

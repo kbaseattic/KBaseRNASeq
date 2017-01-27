@@ -100,7 +100,7 @@ def create_gtf_annotation_from_genome(logger,ws_client,hs_client,urls,ws_id,geno
                 mapping_filename = c_mapping.create_sanitized_contig_ids(output_file)
                 os.remove(output_file)
                 ## get the GFF
-                genome = GenomeFileUtil(urls['callback_url'], service_ver="dev")
+                genome = GenomeFileUtil(urls['callback_url'])
                 ret = genome.genome_to_gff({'genome_ref':genome_ref})
                 file_path = ret['file_path']
                 c_mapping.replace_gff_contig_ids(file_path, mapping_filename, to_modified=True)
