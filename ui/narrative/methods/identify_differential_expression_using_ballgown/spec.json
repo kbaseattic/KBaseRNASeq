@@ -83,7 +83,7 @@
   }, {
     "id" : "maximum_num_genes",
     "optional" : true,
-    "advanced" : true,
+    "advanced" : false,
     "allow_multiple" : false,
     "default_values" : [ "" ],    
     "field_type" : "text",
@@ -93,7 +93,7 @@
   }, {
     "id" : "fold_change_cutoff",
     "optional" : true,
-    "advanced" : true,
+    "advanced" : false,
     "allow_multiple" : false,
     "default_values" : [ "" ],    
     "field_type" : "text",
@@ -103,7 +103,7 @@
   }, {
     "id" : "alpha_cutoff",
     "optional" : true,
-    "advanced" : true,
+    "advanced" : false,
     "allow_multiple" : false,
     "default_values" : [ "1.0" ],    
     "field_type" : "text",
