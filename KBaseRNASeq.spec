@@ -594,6 +594,13 @@ typedef structure{
   async funcdef CuffdiffCall(CuffdiffParams params)
    returns (RNASeqDifferentialExpression) authentication required;
 
+   /*
+      @id KBaseRNASeq.RNASeqExpressionSet 
+   */
+      
+      typedef string ws_rnaseq_exprset_id;
+
+
         typedef structure {
 
             string        group_name1;
@@ -606,7 +613,7 @@ typedef structure{
         typedef structure{
 
             string                  ws_id;
-            RNASeqExpressionSet     expressionset_id;
+            ws_rnaseq_exprset_id    expressionset_id;
             string                  output_obj_name;
             int                     num_threads;
             ExperimentGroupIDsList  expr_ids_list;      
