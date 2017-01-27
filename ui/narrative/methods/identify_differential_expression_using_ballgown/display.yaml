@@ -79,13 +79,6 @@ parameters :
           q-value (corrected p-value)  cutoff
 
 
-parameter-groups :
-    expr_ids_list :
-        ui-name : |
-            Two Comparison Groups
-        short-hint : |
-            Please provide Expression objects in two different groups
-
 description : |
     <p>This method uses the transcripts for two or more samples obtained from either Cufflinks or StringTie to calculate gene and transcript levels in more than one condition and finds significant changes in the expression levels.</p>
     

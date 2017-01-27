@@ -6,7 +6,7 @@
   "categories" : ["active","expression"],
   "widgets" : {
     "input" : null,
-    "output" : "kbaseRNASeqAnalysisNew"
+    "output" : "kbaseExpressionMatrix"
   },
    "parameters" : [ {
     "id" : "expressionset_id",
@@ -119,15 +119,6 @@
       "validate_as": "int"
     }
  } ],
-  "parameter-groups": [
-      {
-        "id": "expr_ids_list",
-        "parameters": ["group_name1", "expr_ids1", "group_name2", "expr_ids2"],
-        "optional": false,
-        "allow_multiple": false,
-        "with_border": true
-      }
-  ],
   "behavior" : {
     "service-mapping" : {
       "url" : "",
@@ -181,7 +172,7 @@
         },
 	{
           "service_method_output_path" : [0,"diff_expr_object"],
-          "target_property" : "output"
+          "target_property" : "expressionMatrixID"
         }
       ]
     }
