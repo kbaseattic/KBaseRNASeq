@@ -84,7 +84,7 @@ class Cufflinks(ExecutionBase):
            except Exception, e:
                 raise Exception(e)
                 logger.error("".join(traceback.format_exc()))
-                raise Exception("Unzip alignment files  error: Please contact help@kbase.us")
+                raise Exception("Unzip alignment files  error")
 
            input_file = os.path.join(input_dir,"accepted_hits.bam")
                 ### Adding advanced options to tophat command

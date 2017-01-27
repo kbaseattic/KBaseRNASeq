@@ -546,16 +546,18 @@ def get_details_for_diff_exp(logger,ws_client,hs,ws_id,urls,directory,expression
 #
 def get_info_and_download_for_ballgown( logger, ws_client, hs, ws_id, urls, directory, dir_prefix, expressionset_id, token ):
         try:
-           expression_set = ws_client.get_objects( [ { 'name'      : expressionset_id,
-                                                       'workspace' : ws_id }
-                                                   ] )[0]
+           #expression_set = ws_client.get_objects( [ { 'name'      : expressionset_id,
+           #                                            'workspace' : ws_id }
+           #                                        ] )[0]
+           expression_set = script_util.ws_get_obj(logger, ws_client, ws_id, expressionset_id)[0]
 
         except Exception,e:
            raise Exception( "".join(traceback.format_exc() ))
         ### Getting all the set ids and genome_id
         output_obj = {}
-        expression_set_info = ws_client.get_object_info_new({"objects": [{'name' : expressionset_id, 'workspace': ws_id}]})[0] 
-        output_obj['expressionset_id'] =  str(expression_set_info[6]) + '/' + str(expression_set_info[0]) + '/' + str(expression_set_info[4])
+        #expression_set_info = ws_client.get_object_info_new({"objects": [{'name' : expressionset_id, 'workspace': ws_id}]})[0] 
+        #output_obj['expressionset_id'] =  str(expression_set_info[6]) + '/' + str(expression_set_info[0]) + '/' + str(expression_set_info[4])
+        output_obj['expressionset_id'] = script_util.ws_get_ref(logger, ws_client, ws_id, expressionset_id)
         #output_obj['sampleset_id'] =  expression_set['data']['sampleset_id']
         #output_obj['alignmentset_id'] = expression_set['data']['alignmentSet_id'] 
         #output_obj['genome_id'] = expression_set['data']['genome_id']
@@ -589,7 +591,9 @@ def get_info_and_download_for_ballgown( logger, ws_client, hs, ws_id, urls, dire
                 #files = {}
                 #a_obj,e_obj = ws_client.get_objects(
                 #                     [{'ref' : a_id},{'ref': e_id}])
-                e_obj= ws_client.get_objects( [ {'ref' : e_id} ] )[0]
+                #e_obj= ws_client.get_objects( [ {'ref' : e_id} ] )[0]
+                e_obj = script_util.ws_get_obj( logger, ws_client, ws_id, e_id )[0]
+
                 zipfile = e_obj['data']['file']['file_name']
                 shock_id = e_obj['data']['file']['id']
                 ### Get the condition name, replicate_id , shock_id and shock_filename
@@ -655,12 +659,18 @@ def get_info_and_download_for_ballgown( logger, ws_client, hs, ws_id, urls, dire
 # this returns an ordered list of group names that corresponds to
 # the input subdir_list
 
-def create_sample_dir_group_file( subdir_list, 
+def create_sample_dir_group_file( logger,
+                                  ws_client,
+                                  ws_id,
+                                  subdir_list, 
                                   group1_name,
                                   group1_set,
                                   group2_name,
                                   group2_set,
                                   sample_dir_group_file ):
+
+        group1_name_set = get_ws_object_names( logger, ws_client, ws_id, group1_set )   # change potential refnames to names for comparisons
+        group2_name_set = get_ws_object_names( logger, ws_client, ws_id, group2_set )
         try:
             f = open( sample_dir_group_file, "w")
         except Exception:
@@ -668,13 +678,13 @@ def create_sample_dir_group_file( subdir_list,
         group_name_list = []
         for subdir in subdir_list:
             exp = os.path.basename( subdir )
-            if ( exp in group1_set ):
-                if ( exp in group2_set ):
+            if  exp in group1_name_set:
+                if  exp in group2_name_set:
                     raise Exception( "group error - {0} is found in both group sets".format( exp ) )
                 group = 0
                 group_name_list.append( group1_name )
-            elif ( exp in group2_set ):
-                if ( exp in group1_set ):
+            elif  exp in group2_name_set:
+                if  exp in group1_name_set:
                     raise Exception( "group error - {0} is found in both group sets".format( exp ) )
                 group = 1
                 group_name_list.append( group2_name )
@@ -684,6 +694,17 @@ def create_sample_dir_group_file( subdir_list,
         f.close()
 
         return( group_name_list )
+
+
+def get_ws_object_names( logger, ws_client, ws_id, obj_id_list ):
+    name_list = []
+    for obj_id in obj_id_list:
+        try:
+            obj_name = script_util.ws_get_obj_name(logger, ws_client, ws_id, obj_id)
+        except Exception:
+            raise Exception( "failed to get workspace object name for {0}".format( obj_id ) )
+        name_list.append( obj_name )
+    return name_list
 
 def  run_ballgown_diff_exp( logger, rscripts_dir, directory, sample_dir_group_table_file, ballgown_output_dir, output_csv ):
 
@@ -814,7 +835,7 @@ def  load_ballgown_output_into_ws( logger,
 #  ordered by decreasing fold-change
 
 def  filter_genes_diff_expr_matrix( diff_expr_matrix, 
-                                    scale_type,
+                                    scale_type,             # "linear", "log2+1", "log10+1"
                                     qval_cutoff,
                                     fold_change_cutoff,     # says this is log2 but we should make it match scale_type  
                                     max_genes ):
@@ -829,11 +850,26 @@ def  filter_genes_diff_expr_matrix( diff_expr_matrix,
 
     selected = []
     ngenes = 0
+
+    logbase = 0    # by default this indicates linear
+    if ( scale_type.lower()[0:4] == "log2"):
+        logbase = 2
+    elif ( scale_type.lower()[0:5] == "log10"):
+        logbase = 10
+
     # iterate through keys (genes) in the diff_expr_matrix, sorted by the first value of each row (fc)
     # (decreasing)
+
     for gene,v in sorted( diff_expr_matrix.iteritems(),  key = lambda (k,v): (convert_NA_low(v[0]),k), reverse=True ):
 
         fc, pval, qval = diff_expr_matrix[gene]
+
+        if logbase > 0 and fc != 'NA' and fc != 'Nan':
+            fc = make_numeric( fc, "fc, gene {0}, about to take log{1}".format( gene, logbase ) )
+            try:
+                fc = math.log( fc + 1, logbase )
+            except:
+                raise Exception( "unable to take log{0} of fold change value {1}".format( logbase, fc ) )
 
         # should NA, NaN fc, qval automatically cause exclusion?
 
@@ -866,6 +902,9 @@ def  convert_NA_low( x ):
     else:
         return( make_numeric( x, "convert_NA_low" ) )
 
+# convert string to float.
+# if x is a float already, no huhu
+# msg is for error message
 def  make_numeric( x, msg ):
     try:
         res = float( x )

@@ -72,7 +72,7 @@ def _CallStringtie(logger,services,ws_client,hs,ws_id,num_threads,s_alignment,gt
                     script_util.unzip_files(logger,os.path.join(input_direc,a_filename), input_dir)
                 except Exception, e:
                        logger.error("".join(traceback.format_exc()))
-                       raise Exception("Unzip alignment files  error: Please contact help@kbase.us")
+                       raise Exception("Unzip alignment files  error")
 
                 input_file = os.path.join(input_dir,"accepted_hits.bam")
                 ### Adding advanced options to tophat command

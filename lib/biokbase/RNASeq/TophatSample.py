@@ -82,7 +82,7 @@ class TophatSample(Tophat):
                     script_util.move_files(logger,mv_dir,tophat_dir)
         except Exception, e:
                logger.error("".join(traceback.format_exc()))
-               raise Exception("Unzip indexfile error: Please contact help@kbase.us")
+               raise Exception("Unzip indexfile error")
         fasta_file =os.path.join(tophat_dir,(handler_util.get_file_with_suffix(tophat_dir,".fa")+".fa"))
         bowtie2base =os.path.join(tophat_dir,handler_util.get_file_with_suffix(tophat_dir,".rev.1.bt2"))
 
