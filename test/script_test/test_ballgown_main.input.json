@@ -5,26 +5,26 @@
 	"params":[ 
                     {
                      "ws_id"                   : "mccorkle:1484837859347",
-                     "expressionset_id"        : "ath_sample_set_hisat2_AlignmentSet_stringtie_ExpressionSet",
-                     "output_obj_name"         : "second_ballgown_test",
+                     "expressionset_id"        : "16162/19/1",
+                     "output_obj_name"         : "third_ballgown_test",
 
                      "expr_ids_list"           : {
                                                   "group_name1":  "WT",
                                                   "expr_ids1"  : [ 
-                                                                   "WT_rep1_hisat2_stringtie_expression",
-                                                                   "hy5_rep1_hisat2_stringtie_expression"
+                                                                   "16162/16/1",
+                                                                   "16162/15/1"
                                                                  ],
                                                   "group_name2":  "hy5",
                                                   "expr_ids2"  : [ 
-                                                                   "WT_rep2_hisat2_stringtie_expression",
-                                                                   "hy5_rep2_hisat2_stringtie_expression"
+                                                                   "16162/17/1",
+                                                                   "16162/18/1"
                                                                  ]
                                                  },
                      "fold_scale_type"         : "log2+1",
+                     "fold_change_cutoff"      : 307,
                      "alpha_cutoff"            : 0.5,
-                     "fold_change_cutoff"      : 0.0,
                      "maximum_num_genes"       : 100,
-                     "filtered_expr_matrix"    : "filtered_em_test_1",
+                     "filtered_expr_matrix"    : "filtered_em_test_2_log2_307",
 
 		     "num_threads"             : 1
                     }

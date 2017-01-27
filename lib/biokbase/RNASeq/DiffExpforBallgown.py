@@ -211,7 +211,10 @@ class DiffExpforBallgown(ExecutionBase):
         logger.info( pformat( ballgown_set_info ) )
 
         sample_dir_group_file = "sample_dir_group_table"  # output file
-        group_list = rnaseq_util.create_sample_dir_group_file( ballgown_set_info['subdirs'], 
+        group_list = rnaseq_util.create_sample_dir_group_file( logger,
+                                                               ws_client,
+                                                               ws_id,
+                                                               ballgown_set_info['subdirs'], 
                                                                params['expr_ids_list']['group_name1'],
                                                                params['expr_ids_list']['expr_ids1'],
                                                                params['expr_ids_list']['group_name2'],
@@ -260,10 +263,12 @@ class DiffExpforBallgown(ExecutionBase):
         #  !!!!! IF selected_gene_list is empty print some kind of message, take no further action
 
         # get the unfiltered expression matrix
-        em_name = params['expressionset_id'] + "_FPKM_ExpressionMatrix"
+        expression_set_id_name = script_util.ws_get_obj_name ( logger, ws_client, ws_id, params['expressionset_id'] )
+        em_name = expression_set_id_name + "_FPKM_ExpressionMatrix"
         logger.info( "about to fetch expression matrix  {0}".format( em_name ))
         try:
-            emw = ws_client.get_objects( [ { "name": em_name, "workspace": ws_id } ] )[0]
+            #emw = ws_client.get_objects( [ { "name": em_name, "workspace": ws_id } ] )[0]
+            emw = script_util.ws_get_obj( logger, ws_client, ws_id, em_name )[0]
         except:
             raise Exception( "unable to retrieve expression matrix object {0} from workspace {1}".format( em_name, ws_id  ))
         emo = emw["data"]
