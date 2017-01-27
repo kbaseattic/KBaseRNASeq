@@ -183,7 +183,7 @@
           "target_property" : "workspace"
         },
 	{
-          "service_method_output_path" : [0,"filtered_expression_maxtrix"],
+          "input_parameter" : "filtered_expr_matrix",
           "target_property" : "expressionMatrixID"
         }
       ]
