@@ -810,7 +810,8 @@ def  load_ballgown_output_into_ws( logger,
 
 
 #  returns a list of gene names from the keys of diff_expr_matrix 
-#  assumed AND logic between all the tests
+#  assumed AND logic between all the tests.   The gene_names are 
+#  ordered by decreasing fold-change
 
 def  filter_genes_diff_expr_matrix( diff_expr_matrix, 
                                     scale_type,
@@ -828,7 +829,9 @@ def  filter_genes_diff_expr_matrix( diff_expr_matrix,
 
     selected = []
     ngenes = 0
-    for gene in diff_expr_matrix:
+    # iterate through keys (genes) in the diff_expr_matrix, sorted by the first value of each row (fc)
+    # (decreasing)
+    for gene,v in sorted( diff_expr_matrix.iteritems(),  key = lambda (k,v): (convert_NA_low(v[0]),k), reverse=True ):
 
         fc, pval, qval = diff_expr_matrix[gene]
 
@@ -857,6 +860,11 @@ def  filter_genes_diff_expr_matrix( diff_expr_matrix,
 
     return  selected
 
+def  convert_NA_low( x ):
+    if ( x == 'NA' or x == 'Nan' ):
+        return( -sys.maxint )
+    else:
+        return( make_numeric( x, "convert_NA_low" ) )
 
 def  make_numeric( x, msg ):
     try:
@@ -865,8 +873,9 @@ def  make_numeric( x, msg ):
         raise Exception( "illegal non-numeric, {0}".format( msg ) )
     return res
 
-# this weeds out all the data (rows, mappings) in given expression matrix object
+# This weeds out all the data (rows, mappings) in given expression matrix object
 # for genes not in the given selected_list, and returns a new expression matrix object
+# The rows and values presevere the order of the input selected_list
 
 def filter_expr_matrix_object( emo, selected_list ):
 
@@ -879,20 +888,25 @@ def filter_expr_matrix_object( emo, selected_list ):
     fmo["data"]["col_ids"] = emo["data"]["col_ids"]
     fmo["data"]["row_ids"] = []
     fmo["data"]["values"]  = []
+    fmo["feature_mapping"] = {}
 
     nrows = len( emo["data"]["row_ids"] )
     if nrows != len( emo["data"]["values"]):
         raise Exception( "filtering expression matrix:  row count mismatch in expression matrix" )
 
+    # make index from gene to row
+    gindex = {}
     for i in xrange( nrows ):
-        if emo["data"]["row_ids"][i] in selected_list:
-            fmo["data"]["row_ids"].append( emo["data"]["row_ids"][i] )
-            fmo["data"]["values"].append( emo["data"]["values"][i] )
+        gindex[ emo["data"]["row_ids"][i] ] = i
 
-    fmo["feature_mapping"] = {}
-    for g, v in emo["feature_mapping"].iteritems():
-        if g in selected_list:
-            fmo["feature_mapping"][g] = v
+    for gene in selected_list:
+        try:
+            i = gindex[ gene ]
+        except:
+            raise Exception( "gene {0} from differential expression not found in expression matrix" )
+        fmo["data"]["row_ids"].append( emo["data"]["row_ids"][i] )
+        fmo["data"]["values"].append( emo["data"]["values"][i] )
+        fmo["feature_mapping"][gene] = emo["feature_mapping"][gene]
 
     return fmo
 
