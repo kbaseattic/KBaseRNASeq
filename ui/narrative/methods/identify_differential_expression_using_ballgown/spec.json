@@ -68,7 +68,6 @@
     "default_values" : [ "" ],
     "field_type" : "text",
     "text_options" : {
-      "valid_ws_types" : [ ] 
     }
   },{
     "id" : "group_name2",
@@ -78,7 +77,6 @@
     "default_values" : [ "" ],
     "field_type" : "text",
     "text_options" : {
-      "valid_ws_types" : [ ] 
     }
   }, {
     "id" : "maximum_num_genes",
