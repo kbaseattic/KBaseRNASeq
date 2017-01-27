@@ -86,7 +86,7 @@ class Bowtie2Sample(Bowtie2):
                         script_util.move_files(logger,mv_dir,bowtie2_dir)
         except Exception, e:
                 logger.error("".join(traceback.format_exc()))
-                raise Exception("Unzip indexfile error: Please contact help@kbase.us")
+                raise Exception("Unzip indexfile error")
 	### Build Index for the fasta file 
         fasta_file =os.path.join(bowtie2_dir,handler_util.get_file_with_suffix(bowtie2_dir,".fa")+".fa")
         bowtie2base =os.path.join(bowtie2_dir,handler_util.get_file_with_suffix(bowtie2_dir,".fa"))
