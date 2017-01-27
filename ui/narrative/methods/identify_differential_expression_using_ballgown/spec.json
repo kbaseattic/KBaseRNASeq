@@ -65,7 +65,7 @@
     "optional" : false,
     "advanced" : false,
     "allow_multiple" : false,
-    "default_values" : [ "" ],
+    "default_values" : [ "Control" ],
     "field_type" : "text",
     "text_options" : {
     }
@@ -74,7 +74,7 @@
     "optional" : false,
     "advanced" : false,
     "allow_multiple" : false,
-    "default_values" : [ "" ],
+    "default_values" : [ "Wild Type" ],
     "field_type" : "text",
     "text_options" : {
     }
@@ -83,7 +83,7 @@
     "optional" : true,
     "advanced" : false,
     "allow_multiple" : false,
-    "default_values" : [ "" ],    
+    "default_values" : [ "1000" ],    
     "field_type" : "text",
     "text_options" : {
       "validate_as": "int"
@@ -103,7 +103,7 @@
     "optional" : true,
     "advanced" : false,
     "allow_multiple" : false,
-    "default_values" : [ "1.0" ],    
+    "default_values" : [ "0.05" ],    
     "field_type" : "text",
     "text_options" : {
       "validate_as": "float"
