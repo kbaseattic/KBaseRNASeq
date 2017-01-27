@@ -215,10 +215,10 @@ class DiffExpforBallgown(ExecutionBase):
                                                                ws_client,
                                                                ws_id,
                                                                ballgown_set_info['subdirs'], 
-                                                               params['expr_ids_list']['group_name1'],
-                                                               params['expr_ids_list']['expr_ids1'],
-                                                               params['expr_ids_list']['group_name2'],
-                                                               params['expr_ids_list']['expr_ids2'],
+                                                               params['group_name1'],
+                                                               params['expr_ids1'],
+                                                               params['group_name2'],
+                                                               params['expr_ids2'],
                                                                sample_dir_group_file )
 
         ballgown_output_dir = os.path.join( diffexp_dir, "ballgown_out" )
