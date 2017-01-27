@@ -210,20 +210,6 @@ class DiffExpforBallgown(ExecutionBase):
         logger.info( 'back from download_for_ballgown(), ballgown_set_info are')
         logger.info( pformat( ballgown_set_info ) )
 
-        # THIS IS TEMPORARY: REMOVE THIS WHEN group lists of expression object names are actually passed
-        # incorporate params['group1_set'] and params['group2_set'] which are lists of sample names
-        #params['group1_name'] = "WT"
-        #params['group2_name'] = "exp"
-        #group1_set = []
-        #group2_set = []
-        #for subd in ballgown_set_info['subdirs']:
-        #    if ( re.search( "(^WT|_WT|WT_|WT$)", subd, re.I ) ):
-        #        group1_set.append( subd )
-        #    else:
-        #        group2_set.append( subd )
-        #params['group1_set'] = group1_set
-        #params['group2_set'] = group2_set
-        # END OF TEMPORARY CODE 
         sample_dir_group_file = "sample_dir_group_table"  # output file
         group_list = rnaseq_util.create_sample_dir_group_file( ballgown_set_info['subdirs'], 
                                                                params['expr_ids_list']['group_name1'],
@@ -263,13 +249,14 @@ class DiffExpforBallgown(ExecutionBase):
         logger.info( "back from loading ballgown output into workspace, object save data is " )
         logger.info( pformat( de_ws_save_obj_data ) )
 
+        # this returns a list of gene ids passing the specified cuts, ordered by
+        # descending fold_change
         selected_gene_list = rnaseq_util.filter_genes_diff_expr_matrix( diff_expr_matrix, 
                                                                         params['fold_scale_type'], 
                                                                         params['alpha_cutoff'], 
                                                                         params['fold_change_cutoff'],
                                                                         params['maximum_num_genes']
                                                                       )
-        
         #  !!!!! IF selected_gene_list is empty print some kind of message, take no further action
 
         # get the unfiltered expression matrix
@@ -283,7 +270,7 @@ class DiffExpforBallgown(ExecutionBase):
         # filter it
         filtered_emo = rnaseq_util.filter_expr_matrix_object( emo, selected_gene_list )
         # save it
-        logger.info( "saving emo em_name {0}".format( em_name ))
+        logger.info( "saving emo em_name {0}".format( params["filtered_expr_matrix"] ))
         try:
             ret = ws_client.save_objects( { 'workspace' : ws_id,
                                             'objects' : [
