@@ -47,7 +47,8 @@ def get_fa_from_genome(logger,ws_client,urls,ws_id,directory,genome_name):
     #ref_info = script_util.ws_get_object_info(logger, ws_client, ws_id, genome_name)[0]
     #genome_id = str(ref_info[6]) + '/' + str(ref_info[0]) + '/' + str(ref_info[4])
     genome_id = script_util.ws_get_ref(logger, ws_client, ws_id, genome_name)
-    fasta_file =  os.path.join(directory,genome_name+ ".fa")
+    genome_file_name = script_util.ws_get_obj_name4file(logger,ws_client,ws_id, genome_name)
+    fasta_file =  os.path.join(directory,genome_file_name+ ".fa")
     ref = ws_client.get_object_subset(
                                      [{ 'ref' : genome_id ,'included': ['contigset_ref','assembly_ref']}])
     if 'contigset_ref' in ref[0]['data']:
@@ -156,8 +157,9 @@ def create_RNASeq_AlignmentSet_and_build_report(logger,ws_client,ws_id,sample_li
                     #a_ref = ws_client.get_object_info_new({"objects": [{'name':s_alignments, 'workspace': ws_id}]})[0]
                     #a_id = str(a_ref[6]) + '/' + str(a_ref[0]) + '/' + str(a_ref[4])
                     a_id = script_util.ws_get_ref(logger, ws_client, ws_id, s_alignments)
+                    sname = script_util.ws_get_obj_name(logger, ws_client, ws_id, sid)
                     m_alignments.append({sid : a_id})
-                    m_align_names.append({sid : s_alignments})
+                    m_align_names.append({sname : s_alignments})
                     output_objs.append({'ref' : a_id , 'description': "RNA-seq Alignment for reads Sample :  {0}".format(sid)})
                     sids.append(sid)
                     alignments.append(a_id)

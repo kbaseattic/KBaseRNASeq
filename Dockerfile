@@ -43,6 +43,9 @@ RUN \
   sh /kb/deps/kb_tableMaker/install-tablemaker.sh && \
   sh /kb/deps/kb_ballgown/install-ballgown.sh
 
+RUN \
+  sh /kb/deps/pylib.sh
+
 COPY ./ /kb/module
 RUN \
   . /kb/dev_container/user-env.sh && \

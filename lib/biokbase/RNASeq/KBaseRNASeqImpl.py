@@ -185,6 +185,7 @@ class KBaseRNASeq:
 	try:
             params["sample_ids"] = [ item['sample_id'] for item in params['sample_n_conditions'] ]
             params["condition"] = [ item['condition'] for item in params['sample_n_conditions'] ]
+            del params['sample_n_conditions']
 	    ### Create the working dir for the method; change it to a function call
 	    out_obj = { k:v for k,v in params.iteritems() if not k in ('ws_id')}  	
 	    sample_ids = params["sample_ids"]
@@ -222,6 +223,7 @@ class KBaseRNASeq:
                                                 "name":out_obj['sampleset_id'],
 						"provenance": provenance}]
                                 })
+            out_obj['sample_ids'] = [ script_util.ws_get_obj_name(self.__LOGGER, ws_client, params['ws_id'], sample_id) for sample_id in params['sample_ids'] ]
             returnVal = out_obj
         except Exception,e:
                 raise KBaseRNASeqException("Error Saving the object to workspace {0},{1}".format(out_obj['sampleset_id'],"".join(traceback.format_exc())))
