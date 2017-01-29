@@ -19,13 +19,6 @@
       "valid_ws_types" : ["KBaseRNASeq.RNASeqAlignmentSet" , "KBaseRNASeq.RNASeqAlignment" ]
     }
   }, {
-   "id" : "label",
-    "optional" : true,
-    "advanced" : true,
-    "allow_multiple" : false,
-    "default_values" : [ "STRG" ],
-    "field_type" : "text"
-  }, {
    "id" : "min_isoform_abundance",
     "optional" : true,
     "advanced" : true,
@@ -85,50 +78,6 @@
     "text_options" : {
       "validate_as": "int"
     }
-  }, {
-    "id" : "disable_trimming",
-    "optional":true,
-    "advanced":true,
-    "allow_multiple":false,
-    "default_values":["0"],
-    "field_type" : "checkbox",
-    "checkbox_options":{
-      "checked_value": 1,
-      "unchecked_value": 0
-    }  
- }, {
-   "id" : "ballgown_mode",
-    "optional":false,
-    "advanced":false,
-    "allow_multiple":false,
-    "default_values":["1"],
-    "field_type" : "checkbox",
-    "checkbox_options":{
-      "checked_value": 1,
-      "unchecked_value": 0
-    }  
- }, {
-    "id" : "skip_reads_with_no_ref",
-    "optional":false,
-    "advanced":false,
-    "allow_multiple":false,
-    "default_values":["1"],
-    "field_type" : "checkbox",
-    "checkbox_options":{
-      "checked_value": 1,
-      "unchecked_value": 0
-    }
- }, {
-    "id" : "merge",
-    "optional":true,
-    "advanced":true,
-    "allow_multiple":false,
-    "default_values":["0"],
-    "field_type" : "checkbox",
-    "checkbox_options":{
-      "checked_value": 1,
-      "unchecked_value": 0
-    }
 } ],
   "behavior" : {
     "service-mapping" : {
@@ -143,10 +92,6 @@
         {
           "input_parameter" : "alignmentset_id",
           "target_property" : "alignmentset_id"
-        },
-	{
-          "input_parameter" : "label",
-          "target_property" : "label"
         },
         {
           "input_parameter" : "min_length",
@@ -168,20 +113,7 @@
         },        {
           "input_parameter" : "gap_sep_value",
           "target_property" : "gap_sep_value"
-        },        {
-          "input_parameter" : "disable_trimming",
-          "target_property" : "disable_trimming"
-        },        {
-          "input_parameter" : "ballgown_mode",
-          "target_property" : "ballgown_mode"
-        },        {
-          "input_parameter" : "skip_reads_with_no_ref",
-          "target_property" : "skip_reads_with_no_ref"
-        },
-        {
-          "input_parameter" : "merge",
-          "target_property" : "merge"
-      }],
+        }],
       "output_mapping" : [
 	{
          "service_method_output_path": [0,"output"],
