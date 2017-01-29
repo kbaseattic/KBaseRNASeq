@@ -89,16 +89,6 @@
       "validate_as" : "int"
     }
   }, {
-    "id" : "num_threads",
-    "optional" : true,
-    "advanced" : true,
-    "allow_multiple" : false,
-    "default_values" : [ "2" ],
-    "field_type" : "text",
-    "text_options" : {
-      "validate_as" : "int"
-    }
-  }, {
     "id" : "report_secondary_alignments",
     "optional": true,
     "advanced": true,
@@ -226,10 +216,6 @@
        	{
           "input_parameter" : "min_anchor_length",
           "target_property" : "min_anchor_length"
-        },
-        {
-          "input_parameter" : "num_threads",
-          "target_property" : "num_threads"
         },
         {
           "input_parameter" : "report_secondary_alignments",
