@@ -4,7 +4,7 @@
 name     : Create Differential Expression Matrix and Volcano Plot using Ballgown
 
 tooltip  : |
-    Create differetial expression matrix and volcano plot based on a given threshold cutoff
+    Create differential expression matrix and volcano plot based on a given threshold cutoff
 screenshots :
     []
 
