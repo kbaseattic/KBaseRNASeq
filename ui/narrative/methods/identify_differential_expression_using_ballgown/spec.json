@@ -79,16 +79,6 @@
     "text_options" : {
     }
   }, {
-    "id" : "maximum_num_genes",
-    "optional" : true,
-    "advanced" : false,
-    "allow_multiple" : false,
-    "default_values" : [ "1000" ],    
-    "field_type" : "text",
-    "text_options" : {
-      "validate_as": "int"
-    }
-  }, {
     "id" : "fold_change_cutoff",
     "optional" : true,
     "advanced" : false,
@@ -107,16 +97,6 @@
     "field_type" : "text",
     "text_options" : {
       "validate_as": "float"
-    }
-  }, {
-    "id" : "num_threads",
-    "optional" : true,
-    "advanced" : true,
-    "allow_multiple" : false,
-    "default_values" : [ "2" ],    
-    "field_type" : "text",
-    "text_options" : {
-      "validate_as": "int"
     }
  } ],
   "behavior" : {
@@ -162,20 +142,12 @@
           "target_property" : "fold_change_cutoff"
         },
         {
-          "input_parameter" : "maximum_num_genes",
-          "target_property" : "maximum_num_genes"
-        },
-        {
           "input_parameter" : "filtered_expr_matrix",
           "target_property" : "filtered_expr_matrix"
         },
         {
           "input_parameter" : "output_obj_name",
           "target_property" : "output_obj_name"
-        },
-        {
-          "input_parameter" : "num_threads",
-          "target_property" : "num_threads"
         }],
       "output_mapping" : [
 	{
