@@ -25,7 +25,7 @@ parameters :
         ui-name : |
             RNA-seq Sample or Sample Set 
         short-hint : |
-            Select the RNA-seq read sample set associated with the RNA-seq experiment. Alternatively, if you have only one sample of RNA-seq reads, select the corresponding library object.
+            Select the RNA-seq sample set or reads set. If you have only one sample of RNA-seq reads, select the corresponding library object.
     genome_id :
         ui-name : |
             Genome
@@ -38,11 +38,6 @@ parameters :
             Select the quality score type depending on the sequencing platform
         long-hint : |
             phred33 is used by Illumina starting with v1.8
-    num_threads :
-        ui-name : |
-            Number of Threads
-        short-hint : |
-            Number of computational threads to align reads.
     skip :
         ui-name : |
             Skip the first n reads or pairs in the input
@@ -119,7 +114,7 @@ parameters :
             By default, fr is used. 
             
 description : |
-    <p>This method aligns the sequencing reads for a set of two or more samples to long reference sequences of a genome using HISAT2 and outputs a set of alignments for the given sample set in BAM format. Alternatively, if the user has only a single sample of reads, this method will take single-end or paired-end library object instead of a sample set.</p> 
+    <p>This App aligns the sequencing reads for a set of two or more samples to long reference sequences of a genome using HISAT2 and outputs a set of alignments for the given sample set or reads set in BAM format. If the user has only a single sample of reads, this App will take single-end or paired-end library object instead of a sample set.</p> 
     
     <p>In addition, it outputs the alignment statistics such as total reads, mapped and unmapped reads, singletons, multiple alignments, and alignment rate in the table format.</p>
     
