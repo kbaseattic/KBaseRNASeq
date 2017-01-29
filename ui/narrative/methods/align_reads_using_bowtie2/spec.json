@@ -28,16 +28,6 @@
     "text_options" : {
       "valid_ws_types" : ["KBaseRNASeq.Bowtie2Indexes" ]
     }
-  },{
-    "id" : "num_threads",
-    "optional" : true,
-    "advanced" : true,
-    "allow_multiple" : false,
-    "default_values" : [ "2" ],
-    "field_type" : "text",
-    "text_options" : {
-      "validate_as" : "int"
-    }
   }, {
     "id" : "quality_score",
     "optional" : true,
@@ -216,10 +206,6 @@
         {
           "input_parameter" : "bowtie_index",
           "target_property" : "bowtie_index"
-        },
-	{
-          "input_parameter" : "num_threads",
-          "target_property" : "num_threads"
         },
         {
           "input_parameter" : "quality_score",
