@@ -188,7 +188,8 @@ class DiffExpforBallgown(ExecutionBase):
         logger.info( 'in DiffExpforBallgown.collect, method params (params) are')
         logger.info( pformat( params ) )
         output_object_name = params['output_obj_name']
-        output_csv = "ballgown_diffexp.csv"
+        output_csv = "ballgown_diffexp.tsv"
+        volcano_plot_file = "volcano_plot.png"
         stringtie_dir_prefix = "StringTie_outdir_"
 
         # 
@@ -226,7 +227,13 @@ class DiffExpforBallgown(ExecutionBase):
         handler_util.setupWorkingDir( logger, ballgown_output_dir )
 
         logger.info( "about to run_ballgown_diff_exp" )
-        rnaseq_util.run_ballgown_diff_exp( logger, rscripts_dir, diffexp_dir, sample_dir_group_file, ballgown_output_dir, output_csv )
+        rnaseq_util.run_ballgown_diff_exp( logger, 
+                                           rscripts_dir, 
+                                           diffexp_dir, 
+                                           sample_dir_group_file, 
+                                           ballgown_output_dir, 
+                                           output_csv,
+                                           volcano_plot_file )
 
         logger.info( "back from run_ballgown_diff_exp, about to load diff exp matrix file" )
         diff_expr_matrix = rnaseq_util.load_diff_expr_matrix( ballgown_output_dir, output_csv )    # read file before its zipped
@@ -290,6 +297,15 @@ class DiffExpforBallgown(ExecutionBase):
             raise Exception( "failed to save object " )
         logger.info( "ws save return:\n" + pformat(ret))
 
+        logger.info( "saving volcano plot as report object" )
+        report_object_name = expression_set_id_name + "_plot_report"
+        plot_report_object_name = rnaseq_util.create_and_save_volcano_plot_report( logger, 
+                                                                                   ws_client, 
+                                                                                   ws_id, 
+                                                                                   self.urls['callback_url'],
+                                                                                   ballgown_output_dir,
+                                                                                   volcano_plot_file,
+                                                                                   report_object_name )
         # THIS NEEDS TO BE AN INPUT PARAMETER IN SPEC FILE
         #iltered_expr_matrix_name = expressionset_id + "_filtered_fpkm"
         #e_em_save_obj_data = created_and_save_filtered_expr_matrix( logger, 
@@ -307,4 +323,6 @@ class DiffExpforBallgown(ExecutionBase):
 
         returnVal = { 'diff_expr_object'           : output_object_name ,
                       'filtered_expression_maxtrix': params["filtered_expr_matrix"], 
-                      'workspace'                  : ws_id }
+                      'plot_report_object'         : plot_report_object_name,
+                      'workspace'                  : ws_id
+                    }

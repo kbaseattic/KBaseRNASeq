@@ -157,7 +157,8 @@ if ( ! is.null( opt$volcano_plot_file ) )
 
     # todo -maybe we could check the extension in case the user wants a jpg?
 
-    png( opt$volcano_plot_file )
+    png( paste( opt$output_dir, opt$volcano_plot_file, sep="/" ) )
+
     plot( log2( gene_diff_ex_tab$fc ), 
           -log10( gene_diff_ex_tab$qval ), 
           pch=".", col="blue",

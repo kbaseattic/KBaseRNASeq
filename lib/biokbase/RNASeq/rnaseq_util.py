@@ -17,6 +17,9 @@ from biokbase.RNASeq import script_util
 from pprint import pprint,pformat
 from operator import itemgetter
 import subprocess
+from KBaseReport.KBaseReportClient import KBaseReportClient
+from KBaseReport.baseclient import ServerError as _RepError
+
 
 def get_reads(logger, set_obj):
     if 'sample_ids' in set_obj['data']: # RNASeqSampleSet
@@ -706,7 +709,14 @@ def get_ws_object_names( logger, ws_client, ws_id, obj_id_list ):
         name_list.append( obj_name )
     return name_list
 
-def  run_ballgown_diff_exp( logger, rscripts_dir, directory, sample_dir_group_table_file, ballgown_output_dir, output_csv ):
+def  run_ballgown_diff_exp( logger, 
+                            rscripts_dir, 
+                            directory, 
+                            sample_dir_group_table_file, 
+                            ballgown_output_dir, 
+                            output_csv,
+                            volcano_plot_file
+                          ):
 
         # sample_group_table is a listing of output Stringtie subdirectories,
         # (full path specification) paired with group label (0 or 1), ie
@@ -725,7 +735,8 @@ def  run_ballgown_diff_exp( logger, rscripts_dir, directory, sample_dir_group_ta
         rcmd_list = [ 'Rscript', os.path.join( rscripts_dir, 'ballgown_fpkmgenematrix.R' ),
                       '--sample_dir_group_table', sample_dir_group_table_file,
                       '--output_dir',  ballgown_output_dir,
-                      '--output_csvfile', output_csv
+                      '--output_csvfile', output_csv,
+                      '--volcano_plot_file', volcano_plot_file
                     ] 
         rcmd_str = " ".join( str(x) for x in rcmd_list )
         logger.info( "rcmd_string is {0}".format( rcmd_str ) )
@@ -948,6 +959,47 @@ def filter_expr_matrix_object( emo, selected_list ):
         fmo["feature_mapping"][gene] = emo["feature_mapping"][gene]
 
     return fmo
+
+
+def create_and_save_volcano_plot_report( logger, 
+                                         ws_client, 
+                                         ws_id,
+                                         callback_url,
+                                         ballgown_output_dir,
+                                         volcano_plot_file,
+                                         report_obj_name ):
+    logger.info( "in create_and_save_volcano_plot_report, callback url is {0}, plot file is {1}".format( callback_url, 
+                                                                                                         volcano_plot_file))
+    # probably DTU needs to be called here?  
+    os.path.join( ballgown_output_dir, volcano_plot_file )
+    #  How best to 
+    #     1) ZIp file
+    #     2) upload to shock 
+    
+    kbr = KBaseReportClient( callback_url )
+    logger.info( "KBaseReportClient initialized" )
+
+    try:
+        repout = kbr.create_extended_report(
+                                             { 'message'               : "volcano plot",
+                                               'direct_html_link_index': 0,
+                                               'html_links': [
+                                                               {'shock_id': image_zip_shock_id,
+                                                                'name'    : volcano_plot_file,  # will png work?
+                                                                'label'   : 'Volcano plot'
+                                                               }
+                                                             ],
+                                               'report_object_name': report_obj_name,
+                                               'workspace_name': ws_id
+                                             }
+                                            )
+    except _RepError as re:
+            self.log('Logging exception from creating report object')
+            self.log(str(re))
+            # TODO delete shock node
+            raise 
+
+    return repout['name']
 
 
 def call_cuffmerge(working_dir,directory,num_threads,gtf_file,list_file):
