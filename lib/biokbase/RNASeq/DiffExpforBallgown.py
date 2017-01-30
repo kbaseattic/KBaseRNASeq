@@ -216,10 +216,10 @@ class DiffExpforBallgown(ExecutionBase):
                                                                ws_client,
                                                                ws_id,
                                                                ballgown_set_info['subdirs'], 
-                                                               params['group_name1'],
-                                                               params['expr_ids1'],
-                                                               params['group_name2'],
-                                                               params['expr_ids2'],
+                                                               params['expr_ids_list']['group_name1'],
+                                                               params['expr_ids_list']['expr_ids1'],
+                                                               params['expr_ids_list']['group_name2'],
+                                                               params['expr_ids_list']['expr_ids2'],
                                                                sample_dir_group_file )
 
         ballgown_output_dir = os.path.join( diffexp_dir, "ballgown_out" )
@@ -299,12 +299,18 @@ class DiffExpforBallgown(ExecutionBase):
 
         logger.info( "saving volcano plot as report object" )
         report_object_name = expression_set_id_name + "_plot_report"
+
+        output_obj_ref = script_util.ws_get_obj_ref( logger, ws_client, ws_id, output_object_name )
+        em_obj_ref = script_util.ws_get_obj_ref( logger, ws_client, ws_id, params["filtered_expr_matrix"] )
+        
         plot_report_object_name = rnaseq_util.create_and_save_volcano_plot_report( logger, 
                                                                                    ws_client, 
                                                                                    ws_id, 
                                                                                    self.urls['callback_url'],
                                                                                    ballgown_output_dir,
                                                                                    volcano_plot_file,
+                                                                                   output_obj_ref,
+                                                                                   em_object_ref,
                                                                                    report_object_name )
         # THIS NEEDS TO BE AN INPUT PARAMETER IN SPEC FILE
         #iltered_expr_matrix_name = expressionset_id + "_filtered_fpkm"

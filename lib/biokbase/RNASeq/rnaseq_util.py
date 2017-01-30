@@ -17,8 +17,8 @@ from biokbase.RNASeq import script_util
 from pprint import pprint,pformat
 from operator import itemgetter
 import subprocess
-from KBaseReport.KBaseReportClient import KBaseReportClient
-from KBaseReport.baseclient import ServerError as _RepError
+from KBaseReport.KBaseReportClient import KBaseReport
+#from KBaseReport.baseclient import ServerError as _RepError
 from zipfile import ZipFile
 
 
@@ -977,6 +977,8 @@ def create_and_save_volcano_plot_report( logger,
                                          callback_url,
                                          ballgown_output_dir,
                                          volcano_plot_file,
+                                         de_obj_ref,
+                                         em_obj_ref,
                                          report_obj_name ):
     logger.info( "in create_and_save_volcano_plot_report, callback url is {0}, plot file is {1}".format( callback_url, 
                                                                                                          volcano_plot_file))
@@ -986,32 +988,56 @@ def create_and_save_volcano_plot_report( logger,
     # if more than one, use script_util.zip_files
     logger.info( "zipping volcano plot file")
     image_zip_file = volcano_plot_file + ".zip"   # omit path
-    with ZipFile( output_fn, 'w', allowZip64=True) as izip:
+    image_zip_path = os.path.join( ballgown_output_dir, image_zip_file)
+
+    with ZipFile( image_zip_path, 'w', allowZip64=True) as izip:
         izip.write( volcano_file_path, volcano_plot_file )
 
-    logger.info( "making shock handle")
-    image_zip_shock_id = script_util.upload_file_to_shock(logger, image_zip_file )['handle']
+    html_file = "volcano.html"
+    html_path = os.path.join( ballgown_output_dir, html_file )
+    try:
+        f = open( html_path, "w" )
+    except:
+        raise Exception( "can't create html file {0}".format( html_path ))
+    f.write( "<img src={0}>\n".format(  '"' + volcano_plot_file + '"' ) )
+    f.close()
 
-    logger.info( "initializing report object")
-    kbr = KBaseReportClient( callback_url )
-    logger.info( "KBaseReportClient initialized, trying to upload report" )
+
+    #logger.info( "making shock handle")
+    #html_zip_shock_id = script_util.upload_file_to_shock( logger, html_zip_path )['handle']['id']
+
+    logger.info( "initializing report object with shock id {0} and callback {1}".format( html_zip_shock_id, callback_url ))
+    kbr = KBaseReport( callback_url )
+
+    report_input_params = { 
+                            'objects_created'   : [ { 'ref': de_obj_ref, 'description': 'Differential Expression' },
+                                                    { 'ref': em_obj_ref, 'description': 'Filtered Expression Matrix' },
+                                                  ],
+                            'direct_html_index' : 0,
+                            'file_links'        : [
+                                                    {
+                                                      'path'       :  image_zip_path,
+                                                      'name'       :  image_zip_file,
+                                                      'description': 'zip file containing volcano plot'
+                                                    }
+                                                  ],
+                            'html_links'        : [
+                                                    {
+                                                     'path'       : html_path,
+                                                     'name'       : html_file,
+                                                     'description': 'HTML file to display volcano plot'
+                                                    }
+                                                  ],
+                            'report_object_name': report_obj_name,
+                            'workspace_name'    : ws_id
+                          }
+    logger.info( "KBaseReport initialized, trying to upload report, params are" )
+    logger.info( pformat( report_input_params ))
 
     try:
-        repout = kbr.create_extended_report(
-                                             { 'message'               : "volcano plot",
-                                               'direct_html_link_index': 0,
-                                               'html_links': [
-                                                               {'shock_id': image_zip_shock_id,
-                                                                'name'    : volcano_plot_file,  # will png work?
-                                                                'label'   : 'Volcano plot'
-                                                               }
-                                                             ],
-                                               'report_object_name': report_obj_name,
-                                               'workspace_name': ws_id
-                                             }
-                                            )
+        repout = kbr.create_extended_report( report_input_params )
     except:
-            raise Exception( "Unable to create_extended_report" )
+        raise Exception( "Unable to create_extended_report" )
 
     return repout['name']
 

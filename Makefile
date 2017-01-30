@@ -89,6 +89,7 @@ deploy-libs2:
 	kb-sdk install AssemblyUtil
 	kb-sdk install DataFileUtil
 	kb-sdk install ReadsUtils
+	kb-sdk install KBaseReport
 	@echo "Deploying libs to target: $(TARGET)"
 	mkdir -p $(TARGET)/lib/biokbase
 	rsync -vrh lib/biokbase/$(MODULE) $(TARGET)/lib/biokbase/.
@@ -96,6 +97,7 @@ deploy-libs2:
 	rsync -vrh lib/GenomeFileUtil $(TARGET)/lib/.
 	rsync -vrh lib/DataFileUtil $(TARGET)/lib/.
 	rsync -vrh lib/ReadsUtils $(TARGET)/lib/.
+	rsync -vrh lib/KBaseReport $(TARGET)/lib/.
 
 deploy-executable-script:
 	@echo "Installing executable scripts to target: $(TARGET)/bin"
@@ -162,6 +164,7 @@ deploy-libs2:
 	rsync -vrh lib/GenomeFileUtil $(TARGET)/lib/.
 	rsync -vrh lib/DataFileUtil $(TARGET)/lib/.
 	rsync -vrh lib/ReadsUtils $(TARGET)/lib/.
+	rsync -vrh lib/KBaseReport $(TARGET)/lib/.
 
 deploy-executable-script:
 	@echo "Installing executable scripts to target: $(TARGET)/bin"
