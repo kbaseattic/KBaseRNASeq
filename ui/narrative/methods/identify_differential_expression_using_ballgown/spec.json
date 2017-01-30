@@ -6,7 +6,7 @@
   "categories" : ["active","expression"],
   "widgets" : {
     "input" : null,
-    "output" : "kbaseRNASeqAnalysisNew"
+    "output" : "kbaseExpressionMatrix"
   },
    "parameters" : [ {
     "id" : "expressionset_id",
@@ -79,21 +79,11 @@
     "text_options" : {
     }
   }, {
-    "id" : "maximum_num_genes",
-    "optional" : true,
-    "advanced" : false,
-    "allow_multiple" : false,
-    "default_values" : [ "" ],    
-    "field_type" : "text",
-    "text_options" : {
-      "validate_as": "int"
-    }
-  }, {
     "id" : "fold_change_cutoff",
     "optional" : true,
     "advanced" : false,
     "allow_multiple" : false,
-    "default_values" : [ "" ],    
+    "default_values" : [ "1.5" ],    
     "field_type" : "text",
     "text_options" : {
       "validate_as": "float"
@@ -103,31 +93,12 @@
     "optional" : true,
     "advanced" : false,
     "allow_multiple" : false,
-    "default_values" : [ "1.0" ],    
+    "default_values" : [ "0.05" ],    
     "field_type" : "text",
     "text_options" : {
       "validate_as": "float"
     }
-  }, {
-    "id" : "num_threads",
-    "optional" : true,
-    "advanced" : true,
-    "allow_multiple" : false,
-    "default_values" : [ "2" ],    
-    "field_type" : "text",
-    "text_options" : {
-      "validate_as": "int"
-    }
  } ],
-  "parameter-groups": [
-      {
-        "id": "expr_ids_list",
-        "parameters": ["group_name1", "expr_ids1", "group_name2", "expr_ids2"],
-        "optional": false,
-        "allow_multiple": false,
-        "with_border": true
-      }
-  ],
   "behavior" : {
     "service-mapping" : {
       "url" : "",
@@ -147,8 +118,20 @@
           "target_property" : "expressionset_id"
         },
         {
-          "input_parameter" : "expr_ids_list",
-          "target_property" : "expr_ids_list"
+          "input_parameter" : "expr_ids1",
+          "target_property" : "expr_ids1"
+        },
+        {
+          "input_parameter" : "expr_ids2",
+          "target_property" : "expr_ids2"
+        },
+        {
+          "input_parameter" : "group_name1",
+          "target_property" : "group_name1"
+        },
+        {
+          "input_parameter" : "group_name2",
+          "target_property" : "group_name2"
         },
         {
           "input_parameter" : "alpha_cutoff",
@@ -159,29 +142,21 @@
           "target_property" : "fold_change_cutoff"
         },
         {
-          "input_parameter" : "maximum_num_genes",
-          "target_property" : "maximum_num_genes"
-        },
-        {
           "input_parameter" : "filtered_expr_matrix",
           "target_property" : "filtered_expr_matrix"
         },
         {
           "input_parameter" : "output_obj_name",
           "target_property" : "output_obj_name"
-        },
-        {
-          "input_parameter" : "num_threads",
-          "target_property" : "num_threads"
         }],
       "output_mapping" : [
 	{
           "narrative_system_variable": "workspace",
-          "target_property" : "workspace"
+          "target_property" : "workspaceID"
         },
 	{
-          "service_method_output_path" : [0,"diff_expr_object"],
-          "target_property" : "output"
+          "input_parameter" : "filtered_expr_matrix",
+          "target_property" : "expressionMatrixID"
         }
       ]
     }

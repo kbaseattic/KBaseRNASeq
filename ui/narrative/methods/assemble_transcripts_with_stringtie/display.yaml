@@ -15,7 +15,7 @@ method-suggestions :
     related :
         []
     next :
-        [identify_differential_expression_using_cuffdiff]
+        [identify_differential_expression_using_cuffdiff,identify_differential_expression_using_ballgown]
 
 #
 # Configure the display and description of the parameters
@@ -26,16 +26,6 @@ parameters :
         RNA-seq Alignment or Alignment Set 
     short-hint : |
         Select the RNA-seq alignment or alignment set created by HISAT2, TopHat2 or Bowtie2.
-  num_threads :
-    ui-name : |
-      Number of  Threads
-    short-hint : |
-      Number of computational threads to assemble transcriptomes. The default is 2.
-  label :
-    ui-name : |
-      Label
-    short-hint : |
-      Set label as the prefix for the name of the output transcripts
   min_isoform_abundance :
     ui-name : |
       Minimum Isoform Abundance
@@ -65,33 +55,13 @@ parameters :
     ui-name : |
       Minimum locus Gap
     short-hint : |
-      Select minimum locus gap separation value. Default is 50.
-  disable_trimming :
-    ui-name : |
-      Disable Trimming
-    short-hint : |
-      Disable trimming at the ends of the assembled transcripts.
-  ballgown_mode :
-    ui-name : |
-      Enable Ballgown Input Table Files
-    short-hint : |
-      With this option StringTie can be used as a direct replacement of the tablemaker program included with the Ballgown distribution. 
-  skip_reads_with_no_ref :
-    ui-name : |
-      Skip Reads 
-    short-hint : |
-      Skip Reads with no reference transcript.
-  merge :
-    ui-name : |
-      Transcript merge mode
-    short-hint : |
-      Transcript merge mode.                                                    
+      Select minimum locus gap separation value. Default is 50.                                               
     
 description : |
-    <p>This method assembles transcripts for a given sample or a sample set using StringTie so that you can view the relative abundances of the assembled transcripts in a histogram. </p>
+    <p>This App assembles transcripts for a given sample or a sample set using StringTie so that you can view the relative abundances of the assembled transcripts in a histogram. </p>
     <p>STringTie is a successor of Cufflinks that is faster and provides more accurate reconstruction of genes and expression level. It accepts aligned RNA-seq reads from HISAT2, TopHat2 or Bowtie2 and assembles the alignments into a parsimonious set of transcripts. It then estimates the relative abundances of these transcripts based on how many reads support each one, taking into account biases in library preparation protocols.</p>
-    <p>The StringTie output object contains GTF and FPKM files. The GTF file contains annotated transcripts assembled by StringTie whereas the FPKM file gives the normalized abundance of each transcript expressed in fragments per kilobase of exon per million fragments mapped (FPKM) and transcripts per kilobase million (TPM). The StringTie Table Histogram tab displays the abundance of normalized gene expression value in both log2(FPKM+1) and log2(TPM+1).</p>
-
+    <p>The StringTie output object contains GTF and FPKM files. The GTF file contains annotated transcripts assembled by StringTie whereas the FPKM file provides the normalized expression matrix objects (abundance of each transcript expressed in fragments per kilobase of exon per million fragments mapped (FPKM) and transcripts per kilobase million (TPM)). The StringTie Table Histogram tab displays the abundance of normalized gene expression value in both log2(FPKM+1) and log2(TPM+1).</p>
+    <p>The StringTie output object can be used to identify differential expression either using Cuffdiff or Ballgown.</p>
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
     Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Vivek Kumar</p>
     

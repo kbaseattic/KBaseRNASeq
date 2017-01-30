@@ -15,17 +15,12 @@ replacement-text : Creates a new bowtie2 Index  for {{{input_genome}}}
 #
 # Define the set of other narrative methods that should be suggested to the user.
 #
-suggestions :
-    apps:
+method-suggestions :
         related :
             []
         next :
-            []
-    methods:
-        related :
-            []
-        next :
-            []
+            [align_reads_using_bowtie2,align_reads_using_tophat]
+     
 
 
 #
@@ -45,7 +40,7 @@ parameters :
             The indexed genome as an output
 
 description : |
-   <p>This method builds the Bowtie2 index for a given reference genome.</p> 
+   <p>This App builds the Bowtie2 index for a given reference genome.</p> 
    
    <p>Bowtie2 indexes the sequences in the reference genome using a scheme based on the Burrows-Wheeler transform (BWT) and the full-text minute-space (FM) index (similar to a suffix array) to keep its memory footprint small.</p>
    

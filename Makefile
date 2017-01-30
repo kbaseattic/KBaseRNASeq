@@ -82,7 +82,6 @@ TARGET ?= /kb/deployment
 deploy: deploy-scripts
 
 deploy-scripts: deploy-libs2 deploy-executable-script
-	bash $(DIR)/deps/pylib.sh
 
 deploy-service: deploy-libs2 deploy-executable-script deploy-service-scripts deploy-cfg
 
@@ -152,7 +151,6 @@ deploy-ensure-dirs:
 	if [ ! -d $(TARGET)/shbin ]; then rm -rf $(TARGET)/shbin; mkdir -p $(TARGET)/shbin; fi
 
 deploy-lscripts: deploy-ensure-dirs deploy-libs2 deploy-executable-script deploy-scripts
-	bash $(DIR)/deps/pylib.sh
 
 deploy-service: deploy-libs2 deploy-executable-script deploy-service-scripts deploy-cfg
 

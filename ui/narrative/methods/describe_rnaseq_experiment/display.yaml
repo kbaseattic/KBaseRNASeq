@@ -28,12 +28,12 @@ parameters :
         ui-name : |
             RNA-seq Sample Set
         short-hint : |
-            Name of the output RNA-seq sample set object.
+            Name of the RNA-seq sample set output object.
     sampleset_desc :
         ui-name : |
             Sample Set Description
         short-hint : |
-            The detailed description of the RNA-seq samples selected
+            The detailed description of the input RNA-seq samples
     platform :
         ui-name : |
             Platform
@@ -46,9 +46,9 @@ parameters :
             The type of sequencing reads - single-end vs. paired-end 
     condition:
         ui-name : |
-            Treatment Labels
+            Condition Labels
         short-hint : |
-            Short label for each sample in the RNA-seq experiment. The treatment labels must be added in the same order as the reads. All replicates for the same treatment must have same label.
+            Short label for each sample in the RNA-seq experiment. All replicates for the same condition must have same label.
     sample_id:
         ui-name : |
             Reads (Single-end/Paired-end)
@@ -73,20 +73,19 @@ parameters :
 parameter-groups :
     sample_n_conditions :
         ui-name : |
-            RNA-seq sample and condition
+            RNA-seq Sample and Condition
         short-hint : |
-            Please provide sample and condition pair
+            For each sample, select the sample and provide the short label for condition. All replicates for the same condition must have same label.
 
 description : |
-    <p>This method allows the users to provide the metadata for a set of single-end or paired-end read files to set up an RNA-seq experiment. Note that the user must provide reads for two or more samples.</p>
+    <p>This App allows the users to select the single-end or paired-end read files and provide the metadata for a set of samples to create RNASeqSampleSet object. Note that the user must provide reads for two or more samples.</p>
     
-    <p>Users need to import single-end or paired-end read files to the Data Pane before starting this method.</p>
+    <p>Users need to import single-end or paired-end read files to the Data Pane before starting this App.</p>
     
-    <p>It is mandatory for users to provide "RNA-seq Sample Set" (RNA-seq sample set object name), select the "Library Type",  "Reads" name for the selected library type, "Treatment Labels" and "Domain" from the drop down menu. The number of replicates must be same for each sample.</p>
+    <p>It is mandatory for users to select the "Library Type", "Domain", "RNA-seq Sample and Condition Labels" and provide the "RNA-seq Sample Set" (RNASeqSampleSet object name). All replicates for the same condition must have same label.</p>
     
     <p>Users can optionally fill in additional metadata information in the advanced options.</p>
    
-    <p><strong>WARNING:</strong> This method is one of the steps of the <a href= "http://kbase.us/rna-seq/"> KBase RNA-seq Pipeline </a> and is not intended to run standalone.</p>
-    
+
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
-    Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Vivek Kumar.</p>
+    Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Vivek Kumar. For questions, <a href="mailto:help@kbase.us">e-mail help@kbase.us</a></p>

@@ -62,8 +62,8 @@ class HiSat2(ExecutionBase):
                 #sample_type = r_sample_info[2].split('-')[0]
                 r_sample = script_util.ws_get_obj(self.logger, ws_client, ws_id, read_sample)[0]
                 sample_type = script_util.ws_get_type_name(self.logger, ws_client, ws_id, read_sample)
-                sample_name = script_util.ws_get_obj_name(self.logger, ws_client, ws_id, read_sample)
-                input_direc = os.path.join(directory,sample_name.split('.')[0].replace("/","_")+"_hisat2_input")
+                sample_name = script_util.ws_get_obj_name4file(self.logger, ws_client, ws_id, read_sample)
+                input_direc = os.path.join(directory,sample_name.split('.')[0]+"_hisat2_input")
                 if not os.path.exists(input_direc): os.mkdir(input_direc)
                 output_name = sample_name.split('.')[0]+"_hisat2_alignment"
                 output_dir = os.path.join(directory,output_name)

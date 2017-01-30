@@ -97,7 +97,12 @@ def ws_get_type_name(logger, ws_client, ws_id, obj_id):
 
 def ws_get_obj_name(logger, ws_client, ws_id, obj_id):
     info = ws_get_obj_info(logger,ws_client, ws_id, obj_id)[0]
-    return info[1].split('-')[0]
+    return info[1]
+
+# process `!` and `/` at the moment
+def ws_get_obj_name4file(logger, ws_client, ws_id, obj_id):
+    info = ws_get_obj_info(logger,ws_client, ws_id, obj_id)[0]
+    return info[1].replace("!","_").replace("/","_")
 
 # translate ref to ws name and object name pair
 # if it is object name, it returns the same ws name and object name
