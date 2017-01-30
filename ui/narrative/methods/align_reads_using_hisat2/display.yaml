@@ -81,30 +81,11 @@ parameters :
             Disable Splice Alignment
         short-hint : |
             HISAT2 will disable splice alignment.
-    tailor_alignments :
-        ui-name : |
-            Tailor Alignments for different Tools 
-        short-hint : |
-            HISAT2 will report alignments tailored for transcript assemblers including StringTie or Cufflinks based on the selected option.
     transcriptome_mapping_only :
         ui-name : |
             Transcriptome Mapping Only
         short-hint : |
             HISAT2 will report only those alignments within known transcripts.
-    minins :
-        ui-name : |
-            Minimum Fragment Length For Paired-end Alignments
-        short-hint : |
-            Select the minimum fragment length for valid untrimmed paired-end alignments 
-        long-hint : |
-            By default, 0 is used. 
-    maxins :
-        ui-name : |
-            Maximum Fragment Length For Paired-end Alignments
-        short-hint : |
-            Select the maximum fragment length for valid untrimmed paired-end alignments
-        long-hint : |
-            By default, 500 is used. 
     orientation :
         ui-name : |
             Orientation
