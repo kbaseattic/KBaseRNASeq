@@ -19,6 +19,7 @@ from operator import itemgetter
 import subprocess
 from KBaseReport.KBaseReportClient import KBaseReportClient
 from KBaseReport.baseclient import ServerError as _RepError
+from zipfile import ZipFile
 
 
 def get_reads(logger, set_obj):
@@ -674,6 +675,11 @@ def create_sample_dir_group_file( logger,
 
         group1_name_set = get_ws_object_names( logger, ws_client, ws_id, group1_set )   # change potential refnames to names for comparisons
         group2_name_set = get_ws_object_names( logger, ws_client, ws_id, group2_set )
+
+        if ( len( group1_name_set) < 2 ):
+            raise Exception( "first condition group must have at least two members" )
+        if ( len( group2_name_set) < 2 ):
+            raise Exception( "second condition group must have at least two members" )
         try:
             f = open( sample_dir_group_file, "w")
         except Exception:
@@ -691,8 +697,10 @@ def create_sample_dir_group_file( logger,
                     raise Exception( "group error - {0} is found in both group sets".format( exp ) )
                 group = 1
                 group_name_list.append( group2_name )
-            else:
-                raise Exception( "group error - {0} is not found in either group set".format( exp ) )
+            # remove restriction that all groups in a set must be used in the comparison
+            # sometimes there are three or more groups 
+            #else:
+            #    raise Exception( "group error - {0} is not found in either group set".format( exp ) )
             f.write( "{0}  {1}\n".format( subdir, group ))
         f.close()
 
@@ -971,13 +979,20 @@ def create_and_save_volcano_plot_report( logger,
     logger.info( "in create_and_save_volcano_plot_report, callback url is {0}, plot file is {1}".format( callback_url, 
                                                                                                          volcano_plot_file))
     # probably DTU needs to be called here?  
-    os.path.join( ballgown_output_dir, volcano_plot_file )
-    #  How best to 
-    #     1) ZIp file
-    #     2) upload to shock 
-    
+    volcano_file_path = os.path.join( ballgown_output_dir, volcano_plot_file )
+    #  How best to zip this
+    # if more than one, use script_util.zip_files
+    logger.info( "zipping volcano plot file")
+    image_zip_file = volcano_plot_file + ".zip"   # omit path
+    with ZipFile( output_fn, 'w', allowZip64=True) as izip:
+        izip.write( volcano_file_path, volcano_plot_file )
+
+    logger.info( "making shock handle")
+    image_zip_shock_id = script_util.upload_file_to_shock(logger, image_zip_file )['handle']
+
+    logger.info( "initializing report object")
     kbr = KBaseReportClient( callback_url )
-    logger.info( "KBaseReportClient initialized" )
+    logger.info( "KBaseReportClient initialized, trying to upload report" )
 
     try:
         repout = kbr.create_extended_report(
@@ -993,11 +1008,8 @@ def create_and_save_volcano_plot_report( logger,
                                                'workspace_name': ws_id
                                              }
                                             )
-    except _RepError as re:
-            self.log('Logging exception from creating report object')
-            self.log(str(re))
-            # TODO delete shock node
-            raise 
+    except:
+            raise Exception( "Unable to create_extended_report" )
 
     return repout['name']
 
