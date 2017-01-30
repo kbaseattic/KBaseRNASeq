@@ -285,14 +285,23 @@ class KBaseRNASeq:
 		try:
 			script_util.zip_files(self.__LOGGER, bowtie_dir,os.path.join(self.__SCRATCH ,"%s.zip" % params['output_obj_name']))
 			out_file_path = os.path.join(self.__SCRATCH,"%s.zip" % params['output_obj_name'])
+			#out_file_path = os.path.join(bowtie_dir,"%s.zip" % params['output_obj_name'])
         	except Exception, e:
 			raise KBaseRNASeqException("Failed to compress the index: {0}".format(e))
 	    ## Upload the file using handle service
 		try:
-			#bowtie_handle = hs.upload(out_file_path)
-			bowtie_handle = script_util.upload_file_to_shock(self.__LOGGER, out_file_path)['handle']
+                        #self.__LOGGER.info(pformat(script_util.runProgram(logger=self.__LOGGER, progName="ls", argStr="-laR {0}".format(self.__SCRATCH))))
+                        self.__LOGGER.info(" -- uploading {0}".format(out_file_path))
+			#bowtie_handle = script_util.upload_file_to_shock(self.__LOGGER, out_file_path)['handle']
+			bowtie_handle = hs.upload(out_file_path)
 		except Exception, e:
-			raise KBaseRNASeqException("Failed to upload the Zipped Bowtie2Indexes file: {0}".format(e))
+                        self.__LOGGER.exception(e)
+                        try:
+                            self.__LOGGER.info(" -- uploading using hs : {0}".format(out_file_path))
+			    bowtie_handle = hs.upload(out_file_path)
+                        except Exception, e2:
+                            self.__LOGGER.exception(e2)
+			    raise KBaseRNASeqException("Failed to upload the Zipped Bowtie2Indexes file: {0}".format(e))
 	    	bowtie2index = { "handle" : bowtie_handle ,"size" : os.path.getsize(out_file_path),'genome_id' : ref_id}   
 
 	     ## Save object to workspace
