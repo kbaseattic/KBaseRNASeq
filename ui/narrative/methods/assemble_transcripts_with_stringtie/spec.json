@@ -117,12 +117,15 @@
           "input_parameter" : "a_juncs",
           "target_property" : "a_juncs"
         },     
+	{
           "input_parameter" : "j_min_reads",
           "target_property" : "j_min_reads"
         },    
+	{
           "input_parameter" : "c_min_read_coverage",
           "target_property" : "c_min_read_coverage"
         },   
+	{
           "input_parameter" : "gap_sep_value",
           "target_property" : "gap_sep_value"
         }],
