@@ -318,6 +318,8 @@ class DiffExpforBallgown(ExecutionBase):
                                                                                    output_obj_ref,
                                                                                    em_obj_ref,
                                                                                    report_object_name )
+        #logger.info( "plot_report_object")
+        #logger.info( pformat( plot_report_object_name ) )
         # THIS NEEDS TO BE AN INPUT PARAMETER IN SPEC FILE
         #iltered_expr_matrix_name = expressionset_id + "_filtered_fpkm"
         #e_em_save_obj_data = created_and_save_filtered_expr_matrix( logger, 
@@ -332,10 +334,13 @@ class DiffExpforBallgown(ExecutionBase):
         #                                                            maximum_num_genes,
         #                                                            filtered_expr_matrix_name
         #                                                           )
-
+        #logger.info( "plot_report_object_name[1] is {0}".format( plot_report_object_name[1] ) )
+        #logger.info( "plot_report_ref is {0}/{1}/{2}".format( plot_report_object_name[6], plot_report_object_name[0],plot_report_object_name[4] ) )
         returnVal = { 'diff_expr_object'           : output_object_name ,
                       'filtered_expression_maxtrix': params["filtered_expr_matrix"], 
                       'report_name'                : plot_report_object_name[1],
                       'report_ref'                 : "{0}/{1}/{2}".format(plot_report_object_name[6], plot_report_object_name[0],plot_report_object_name[4]),
                       'workspace'                  : ws_id
                     }
+
+        return returnVal
