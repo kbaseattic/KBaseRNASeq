@@ -5,7 +5,7 @@
   "visible" : true,
   "categories" : ["active","expression"],
   "widgets" : {
-    "input" : null,
+    "input" : "kbaseNarrativeMethodInput",
     "output" : "no-display"
   },
    "parameters" : [ {
