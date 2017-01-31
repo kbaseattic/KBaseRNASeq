@@ -335,7 +335,7 @@ class DiffExpforBallgown(ExecutionBase):
 
         returnVal = { 'diff_expr_object'           : output_object_name ,
                       'filtered_expression_maxtrix': params["filtered_expr_matrix"], 
-                      'report_name'                : plot_report_object_name,
-                      'report_ref'                 : script_util.ws_get_ref(logger,ws_client, ws_id, plot_report_object_name),
+                      'report_name'                : plot_report_object_name[1],
+                      'report_ref'                 : "{0}/{1}/{2}".format(plot_report_object_name[6], plot_report_object_name[0],plot_report_object_name[4]),
                       'workspace'                  : ws_id
                     }
