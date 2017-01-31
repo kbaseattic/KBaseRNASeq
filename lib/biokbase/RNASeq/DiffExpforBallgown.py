@@ -300,17 +300,18 @@ class DiffExpforBallgown(ExecutionBase):
         logger.info( "saving volcano plot as report object" )
         report_object_name = expression_set_id_name + "_plot_report"
 
-        output_obj_ref = script_util.ws_get_obj_ref( logger, ws_client, ws_id, output_object_name )
-        em_obj_ref = script_util.ws_get_obj_ref( logger, ws_client, ws_id, params["filtered_expr_matrix"] )
-        
+        output_obj_ref = script_util.ws_get_ref( logger, ws_client, ws_id, output_object_name )
+        em_obj_ref = script_util.ws_get_ref( logger, ws_client, ws_id, params["filtered_expr_matrix"] )
+
         plot_report_object_name = rnaseq_util.create_and_save_volcano_plot_report( logger, 
                                                                                    ws_client, 
                                                                                    ws_id, 
                                                                                    self.urls['callback_url'],
+                                                                                   token,
                                                                                    ballgown_output_dir,
                                                                                    volcano_plot_file,
                                                                                    output_obj_ref,
-                                                                                   em_object_ref,
+                                                                                   em_obj_ref,
                                                                                    report_object_name )
         # THIS NEEDS TO BE AN INPUT PARAMETER IN SPEC FILE
         #iltered_expr_matrix_name = expressionset_id + "_filtered_fpkm"

@@ -975,6 +975,7 @@ def create_and_save_volcano_plot_report( logger,
                                          ws_client, 
                                          ws_id,
                                          callback_url,
+                                         token,
                                          ballgown_output_dir,
                                          volcano_plot_file,
                                          de_obj_ref,
@@ -1006,9 +1007,9 @@ def create_and_save_volcano_plot_report( logger,
     #logger.info( "making shock handle")
     #html_zip_shock_id = script_util.upload_file_to_shock( logger, html_zip_path )['handle']['id']
 
-    logger.info( "initializing report object with shock id {0} and callback {1}".format( html_zip_shock_id, callback_url ))
-    kbr = KBaseReport( callback_url )
-
+    logger.info( "initializing report object with callback {0}".format( callback_url ))
+    kbr = KBaseReport( callback_url, token=token)
+    logger.info( pformat( kbr ) )
     report_input_params = { 
                             'objects_created'   : [ { 'ref': de_obj_ref, 'description': 'Differential Expression' },
                                                     { 'ref': em_obj_ref, 'description': 'Filtered Expression Matrix' },
@@ -1034,8 +1035,13 @@ def create_and_save_volcano_plot_report( logger,
     logger.info( "KBaseReport initialized, trying to upload report, params are" )
     logger.info( pformat( report_input_params ))
 
+    new_input_params = {
+                         'message' :  "This is a test I hope it works"
+                       }
+
     try:
-        repout = kbr.create_extended_report( report_input_params )
+        #repout = kbr.create_extended_report( report_input_params )
+        repout = kbr.create_extended_report( new_input_params )
     except:
         raise Exception( "Unable to create_extended_report" )
 
