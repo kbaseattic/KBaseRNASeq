@@ -343,4 +343,4 @@ class DiffExpforBallgown(ExecutionBase):
                       'workspace'                  : ws_id
                     }
 
-        return returnVal
+        self.returnVal = returnVal
