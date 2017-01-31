@@ -17,6 +17,10 @@ from biokbase.RNASeq import script_util
 from pprint import pprint,pformat
 from operator import itemgetter
 import subprocess
+from KBaseReport.KBaseReportClient import KBaseReport
+#from KBaseReport.baseclient import ServerError as _RepError
+from zipfile import ZipFile
+
 
 def get_reads(logger, set_obj):
     if 'sample_ids' in set_obj['data']: # RNASeqSampleSet
@@ -673,6 +677,11 @@ def create_sample_dir_group_file( logger,
 
         group1_name_set = get_ws_object_names( logger, ws_client, ws_id, group1_set )   # change potential refnames to names for comparisons
         group2_name_set = get_ws_object_names( logger, ws_client, ws_id, group2_set )
+
+        if ( len( group1_name_set) < 2 ):
+            raise Exception( "first condition group must have at least two members" )
+        if ( len( group2_name_set) < 2 ):
+            raise Exception( "second condition group must have at least two members" )
         try:
             f = open( sample_dir_group_file, "w")
         except Exception:
@@ -690,8 +699,10 @@ def create_sample_dir_group_file( logger,
                     raise Exception( "group error - {0} is found in both group sets".format( exp ) )
                 group = 1
                 group_name_list.append( group2_name )
-            else:
-                raise Exception( "group error - {0} is not found in either group set".format( exp ) )
+            # remove restriction that all groups in a set must be used in the comparison
+            # sometimes there are three or more groups 
+            #else:
+            #    raise Exception( "group error - {0} is not found in either group set".format( exp ) )
             f.write( "{0}  {1}\n".format( subdir, group ))
         f.close()
 
@@ -708,7 +719,14 @@ def get_ws_object_names( logger, ws_client, ws_id, obj_id_list ):
         name_list.append( obj_name )
     return name_list
 
-def  run_ballgown_diff_exp( logger, rscripts_dir, directory, sample_dir_group_table_file, ballgown_output_dir, output_csv ):
+def  run_ballgown_diff_exp( logger, 
+                            rscripts_dir, 
+                            directory, 
+                            sample_dir_group_table_file, 
+                            ballgown_output_dir, 
+                            output_csv,
+                            volcano_plot_file
+                          ):
 
         # sample_group_table is a listing of output Stringtie subdirectories,
         # (full path specification) paired with group label (0 or 1), ie
@@ -727,7 +745,8 @@ def  run_ballgown_diff_exp( logger, rscripts_dir, directory, sample_dir_group_ta
         rcmd_list = [ 'Rscript', os.path.join( rscripts_dir, 'ballgown_fpkmgenematrix.R' ),
                       '--sample_dir_group_table', sample_dir_group_table_file,
                       '--output_dir',  ballgown_output_dir,
-                      '--output_csvfile', output_csv
+                      '--output_csvfile', output_csv,
+                      '--volcano_plot_file', volcano_plot_file
                     ] 
         rcmd_str = " ".join( str(x) for x in rcmd_list )
         logger.info( "rcmd_string is {0}".format( rcmd_str ) )
@@ -950,6 +969,145 @@ def filter_expr_matrix_object( emo, selected_list ):
         fmo["feature_mapping"][gene] = emo["feature_mapping"][gene]
 
     return fmo
+
+
+def create_and_save_volcano_plot_report( logger, 
+                                         ws_client, 
+                                         ws_id,
+                                         callback_url,
+                                         token,
+                                         ballgown_output_dir,
+                                         volcano_plot_file,
+                                         de_obj_ref,
+                                         em_obj_ref,
+                                         report_obj_name ):
+    logger.info( "in create_and_save_volcano_plot_report, callback url is {0}, plot file is {1}".format( callback_url, 
+                                                                                                         volcano_plot_file))
+    # probably DTU needs to be called here?  
+    volcano_file_path = os.path.join( ballgown_output_dir, volcano_plot_file )
+    #  How best to zip this
+    # if more than one, use script_util.zip_files
+    logger.info( "zipping volcano plot file")
+    image_zip_file = volcano_plot_file + ".zip"   # omit path
+    image_zip_path = os.path.join( ballgown_output_dir, image_zip_file)
+
+    with ZipFile( image_zip_path, 'w', allowZip64=True) as izip:
+        izip.write( volcano_file_path, volcano_plot_file )
+
+    logger.info( "making shock handle for zipped ")
+    image_zip_handle = script_util.upload_file_to_shock( logger, image_zip_path )['handle']['hid']
+    logger.info( pformat( image_zip_handle ) )
+
+    html_file = "volcano.html"
+    html_path = os.path.join( ballgown_output_dir, html_file )
+    html_zip_path = html_path + ".zip"
+    try:
+        f = open( html_path, "w" )
+    except:
+        raise Exception( "can't create html file {0}".format( html_path ))
+    f.write( "<img src={0}>\n".format(  '"' + volcano_plot_file + '"' ) )
+    f.close()
+
+    with ZipFile( html_zip_path, 'w', allowZip64=True) as izip:
+        izip.write( html_path, html_file )
+
+    logger.info( "making shock handle for html fiel")
+    html_zip_handle = script_util.upload_file_to_shock( logger, html_zip_path )['handle']['hid']
+    logger.info( pformat( html_zip_handle ) )
+
+    #logger.info( "making shock handle")
+    #html_zip_shock_id = script_util.upload_file_to_shock( logger, html_zip_path )['handle']['id']
+
+    # Begin hack.  Giving up on KBaseReport->create_complex_report()
+    # Lets roll our own:
+    logger.info( "hacking KBaseReport.report object" )
+    kbo = {
+           "text_message"          : "DIY KBaseReport object for Volcano Plot",    # string text_message;
+           "warnings"              : [""],                                         # list<string> warnings;
+           "objects_created"       : [                                             # list<WorkspaceObject> objects_created;
+                                        {
+                                          "ref"         : de_obj_ref,
+                                          "description" : "Differential expression object"
+                                        },
+                                        {
+                                          "ref"         : em_obj_ref,
+                                          "description" : "Filtered expression Matrix object"
+                                        },
+                                     ],
+           "file_links"            : [                                             # list<LinkedFile> file_links;
+                                       {                                           # LinkedFile;
+                                         "handle"      : image_zip_handle,         # handle_ref handle;   string?
+                                         "description" : "volcano plot png zip file",  # string description;
+                                         "name"        : volcano_plot_file,        # string name;
+                                         "label"       : "",
+                                         "URL"         : ""
+                                       } 
+                                     ],
+           "html_links"            : [                                              # list<LinkedFile> html_links;
+                                       {                                            # LinkedFile;
+                                         "handle"      : html_zip_handle,          # handle_ref handle;
+                                         "description" : "volcano plot html file",  # string description;
+                                         "name"        : html_file,                 # string name;
+                                         "label"       : "",
+                                         "URL"         : ""
+                                       } 
+                                     ], 
+           "direct_html"           : "",       # string direct_html;
+           "direct_html_link_index": 0         # int direct_html_link_index;
+          }
+    logger.info( pformat( kbo ) )
+    objs_save_data = ws_client.save_objects(
+                                  { "workspace":  ws_id,
+                                    "objects":    [
+                                                   {
+                                                    "type":    "KBaseReport.Report",
+                                                    "data":    kbo,
+                                                    "name":    report_obj_name
+                                                   } 
+                                                  ]
+                                  }
+                                )
+    return objs_save_data[0]
+
+    #logger.info( "initializing report object with callback {0}".format( callback_url ))
+    #kbr = KBaseReport( callback_url, token=token)
+    #logger.info( pformat( kbr ) )
+    #report_input_params = { 
+    #                        'objects_created'   : [ { 'ref': de_obj_ref, 'description': 'Differential Expression' },
+    #                                                { 'ref': em_obj_ref, 'description': 'Filtered Expression Matrix' },
+    #                                              ],
+    #                        'direct_html_index' : 0,
+    #                        'file_links'        : [
+    #                                                {
+    #                                                  'path'       :  image_zip_path,
+    #                                                  'name'       :  image_zip_file,
+    #                                                  'description': 'zip file containing volcano plot'
+    #                                                }
+    #                                              ],
+    #                        'html_links'        : [
+    #                                                {
+    #                                                 'path'       : html_path,
+    #                                                 'name'       : html_file,
+    #                                                 'description': 'HTML file to display volcano plot'
+    #                                                }
+    #                                              ],
+    #                        'report_object_name': report_obj_name,
+    #                        'workspace_name'    : ws_id
+    #                      }
+    #logger.info( "KBaseReport initialized, trying to upload report, params are" )
+    #logger.info( pformat( report_input_params ))
+    #
+    ##new_input_params = {
+    #                     'message' :  "This is a test I hope it works"
+    #                   }
+
+    #try:
+    #    repout = kbr.create_extended_report( report_input_params )
+    #    #repout = kbr.create_extended_report( new_input_params )
+    #except:
+    #    raise Exception( "Unable to create_extended_report" )
+    #
+    #return repout['name']
 
 
 def call_cuffmerge(working_dir,directory,num_threads,gtf_file,list_file):

@@ -1,9 +1,26 @@
 #!/usr/bin/env Rscript
 #
-# ballgown_fpkmgenematrix.R - first shot at using ballgown to compute gene-level differential expression matrix
-# 
+# ballgown_fpkmgenematrix.R 
 #
-# example call:
+#             using ballgown to compute gene-level differential expression matrix, and then
+#             optionally make associated plots
+# 
+# Usage:
+#     
+# ./ballgown_fpkmgenematrix.R  --sample_dir_group_table <sample_group_table>            (required)
+#                              --output_dir             <dir name>                      (required)
+#                              --output_csvfile         <filename for diff exp matrix>  (required)
+#                              --volcano_plot_file      <filename for volcano plot>     (optional)
+#
+#                      planned, not yet implemented:
+#                              --p_dist_plot_file 
+#                              --q_dist_plot_file
+#                              --fc_log                 <"linear","log2+1","log10+1">   (optional, default log2+1)
+#                              --fc_threshold           <float>                         (optional, default 0)
+#                              --q_val_threshold        <float>                         (optional, default 0)
+#                             
+#
+# Example call:
 #
 # ./ballgown_fpkmgenematrix.R  --sample_dir_group_table samples_groups.txt --output_dir ballgown_out --output_csvfile testout.csv
 #
@@ -67,15 +84,19 @@ options( showErrorCalls = FALSE )
 # parse command line arguments/options
 
 option_tab = matrix( c(
-                       #'input_dir',             'd', 1, "character",  # directory which holds input subdirectories
-                       'sample_dir_group_table', 's', 1, "character",  # file containing table of sample_dir, group id (integer)
-                       #'sample_dir_pat',        'p', 1, "character",  # re pattern for selecting subdirectories
-                       #'experiment_groups',     'e', 1, "character",  # character string of 0s and 1s indicating group membership of each column
-                       'output_dir',             'O', 1, "character",  # where output file(s) go
-                       'output_csvfile',            'o', 1, "character",  # output differential gene expression CSV file name
-                       'help',                   'h', 0, "logical"
+                       'sample_dir_group_table', 's', 1, 'character',  # file containing table of sample_dir, group id (integer)
+                       'output_dir',             'O', 1, 'character',  # where output file(s) go
+                       'output_csvfile',         'o', 1, 'character',  # output differential gene expression CSV file name
+                       'volcano_plot_file',      'V', 1, 'character',  # if given, generated volcano plot file of this name (png)
+                       'p_dist_plot_file',       'Q', 1, 'character', 
+                       'q_dist_plot_file',       'P', 1, 'character',
+                       'fc_log',                 'L', 1, 'character',  # <"linear","log2+1","log10+1">   
+                       'fc_threshold',           'f', 1, 'double',
+                       'q_val_threshold',        'q', 1, 'double',
+                       'help',                   'h', 0, 'logical'
                       ), 
                     byrow=TRUE, ncol=4 );
+
 opt = getopt( option_tab )
 
 if ( ! is.null( opt$help ) ) {
@@ -87,7 +108,6 @@ if ( ! is.null( opt$help ) ) {
 
 dmesg( "Here is the option_tab matrix of arguments" )
 print( option_tab )
-
 
 dmesg( "about to get samples_groups table" )
 smg <- get_and_check_samples_groups( opt$sample_dir_group_table )
@@ -116,18 +136,10 @@ dmesg( "here is pData(bg)" )
 print( pData(bg) )
 
 
-## convert string "111000" integer into vector c(1,1,1,0,0,0)
-#experiment_group_vector <- as.integer( strsplit( opt$experiment_groups, "")[[1]] )   
-#dmesg( "here is experiment_group_vector" )
-#print( experiment_group_vector )
-# dmesg( "about to pData")
-# map group membership to column names
-#pData(bg) <- data.frame( id = sampleNames(bg), group = experiment_group_vector )
 
 dmesg( "about to stattest" )
 
 # create gene-level differential expression table
-#gene_diff_ex_tab <- stattest( bg, feature='gene', meas='FPKM', covariate='group', getFC=TRUE )
 gene_diff_ex_tab <- stattest( bg, feature='gene', meas='FPKM', covariate='group', getFC=TRUE )
 
 dmesg( "about to write.table" )
@@ -136,7 +148,27 @@ write.table( gene_diff_ex_tab[,-1],
              file=paste( opt$output_dir, opt$output_csvfile, sep="/"), 
              sep="\t", row.names=F )  # remove first column before saving
 
-dmesg( "kthxbye" )
+# If volcano_plot_file option is given, generate the plot and put
+# it into the specified file
+
+if ( ! is.null( opt$volcano_plot_file ) )
+   {
+    dmesg( paste( "creating volcano plot in", opt$volcano_plot_file ) )
+
+    # todo -maybe we could check the extension in case the user wants a jpg?
+
+    png( paste( opt$output_dir, opt$volcano_plot_file, sep="/" ) )
+
+    plot( log2( gene_diff_ex_tab$fc ), 
+          -log10( gene_diff_ex_tab$qval ), 
+          pch=".", col="blue",
+          xlab="log2( fold_change )",
+          ylab="-log10( q-value )"
+         )
+    dev.off()
+   }
+
+dmesg( "Exiting ballgown_fpkmgenematrix.R" )
 
 q( save="no" )     # don't bother saving the workspace
 
