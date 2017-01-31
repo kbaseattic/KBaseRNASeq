@@ -102,7 +102,7 @@ class Cuffdiff(ExecutionBase):
          except Exception,e:
                  raise Exception("Error executing cuffdiff")
          try:
-                 handle = script_util.upload_file_to_shock(logger,out_file_path)['handle']
+                 handle = script_util.upload_file_to_shock(self.logger,out_file_path)['handle']
          except Exception, e:
                  print " ".join(traceback.print_exc())
                  raise Exception("Failed to upload the Cuffdiff output files: {0}".format(" ".join(traceback.print_exc())))
