@@ -994,8 +994,13 @@ def create_and_save_volcano_plot_report( logger,
     with ZipFile( image_zip_path, 'w', allowZip64=True) as izip:
         izip.write( volcano_file_path, volcano_plot_file )
 
+    logger.info( "making shock handle for zipped ")
+    image_zip_handle = script_util.upload_file_to_shock( logger, image_zip_path )['handle']['hid']
+    logger.info( pformat( image_zip_handle ) )
+
     html_file = "volcano.html"
     html_path = os.path.join( ballgown_output_dir, html_file )
+    html_zip_path = html_path + ".zip"
     try:
         f = open( html_path, "w" )
     except:
@@ -1003,49 +1008,106 @@ def create_and_save_volcano_plot_report( logger,
     f.write( "<img src={0}>\n".format(  '"' + volcano_plot_file + '"' ) )
     f.close()
 
+    with ZipFile( html_zip_path, 'w', allowZip64=True) as izip:
+        izip.write( html_path, html_file )
+
+    logger.info( "making shock handle for html fiel")
+    html_zip_handle = script_util.upload_file_to_shock( logger, html_zip_path )['handle']['hid']
+    logger.info( pformat( html_zip_handle ) )
 
     #logger.info( "making shock handle")
     #html_zip_shock_id = script_util.upload_file_to_shock( logger, html_zip_path )['handle']['id']
 
-    logger.info( "initializing report object with callback {0}".format( callback_url ))
-    kbr = KBaseReport( callback_url, token=token)
-    logger.info( pformat( kbr ) )
-    report_input_params = { 
-                            'objects_created'   : [ { 'ref': de_obj_ref, 'description': 'Differential Expression' },
-                                                    { 'ref': em_obj_ref, 'description': 'Filtered Expression Matrix' },
-                                                  ],
-                            'direct_html_index' : 0,
-                            'file_links'        : [
-                                                    {
-                                                      'path'       :  image_zip_path,
-                                                      'name'       :  image_zip_file,
-                                                      'description': 'zip file containing volcano plot'
-                                                    }
-                                                  ],
-                            'html_links'        : [
-                                                    {
-                                                     'path'       : html_path,
-                                                     'name'       : html_file,
-                                                     'description': 'HTML file to display volcano plot'
-                                                    }
-                                                  ],
-                            'report_object_name': report_obj_name,
-                            'workspace_name'    : ws_id
-                          }
-    logger.info( "KBaseReport initialized, trying to upload report, params are" )
-    logger.info( pformat( report_input_params ))
+    # Begin hack.  Giving up on KBaseReport->create_complex_report()
+    # Lets roll our own:
+    logger.info( "hacking KBaseReport.report object" )
+    kbo = {
+           "text_message"          : "DIY KBaseReport object for Volcano Plot",    # string text_message;
+           "warnings"              : [""],                                         # list<string> warnings;
+           "objects_created"       : [                                             # list<WorkspaceObject> objects_created;
+                                        {
+                                          "ref"         : de_obj_ref,
+                                          "description" : "Differential expression object"
+                                        },
+                                        {
+                                          "ref"         : em_obj_ref,
+                                          "description" : "Filtered expression Matrix object"
+                                        },
+                                     ],
+           "file_links"            : [                                             # list<LinkedFile> file_links;
+                                       {                                           # LinkedFile;
+                                         "handle"      : image_zip_handle,         # handle_ref handle;   string?
+                                         "description" : "volcano plot png zip file",  # string description;
+                                         "name"        : volcano_plot_file,        # string name;
+                                         "label"       : "",
+                                         "URL"         : ""
+                                       } 
+                                     ],
+           "html_links"            : [                                              # list<LinkedFile> html_links;
+                                       {                                            # LinkedFile;
+                                         "handle"      : html_zip_handle,          # handle_ref handle;
+                                         "description" : "volcano plot html file",  # string description;
+                                         "name"        : html_file,                 # string name;
+                                         "label"       : "",
+                                         "URL"         : ""
+                                       } 
+                                     ], 
+           "direct_html"           : "",       # string direct_html;
+           "direct_html_link_index": 0         # int direct_html_link_index;
+          }
+    logger.info( pformat( kbo ) )
+    objs_save_data = ws_client.save_objects(
+                                  { "workspace":  ws_id,
+                                    "objects":    [
+                                                   {
+                                                    "type":    "KBaseReport.Report",
+                                                    "data":    kbo,
+                                                    "name":    report_obj_name
+                                                   } 
+                                                  ]
+                                  }
+                                )
+    return objs_save_data[0]
 
-    new_input_params = {
-                         'message' :  "This is a test I hope it works"
-                       }
+    #logger.info( "initializing report object with callback {0}".format( callback_url ))
+    #kbr = KBaseReport( callback_url, token=token)
+    #logger.info( pformat( kbr ) )
+    #report_input_params = { 
+    #                        'objects_created'   : [ { 'ref': de_obj_ref, 'description': 'Differential Expression' },
+    #                                                { 'ref': em_obj_ref, 'description': 'Filtered Expression Matrix' },
+    #                                              ],
+    #                        'direct_html_index' : 0,
+    #                        'file_links'        : [
+    #                                                {
+    #                                                  'path'       :  image_zip_path,
+    #                                                  'name'       :  image_zip_file,
+    #                                                  'description': 'zip file containing volcano plot'
+    #                                                }
+    #                                              ],
+    #                        'html_links'        : [
+    #                                                {
+    #                                                 'path'       : html_path,
+    #                                                 'name'       : html_file,
+    #                                                 'description': 'HTML file to display volcano plot'
+    #                                                }
+    #                                              ],
+    #                        'report_object_name': report_obj_name,
+    #                        'workspace_name'    : ws_id
+    #                      }
+    #logger.info( "KBaseReport initialized, trying to upload report, params are" )
+    #logger.info( pformat( report_input_params ))
+    #
+    ##new_input_params = {
+    #                     'message' :  "This is a test I hope it works"
+    #                   }
 
-    try:
-        #repout = kbr.create_extended_report( report_input_params )
-        repout = kbr.create_extended_report( new_input_params )
-    except:
-        raise Exception( "Unable to create_extended_report" )
-
-    return repout['name']
+    #try:
+    #    repout = kbr.create_extended_report( report_input_params )
+    #    #repout = kbr.create_extended_report( new_input_params )
+    #except:
+    #    raise Exception( "Unable to create_extended_report" )
+    #
+    #return repout['name']
 
 
 def call_cuffmerge(working_dir,directory,num_threads,gtf_file,list_file):
