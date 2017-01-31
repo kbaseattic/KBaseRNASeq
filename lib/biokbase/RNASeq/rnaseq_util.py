@@ -995,8 +995,8 @@ def create_and_save_volcano_plot_report( logger,
         izip.write( volcano_file_path, volcano_plot_file )
 
     logger.info( "making shock handle for zipped ")
-    image_zip_handle = script_util.upload_file_to_shock( logger, image_zip_path )['handle']['hid']
-    logger.info( pformat( image_zip_handle ) )
+    image_zip_shock_ret = script_util.upload_file_to_shock( logger, image_zip_path )
+    logger.info( pformat( image_zip_shock_ret ) )
 
     html_file = "volcano.html"
     html_path = os.path.join( ballgown_output_dir, html_file )
@@ -1012,8 +1012,9 @@ def create_and_save_volcano_plot_report( logger,
         izip.write( html_path, html_file )
 
     logger.info( "making shock handle for html fiel")
-    html_zip_handle = script_util.upload_file_to_shock( logger, html_zip_path )['handle']['hid']
-    logger.info( pformat( html_zip_handle ) )
+    html_zip_shock_ret = script_util.upload_file_to_shock( logger, html_zip_path )
+    
+    logger.info( pformat( html_zip_shock_ret ) )
 
     #logger.info( "making shock handle")
     #html_zip_shock_id = script_util.upload_file_to_shock( logger, html_zip_path )['handle']['id']
@@ -1023,7 +1024,7 @@ def create_and_save_volcano_plot_report( logger,
     logger.info( "hacking KBaseReport.report object" )
     kbo = {
            "text_message"          : "DIY KBaseReport object for Volcano Plot",    # string text_message;
-           "warnings"              : [""],                                         # list<string> warnings;
+#           "warnings"              : [""],                                         # list<string> warnings;
            "objects_created"       : [                                             # list<WorkspaceObject> objects_created;
                                         {
                                           "ref"         : de_obj_ref,
@@ -1036,24 +1037,23 @@ def create_and_save_volcano_plot_report( logger,
                                      ],
            "file_links"            : [                                             # list<LinkedFile> file_links;
                                        {                                           # LinkedFile;
-                                         "handle"      : image_zip_handle,         # handle_ref handle;   string?
+                                         "handle"      : image_zip_shock_ret['handle']['hid'],         # handle_ref handle;   string?
                                          "description" : "volcano plot png zip file",  # string description;
                                          "name"        : volcano_plot_file,        # string name;
-                                         "label"       : "",
-                                         "URL"         : ""
+                                         "URL"         : image_zip_shock_ret['handle']['url'] + "/node/" + image_zip_shock_ret['handle']['id']
                                        } 
                                      ],
            "html_links"            : [                                              # list<LinkedFile> html_links;
                                        {                                            # LinkedFile;
-                                         "handle"      : html_zip_handle,          # handle_ref handle;
+                                         "handle"      : html_zip_shock_ret['handle']['hid'],          # handle_ref handle;
                                          "description" : "volcano plot html file",  # string description;
                                          "name"        : html_file,                 # string name;
-                                         "label"       : "",
-                                         "URL"         : ""
+                                         "label"       : None,
+                                         "URL"         : html_zip_shock_ret['handle']['url'] + "/node/" + html_zip_shock_ret['handle']['id']
                                        } 
                                      ], 
-           "direct_html"           : "",       # string direct_html;
-           "direct_html_link_index": 0         # int direct_html_link_index;
+           "direct_html"           : None,       # string direct_html;
+           "direct_html_link_index": None         # int direct_html_link_index;
           }
     logger.info( pformat( kbo ) )
     objs_save_data = ws_client.save_objects(
