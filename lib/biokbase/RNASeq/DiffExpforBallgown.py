@@ -259,13 +259,18 @@ class DiffExpforBallgown(ExecutionBase):
         logger.info( "back from loading ballgown output into workspace, object save data is " )
         logger.info( pformat( de_ws_save_obj_data ) )
 
+        max_num_genes = sys.maxint   # default 
+        if 'maximum_num_genes' in params:
+            if ( params['maximum_num_genes'] != None ):
+                max_num_genes = params['maximum_num_genes']
+
         # this returns a list of gene ids passing the specified cuts, ordered by
         # descending fold_change
         selected_gene_list = rnaseq_util.filter_genes_diff_expr_matrix( diff_expr_matrix, 
                                                                         params['fold_scale_type'], 
                                                                         params['alpha_cutoff'], 
                                                                         params['fold_change_cutoff'],
-                                                                        params['maximum_num_genes']
+                                                                        max_num_genes
                                                                       )
         #  !!!!! IF selected_gene_list is empty print some kind of message, take no further action
 
