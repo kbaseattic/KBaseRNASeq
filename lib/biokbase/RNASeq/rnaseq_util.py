@@ -688,6 +688,7 @@ def create_sample_dir_group_file( logger,
             raise Exception( "Can't open file {0} for writing {1}".format( sample_dir_group_file, traceback.format_exc() ) )
         group_name_list = []
         for subdir in subdir_list:
+            group = None
             exp = os.path.basename( subdir )
             if  exp in group1_name_set:
                 if  exp in group2_name_set:
@@ -703,7 +704,8 @@ def create_sample_dir_group_file( logger,
             # sometimes there are three or more groups 
             #else:
             #    raise Exception( "group error - {0} is not found in either group set".format( exp ) )
-            f.write( "{0}  {1}\n".format( subdir, group ))
+            if ( group != None ):
+                f.write( "{0}  {1}\n".format( subdir, group ))
         f.close()
 
         return( group_name_list )
