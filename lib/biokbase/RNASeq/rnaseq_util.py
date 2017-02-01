@@ -652,11 +652,24 @@ def get_info_and_download_for_ballgown( logger, ws_client, hs, ws_id, urls, dire
                     fullpath = os.path.join( subdir, f )
                     if ( not os.path.isfile( fullpath ) ):
                         raise Exception( "error: ballgown input file {0} not found. Can't proceed".format( fullpath ) )
+                    # check here to see if introns is empty.  Currently (1 Feb 2017) ballgown can't handle this
+                    if ( f == 'i2t.ctab' ):
+                        if ( number_of_lines_in_file( fullpath ) < 2 ):
+                            raise Exception( "error: ballgown does not yet support prokarytic data (intron count appears to be zero)" )
 
         #list_file.close()
         #output_obj['gtf_list_file'] = assembly_file
-        print output_obj
+        logger.info( output_obj )
         return output_obj        
+
+# returns a count of number of lines in a file
+
+def number_of_lines_in_file( fname ):
+    n = -1
+    with open(fname) as f:
+        for i, l in enumerate(f):
+            n = n + 1
+    return n + 1
 
 # this converts the input group set lists writes a file that can be loaded
 # as a table by the ballgown_fpkmgenematrix.R  script to pass to
