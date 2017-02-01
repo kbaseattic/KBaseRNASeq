@@ -736,7 +736,7 @@ def upload_file_to_shock(logger,
                          filePath,
                          make_handle = True,
                          shock_service_url = None,
-                         attributes = '{}',
+                         #attributes = '{}',
                          ssl_verify = True,
                          token = None):
     """
@@ -746,7 +746,8 @@ def upload_file_to_shock(logger,
     
     #shock_service_url is from config
     dfu = DataFileUtil(os.environ['SDK_CALLBACK_URL'], token=token)
-    return dfu.file_to_shock({"file_path":filePath, "attributes": json.dumps(attributes), "make_handle" : make_handle})
+    #return dfu.file_to_shock({"file_path":filePath, "attributes": json.dumps(attributes), "make_handle" : make_handle})
+    return dfu.file_to_shock( { "file_path":filePath,  "make_handle" : make_handle } )
 
 
 def shock_node_2b_public(logger,
