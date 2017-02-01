@@ -629,7 +629,8 @@ typedef structure{
   typedef structure {
         string   diff_expr_object;                  /* RNASeqDifferetialExpression object name */
         string   filtered_expression_maxtrix;       /* ExpressionMatrix objec name */
-        string   plot_report_object;                /* name of KBaseReport object containing volcano plot */
+        string   plot_report_object_name;           /* name of KBaseReport object containing volcano plot */
+        string   plot_report_object_ref;
         string   workspace;
   }   BallgownResult;
 
