@@ -1015,7 +1015,7 @@ def create_and_save_volcano_plot_report( logger,
     volcano_file_shock_ret = script_util.upload_file_to_shock( logger, volcano_file_path )
     logger.info( pformat( volcano_file_shock_ret ) )
 
-    html_file = "volcano.html"
+    html_file = "index.html"
     html_path = os.path.join( ballgown_output_dir, html_file )
     html_zip_path = html_path + ".zip"
     try:
