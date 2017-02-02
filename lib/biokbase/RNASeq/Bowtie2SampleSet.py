@@ -83,10 +83,10 @@ class Bowtie2SampleSet(Bowtie2):
         #reads = sample['data']['sample_ids']
         #r_label = sample['data']['condition']
         #reads_type= sample['data']['Library_type']
-        e_ws_objs = script_util.if_ws_obj_exists_notype(None,ws_client,params['ws_id'],reads) # removed read type as it will be added only if it satisfies input types
-        missing_objs = [i for i in reads if not i in e_ws_objs]
-        if len(e_ws_objs) != len(reads):
-            raise Bowtie2SampleSetException('Missing Library objects {0} in the {1}. please copy them and run this method'.format(",".join(missing_objs),params['ws_id']))
+        #e_ws_objs = script_util.if_ws_obj_exists_notype(None,ws_client,params['ws_id'],reads) # removed read type as it will be added only if it satisfies input types
+        #missing_objs = [i for i in reads if not i in e_ws_objs]
+        #if len(e_ws_objs) != len(reads):
+        #    raise Bowtie2SampleSetException('Missing Library objects {0} in the {1}. please copy them and run this method'.format(",".join(missing_objs),params['ws_id']))
  
         self.num_jobs = len(reads)
 	bw_index_files = script_util.check_and_download_existing_handle_obj(logger,ws_client,self.urls,params['ws_id'],params['bowtie_index'],"KBaseRNASeq.Bowtie2Indexes",bowtie2_dir,token)
