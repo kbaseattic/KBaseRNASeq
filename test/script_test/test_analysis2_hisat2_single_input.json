@@ -1,0 +1,16 @@
+{	
+	"version":"1.1",
+	"method":"KBaseRNASeq.Hisat2Call",
+	"context": null,
+	"params":[
+	{
+	 "ws_id" : "srividya22:1475112793025",
+	 "sampleset_id" : "Ecoli_SE_8083_R1.fastq" ,
+	 "genome_id" : "Escherichia_coli_K12",
+	 "alignment_type" : null,
+	 "quality_score" : null,
+	 "np" : 1,
+	 "minins" : 0,
+	 "tailor_alignments" : "dta-cufflinks",
+	 "maxins" : 500} ]
+}

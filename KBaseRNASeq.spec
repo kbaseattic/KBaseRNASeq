@@ -1,4 +1,5 @@
 #include <KBaseAssembly.spec>
+#include <KBaseFile.spec>
 
  module KBaseRNASeq{
 
@@ -71,7 +72,8 @@
    	typedef structure {
        		Handle handle;
                 int size;	
-       		ws_genome_annotation_id genome_id;
+       		/*ws_genome_annotation_id genome_id;*/
+       		string genome_id;
 		string genome_scientific_name;
    	} GFFAnnotation;
 
@@ -93,7 +95,8 @@
         typedef structure {
                 Handle handle;
 		int size;
-                ws_genome_annotation_id genome_id;
+                /*ws_genome_annotation_id genome_id;*/
+                string genome_id;
 		string ftp_url;
 		string genome_scientific_name;
         }Bowtie2Indexes;
@@ -135,41 +138,6 @@
    */
 
         typedef string ws_Sampleset_id;
-
-
-
-  /* Specification for the RNASeqFastq Metadata
-   
-    Object for the RNASeq Metadata
-    @optional library_type replicate_id platform custom*/
-   	
-    typedef structure {
-		string sample_id;
-       		string library_type;
-		string replicate_id;
-       		string platform;
-       		string condition;
-		string custom;
-    	}RNASeqSampleMetaData;
-
-/*
-     RNASeq fastq  object
-     @optional  singleend_sample pairedend_sample metadata 
-     @metadata ws singleend_sample.handle.file_name
-     @metadata ws pairedend_sample.handle_1.file_name
-     @metadata ws pairedend_sample.handle_2.file_name
-     @metadata ws metadata.replicate_id
-     @metadata ws metadata.library_type
-     @metadata ws metadata.platform
-     @metadata ws metadata.condition
-*/
-
-     typedef structure {
-	 KBaseAssembly.SingleEndLibrary singleend_sample;
-	 KBaseAssembly.PairedEndLibrary pairedend_sample;
-	 ws_rnaseq_sampleset_id  sampleset_id;
-	 RNASeqSampleMetaData metadata;  
-     }RNASeqSample;
 
 /*
   The workspace id of a RNASeqSample
@@ -232,7 +200,8 @@
 	string replicate_id;
 	string condition;
 	string platform;
-        ws_genome_annotation_id genome_id;
+        /*ws_genome_annotation_id genome_id;*/
+        string genome_id;
         ws_bowtieIndex_id bowtie2_index;
 	mapping<string opt_name, string opt_value> aligner_opts;
         mapping<string condition,mapping<string sample_id , string replicate_id>> mapped_sample_id;
@@ -263,7 +232,8 @@
 	string aligner_version;
 	mapping<string opt_name, string opt_value> aligner_opts;
 	ws_Sampleset_id sampleset_id;
-	ws_genome_annotation_id genome_id;
+	/*ws_genome_annotation_id genome_id;*/
+	string genome_id;
 	ws_bowtieIndex_id bowtie2_index;
 	list<string> read_sample_ids;
 	list<string> condition;
@@ -300,7 +270,8 @@
         string external_source_date;
         mapping<string feature_id,float feature_value> expression_levels; 
         mapping<string feature_id,float feature_value> tpm_expression_levels;
-        ws_genome_annotation_id genome_id; 
+        /*ws_genome_annotation_id genome_id;*/
+	string genome_id;
         ws_referenceAnnotation_id annotation_id;
 	string condition;
 	mapping<string sample_id,ws_samplealignment_id alignment_id> mapped_rnaseq_alignment;
@@ -335,7 +306,8 @@
 	mapping<string opt_name, string opt_value> tool_opts;
 	ws_alignmentSet_id alignmentSet_id;
         ws_Sampleset_id sampleset_id;
-        ws_genome_annotation_id genome_id;
+        /*ws_genome_annotation_id genome_id;*/
+	string genome_id;
         list<string> sample_ids;
         list<string> condition;
         list<ws_expression_sample_id> sample_expression_ids;
@@ -353,18 +325,19 @@
    @optional tool_opts tool_version sample_ids comments
 */
    typedef structure {
-	string tool_used;
-	string tool_version;
+        string tool_used;
+        string tool_version;
         list<mapping<string opt_name, string opt_value>> tool_opts;	
-      	Handle file;
+        Handle file;
         list<string> sample_ids;
-	list<string> condition;
-        ws_genome_annotation_id genome_id;
-	ws_expressionSet_id expressionSet_id;
-	ws_alignmentSet_id alignmentSet_id;
+        list<string> condition;
+        /*ws_genome_annotation_id genome_id;*/
+        string genome_id;
+        ws_expressionSet_id expressionSet_id;
+        ws_alignmentSet_id alignmentSet_id;
         ws_Sampleset_id sampleset_id;
-	string comments;
-      	}RNASeqDifferentialExpression;
+        string comments;
+        } RNASeqDifferentialExpression;
 
 /*
     Object for the cummerbund plot
@@ -456,49 +429,6 @@
 
   async funcdef BuildBowtie2Index(Bowtie2IndexParams params)
      returns(ResultsToReport) authentication required;
-
-   typedef structure{
-        string ws_id;
-        ws_genome_annotation_id reference;
-        string output_obj_name;
-        }GetFeaturesToGTFParams;
-
-  async funcdef GetFeaturesToGTF(GetFeaturesToGTFParams params)
-     returns(ResultsToReport) authentication required;   
-   
-   typedef structure{
-	int skip;
-	int upto;
-	int trim5;
-	int trim3;
-	string phred33;
-	string phred64;
-	string int-quals;
-	string local;
-	string end-to-end;
-	string very-fast;
-	string fast;
-	string very-sensitive;
-	string sensitive;
-	string very-fast-local;
-	string very-sensitive-local;
-	string fast-local;
-	string fast-sensitive;
-	int N;
-	int L;
-	int dpad;
-	int gbar;
-	int ma;
-	int mp;
-	int np;
-	int threads;
-	int offrate;
-	string qc-filter;
-	string seed;
-	string non-deterministic;
-	}b_opts;
-
-   typedef mapping<string Bowtie2_opts,b_opts opts_bowtie2> b_opts_str;
 	
    typedef structure{
 	string ws_id;
@@ -544,50 +474,6 @@
   async funcdef Hisat2Call(Hisat2Params params)
      returns(ResultsToReport) authentication required;
 
-typedef structure{
-     string read-mismatches;
-     string read-gap-length;
-     int read-edit-dist;
-     int read-realign-edit-dist;
-     string bowtie1;
-     string output-dir;
-     int mate-inner-dist;
-     int mate-std-dev;
-     int min-anchor-length;
-     int splice-mismatches;
-     int min-intron-length;
-     int max-intron-length;
-     int max-insertion-length;
-     int num-threads;
-     int max-multihits;
-     string report-secondary-alignments;
-     string no-discordant;
-     string no-mixed;
-     string no-coverage-search;
-     string coverage-search;
-     string microexon-search;
-     string library-type;
-     int segment-mismatches;
-     int segment-length;
-     int min-segment-intron;
-     int max-segment-intron;
-     int min-coverage-intron;
-     int max-coverage-intron;
-     string b2-very-fast;
-     string b2-fast;
-     string b2-sensitive;
-     string b2-very-sensitive;
-     string fusion-search;
-     int fusion-anchor-length;
-     int fusion-min-dist;
-     int fusion-read-mismatches;
-     int fusion-multireads;
-     int fusion-multipairs;
-     string fusion-ignore-chromosomes;
-     }t_opts;
-
-typedef mapping<string Tophat_opts,t_opts opts_tophat> t_opts_str;
-
  typedef structure{
      string ws_id;
      string read_sample; 
@@ -628,32 +514,50 @@ typedef mapping<string Tophat_opts,t_opts opts_tophat> t_opts_str;
 async funcdef StringTieCall(StringTieParams params)
     returns (ResultsToReport) authentication required;
 
- typedef structure{
-        int num_threads;
-        string library-type;
-        string library-norm-method;
-        int frag-len-mean;
-        int frag-len-std-dev;
-        string upper-quartile-norm;
-        string total-hits-norm;
-        string compatible-hits-norm;
-        int max-mle-iterations;
-        int max-bundle-frags;
-        string no-effective-length-correction;
-        string no-length-correction;
-        float min-isoform-fraction;
-        float pre-mrna-fraction;
-        int max-intron-length;
-        float junc-alpha;
-        string small-anchor-fraction;
-        int min-frags-per-transfrag;
-        int overhang-tolerance;
-        int max-bundle-length;
-        int min-intron-length;
-        int trim-3-avgcov-thresh;
-        int trim-3-dropoff-frac;
-        float max-multiread-fraction;
-        }opts_cufflinks;
+    /***************************************/
+    /* HISAT2 + StringTie "express" method */
+    /***************************************/
+
+    typedef structure {
+        string hi_quality_score;
+        int hi_skip;
+        int hi_trim3;
+        int hi_trim5;
+        int hi_np;
+        int hi_minins;
+	int hi_maxins;
+        string hi_orientation;
+        int hi_min_intron_length;
+	int hi_max_intron_length;
+	bool hi_no_spliced_alignment;
+        bool hi_transcriptome_mapping_only;
+        string hi_tailor_alignments;
+   } ExpressHisat2_Options;
+
+    typedef structure {
+        string st_label;
+        float st_min_isoform_abundance;
+        int st_a_juncs;
+        int st_min_length;
+        float st_j_min_reads;
+        float st_c_min_read_coverage;
+        int st_gap_sep_value;
+        bool st_disable_trimming;
+    } ExpressStringTie_Options;
+
+    typedef structure {
+        string ws_id;
+        string sampleset_id;
+        string genome_id;
+        ExpressHisat2_Options hi_options;
+        bool run_stringtie;
+        ExpressStringTie_Options st_options;
+        string output_alignment_set_name;
+        string output_expression_matrix_name;
+    } Hisat2StringTieParams;
+
+    async funcdef Hisat2StringTieCall( Hisat2StringTieParams params ) returns(ResultsToReport) authentication required;
+
 
 typedef structure{
 	string ws_id;
@@ -690,14 +594,47 @@ typedef structure{
   async funcdef CuffdiffCall(CuffdiffParams params)
    returns (RNASeqDifferentialExpression) authentication required;
 
-        typedef structure{
-        string ws_id;
-        RNASeqExpressionSet expressionset_id;
-        string output_obj_name;
-        int num_threads;
-        }DifferentialExpParams;
+   /*
+      @id KBaseRNASeq.RNASeqExpressionSet 
+   */
+      
+      typedef string ws_rnaseq_exprset_id;
 
-  async funcdef DiffExpCallforBallgown(DifferentialExpParams params)
-   returns (RNASeqDifferentialExpression) authentication required;
+
+        typedef structure {
+
+            string        group_name1;
+            list<string>  expr_ids1;
+            string        group_name2;
+            list<string>  expr_ids2;
+
+        } ExperimentGroupIDsList;
+
+        typedef structure{
+
+            string                  ws_id;
+            ws_rnaseq_exprset_id    expressionset_id;
+            string                  output_obj_name;
+            int                     num_threads;
+            ExperimentGroupIDsList  expr_ids_list;      
+            /* these next parameters filter the members of expression matrix.  good idea to have them here? */
+            string                  fold_scale_type;   /* "linear", "log2+1", "log10+1" */
+            float                   alpha_cutoff;      /* q value cutoff */
+            float                   fold_change_cutoff;
+            int                     maximum_num_genes;
+            string                  filtered_expr_matrix;  /* name of output object filtered expression matrix */
+
+        } BallgownDifferentialExpParams;
+
+  typedef structure {
+        string   diff_expr_object;                  /* RNASeqDifferetialExpression object name */
+        string   filtered_expression_maxtrix;       /* ExpressionMatrix objec name */
+        string   plot_report_object_name;           /* name of KBaseReport object containing volcano plot */
+        string   plot_report_object_ref;
+        string   workspace;
+  }   BallgownResult;
+
+  async funcdef DiffExpCallforBallgown( BallgownDifferentialExpParams params )
+     returns ( BallgownResult ) authentication required;
 
 };

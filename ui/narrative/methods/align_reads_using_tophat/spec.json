@@ -6,7 +6,7 @@
   "categories" : ["active","expression","sequence"],
   "widgets" : {
     "input" : null,
-    "output" : "no-display"
+    "output" : "kbaseRNASeqPieNew"
   },
    "parameters" : [ {
     "id" : "sampleset_id",
@@ -16,7 +16,7 @@
     "default_values" : [ "" ],
     "field_type" : "text",
     "text_options" : {
-      "valid_ws_types" : ["KBaseRNASeq.RNASeqSampleSet","KBaseAssembly.SingleEndLibrary","KBaseAssembly.PairedEndLibrary" ]
+      "valid_ws_types" : ["KBaseSets.ReadsSet", "KBaseRNASeq.RNASeqSampleSet" , "KBaseAssembly.SingleEndLibrary", "KBaseAssembly.PairedEndLibrary", "KBaseFile.SingleEndLibrary", "KBaseFile.PairedEndLibrary"]
     }
   },{
     "id" : "bowtie_index",
@@ -84,16 +84,6 @@
     "advanced" : true,
     "allow_multiple" : false,
     "default_values" : [ "8" ],
-    "field_type" : "text",
-    "text_options" : {
-      "validate_as" : "int"
-    }
-  }, {
-    "id" : "num_threads",
-    "optional" : true,
-    "advanced" : true,
-    "allow_multiple" : false,
-    "default_values" : [ "2" ],
     "field_type" : "text",
     "text_options" : {
       "validate_as" : "int"
@@ -195,6 +185,10 @@
           "narrative_system_variable": "workspace",
           "target_property" : "ws_id"
         },
+	{
+          "constant_value"  : 2,
+          "target_property" : "num_threads"
+        },      
         {
           "input_parameter" : "sampleset_id",
           "target_property" : "sampleset_id"
@@ -228,10 +222,6 @@
           "target_property" : "min_anchor_length"
         },
         {
-          "input_parameter" : "num_threads",
-          "target_property" : "num_threads"
-        },
-        {
           "input_parameter" : "report_secondary_alignments",
           "target_property" : "report_secondary_alignments"
         },
@@ -249,22 +239,14 @@
         }
       ],
       "output_mapping" : [
-        {
-         "service_method_output_path": [0,"report_name"],
-         "target_property": "report_name"
+	{
+         "service_method_output_path": [0,"output"],
+         "target_property": "output"
         },
-	{
-	 "service_method_output_path": [0,"report_ref"],
-	 "target_property": "report_ref"
-	},
-	{
-	 "narrative_system_variable": "workspace",
-	 "target_property": "workspace_name"
-	},
-	{
-	"constant_value": "5",
-	"target_property": "report_window_line_height"
-	} 
+        {
+         "service_method_output_path": [0,"workspace"],
+         "target_property": "workspace"
+        }
       ]
     }
   },

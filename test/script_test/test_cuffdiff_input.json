@@ -4,9 +4,9 @@
 	"context": null,
 	"params":[ 	
 	{
-  	"ws_id": "sunita:1466011390977",
-	"expressionset_id" : "Ptr_4samples_AlignmentSet_ExpressionSet",
-	"output_obj_name" : "new_popi_cuffdiff",
+  	"ws_id": "srividya22:1475121460798",
+	"expressionset_id" : "test_bowtie2_refactoring_sampleset_bowtie2_AlignmentSet_stringtie_ExpressionSet",
+	"output_obj_name" : "Ecoli_bowtie_cuffdiff",
 	"labels" : null,
 	"num-threads" : 2,
 	"min-alignment-count" : 1,

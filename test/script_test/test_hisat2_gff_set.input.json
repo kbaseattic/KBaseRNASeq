@@ -1,0 +1,20 @@
+{	
+	"version":"1.1",
+	"method":"KBaseRNASeq.Hisat2Call",
+	"context": null,
+	"params":[
+             	  {
+                    "ws_id"             : "srividya22:1474862362136",
+                    "sampleset_id"      : "micromonas_rnaseq_test1_sampleset" ,
+              	    "genome_id"         : "GCA_000090985.2_ASM9098v2_genomic.gbff",
+              	    "alignment_type"    : null,
+              	    "quality_score"     : null,
+              	    "np"                : 1,
+              	    "minins"            : 0,
+              	    "tailor_alignments" : "dta-cufflinks",
+              	    "maxins"            : 500
+                  }
+                ]
+}
+
+

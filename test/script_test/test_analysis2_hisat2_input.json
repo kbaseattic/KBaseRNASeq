@@ -4,9 +4,9 @@
 	"context": null,
 	"params":[
 	{
-	 "ws_id" : "test_New_RNASeq",
-	 "sampleset_id" : "Athaliana_sdk_test_sampleset" ,
-	 "genome_id" : "Arabidopsis_Genome_Annotation",
+	 "ws_id" : "srividya22:1474994952339",
+	 "sampleset_id" : "Ecoli_test_3_sampleset" ,
+	 "genome_id" : "Escherichia_coli_K12",
 	 "alignment_type" : null,
 	 "quality_score" : null,
 	 "np" : 1,

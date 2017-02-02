@@ -72,7 +72,7 @@ def _CallStringtie(logger,services,ws_client,hs,ws_id,num_threads,s_alignment,gt
                     script_util.unzip_files(logger,os.path.join(input_direc,a_filename), input_dir)
                 except Exception, e:
                        logger.error("".join(traceback.format_exc()))
-                       raise Exception("Unzip alignment files  error: Please contact help@kbase.us")
+                       raise Exception("Unzip alignment files  error")
 
                 input_file = os.path.join(input_dir,"accepted_hits.bam")
                 ### Adding advanced options to tophat command
@@ -206,12 +206,14 @@ def runMethod(logger,token,ws_client,hs,services,stringtie_dir,params):
                 except Exception,e:
                      raise Exception( "Unable to download shock file, {0}".format(gtf_name))
             else:
-                fasta_file= script_util.generate_fasta(logger,services,token,annotation_id,stringtie_dir,annotation_name)
-                logger.info("Sanitizing the fasta file to correct id names {}".format(datetime.datetime.utcnow()))
-                mapping_filename = c_mapping.create_sanitized_contig_ids(fasta_file)
-                c_mapping.replace_fasta_contig_ids(fasta_file, mapping_filename, to_modified=True)
-                logger.info("Generating FASTA file completed successfully : {}".format(datetime.datetime.utcnow()))
-                gtf_file = script_util.create_gtf_annotation(logger,ws_client,hs,services['shock_service_url'],params['ws_id'],annotation_id,gtf_obj_name,fasta_file,stringtie_dir,token)
+		rnaseq_util.create_gtf_annotation_from_genome(logger,ws_client,hs,self.urls,params['ws_id'],annotation_id,annotation_name,stringtie_dir,token)
+                #fasta_file= script_util.generate_fasta(logger,services,token,annotation_id,stringtie_dir,annotation_name)
+                #logger.info("Sanitizing the fasta file to correct id names {}".format(datetime.datetime.utcnow()))
+                #mapping_filename = c_mapping.create_sanitized_contig_ids(fasta_file)
+                #c_mapping.replace_fasta_contig_ids(fasta_file, mapping_filename, to_modified=True)
+                #logger.info("Generating FASTA file completed successfully : {}".format(datetime.datetime.utcnow()))
+
+                #gtf_file = script_util.create_gtf_annotation(logger,ws_client,hs,services['shock_service_url'],params['ws_id'],annotation_id,gtf_obj_name,fasta_file,stringtie_dir,token)
 	    #Identify the tool options used
 	    tool_opts = { k:str(v) for k,v in params.iteritems() if not k in ('ws_id','alignmentset_id', 'num_threads') and v is not None  }
             # Determine the num_threads provided by the user otherwise default the number of threads to 2

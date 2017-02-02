@@ -229,7 +229,7 @@ def runMethod(logger,token,ws_client,hs,services,diffexp_dir,params):
 					list_file.write("{0}\n".format(e_file_path))
                         except Exception, e:
                                 logger.exception("".join(traceback.format_exc()))
-                                raise Exception("Unzip file error: Please contact help@kbase.us")
+                                raise Exception("Unzip file error")
 	    list_file.close()
 	    print labels
             #output_dir = os.path.join(cuffdiff_dir, params['output_obj_name'])

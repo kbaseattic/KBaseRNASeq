@@ -4,8 +4,8 @@
 	"context": null,
 	"params":[ 	
 	{
-  	"ws_id": "test_New_RNASeq",
-	"alignmentset_id" : "Athaliana_sdk_test_sampleset_hisat2_AlignmentSet",
+  	"ws_id": "srividya22:1475121460798",
+	"alignmentset_id" : "test_bowtie2_refactoring_sampleset_bowtie2_AlignmentSet",
 	"num_threads" : 2,
 	"label" : "STRG",
 	"ballgown_mode" : 2,

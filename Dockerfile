@@ -9,10 +9,14 @@ RUN \
   git clone https://github.com/kbase/jars && \
   rm -rf kb_sdk && \
   git clone https://github.com/kbase/kb_sdk -b develop && \
+  rm -rf handle_service && \
+  git clone https://github.com/kbase/handle_service && \
   cd /kb/dev_container/modules/jars && \
   make deploy && \
   cd /kb/dev_container/modules/kb_sdk && \
-  make && make deploy
+  make && make deploy && \
+  cd /kb/dev_container/modules/handle_service && \
+  make && make deploy 
 RUN \
   . /kb/dev_container/user-env.sh && \
   cd /kb/dev_container/modules && \
@@ -25,8 +29,9 @@ RUN \
 # Insert apt-get instructions here to install
 # any required dependencies for your module.
 # -----------------------------------------
-RUN apt-get update && apt-get install -y unzip gcc bzip2 ncurses-dev
+RUN apt-get update && apt-get install -y unzip gcc bzip2 ncurses-dev sysstat
 RUN pip install mpipe
+
 WORKDIR /kb/module
 COPY ./deps /kb/deps
 RUN \
@@ -35,9 +40,18 @@ RUN \
   sh /kb/deps/kb_hisat2/install-hisat.sh && \
   sh /kb/deps/kb_cufflinks/install-cufflinks.sh && \
   sh /kb/deps/kb_stringTie/install-stringtie.sh && \
-  sh /kb/deps/kb_tableMaker/install-tablemaker.sh
+  sh /kb/deps/kb_tableMaker/install-tablemaker.sh && \
+  sh /kb/deps/kb_ballgown/install-ballgown.sh
+
+RUN \
+  sh /kb/deps/pylib.sh
 
 COPY ./ /kb/module
+RUN \
+  . /kb/dev_container/user-env.sh && \
+  cd /kb/module && \
+  kb-sdk install AssemblyUtil && \
+  kb-sdk install GenomeFileUtil
 RUN \
   cd /kb/module && \
   make && make deploy

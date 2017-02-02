@@ -6,7 +6,7 @@
   "categories" : ["active","expression","assembly"],
   "widgets" : {
     "input" : null,
-    "output" : "no-display"
+    "output" : "kbaseExpressionSampleTableNew"
   },
    "parameters" : [ {
     "id" : "alignmentset_id",
@@ -17,16 +17,6 @@
     "field_type" : "text",
     "text_options" : {
       "valid_ws_types" : ["KBaseRNASeq.RNASeqAlignmentSet" , "KBaseRNASeq.RNASeqAlignment" ]
-    }
-  }, {
-   "id" : "num_threads",
-    "optional" : true,
-    "advanced" : true,
-    "allow_multiple" : false,
-    "default_values" : [ "2" ],    
-    "field_type" : "text",
-    "text_options" : {
-      "validate_as": "int"
     }
   }, {
    "id" : "min_intron_length",
@@ -69,13 +59,13 @@
           "narrative_system_variable": "workspace",
           "target_property" : "ws_id"
         },
+	{
+          "constant_value"  : 2,
+          "target_property" : "num_threads"
+        },      
         {
           "input_parameter" : "alignmentset_id",
           "target_property" : "alignmentset_id"
-        },
-        {
-          "input_parameter" : "num_threads",
-          "target_property" : "num_threads"
         },
         {
           "input_parameter" : "min_intron_length",
@@ -91,20 +81,12 @@
       }],
       "output_mapping" : [
 	{
-         "service_method_output_path": [0,"report_name"],
-         "target_property": "report_name"
+         "service_method_output_path": [0,"output"],
+         "target_property": "output"
         },
         {
-         "service_method_output_path": [0,"report_ref"],
-         "target_property": "report_ref"
-        },
-        {
-         "narrative_system_variable": "workspace",
-         "target_property": "workspace_name"
-        },
-        {
-        "constant_value": "5",
-        "target_property": "report_window_line_height"
+         "service_method_output_path": [0,"workspace"],
+         "target_property": "workspace"
         }
       ]
     }

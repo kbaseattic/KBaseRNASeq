@@ -1,0 +1,23 @@
+{
+        "version":"1.1",
+        "method":"KBaseRNASeq.StringTieCall_runEach",
+        "context": null,
+        "params":[
+                   {
+                    "alignmentset_id": "11696/12/2",
+                    "stringtie_dir": "/kb/module/work/tmp",
+                    "annotation_id": "11696/7/13",
+                    "job_id": "11696/11/2",
+                    "sample_id": "Ecoli_SE_8085_R1.fastq",
+                    "genome_id": "11696/5/2",
+                    "gtf_file": "/kb/module/work/tmp/Escherichia_coli_K12.gtf",
+                    "ws_id": "srividya22:1475121460798",
+                    "ws_gtf": "Escherichia_coli_K12_GTF_Annotation",
+                    "ballgown_mode": 1,
+                    "skip_reads_with_no_ref": 1
+                   }
+                ]
+}
+
+
+

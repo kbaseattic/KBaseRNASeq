@@ -1,0 +1,15 @@
+{	
+	"version":"1.1",
+	"method":"KBaseRNASeq.CufflinksCall",
+	"context": null,
+	"params":[ 
+                    {
+		      "ws_id"            : "srividya22:1474862362136",
+		      "alignmentset_id"  : "rna_test_to_new_genome_tophat_AlignmentSet",
+		      "num_threads"      : 2,
+                      "is_alignment_set" : 1,
+                      "service_ver"      : "dev",
+                      "is_local"         : 0
+                    }
+                 ]	
+}

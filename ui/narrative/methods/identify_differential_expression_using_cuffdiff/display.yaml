@@ -4,7 +4,7 @@
 name     : Identify Differential Expression using Cuffdiff
 
 tooltip  : |
-    Identify significant changes in the gene and transcript expression level using Cuffdiff
+    Identify significant changes in the gene and transcript expression level using Cuffdiff.
 screenshots :
     []
 
@@ -17,7 +17,7 @@ method-suggestions :
     related :
         []
     next :
-        []
+        [create_expression_matrix]
 
 
 #

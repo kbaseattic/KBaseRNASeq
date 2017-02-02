@@ -1,0 +1,96 @@
+#
+# Define basic display information
+#
+name     : Create Differential Expression Matrix using Ballgown
+
+tooltip  : |
+    Create differential expression matrix based on a given threshold cutoff
+screenshots :
+    []
+
+#
+# Define the set of other narrative methods that should be suggested to the user.
+#
+method-suggestions :
+    related :
+        []
+    next :
+        []
+
+
+#
+# Configure the display and description of the parameters
+#
+parameters :
+  expressionset_id :
+    ui-name : |
+      RNA-seq Expression Set
+    short-hint : |
+      Select the RNA-seq expression set associated with transcripts assembled by Cufflinks or StringTie.
+  group_name1 :
+    ui-name : |
+      Group 1 Name
+    short-hint : |
+      Provide the first group name
+  group_name2 :
+    ui-name : |
+      Group 2 Name
+    short-hint : |
+      Provide the second group name
+  expr_ids1 :
+    ui-name : |
+      Group 1 Objects
+    short-hint : |
+      Select the first group of RNA-seq Expression objects
+  expr_ids2 :
+    ui-name : |
+      Group 2 Objects
+    short-hint : |
+      Select the second group of RNA-seq Expression objects
+  output_obj_name :
+    ui-name : |
+      Differential Expression Output Name
+    short-hint : |
+      Provide the name of the differential expression analysis output
+  filtered_expr_matrix :
+    ui-name : |
+      Filtered Differential Expression Matrix
+    short-hint : |
+      Provide the name of filtered differential expression Matrix
+  fold_change_cutoff:
+      ui-name : |
+          Fold Change Cutoff
+      short-hint : |
+          Absolute value of fold change cutoff
+  alpha_cutoff:
+      ui-name : |
+          Alpha Cutoff
+      short-hint : |
+          q-value (corrected p-value)  cutoff
+
+description : |
+    <p>This App uses the transcripts for two or more samples obtained from either Cufflinks or StringTie to calculate gene and transcript levels in more than one condition and finds significant changes in the expression levels.</p>
+    
+    <p>Ballgown calculates the FPKM or TPM value of each transcript, primary transcript and gene in each sample and produces Differential Expression Matrix, Filtered Differential Expression Matrix based on the selected threshold parameters of alpha and fold change cut off.</p>
+     <p><strong>WARNING:</strong> This method is one of the steps of the <a href= "http://kbase.us/rna-seq/"> KBase RNA-seq Pipeline </a> and is not intended to run standalone.</p>
+  
+    <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
+    Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Sean McCorkle, Priya Ranjan, Jim Thomason, Vivek Kumar</p>
+    
+publications :
+    -
+        display-text: |
+            Trapnell C, Roberts A, Goff L, Pertea G, Kim D, Kelley DR, Pimentel H, Salzberg SL, Rinn JL, Pachter, L (2012) Differential gene and transcript expression analysis of RNA-seq experiments with TopHat and Cufflinks. Nature Protocols, 7(3), 562–578.
+        link: http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3334321/
+    -
+        display-text: |
+            Trapnell C, Pachter L, Salzberg SL. (2009) TopHat: discovering splice junctions with RNA-Seq. Bioinformatics. Vol 25, 9:1105-1111.
+        link: http://bioinformatics.oxfordjournals.org/content/25/9/1105.abstract
+    -
+        display-text: |
+            Kim D, Pertea G, Trapnell C, Pimentel H, Kelley R, Salzberg SL (2013) TopHat2: accurate alignment of transcriptomes in the presence of insertions, deletions and gene fusions. Genome Biology. 14:R36
+        link: http://www.genomebiology.com/2013/14/4/R36/abstract
+    -    
+        display-text: |
+            Langmead B, Trapnell C, Pop M, Salzberg SL (2009) Ultrafast and memory-efficient alignment of short DNA sequences to the human genome. Genome Biology 10:R25.
+        link: http://www.ncbi.nlm.nih.gov/pmc/articles/PMC2690996/
