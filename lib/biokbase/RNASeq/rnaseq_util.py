@@ -1050,7 +1050,7 @@ def create_and_save_volcano_plot_report( logger,
     # Lets roll our own:
     logger.info( "hacking KBaseReport.report object" )
     kbo = {
-           "text_message"          : "DIY KBaseReport object for Volcano Plot",    # string text_message;
+           "text_message"          : "Ballgown FPKM Differential Expression Results",    # string text_message;
 #           "warnings"              : [""],                                         # list<string> warnings;
            "objects_created"       : [                                             # list<WorkspaceObject> objects_created;
                                         {
@@ -1062,25 +1062,25 @@ def create_and_save_volcano_plot_report( logger,
                                           "description" : "Filtered expression Matrix object"
                                         },
                                      ],
-           "file_links"            : [                                             # list<LinkedFile> file_links;
-                                       {                                           # LinkedFile;
-                                         #"handle"      : image_zip_shock_ret['handle']['hid'],         # handle_ref handle;   string?
-                                         "handle"      : volcano_file_shock_ret['handle']['hid'],         # handle_ref handle;   string?
-                                         "description" : "volcano plot png file",  # string description;
-                                         "name"        : volcano_plot_file,        # string name;
-                                         #"URL"         : image_zip_shock_ret['handle']['url'] + "/node/" + image_zip_shock_ret['handle']['id']
-                                         "URL"         : volcano_file_shock_ret['handle']['url'] + "/node/" + volcano_file_shock_ret['handle']['id']
-                                       } 
-                                     ],
-           "html_links"            : [                                              # list<LinkedFile> html_links;
-                                       {                                            # LinkedFile;
-                                         "handle"      : html_zip_shock_ret['handle']['hid'],          # handle_ref handle;
-                                         "description" : "volcano plot html file",  # string description;
-                                         "name"        : html_file,                 # string name;
-                                         "label"       : None,
-                                         "URL"         : html_zip_shock_ret['handle']['url'] + "/node/" + html_zip_shock_ret['handle']['id']
-                                       } 
-                                     ], 
+           #"file_links"            : [                                             # list<LinkedFile> file_links;
+           #                            {                                           # LinkedFile;
+           #                              #"handle"      : image_zip_shock_ret['handle']['hid'],         # handle_ref handle;   string?
+           #                              "handle"      : volcano_file_shock_ret['handle']['hid'],         # handle_ref handle;   string?
+           #                              "description" : "volcano plot png file",  # string description;
+           #                              "name"        : volcano_plot_file,        # string name;
+           #                              #"URL"         : image_zip_shock_ret['handle']['url'] + "/node/" + image_zip_shock_ret['handle']['id']
+           #                              "URL"         : volcano_file_shock_ret['handle']['url'] + "/node/" + volcano_file_shock_ret['handle']['id']
+           #                            } 
+           #                          ],
+           #"html_links"            : [                                              # list<LinkedFile> html_links;
+           #                            {                                            # LinkedFile;
+           #                              "handle"      : html_zip_shock_ret['handle']['hid'],          # handle_ref handle;
+           #                              "description" : "volcano plot html file",  # string description;
+           #                              "name"        : html_file,                 # string name;
+           #                              "label"       : None,
+           #                              "URL"         : html_zip_shock_ret['handle']['url'] + "/node/" + html_zip_shock_ret['handle']['id']
+           #                            } 
+           #                          ], 
            "direct_html"           : None,       # string direct_html;
            "direct_html_link_index": None         # int direct_html_link_index;
           }
@@ -1091,7 +1091,8 @@ def create_and_save_volcano_plot_report( logger,
                                                    {
                                                     "type":    "KBaseReport.Report",
                                                     "data":    kbo,
-                                                    "name":    report_obj_name
+                                                    "name":    report_obj_name,
+                                                    "hidden":  1
                                                    } 
                                                   ]
                                   }
