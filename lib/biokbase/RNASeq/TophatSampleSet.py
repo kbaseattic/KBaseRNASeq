@@ -108,7 +108,7 @@ class TophatSampleSet(Tophat):
         ### Only run create_gtf_annotation if object doesnt exist
 	ws_gtf = annotation_gtf+"_GTF_Annotation"
 
-        genome_name = ws_get_obj_name( logger, ws_client, ws_id, genome_id )
+        genome_name = script_util.ws_get_obj_name( logger, ws_client, ws_id, genome_id )
         gtf_file = script_util.check_and_download_existing_handle_obj(logger,ws_client,self.urls,params['ws_id'],ws_gtf,"KBaseRNASeq.GFFAnnotation",tophat_dir,token)
         if gtf_file is None:
             gtf_file = rnaseq_util.create_gtf_annotation_from_genome(logger,ws_client,hs,self.urls,params['ws_id'],genome_id,genome_name,tophat_dir,token)
