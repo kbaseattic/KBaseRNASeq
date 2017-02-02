@@ -1002,16 +1002,18 @@ def create_and_save_volcano_plot_report( logger,
     volcano_file_path = os.path.join( ballgown_output_dir, volcano_plot_file )
     #  How best to zip this
     # if more than one, use script_util.zip_files
-    logger.info( "zipping volcano plot file")
-    image_zip_file = volcano_plot_file + ".zip"   # omit path
-    image_zip_path = os.path.join( ballgown_output_dir, image_zip_file)
-
-    with ZipFile( image_zip_path, 'w', allowZip64=True) as izip:
-        izip.write( volcano_file_path, volcano_plot_file )
-
-    logger.info( "making shock handle for zipped ")
-    image_zip_shock_ret = script_util.upload_file_to_shock( logger, image_zip_path )
-    logger.info( pformat( image_zip_shock_ret ) )
+    ##logger.info( "zipping volcano plot file")
+    ##image_zip_file = volcano_plot_file + ".zip"   # omit path
+    ##image_zip_path = os.path.join( ballgown_output_dir, image_zip_file)
+##
+    ##with ZipFile( image_zip_path, 'w', allowZip64=True) as izip:
+    ##    izip.write( volcano_file_path, volcano_plot_file )
+##
+    ##logger.info( "making shock handle for zipped ")
+    #image_zip_shock_ret = script_util.upload_file_to_shock( logger, image_zip_path )
+    #image_zip_shock_ret = script_util.upload_file_to_shock( logger, image_zip_path )
+    volcano_file_shock_ret = script_util.upload_file_to_shock( logger, volcano_file_path )
+    logger.info( pformat( volcano_file_shock_ret ) )
 
     html_file = "volcano.html"
     html_path = os.path.join( ballgown_output_dir, html_file )
@@ -1020,7 +1022,17 @@ def create_and_save_volcano_plot_report( logger,
         f = open( html_path, "w" )
     except:
         raise Exception( "can't create html file {0}".format( html_path ))
-    f.write( "<img src={0}>\n".format(  '"' + volcano_plot_file + '"' ) )
+
+    f.write( '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">\n' )
+    f.write( '<html lang="en">\n' )
+    f.write( ' <head>\n' )
+    f.write( '   <meta http-equiv="content-type" content="text/html; charset=utf-8">\n' )
+    f.write( '   <title>title</title>\n' )
+    f.write( ' </head>\n' )
+    f.write( '<body>\n' )
+    f.write( "<img src={0}>\n".format(  '"' + volcano_plot_file + '"' ) )       
+    f.write( '  </body>\n' )
+    f.write( '</html>\n' )
     f.close()
 
     with ZipFile( html_zip_path, 'w', allowZip64=True) as izip:
@@ -1052,10 +1064,12 @@ def create_and_save_volcano_plot_report( logger,
                                      ],
            "file_links"            : [                                             # list<LinkedFile> file_links;
                                        {                                           # LinkedFile;
-                                         "handle"      : image_zip_shock_ret['handle']['hid'],         # handle_ref handle;   string?
-                                         "description" : "volcano plot png zip file",  # string description;
+                                         #"handle"      : image_zip_shock_ret['handle']['hid'],         # handle_ref handle;   string?
+                                         "handle"      : volcano_file_shock_ret['handle']['hid'],         # handle_ref handle;   string?
+                                         "description" : "volcano plot png file",  # string description;
                                          "name"        : volcano_plot_file,        # string name;
-                                         "URL"         : image_zip_shock_ret['handle']['url'] + "/node/" + image_zip_shock_ret['handle']['id']
+                                         #"URL"         : image_zip_shock_ret['handle']['url'] + "/node/" + image_zip_shock_ret['handle']['id']
+                                         "URL"         : volcano_file_shock_ret['handle']['url'] + "/node/" + volcano_file_shock_ret['handle']['id']
                                        } 
                                      ],
            "html_links"            : [                                              # list<LinkedFile> html_links;
