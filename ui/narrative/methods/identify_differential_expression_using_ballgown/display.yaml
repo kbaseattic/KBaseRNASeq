@@ -1,10 +1,10 @@
 #
 # Define basic display information
 #
-name     : Create Differential Expression Matrix and Volcano Plot using Ballgown
+name     : Create Differential Expression Matrix using Ballgown
 
 tooltip  : |
-    Create differential expression matrix and volcano plot based on a given threshold cutoff
+    Create differential expression matrix based on a given threshold cutoff
 screenshots :
     []
 
@@ -71,10 +71,8 @@ parameters :
 description : |
     <p>This App uses the transcripts for two or more samples obtained from either Cufflinks or StringTie to calculate gene and transcript levels in more than one condition and finds significant changes in the expression levels.</p>
     
-    <p>Ballgown calculates the FPKM or TPM value of each transcript, primary transcript and gene in each sample and produces Differential Expression Matrix, Filtered Differential Expression Matrix based on the selected threshold parameters.</p>
-    
-    <p>Ballgown generates the volcano plot based on the input threshold cut off parameters given by user and then generates q-value distribution (log2(fold change) on the x-axis and -log10(q value) on the y-axis)</p>. 
-    <p><strong>WARNING:</strong> This method is one of the steps of the <a href= "http://kbase.us/rna-seq/"> KBase RNA-seq Pipeline </a> and is not intended to run standalone.</p>
+    <p>Ballgown calculates the FPKM or TPM value of each transcript, primary transcript and gene in each sample and produces Differential Expression Matrix, Filtered Differential Expression Matrix based on the selected threshold parameters of alpha and fold change cut off.</p>
+     <p><strong>WARNING:</strong> This method is one of the steps of the <a href= "http://kbase.us/rna-seq/"> KBase RNA-seq Pipeline </a> and is not intended to run standalone.</p>
   
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
     Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Sean McCorkle, Priya Ranjan, Jim Thomason, Vivek Kumar</p>
