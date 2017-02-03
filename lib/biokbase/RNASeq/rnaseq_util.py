@@ -695,6 +695,11 @@ def create_sample_dir_group_file( logger,
             raise Exception( "first condition group must have at least two members" )
         if ( len( group2_name_set) < 2 ):
             raise Exception( "second condition group must have at least two members" )
+
+        dup = find_dup( group1_name_set + group2_name_set )
+        if ( dup ):
+            raise Exception( "input error:  duplicate input found {0}".format( dup ) )
+
         try:
             f = open( sample_dir_group_file, "w")
         except Exception:
@@ -723,6 +728,17 @@ def create_sample_dir_group_file( logger,
 
         return( group_name_list )
 
+# returns the value of the first duplicate member found in list
+# returns None if no duplicates found
+
+def  find_dup( lst ):
+    have = {}
+    for l in lst:
+        if l in have:
+            return l
+        else:
+            have[l] = True
+    return None
 
 def get_ws_object_names( logger, ws_client, ws_id, obj_id_list ):
     name_list = []
