@@ -1,0 +1,21 @@
+{
+        "version":"1.1",
+        "method":"KBaseRNASeq.CufflinksCall_runEach",
+        "context": null,
+        "params":[
+                   {
+       	             "cufflinks_dir": "/kb/module/work/tmp",
+       	             "annotation_id": "11600/9/1",
+       	             "job_id": "11600/12/15",
+       	             "sample_id": "EColi_SE_8086_R1_tophat_alignment",
+       	             "genome_id": "11600/5/2",
+       	             "gtf_file": "/kb/module/work/tmp/Escherichia_coli_K12.gtf",
+       	             "ws_id": "srividya22:1474862362136",
+       	             "ws_gtf": "Escherichia_coli_K12_GTF_Annotation",
+       	             "alignmentset_id": "11600/13/16"
+                   }
+                ]
+}
+
+
+

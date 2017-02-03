@@ -6,75 +6,44 @@
   "categories" : ["active","expression","assembly"],
   "widgets" : {
     "input" : null,
-    "output" : "kbaseExpressionSampleTable"
+    "output" : "kbaseExpressionSampleTableNew"
   },
    "parameters" : [ {
-    "id" : "alignment_sample_id",
+    "id" : "alignmentset_id",
     "optional" : false,
     "advanced" : false,
     "allow_multiple" : false,
     "default_values" : [ "" ],
     "field_type" : "text",
     "text_options" : {
-      "valid_ws_types" : ["KBaseRNASeq.RNASeqSampleAlignment" ]
+      "valid_ws_types" : ["KBaseRNASeq.RNASeqAlignmentSet" , "KBaseRNASeq.RNASeqAlignment" ]
     }
   }, {
-    "id" : "annotation_gtf",
-    "optional" : true,
-    "advanced" : false,
-    "allow_multiple" : false,
-    "default_values" : [ "" ],
-    "field_type" : "text",
-    "text_options" : {
-      "valid_ws_types" : ["KBaseRNASeq.ReferenceAnnotation" ]
-    }
-  }, {
-    "id" : "output_obj_name",
-    "optional" : false,
-    "advanced" : false,
-    "allow_multiple" : false,
-    "default_values" : [ "" ],
-    "field_type" : "text",
-    "text_options" : {
-      "valid_ws_types" : ["KBaseExpression.ExpressionSample"],
-      "is_output_name": true
-    }
-  }, {
-   "id" : "num-threads",
+   "id" : "min_intron_length",
     "optional" : true,
     "advanced" : true,
     "allow_multiple" : false,
-    "default_values" : [ "" ],    
+    "default_values" : [ "50" ],    
     "field_type" : "text",
     "text_options" : {
       "validate_as": "int"
     }
   }, {
-   "id" : "min-intron-length",
+    "id" : "max_intron_length",
     "optional" : true,
     "advanced" : true,
     "allow_multiple" : false,
-    "default_values" : [ "" ],    
+    "default_values" : [ "300000" ],    
     "field_type" : "text",
     "text_options" : {
       "validate_as": "int"
     }
   }, {
-    "id" : "max-intron-length",
+    "id" : "overhang_tolerance",
     "optional" : true,
     "advanced" : true,
     "allow_multiple" : false,
-    "default_values" : [ "" ],    
-    "field_type" : "text",
-    "text_options" : {
-      "validate_as": "int"
-    }
-  }, {
-    "id" : "overhang-tolerance",
-    "optional" : true,
-    "advanced" : true,
-    "allow_multiple" : false,
-    "default_values" : [ "" ],    
+    "default_values" : [ "8" ],    
     "field_type" : "text",
     "text_options" : {
       "validate_as": "int"
@@ -90,42 +59,34 @@
           "narrative_system_variable": "workspace",
           "target_property" : "ws_id"
         },
+	{
+          "constant_value"  : 2,
+          "target_property" : "num_threads"
+        },      
         {
-          "input_parameter" : "alignment_sample_id",
-          "target_property" : "alignment_sample_id"
+          "input_parameter" : "alignmentset_id",
+          "target_property" : "alignmentset_id"
         },
         {
-          "input_parameter" : "annotation_gtf",
-          "target_property" : "annotation_gtf"
+          "input_parameter" : "min_intron_length",
+          "target_property" : "min_intron_length"
         },
         {
-          "input_parameter" : "output_obj_name",
-          "target_property" : "output_obj_name"
+          "input_parameter" : "max_intron_length",
+          "target_property" : "max_intron_length"
         },
         {
-          "input_parameter" : "num-threads",
-          "target_property" : "num-threads"
-        },
-        {
-          "input_parameter" : "min-intron-length",
-          "target_property" : "min-intron-length"
-        },
-        {
-          "input_parameter" : "max-intron-length",
-          "target_property" : "max-intron-length"
-        },
-        {
-          "input_parameter" : "overhang-tolerance",
-          "target_property" : "overhang-tolerance"
+          "input_parameter" : "overhang_tolerance",
+          "target_property" : "overhang_tolerance"
       }],
       "output_mapping" : [
 	{
-          "narrative_system_variable": "workspace",
-          "target_property" : "workspace"
+         "service_method_output_path": [0,"output"],
+         "target_property": "output"
         },
-	{
-	  "input_parameter" : "output_obj_name",
-          "target_property" : "output"
+        {
+         "service_method_output_path": [0,"workspace"],
+         "target_property": "workspace"
         }
       ]
     }

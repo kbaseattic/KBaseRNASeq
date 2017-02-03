@@ -6,17 +6,17 @@
   "categories" : ["active","expression"],
   "widgets" : {
     "input" : null,
-    "output" : "kbaseRNASeqAnalysis"
+    "output" : "kbaseRNASeqAnalysisNew"
   },
    "parameters" : [ {
-    "id" : "rnaseq_exp_details",
+    "id" : "expressionset_id",
     "optional" : false,
     "advanced" : false,
     "allow_multiple" : false,
     "default_values" : [ "" ],
     "field_type" : "text",
     "text_options" : {
-      "valid_ws_types" : ["KBaseRNASeq.RNASeqAnalysis" ]
+      "valid_ws_types" : ["KBaseRNASeq.RNASeqExpressionSet" ]
     }
   },{
     "id" : "output_obj_name",
@@ -26,31 +26,31 @@
     "default_values" : [ "" ],
     "field_type" : "text",
     "text_options" : {
-      "valid_ws_types" : ["KBaseRNASeq.RNASeqCuffdiffdifferentialExpression"],
+      "valid_ws_types" : ["KBaseRNASeq.RNASeqDifferentialExpression"],
       "is_output_name": true
     }
   }, {
-    "id" : "num-threads",
+    "id" : "num_threads",
     "optional" : true,
     "advanced" : true,
     "allow_multiple" : false,
-    "default_values" : [ "" ],    
+    "default_values" : [ "2" ],    
     "field_type" : "text",
     "text_options" : {
       "validate_as": "int"
     }
   }, {
-    "id" : "min-alignment-count",
+    "id" : "min_alignment_count",
     "optional" : true,
     "advanced" : true,
     "allow_multiple" : false,
-    "default_values" : [ "" ],    
+    "default_values" : [ "10" ],    
     "field_type" : "text",
     "text_options" : {
       "validate_as": "int"
     }
  }, {
-    "id" : "time-series",
+    "id" : "time_series",
     "optional":true,
     "advanced":true,
     "allow_multiple":false,
@@ -61,7 +61,7 @@
       "unchecked_value": 0
     }
   }, {
-    "id" : "multi-read-correct",
+    "id" : "multi_read_correct",
     "optional":true,
     "advanced":true,
     "allow_multiple":false,
@@ -79,11 +79,11 @@
     "default_values" : [ "" ],
     "field_type" : "text"
     }, {
-    "id" : "library-type",
+    "id" : "library_type",
     "optional" : true,
     "advanced" : true,
     "allow_multiple" : false,
-    "default_values" : [ "" ],
+    "default_values" : [ "fr-unstranded" ],
     "field_type" : "dropdown",
     "dropdown_options":{
       "options": [
@@ -102,11 +102,11 @@
      ]
     }
     }, {
-   "id" : "library-norm-method",
+   "id" : "library_norm_method",
     "optional" : true,
     "advanced" : true,
     "allow_multiple" : false,
-    "default_values" : [ "" ],
+    "default_values" : [ "classic-fpkm" ],
     "field_type" : "dropdown",
     "dropdown_options":{
       "options": [
@@ -136,40 +136,40 @@
           "target_property" : "ws_id"
         },
         {
-          "input_parameter" : "rnaseq_exp_details",
-          "target_property" : "rnaseq_exp_details"
+          "input_parameter" : "expressionset_id",
+          "target_property" : "expressionset_id"
         },
         {
           "input_parameter" : "output_obj_name",
           "target_property" : "output_obj_name"
         },
         {
-          "input_parameter" : "num-threads",
-          "target_property" : "num-threads"
+          "input_parameter" : "num_threads",
+          "target_property" : "num_threads"
         },
         {
-          "input_parameter" : "time-series",
-          "target_property" : "time-series"
+          "input_parameter" : "time_series",
+          "target_property" : "time_series"
         },
         {
-          "input_parameter" : "multi-read-correct",
-          "target_property" : "multi-read-correct"
+          "input_parameter" : "multi_read_correct",
+          "target_property" : "multi_read_correct"
         },
         {
-          "input_parameter" : "min-alignment-count",
-          "target_property" : "min-alignment-count"
+          "input_parameter" : "min_alignment_count",
+          "target_property" : "min_alignment_count"
         },
        {
           "input_parameter" : "labels",
           "target_property" : "labels"
         },
         {
-          "input_parameter" : "library-type",
-          "target_property" : "library-type"
+          "input_parameter" : "library_type",
+          "target_property" : "library_type"
         },
         {
-          "input_parameter" : "library-norm-method",
-          "target_property" : "library-norm-method"
+          "input_parameter" : "library_norm_method",
+          "target_property" : "library_norm_method"
           
       }],
       "output_mapping" : [
@@ -178,7 +178,7 @@
           "target_property" : "workspace"
         },
 	{
-          "input_parameter" : "rnaseq_exp_details",
+          "input_parameter" : "output_obj_name",
           "target_property" : "output"
         },
 	{

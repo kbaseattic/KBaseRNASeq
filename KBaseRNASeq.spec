@@ -1,58 +1,44 @@
 #include <KBaseAssembly.spec>
-#include <KBaseExpression.spec>
-#include <MAK.spec>
+#include <KBaseFile.spec>
 
  module KBaseRNASeq{
 
    /* Importing datatype objects from other modules */
-   
+   /* indicates true or false values, false <= 0, true >=1 */
+	typedef int bool; 
    /*
       Create an analysis id RNASeq analysis object
-      @id KBaseRNASeq.RNASeqAnalysis 
+      @id KBaseRNASeq.RNASeqSampleSet 
    */
       
-      typedef string ws_rnaseq_analysis_id;
+      typedef string ws_rnaseq_sampleset_id;
    
    /*
-      Id for KBaseRNASeq.RNASeqCuffmergetranscriptome
-      @id ws KBaseRNASeq.RNASeqCuffmergetranscriptome
-   */
-
-        typedef string ws_transcriptome_id;
-   
-   /*
-      Id for KBaseRNASeq.RNASeqCuffdiffdifferentialExpression
-      @id ws KBaseRNASeq.RNASeqCuffdiffdifferentialExpression
+      Id for KBaseRNASeq.RNASeqDifferentialExpression
+      @id ws KBaseRNASeq.RNASeqDifferentialExpression
    */
 
         typedef string ws_cuffdiff_diff_exp_id;
 
-   /*
-      reference genome id for mapping the RNA-Seq fastq file
-      @id ws KBaseGenomes.Genome
-   */
-      
-	typedef string ws_genome_id;
- 
    /* 
       Id for KBaseAssembly.SingleEndLibrary
-      @id ws KBaseAssembly.SingleEndLibrary
+      @name ws KBaseAssembly.SingleEndLibrary
    */
  
-      	typedef string ws_singleEndLibrary_id;
+      	typedef string ws_SingleEndLibrary;
    /*
-      Id for KBaseGenomes.ContigSet
-      @id ws KBaseGenomes.ContigSet
+      Id for KBaseAssembly.PairedEndLibrary
+      @name ws KBaseAssembly.PairedEndLibrary
    */
 
-        typedef string ws_reference_assembly_id;
- 
-   /* 
-      Id for KBaseAssembly.PairedEndLibrary
-      @id ws KBaseAssembly.PairedEndLibrary
+        typedef string ws_PairedEndLibrary;
+
+   /*
+      reference genome annotation id for mapping the RNA-Seq fastq file
+      @id ws KBaseGenomeAnnotations.GenomeAnnotation
    */
- 
-      	typedef string ws_pairedEndLibrary_id;
+
+        typedef string ws_genome_annotation_id;
    
    /* 
      Id for the handle object
@@ -76,7 +62,7 @@
 
 
   /*
-      @optional genome_id genome_scientific_name
+      @optional genome_scientific_name
       @metadata ws handle.file_name
       @metadata ws handle.type
       @metadata ws genome_scientific_name
@@ -86,19 +72,20 @@
    	typedef structure {
        		Handle handle;
                 int size;	
-       		ws_genome_id genome_id;
+       		/*ws_genome_annotation_id genome_id;*/
+       		string genome_id;
 		string genome_scientific_name;
-   	} ReferenceAnnotation;
+   	} GFFAnnotation;
 
   /*
-      Id for KBaseRNASeq.ReferenceAnnotation
-      @id ws KBaseRNASeq.ReferenceAnnotation
+      Id for KBaseRNASeq.GFFAnnotation
+      @id ws KBaseRNASeq.GFFAnnotation
    */
 
         typedef string ws_referenceAnnotation_id;
 
   /*
-      @optional genome_id genome_scientific_name handle ftp_url
+      @optional genome_scientific_name handle ftp_url
       @metadata ws handle.file_name
       @metadata ws handle.type
       @metadata ws genome_id
@@ -108,7 +95,8 @@
         typedef structure {
                 Handle handle;
 		int size;
-                ws_genome_id genome_id;
+                /*ws_genome_annotation_id genome_id;*/
+                string genome_id;
 		string ftp_url;
 		string genome_scientific_name;
         }Bowtie2Indexes;
@@ -120,99 +108,36 @@
 
         typedef string ws_bowtieIndex_id;
 
-  /* Kbase SampleAnnotation ID */
-    typedef string sample_annotation_id;
-
-  /* Kbase OntologyID  */
-    typedef string ontology_id;
-
-  /* list of Kbase Ontology IDs */
-    typedef list<ontology_id> ontology_ids;
-
-  /* Kbase OntologyName */
-    typedef string ontology_name;
-
-  /* Kbase OntologyDefinition */
-    typedef string ontology_definition;
-
-  /* Data structure for top level information for sample annotation and ontology */
-    typedef structure {
-        sample_annotation_id sample_annotation_id;
-        ontology_id ontology_id;
-        ontology_name ontology_name;
-        ontology_definition ontology_definition;
-    } SampleAnnotation;
-
-  /*
-	List of KBaseExpression.SampleAnnotation
-  */
-	typedef list<SampleAnnotation> sample_annotations;
-
-  /* Specification for the RNASeqFastq Metadata
-   
-    Object for the RNASeq Metadata
-    @optional library_type platform source tissue condition source_id ext_source_date sample_desc title sample_annotations genome_id genome_scientific_name custom*/
-   	
-    typedef structure {
-		string sample_id;
-       		string library_type;
-		string replicate_id;
-       		string platform;
-       		string sample_desc;
-       		string title;
-       		string source;
-       		string  source_id;
-       		string ext_source_date;
-       		string domain; 
-       		ws_genome_id genome_id;
-		string genome_scientific_name;
-		sample_annotations sample_annotations;
-       		string tissue;
-       		string condition;
-		string custom;
-    	}RNASeqSampleMetaData;
-
 /*
-      Complete List of RNASeq MetaData
-    
+  Object to Describe the RNASeq SampleSet
+  @optional platform num_replicates source publication_Id external_source_date sample_ids
+  @metadata ws sampleset_id
+  @metadata ws platform
+  @metadata ws num_samples
+  @metadata ws num_replicates
+  @metadata ws length(condition)
 */
-     typedef list<RNASeqSampleMetaData> RNASeqSamplesMetaData;
- 
 
+ typedef structure {
+        string sampleset_id;
+        string sampleset_desc;
+	string domain;
+        string platform;
+        int num_samples;
+        int num_replicates;
+        list<string> sample_ids;
+        list<string> condition;
+        string source;
+        string Library_type;
+        string publication_Id;
+        string external_source_date;
+        }RNASeqSampleSet;
 /*
-     RNASeq fastq  object
-     @optional  singleend_sample pairedend_sample metadata analysis_id analysis_desc
-     @metadata ws analysis_id
-     @metadata ws analysis_desc
-     @metadata ws metadata.sample_id
-     @metadata ws metadata.replicate_id
-     @metadata ws metadata.library_type
-     @metadata ws metadata.platform
-     @metadata ws metadata.title
-     @metadata ws metadata.source
-     @metadata ws metadata.source_id
-     @metadata ws metadata.sample_desc
-     @metadata ws metadata.tissue
-     @metadata ws metadata.condition
-     @metadata ws metadata.genome_id
-     @metadata ws metadata.ext_source_date
-     @metadata ws length(metadata.sample_annotations)
-*/
+      Id for KBaseRNASeq.RNASeqSampleSet
+      @id ws KBaseRNASeq.RNASeqSampleSet
+   */
 
-     typedef structure {
-	 KBaseAssembly.SingleEndLibrary singleend_sample;
-	 KBaseAssembly.PairedEndLibrary pairedend_sample;
-	 ws_rnaseq_analysis_id  analysis_id;
-	 string analysis_desc;
-	 RNASeqSampleMetaData metadata;  
-     }RNASeqSample;
-
-  
-/* 
-    list of RNASeqSamples
-*/
-    
-    typedef list<RNASeqSample> RNASeqSamplesSet;
+        typedef string ws_Sampleset_id;
 
 /*
   The workspace id of a RNASeqSample
@@ -221,121 +146,25 @@
 
     typedef string ws_rnaseqSample_id;
 
-    
- /*
-    Object for the RNASeq Alignment bam file
-    @optional aligner_opts aligner_version aligned_using metadata
-    @metadata ws metadata.sample_id
-    @metadata ws metadata.replicate_id
-    @metadata ws metadata.platform
-    @metadata ws metadata.title
-    @metadata ws metadata.source
-    @metadata ws metadata.source_id
-    @metadata ws metadata.ext_source_date
-    @metadata ws metadata.sample_desc
-    @metadata ws metadata.genome_id
-    @metadata ws metadata.tissue
-    @metadata ws metadata.condition
-    @metadata ws aligned_using
-    @metadata ws aligner_version
-
-    */
-
-    typedef structure{
-	string aligned_using;
-	string aligner_version;
-	list<mapping<string opt_name, string opt_value>> aligner_opts;
-	Handle file;
-	int size;
-	RNASeqSampleMetaData metadata;
-    }RNASeqSampleAlignment;
-
-/*
-      list of RNASeqSampleAlignment
-*/
-
- typedef list<RNASeqSampleAlignment> RNASeqSampleAlignmentSet;
-
-
-/* 
-  The workspace id for a RNASeqSampleAlignment object
-  @id ws KBaseRNASeq.RNASeqSampleAlignment
-*/
-
- typedef string ws_samplealignment_id;
-
-/*
-  The workspace object for a RNASeqSampleExpression
-  @optional description sample_annotations title data_quality_level original_median external_source_date default_control_sample averaged_from_samples strain source file processing_comments characteristics
-  @metadata ws id
-  @metadata ws type
-  @metadata ws numerical_interpretation
-  @metadata ws description
-  @metadata ws title
-  @metadata ws external_source_date
-  @metadata ws genome_id
-  @metadata ws platform
-  @metadata ws strain
-  @metadata ws source
-  @metadata ws characteristics
-  @metadata ws processing_comments
-*/
-  	
-   typedef structure {
-        string id;
-        string type;
-        string numerical_interpretation;
-        string description;
-        string title;
-        int data_quality_level;
-        float original_median;
-        string external_source_date;
-        list<mapping<string feature_id,float feature_value>> expression_levels; 
-        ws_genome_id genome_id; 
-        sample_annotations sample_annotations;
-        string  platform; 
-        string default_control_sample; 
-        string averaged_from_samples; 
-        string strain; 
-        string source; 
-        Handle file;
-        string processing_comments;
-        string characteristics;
-    }RNASeqSampleExpression;
-
-/*
-      Id for expression sample
-      @id ws KBaseExpression.ExpressionSample
-
-   */  
-        typedef string ws_expression_sample_id;
-
-   /*  
-        List of Expression sample ids
-
-   */  
-
-        typedef list<ws_expression_sample_id> ws_expression_sample_ids;
-
-
 /* Structure Read_mapping_sections
-   @optional introns exons splice_junctions intergenic_regions
+   @optional five_UTR three_UTR exons TSS TES introns intergenic_regions
 */
 
    typedef structure{
-        int introns;
-        int exons;
-        int splice_junctions;
-        int intergenic_regions;
+        float five_UTR;
+        float three_UTR;
+        float TSS;
+        float TES;
+        float exons;
+        float introns;
+        float intergenic_regions;
         }Read_mapping_sections;
-	
+
 /*
     Object - getAlignmentStats method
     @optional singletons multiple_alignments properly_paired alignment_rate unmapped_reads mapped_sections total_reads mapped_reads
 */
     typedef structure{
-        /* later change this to ws_samplealignment_id */
-	string alignment_id;
         int properly_paired;
         int multiple_alignments;
         int singletons;
@@ -345,11 +174,176 @@
         int mapped_reads;
         int total_reads;
         }AlignmentStatsResults;
+
+ /*
+    Object for the RNASeq Alignment bam file
+    @optional aligner_opts aligner_version aligned_using replicate_id platform size mapped_sample_id sampleset_id alignment_stats bowtie2_index 
+    @metadata ws aligned_using
+    @metadata ws aligner_version
+    @metadata ws genome_id
+    @metadata ws size
+    @metadata ws alignment_stats.total_reads
+    @metadata ws alignment_stats.mapped_reads
+    @metadata ws alignment_stats.alignment_rate
+    @metadata ws read_sample_id
+    @metadata ws library_type
+    @metadata ws replicate_id
+    @metadata ws condition
+    @metadata ws platform
+    */
+
+    typedef structure{
+	string aligned_using;
+	string aligner_version;
+	string library_type;
+	string read_sample_id;
+	string replicate_id;
+	string condition;
+	string platform;
+        /*ws_genome_annotation_id genome_id;*/
+        string genome_id;
+        ws_bowtieIndex_id bowtie2_index;
+	mapping<string opt_name, string opt_value> aligner_opts;
+        mapping<string condition,mapping<string sample_id , string replicate_id>> mapped_sample_id;
+	ws_Sampleset_id sampleset_id;
+	Handle file;
+	int size;
+        AlignmentStatsResults alignment_stats;	
+    }RNASeqAlignment;
+
+
 /* 
+  The workspace id for a RNASeqAlignment object
+  @id ws KBaseRNASeq.RNASeqAlignment
+*/
+
+ typedef string ws_samplealignment_id;
+
+/*
+  Set object for RNASeqAlignment objects
+  @optional condition sample_alignments bowtie2_index aligned_using aligner_version aligner_opts
+  @metadata ws aligned_using
+  @metadata ws aligner_version
+  @metadata ws sampleset_id
+*/
+
+  typedef structure {
+	string aligned_using;
+	string aligner_version;
+	mapping<string opt_name, string opt_value> aligner_opts;
+	ws_Sampleset_id sampleset_id;
+	/*ws_genome_annotation_id genome_id;*/
+	string genome_id;
+	ws_bowtieIndex_id bowtie2_index;
+	list<string> read_sample_ids;
+	list<string> condition;
+	list<ws_samplealignment_id> sample_alignments;
+        list<mapping<string read_sample_name , string  alignment_name>> mapped_rnaseq_alignments;
+        list<mapping<string read_sample_id , ws_samplealignment_id alignment_id>> mapped_alignments_ids;
+	}RNASeqAlignmentSet;
+
+/*
+  The workspace id for a RNASeqAlignmentSet object
+  @id ws KBaseRNASeq.RNASeqAlignmentSet
+*/
+
+ typedef string ws_alignmentSet_id;
+
+
+/*
+  The workspace object for a RNASeqExpression
+  @optional description platform tool_opts data_quality_level original_median external_source_date source file processing_comments mapped_sample_id tpm_expression_levels
+  @metadata ws type
+  @metadata ws numerical_interpretation
+  @metadata ws description
+  @metadata ws genome_id
+  @metadata ws platform
+*/
+  	
+   typedef structure {
+        string id;
+        string type;
+        string numerical_interpretation;
+        string description;
+        int data_quality_level;
+        float original_median;
+        string external_source_date;
+        mapping<string feature_id,float feature_value> expression_levels; 
+        mapping<string feature_id,float feature_value> tpm_expression_levels;
+        /*ws_genome_annotation_id genome_id;*/
+	string genome_id;
+        ws_referenceAnnotation_id annotation_id;
+	string condition;
+	mapping<string sample_id,ws_samplealignment_id alignment_id> mapped_rnaseq_alignment;
+        mapping<string condition,mapping<string sample_id , string replicate_id>> mapped_sample_id;
+        string  platform; 
+        string source; 
+        Handle file;
+        string processing_comments;
+        string tool_used;
+        string tool_version;
+	mapping<string opt_name, string opt_value> tool_opts; 
+    }RNASeqExpression;
+
+/*
+      Id for expression sample
+      @id ws KBaseRNASeq.RNASeqExpression
+
+   */  
+        typedef string ws_expression_sample_id;
+
+/*
+  Set object for RNASeqExpression objects
+  @optional sample_ids condition tool_used tool_version tool_opts
+  @metadata ws tool_used
+  @metadata ws tool_version
+  @metadata ws alignmentSet_id 
+*/
+
+  typedef structure {
+        string tool_used;
+        string tool_version;
+	mapping<string opt_name, string opt_value> tool_opts;
+	ws_alignmentSet_id alignmentSet_id;
+        ws_Sampleset_id sampleset_id;
+        /*ws_genome_annotation_id genome_id;*/
+	string genome_id;
+        list<string> sample_ids;
+        list<string> condition;
+        list<ws_expression_sample_id> sample_expression_ids;
+        list<mapping<string read_sample_name , string expression_name>> mapped_expression_objects;
+        list<mapping<string read_sample_id , ws_expression_sample_id expression_id>> mapped_expression_ids;
+        }RNASeqExpressionSet;
+/*
+      Id for expression sample set
+      @id ws KBaseRNASeq.RNASeqExpressionSet
+
+   */
+        typedef string ws_expressionSet_id;
+/*
+   Object RNASeqDifferentialExpression file structure
+   @optional tool_opts tool_version sample_ids comments
+*/
+   typedef structure {
+        string tool_used;
+        string tool_version;
+        list<mapping<string opt_name, string opt_value>> tool_opts;	
+        Handle file;
+        list<string> sample_ids;
+        list<string> condition;
+        /*ws_genome_annotation_id genome_id;*/
+        string genome_id;
+        ws_expressionSet_id expressionSet_id;
+        ws_alignmentSet_id alignmentSet_id;
+        ws_Sampleset_id sampleset_id;
+        string comments;
+        } RNASeqDifferentialExpression;
+
+/*
     Object for the cummerbund plot
     @optional png_json_handle plot_title plot_description
 */
-    typedef structure {    
+    typedef structure {
        Handle png_handle;
        Handle png_json_handle;
        string plot_title;
@@ -359,127 +353,18 @@
   List of cummerbundplot
 */
 
-    
+
     typedef list<cummerbundplot> cummerbundplotSet;
 
 /*
-   Object type for the cummerbund_output   
+   Object type for the cummerbund_output
 */
     typedef structure {
        cummerbundplotSet cummerbundplotSet;
        string rnaseq_experiment_id;
        string cuffdiff_input_id;
        }cummerbund_output;
-/*
-  Object type to define replicate group
-/*
 
-  typedef structure{
-	ws_rnaseq_analysis_id analysis_id;
-        string sample_name;
-        ws_rnaseqSample_ids sample_replicate_group;
-    }RNASeqSampleReplicateGroup;
-
-/*
-  Object type to define id to RNASeqSampleReplicateGroup
-  @id ws KBaseRNASeq.RNASeqSampleReplicateGroup
-*/
-   
-  typedef string ws_RNASeqSampleReplicateGroup_id;
-
-/*
-  The mapping object for the ws_rnaseqSample_id with the ws_samplealignment_id
-*/
-
-  typedef mapping<ws_rnaseqSample_id sampleID,ws_samplealignment_id sampleAlignmentID> mapped_sample_alignment;
-
-/*
-  The mapping object for the ws_rnaseqSample_id with the ws_expression_sample_id
-*/
-
-  typedef mapping<ws_rnaseqSample_id sampleID,ws_expression_sample_id exp_sampleID> mapped_sample_expression;
-
-
-/*
-  Object to Describe the RNASeq analysis
-  @optional experiment_desc num_replicates title platform genome_id source tissue condition annotation_id publication_id source_ids external_source_date sample_ids alignments expression_values sample_annotations_map genome_scientific_name sample_rep_groups alignments expression_values transcriptome_id cuffdiff_diff_exp_id experiment_design
-  @metadata ws experiment_id
-  @metadata ws title
-  @metadata ws experiment_desc
-  @metadata ws experiment_design
-  @metadata ws platform
-  @metadata ws genome_id
-  @metadata ws genome_scientific_name
-  @metadata ws num_samples
-  @metadata ws num_replicates 
-  @metadata ws annotation_id 
-*/
-
- typedef structure {
-        string experiment_id;
-        string title;
-	string experiment_desc;
-	string experiment_design;
-	string domain;
-        string platform;
-        ws_genome_id genome_id;
-	string genome_scientific_name;
-        int num_samples;
-        int num_replicates;
-        list<ws_rnaseqSample_id> sample_ids;
-	list<ws_RNASeqSampleReplicateGroup_id>  sample_rep_groups;
-	mapped_sample_alignment alignments;
-	mapped_sample_expression expression_values;
-	ws_transcriptome_id transcriptome_id;
-	ws_cuffdiff_diff_exp_id cuffdiff_diff_exp_id;
-        list<string> tissue;
-        list<string> condition;
-	mapping<string sample_name,sample_annotations> sample_annotations_map;
-        ws_referenceAnnotation_id annotation_id;
-        string source;
-        string Library_type;
-        string publication_id;
-        list<string> source_ids;
-        string external_source_date;
-        }RNASeqAnalysis;
-
-
-/*
-    Object for RNASeq Merged transcriptome assembly
- 	@metadata ws analysis.experiment_id
-	@metadata ws analysis.title
-	@metadata ws analysis.Library_type
-	@metadata ws analysis.platform
-	@metadata ws analysis.num_samples
-	@metadata ws analysis.num_replicates
-	@metadata ws length(analysis.sample_ids)
-	@metadata ws length(analysis.tissue)
-	@metadata ws length(analysis.condition)
-*/
-
-   typedef structure{
-	Handle file;
-	RNASeqAnalysis analysis;
-	}RNASeqCuffmergetranscriptome;
-
-/*
-   Object RNASeqDifferentialExpression file structure
-	@metadata ws analysis.experiment_id
-        @metadata ws analysis.title
-        @metadata ws analysis.Library_type
-        @metadata ws analysis.platform
-        @metadata ws analysis.num_samples
-        @metadata ws analysis.num_replicates
-        @metadata ws length(analysis.sample_ids)
-        @metadata ws length(analysis.tissue)
-        @metadata ws length(analysis.condition)
-
-*/
-   typedef structure {
-      	Handle file;
-	RNASeqAnalysis analysis;
-      	}RNASeqCuffdiffdifferentialExpression;
-	
 
 /*
      Object for Report type
@@ -489,123 +374,67 @@
 		string report_ref;
     }ResultsToReport;
 
+
+    typedef structure {
+               string function;
+               string gene;
+               string locus;
+               float log2fc;
+               float log2fc_f;
+               float log2fc_fa;
+               float p_value;
+               float p_value_f;
+               string significant;
+               float value_1;
+               float value_2;
+                } gene_expression_stat;
+ 
+    typedef list <gene_expression_stat> voldata;
+    typedef structure {
+               string condition_1;
+               string condition_2;
+               voldata voldata;
+                } condition_pair_unit;
+ 
+ 
+    typedef structure {
+               list <condition_pair_unit> condition_pairs;
+               list <string> unique_conditions;
+                } DifferentialExpressionStat;
+ 
 /* FUNCTIONS used in the service */
-
-/* Function parameters to call fastqc */
-
-   typedef structure{
-       ws_rnaseqSample_id sample_id;
-       string output_obj_name;
-       list<mapping<string parameter ,string values>> results;
-       }fastqcParams;
-
-async funcdef fastqcCall(fastqcParams params)
-     returns(string job_id) authentication required;
-	
-   typedef structure{
-	string ws_id;
-	ws_singleEndLibrary_id singleend_sample;
-	ws_pairedEndLibrary_id pairedend_sample;
-	ws_rnaseq_analysis_id analysis_id;
-	string sample_id;
-	string library_type;
-	string replicate_id;
-	string platform;
-	string sample_desc;
-	string  title;
-	string source;
-	string ext_source_date;
-	string domain;
-	ws_genome_id genome_id;
-	list<string> tissue;
-	list<string> condition;
-   }associateReadsParams;
-	
-async funcdef associateReads(associateReadsParams params)
-     returns(RNASeqSample) authentication required;
  	
    typedef structure{
 	string ws_id;
-   	string experiment_id;
-   	string title;
-   	string experiment_desc;
-	string experiment_design;
-	string domain;
-   	string platform;
-   	ws_genome_id genome_id;
-   	int num_samples;
-   	int num_replicates;
-	list<ws_rnaseqSample_id> sample_ids;
-   	list<string> tissue;
+   	string sampleset_id;
+   	string sampleset_desc;
+   	string domain;
+        string platform;
+	list<string> sample_ids;
    	list<string> condition;
-   	ws_referenceAnnotation_id annotation_id;
    	string source;
    	string Library_type;
-   	string publication_id;
+	string publication_id;
    	string external_source_date;
-   	}SetupRNASeqAnalysisParams;
+   	}CreateRNASeqSampleSetParams;
    	
-async funcdef SetupRNASeqAnalysis(SetupRNASeqAnalysisParams params)
-	returns(RNASeqAnalysis) authentication required;
+  async funcdef CreateRNASeqSampleSet(CreateRNASeqSampleSetParams params)
+	returns(RNASeqSampleSet) authentication required;
 	
    typedef structure{
 	string ws_id;
-	ws_reference_assembly_id reference;
+	string reference;
 	string output_obj_name;
 	}Bowtie2IndexParams;
 
-async funcdef BuildBowtie2Index(Bowtie2IndexParams params)
+  async funcdef BuildBowtie2Index(Bowtie2IndexParams params)
      returns(ResultsToReport) authentication required;
-
-   typedef structure{
-        string ws_id;
-        ws_genome_id reference;
-        string output_obj_name;
-        }GetFeaturesToGTFParams;
-
-async funcdef GetFeaturesToGTF(GetFeaturesToGTFParams params)
-     returns(ResultsToReport) authentication required;   
-   
-   typedef structure{
-	int skip;
-	int upto;
-	int trim5;
-	int trim3;
-	string phred33;
-	string phred64;
-	string int-quals;
-	string local;
-	string end-to-end;
-	string very-fast;
-	string fast;
-	string very-sensitive;
-	string sensitive;
-	string very-fast-local;
-	string very-sensitive-local;
-	string fast-local;
-	string fast-sensitive;
-	int N;
-	int L;
-	int dpad;
-	int gbar;
-	int ma;
-	int mp;
-	int np;
-	int threads;
-	int offrate;
-	string qc-filter;
-	string seed;
-	string non-deterministic;
-	}b_opts;
-
-   typedef mapping<string Bowtie2_opts,b_opts opts_bowtie2> b_opts_str;
 	
    typedef structure{
 	string ws_id;
-	ws_rnaseqSample_id sample_id;
-        ws_bowtieIndex_id bowtie2_index;
-	string output_obj_name;
-       /* b_opts_str opts_dict;	*/
+        string sampleset_id;
+	string genome_id;
+	string bowtie_index;
         string phred33;
         string phred64;
         string local;
@@ -619,60 +448,37 @@ async funcdef GetFeaturesToGTF(GetFeaturesToGTFParams params)
         string fast-sensitive;
 	}Bowtie2Params;
 
-async funcdef Bowtie2Call(Bowtie2Params params) 
-     returns(UnspecifiedObject) authentication required;
+  async funcdef Bowtie2Call(Bowtie2Params params) 
+     returns(ResultsToReport) authentication required;
+   
+   typedef structure{
+        string ws_id;
+        string sampleset_id;
+        string genome_id;
+	int num_threads;
+        string quality_score;
+        int skip;
+        int trim3;
+        int trim5;
+	int np;
+	int minins;
+	int maxins;
+	string orientation;
+        int min_intron_length;
+	int max_intron_length;
+	bool no_spliced_alignment;
+	bool transcriptome_mapping_only;
+        string tailor_alignments;
+        }Hisat2Params;
 
-typedef structure{
-     string read-mismatches;
-     string read-gap-length;
-     int read-edit-dist;
-     int read-realign-edit-dist;
-     string bowtie1;
-     string output-dir;
-     int mate-inner-dist;
-     int mate-std-dev;
-     int min-anchor-length;
-     int splice-mismatches;
-     int min-intron-length;
-     int max-intron-length;
-     int max-insertion-length;
-     int num-threads;
-     int max-multihits;
-     string report-secondary-alignments;
-     string no-discordant;
-     string no-mixed;
-     string no-coverage-search;
-     string coverage-search;
-     string microexon-search;
-     string library-type;
-     int segment-mismatches;
-     int segment-length;
-     int min-segment-intron;
-     int max-segment-intron;
-     int min-coverage-intron;
-     int max-coverage-intron;
-     string b2-very-fast;
-     string b2-fast;
-     string b2-sensitive;
-     string b2-very-sensitive;
-     string fusion-search;
-     int fusion-anchor-length;
-     int fusion-min-dist;
-     int fusion-read-mismatches;
-     int fusion-multireads;
-     int fusion-multipairs;
-     string fusion-ignore-chromosomes;
-     }t_opts;
-
-typedef mapping<string Tophat_opts,t_opts opts_tophat> t_opts_str;
+  async funcdef Hisat2Call(Hisat2Params params)
+     returns(ResultsToReport) authentication required;
 
  typedef structure{
      string ws_id;
-     ws_rnaseqSample_id sample_id;
-     string output_obj_name;
-     ws_reference_assembly_id reference;
-     ws_bowtieIndex_id bowtie_index;
-     /* t_opts_str opts_dict; */ 
+     string read_sample; 
+     string genome_id;
+     string bowtie2_index;
      int read_mismatches;
      int read_gap_length;
      int read_edit_dist;
@@ -685,44 +491,77 @@ typedef mapping<string Tophat_opts,t_opts opts_tophat> t_opts_str;
      ws_referenceAnnotation_id annotation_gtf;
      }TophatParams;
 
-async funcdef TophatCall(TophatParams params)
-     returns (AlignmentStatsResults) authentication required;
+  async funcdef TophatCall(TophatParams params)
+     returns (ResultsToReport) authentication required;
 
  typedef structure{
-        int num_threads;
-        string library-type;
-        string library-norm-method;
-        int frag-len-mean;
-        int frag-len-std-dev;
-        string upper-quartile-norm;
-        string total-hits-norm;
-        string compatible-hits-norm;
-        int max-mle-iterations;
-        int max-bundle-frags;
-        string no-effective-length-correction;
-        string no-length-correction;
-        float min-isoform-fraction;
-        float pre-mrna-fraction;
-        int max-intron-length;
-        float junc-alpha;
-        string small-anchor-fraction;
-        int min-frags-per-transfrag;
-        int overhang-tolerance;
-        int max-bundle-length;
-        int min-intron-length;
-        int trim-3-avgcov-thresh;
-        int trim-3-dropoff-frac;
-        float max-multiread-fraction;
-        }opts_cufflinks;
+        string ws_id;
+        string sample_alignment;
+        int num-threads;
+	string label;
+        float min_isoform_abundance;
+	int a_juncs;
+	int  min_length;
+	float j_min_reads;
+	float c_min_read_coverage;
+	int gap_sep_value;
+	bool disable_trimming;
+	bool ballgown_mode;
+	bool skip_reads_with_no_ref;
+	string merge;
+        }StringTieParams;
 
-typedef mapping <string Cufflinks_opts,opts_cufflinks> cuff_opts;
+async funcdef StringTieCall(StringTieParams params)
+    returns (ResultsToReport) authentication required;
+
+    /***************************************/
+    /* HISAT2 + StringTie "express" method */
+    /***************************************/
+
+    typedef structure {
+        string hi_quality_score;
+        int hi_skip;
+        int hi_trim3;
+        int hi_trim5;
+        int hi_np;
+        int hi_minins;
+	int hi_maxins;
+        string hi_orientation;
+        int hi_min_intron_length;
+	int hi_max_intron_length;
+	bool hi_no_spliced_alignment;
+        bool hi_transcriptome_mapping_only;
+        string hi_tailor_alignments;
+   } ExpressHisat2_Options;
+
+    typedef structure {
+        string st_label;
+        float st_min_isoform_abundance;
+        int st_a_juncs;
+        int st_min_length;
+        float st_j_min_reads;
+        float st_c_min_read_coverage;
+        int st_gap_sep_value;
+        bool st_disable_trimming;
+    } ExpressStringTie_Options;
+
+    typedef structure {
+        string ws_id;
+        string sampleset_id;
+        string genome_id;
+        ExpressHisat2_Options hi_options;
+        bool run_stringtie;
+        ExpressStringTie_Options st_options;
+        string output_alignment_set_name;
+        string output_expression_matrix_name;
+    } Hisat2StringTieParams;
+
+    async funcdef Hisat2StringTieCall( Hisat2StringTieParams params ) returns(ResultsToReport) authentication required;
+
 
 typedef structure{
 	string ws_id;
-        ws_samplealignment_id alignment_sample_id;
-        string output_obj_name;
-        ws_referenceAnnotation_id annotation_gtf;
-        /*cuff_opts opts_dict;*/
+	string sample_alignment;
 	int num_threads;
         /*string library-type; */
         /*string library-norm-method; */
@@ -731,54 +570,71 @@ typedef structure{
 	int overhang-tolerance;
         }CufflinksParams;
 
-async funcdef CufflinksCall(CufflinksParams params)
-    returns (ws_expression_sample_id) authentication required;
-
-typedef structure{
-	string ws_id;
-        RNASeqAnalysis analysis;
-        string output_obj_name;
-        /*mapping <string Cuffmerge_opts, int num_threads> opts_dict; */
-        }CuffmergeParams;
-
- 
-async funcdef CuffmergeCall(CuffmergeParams params)
-    returns (RNASeqAnalysis) authentication required;
-
-typedef structure{
-        int num-threads;
-        string time-series;
-        string total-hits-norm;
-        string compatible-hits-norm;
-        string multi-read-correct;
-        string min-alignment-count;
-        float FDR;
-        string library-type;
-        string library-norm-method;
-        string dispersion-method;
-        int frag-len-mean;
-        int frag-len-std-dev;
-        int max-mle-iterations;
-        string poisson-dispersion;
-        }opts_cuffdiff;
-
-typedef mapping <string diff_opts,opts_cuffdiff> cuffdiff_opts;
+  async funcdef CufflinksCall(CufflinksParams params)
+    returns (ResultsToReport) authentication required;
 
 	typedef structure{
 	string ws_id;
-        RNASeqAnalysis rnaseq_exp_details;
+        RNASeqSampleSet rnaseq_exp_details;
         string output_obj_name;
-        ws_referenceAnnotation_id annotation_gtf;
-        /*cuffdiff_opts  opts_dict;*/
-	int num-threads;
-	list<string> labels;
         string time-series;
 	string library-type;
         string library-norm-method;
 	string multi-read-correct;
         int  min-alignment-count;
+	string dispersion-method;
+	string no-js-tests;
+	int frag-len-mean;
+	int frag-len-std-dev;
+	int max-mle-iterations;
+	string compatible-hits-norm;
+	string no-length-correction;
         }CuffdiffParams;
 
-async funcdef CuffdiffCall(CuffdiffParams params)
-   returns (RNASeqAnalysis) authentication required;
+  async funcdef CuffdiffCall(CuffdiffParams params)
+   returns (RNASeqDifferentialExpression) authentication required;
+
+   /*
+      @id KBaseRNASeq.RNASeqExpressionSet 
+   */
+      
+      typedef string ws_rnaseq_exprset_id;
+
+
+        typedef structure {
+
+            string        group_name1;
+            list<string>  expr_ids1;
+            string        group_name2;
+            list<string>  expr_ids2;
+
+        } ExperimentGroupIDsList;
+
+        typedef structure{
+
+            string                  ws_id;
+            ws_rnaseq_exprset_id    expressionset_id;
+            string                  output_obj_name;
+            int                     num_threads;
+            ExperimentGroupIDsList  expr_ids_list;      
+            /* these next parameters filter the members of expression matrix.  good idea to have them here? */
+            string                  fold_scale_type;   /* "linear", "log2+1", "log10+1" */
+            float                   alpha_cutoff;      /* q value cutoff */
+            float                   fold_change_cutoff;
+            int                     maximum_num_genes;
+            string                  filtered_expr_matrix;  /* name of output object filtered expression matrix */
+
+        } BallgownDifferentialExpParams;
+
+  typedef structure {
+        string   diff_expr_object;                  /* RNASeqDifferetialExpression object name */
+        string   filtered_expression_maxtrix;       /* ExpressionMatrix objec name */
+        string   plot_report_object_name;           /* name of KBaseReport object containing volcano plot */
+        string   plot_report_object_ref;
+        string   workspace;
+  }   BallgownResult;
+
+  async funcdef DiffExpCallforBallgown( BallgownDifferentialExpParams params )
+     returns ( BallgownResult ) authentication required;
+
 };

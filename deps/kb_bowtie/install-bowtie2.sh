@@ -7,9 +7,8 @@ mkdir -p $dest
 # downlownload version
 VERSION='2.2.9'
 rm -rf bowtie2-${VERSION}*
-wget http://sourceforge.net/projects/bowtie-bio/files/bowtie2/${VERSION}/bowtie2-${VERSION}-linux-x86_64.zip/download -o bowtie2-${VERSION}-linux-x86_64.zip
-dd bowtie2-${VERSION}-linux-x86_64.zip | gunzip -f > d.csv
-unzip download
+wget https://github.com/BenLangmead/bowtie2/releases/download/v${VERSION}/bowtie2-${VERSION}-linux-x86_64.zip
+unzip bowtie2-${VERSION}-linux-x86_64.zip
 # compile and copy binaries
 cd bowtie2-${VERSION}
 #make

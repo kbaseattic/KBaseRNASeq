@@ -6,28 +6,21 @@
   "categories" : ["active","expression"],
   "widgets" : {
     "input" : null,
-    "output" : "kbaseRNASeqAnalysis"
+    "output" : "kbaseRNASeqAnalysisNew"
   },
   "parameters" : [ {
-    "id" : "experiment_id",
+    "id" : "sampleset_id",
     "optional" : false,
     "advanced" : false,
     "allow_multiple" : false,
     "default_values" : [ "" ],
     "field_type" : "text",
     "text_options" : {
-      "valid_ws_types" : ["KBaseRNASeq.RNASeqAnalysis"],
+      "valid_ws_types" : ["KBaseRNASeq.RNASeqSampleSet"],
       "is_output_name": true
     }
   },{
-    "id" : "title",
-    "optional" : true,
-    "advanced" : true,
-    "allow_multiple" : false,
-    "default_values" : [ "" ],
-    "field_type" : "text"
-  },{
-    "id" : "experiment_desc",
+    "id" : "sampleset_desc",
     "optional" : true,
     "advanced" : true,
     "allow_multiple" : false,
@@ -36,13 +29,6 @@
     "textarea_options" : {
       "n_rows" : 4
     }
-  },{
-    "id" : "experiment_design",
-    "optional" : true,
-    "advanced" : true,
-    "allow_multiple" : false,
-    "default_values" : [ "" ],
-    "field_type" : "text"
   },{
     "id" : "platform",
     "optional" : true,
@@ -60,95 +46,34 @@
     "dropdown_options":{
       "options": [
         {
-          "value": "singleEnd",
-          "display": "Single-end",
+          "value": "SingleEnd",
+          "display": "SingleEnd",
           "id": "singleEnd",
           "ui_name": "singleEnd"
         },
         {
-          "value": "pairedEnd",
-          "display": "Paired-end",
+          "value": "PairedEnd",
+          "display": "PairedEnd",
           "id": "pairedEnd",
-          "ui_name": "pairedEnd"
+          "ui_name": "PairedEnd"
         }
       ]
     }
   },{
-    "id" : "genome_id",
+    "id" : "sample_id",
     "optional" : false,
     "advanced" : false,
     "allow_multiple" : false,
     "default_values" : [ "" ],
     "field_type" : "text",
     "text_options" : {
-      "valid_ws_types" : [ "KBaseGenomes.Genome" ]
+      "valid_ws_types" : [ "KBaseAssembly.SingleEndLibrary","KBaseAssembly.PairedEndLibrary", "KBaseFile.SingleEndLibrary","KBaseFile.PairedEndLibrary"] 
     }
   },{
-    "id" : "annotation_id",
+    "id" : "condition",
     "optional" : false,
     "advanced" : false,
     "allow_multiple" : false,
-    "default_values" : [ "" ],
-    "field_type" : "text",
-    "text_options" : {
-      "valid_ws_types" : [ "KBaseRNASeq.ReferenceAnnotation" ]
-    }
-  },{
-    "id" : "num_samples",
-    "optional" : false,
-    "advanced" : false,
-    "allow_multiple" : false,
-    "default_values" : [ "" ],    
-    "field_type" : "text",
-    "text_options" : {
-      "valid_ws_types" : [ ],
-      "validate_as": "int",
-      "min_int" : 2
-    }
-  },{
-    "id" : "num_replicates",
-    "optional" : false,
-    "advanced" : false,
-    "allow_multiple" : false,
-    "default_values" : [ "" ],    
-    "field_type" : "text",
-    "text_options" : {
-      "valid_ws_types" : [ ],
-      "validate_as": "int",
-      "min_int" : 1
-    }
-  },{
-    "id" : "singleEnd_reads",
-    "optional" : true,
-    "advanced" : false,
-    "allow_multiple" : true,
-    "default_values" : [ "" ],
-    "field_type" : "text",
-    "text_options" : {
-      "valid_ws_types" : [ "KBaseAssembly.SingleEndLibrary" ]
-    }
-  },{
-    "id" : "pairedEnd_reads",
-    "optional" : true,
-    "advanced" : false,
-    "allow_multiple" : true,
-    "default_values" : [ "" ],
-    "field_type" : "text",
-    "text_options" : {
-      "valid_ws_types" : [ "KBaseAssembly.PairedEndLibrary" ] 
-    }
-  },{
-    "id" : "condn_labels",
-    "optional" : false,
-    "advanced" : false,
-    "allow_multiple" : true,
-    "default_values" : [ "" ],
-    "field_type" : "text"
-  },{
-    "id" : "tissue",
-    "optional" : true,
-    "advanced" : true,
-    "allow_multiple" : true,
     "default_values" : [ "" ],
     "field_type" : "text"
   },{
@@ -185,58 +110,40 @@
     "default_values" : [ "" ],
     "field_type" : "text"
   }],
+  "parameter-groups": [
+      {
+        "id": "sample_n_conditions",
+        "parameters": ["sample_id", "condition"],
+        "optional": false,
+        "allow_multiple": true,
+        "with_border": true
+      }
+  ],
   "behavior" : {
     "service-mapping" : {
     	"url" : "",
     	"name" : "KBaseRNASeq",
-    	"method" : "SetupRNASeqAnalysis",
+    	"method" : "CreateRNASeqSampleSet",
 	"input_mapping" : [    
 	{
           "narrative_system_variable": "workspace",
           "target_property": "ws_id"
         },
         {
-          "input_parameter": "experiment_id",
-          "target_property": "experiment_id"
+          "input_parameter": "sampleset_id",
+          "target_property": "sampleset_id"
         },{
-          "input_parameter": "title",
-          "target_property": "title"
-        },{
-          "input_parameter": "experiment_design",
-          "target_property": "experiment_design"
-        },{
-          "input_parameter": "experiment_desc",
-          "target_property": "experiment_desc" 
+          "input_parameter": "sampleset_desc",
+          "target_property": "sampleset_desc" 
         },{
           "input_parameter": "platform",
           "target_property": "platform"
         },{
           "input_parameter": "Library_type",
           "target_property": "Library_type"
-        },{
-          "input_parameter": "genome_id",
-          "target_property": "genome_id"
-        },{
-          "input_parameter": "annotation_id",
-          "target_property": "annotation_id"
-        },{
-          "input_parameter": "num_samples",
-          "target_property": "num_samples"
-        },{
-          "input_parameter": "num_replicates",
-          "target_property": "num_replicates"
-        },{
-          "input_parameter": "singleEnd_reads",
-          "target_property": "singleEnd_reads"
 	},{
-          "input_parameter": "pairedEnd_reads",
-          "target_property": "pairedEnd_reads"
-	},{
-          "input_parameter": "condn_labels",
-          "target_property": "condn_labels"
-	},{
-          "input_parameter": "tissue",
-          "target_property": "tissue"
+          "input_parameter": "sample_n_conditions",
+          "target_property": "sample_n_conditions"
 	}, {
           "input_parameter": "domain",
           "target_property": "domain"
@@ -250,7 +157,7 @@
       ],
       "output_mapping" : [
       	{
-         "input_parameter": "experiment_id",
+         "input_parameter": "sampleset_id",
          "target_property": "output"
         },
         {
@@ -259,7 +166,7 @@
         },
         {
       	 "service_method_output_path": [0],
-	 "target_property": "SetupRNASeqAnalysis"
+	 "target_property": "CreateRNASeqSampleSet"
 	}
       ]
     }

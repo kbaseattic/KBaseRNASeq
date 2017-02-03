@@ -1,0 +1,245 @@
+{
+  "ver" : "1.0.0",
+  "authors" : [ ],
+  "contact" : "help@kbase.us",
+  "visible" : true,
+  "categories" : ["active","expression","sequence"],
+  "widgets" : {
+    "input" : null,
+    "output" : "kbaseRNASeqPieNew"
+  },
+   "parameters" : [ {
+    "id" : "sampleset_id",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : ["KBaseSets.ReadsSet", "KBaseRNASeq.RNASeqSampleSet" , "KBaseAssembly.SingleEndLibrary", "KBaseAssembly.PairedEndLibrary", "KBaseFile.SingleEndLibrary", "KBaseFile.PairedEndLibrary"]
+    }
+  }, {
+    "id" : "genome_id",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : ["KBaseGenomes.Genome" ]
+    }
+  }, {
+    "id" : "quality_score",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "phred33" ],
+    "field_type" : "dropdown",
+    "dropdown_options":{
+      "options": [
+        {
+          "value": "phred33",
+          "display": "phred33",
+          "id": "phred33",
+          "ui_name": "phred33"
+        },
+        {
+          "value": "phred64",
+          "display": "phred64",
+          "id": "phred64",
+          "ui_name": "phred64"
+        }
+      ]
+    }  
+  },{
+    "id" : "min_intron_length",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "20" ],
+    "field_type" : "text",
+    "text_options" : {
+      "validate_as" : "int"
+    }
+  },{   
+    "id" : "max_intron_length",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "500000" ],
+    "field_type" : "text",
+    "text_options" : {
+      "validate_as" : "int"
+    }
+  }, {
+    "id": "no_spliced_alignment",
+    "optional":true,
+    "advanced":true,
+    "allow_multiple":false,
+    "default_values":[""],
+    "field_type" : "checkbox",
+    "checkbox_options":{
+      "checked_value": 1,
+      "unchecked_value": 0
+    }
+  }, {
+    "id": "transcriptome_mapping_only",
+    "optional":true,
+    "advanced":true,
+    "allow_multiple":false,
+    "default_values":[""],
+    "field_type" : "checkbox",
+    "checkbox_options":{
+      "checked_value": 1,
+      "unchecked_value": 0
+    }
+  }, {
+    "id" : "skip",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "0" ],
+    "field_type" : "text",
+    "text_options" : {
+     "validate_as": "int"
+    }
+  }, {
+    "id" : "trim5",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "0" ],
+    "field_type" : "text",
+    "text_options" : {
+     "validate_as": "int"
+    }
+  }, {
+    "id" : "trim3",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "0" ],
+    "field_type" : "text",
+    "text_options" : {
+     "validate_as": "int"
+    }
+  }, {
+    "id" : "np",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "1" ],
+    "field_type" : "text",
+    "text_options" : {
+     "validate_as": "int"
+    }
+  }, {
+    "id" : "orientation",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "fr" ],
+    "field_type" : "dropdown",
+    "dropdown_options":{
+      "options": [
+        {
+          "value": "fr",
+          "display": "fr",
+          "id": "fr",
+          "ui_name": "fr"
+        },
+        {
+          "value": "rf",
+          "display": "rf",
+          "id": "rf",
+          "ui_name": "rf"
+        },
+        {
+          "value": "ff",
+          "display": "ff",
+          "id": "ff",
+          "ui_name": "ff"
+        }
+      ]
+    }
+  } ],
+  "behavior" : {
+    "service-mapping" : {
+      "url" : "",
+      "name" : "KBaseRNASeq",
+      "method" : "Hisat2Call",
+      "input_mapping" : [
+        {
+          "narrative_system_variable": "workspace",
+          "target_property" : "ws_id"
+        },
+	{
+          "constant_value"  : 2,
+          "target_property" : "num_threads"
+        },      
+        {
+          "input_parameter" : "sampleset_id",
+          "target_property" : "sampleset_id"
+        },
+        {
+          "input_parameter" : "genome_id",
+          "target_property" : "genome_id"
+        },
+        {
+          "input_parameter" : "quality_score",
+          "target_property" : "quality_score"
+        },
+        {
+          "input_parameter" : "skip",
+          "target_property" : "skip"
+        },
+        {
+          "input_parameter" : "trim5",
+          "target_property" : "trim5"
+        },
+        {
+          "input_parameter" : "trim3",
+          "target_property" : "trim3"
+        },
+        {
+          "input_parameter" : "np",
+          "target_property" : "np"
+        },
+        {
+          "input_parameter" : "min_intron_length",
+          "target_property" : "min_intron_length"
+        },
+        {
+          "input_parameter" : "max_intron_length",
+          "target_property" : "max_intron_length"
+        },
+ 	{
+          "input_parameter" : "no_spliced_alignment",
+          "target_property" : "no_spliced_alignment"
+        },
+	{
+          "input_parameter" : "transcriptome_mapping_only",
+          "target_property" : "transcriptome_mapping_only"
+        },
+	{
+          "constant_value"  : "dta-cufflinks",
+          "target_property" : "tailor_alignments"
+        },
+        {
+          "input_parameter" : "orientation",
+          "target_property" : "orientation"
+      }],
+      "output_mapping" : [
+	{
+         "service_method_output_path": [0,"output"],
+         "target_property": "output"
+        },
+        {
+         "service_method_output_path": [0,"workspace"],
+         "target_property": "workspace"
+        }
+     ]
+    }
+  },
+  "job_id_output_field" : "docker"
+}

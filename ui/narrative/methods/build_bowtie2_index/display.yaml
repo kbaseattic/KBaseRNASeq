@@ -15,17 +15,12 @@ replacement-text : Creates a new bowtie2 Index  for {{{input_genome}}}
 #
 # Define the set of other narrative methods that should be suggested to the user.
 #
-suggestions :
-    apps:
+method-suggestions :
         related :
             []
         next :
-            []
-    methods:
-        related :
-            []
-        next :
-            []
+            [align_reads_using_bowtie2,align_reads_using_tophat]
+     
 
 
 #
@@ -40,17 +35,15 @@ parameters :
 
     out_index_name:
         ui-name : |
-            Indexed Genome
+            Bowtie2 Index
         short-hint : |
-            The indexed genome as output
+            The indexed genome as an output
 
 description : |
-   <p>This method builds the Bowtie2 index for a given reference genome.</p> 
+   <p>This App builds the Bowtie2 index for a given reference genome.</p> 
    
    <p>Bowtie2 indexes the sequences in the reference genome using a scheme based on the Burrows-Wheeler transform (BWT) and the full-text minute-space (FM) index (similar to a suffix array) to keep its memory footprint small.</p>
    
-   <p><strong>WARNING:</strong> This method is one of the steps of the <a href= "http://kbase.us/rna-seq/"> KBase RNA-seq Pipeline </a> and is not intended to run standalone.</p>
-  
    <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
     Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Vivek Kumar</p>
     

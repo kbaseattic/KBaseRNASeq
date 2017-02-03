@@ -24,25 +24,9 @@ LBIN_DIR = bin
 
 EXECUTABLE_SCRIPT_NAME = run_$(MODULE_CAPS).sh
 
-##
-# NMS spec test
-#
-#NMS_URL ?= ci
-#submodule-init:
-#	git submodule init
-#	git submodule update
+default: compile build-executable-script-python
 
-#spec_test: submodule-init
-#	make -C narrative_method_store build-nms-bin
-#	./narrative_method_store/bin/nms-validate --url $(NMS_URL) --nms-path ui/narrative --verbose
-
-
-##
-# Main makefiles
-#
-default: compile-kb-module build-executable-script-python
-
-compile-kb-module:
+compile:
 	kb-sdk compile $(SPEC_FILE) \
 		--out $(LIB_DIR) \
 		--pyclname biokbase.$(MODULE).$(MODULE_CAPS)Client \
@@ -78,10 +62,6 @@ setup-local-dev-kb-py-libs:
 	rsync -vrh /kb/dev_container/modules/auth/lib/biokbase/* lib/biokbase/.
 	rsync -vrh /kb/dev_container/modules/handle_service/lib/biokbase/* lib/biokbase/.
 	rsync -vrh /kb/dev_container/modules/workspace_deluxe/lib/biokbase/* lib/biokbase/.
-	rsync -vrh /kb/dev_container/modules/genome_util/lib/biokbase/* lib/biokbase/. \
-		--exclude TestMathClient.pl --exclude TestPerlServer.sh \
-		--exclude *.bak* --exclude AuthConstants.pm
-
 
 clean:
 	rm -rfv $(LBIN_DIR)
@@ -100,17 +80,24 @@ TARGET ?= /kb/deployment
 #SERVICE_DIR ?= $(TARGET)/services/$(MODULE)
 
 deploy: deploy-scripts
-	-cp deploy-$(DTAG).cfg deploy.cfg
 
-deploy-scripts: deploy-libs deploy-executable-script
-	bash $(DIR)/deps/pylib.sh
+deploy-scripts: deploy-libs2 deploy-executable-script
 
-deploy-service: deploy-libs deploy-executable-script deploy-service-scripts deploy-cfg
+deploy-service: deploy-libs2 deploy-executable-script deploy-service-scripts deploy-cfg
 
-deploy-libs:
+deploy-libs2:
+	kb-sdk install AssemblyUtil
+	kb-sdk install DataFileUtil
+	kb-sdk install ReadsUtils
+	kb-sdk install KBaseReport
 	@echo "Deploying libs to target: $(TARGET)"
 	mkdir -p $(TARGET)/lib/biokbase
 	rsync -vrh lib/biokbase/$(MODULE) $(TARGET)/lib/biokbase/.
+	rsync -vrh lib/AssemblyUtil $(TARGET)/lib/.
+	rsync -vrh lib/GenomeFileUtil $(TARGET)/lib/.
+	rsync -vrh lib/DataFileUtil $(TARGET)/lib/.
+	rsync -vrh lib/ReadsUtils $(TARGET)/lib/.
+	rsync -vrh lib/KBaseReport $(TARGET)/lib/.
 
 deploy-executable-script:
 	@echo "Installing executable scripts to target: $(TARGET)/bin"
@@ -160,20 +147,24 @@ TARGET ?= /kb/deployment
 #SERVICE_DIR ?= $(TARGET)/services/$(MODULE)
 
 deploy: deploy-lscripts deploy-cfg
-	-cp deploy-$(DTAG).cfg deploy.cfg
+	
 
 deploy-ensure-dirs:
 	if [ ! -d $(TARGET)/shbin ]; then rm -rf $(TARGET)/shbin; mkdir -p $(TARGET)/shbin; fi
 
-deploy-lscripts: deploy-ensure-dirs deploy-libs deploy-executable-script deploy-scripts
-	bash $(DIR)/deps/pylib.sh
+deploy-lscripts: deploy-ensure-dirs deploy-libs2 deploy-executable-script deploy-scripts
 
-deploy-service: deploy-libs deploy-executable-script deploy-service-scripts deploy-cfg
+deploy-service: deploy-libs2 deploy-executable-script deploy-service-scripts deploy-cfg
 
-deploy-libs:
+deploy-libs2:
 	@echo "Deploying libs to target: $(TARGET)"
 	mkdir -p $(TARGET)/lib/biokbase
 	rsync -vrh lib/biokbase/$(MODULE) $(TARGET)/lib/biokbase/.
+	rsync -vrh lib/AssemblyUtil $(TARGET)/lib/.
+	rsync -vrh lib/GenomeFileUtil $(TARGET)/lib/.
+	rsync -vrh lib/DataFileUtil $(TARGET)/lib/.
+	rsync -vrh lib/ReadsUtils $(TARGET)/lib/.
+	rsync -vrh lib/KBaseReport $(TARGET)/lib/.
 
 deploy-executable-script:
 	@echo "Installing executable scripts to target: $(TARGET)/bin"

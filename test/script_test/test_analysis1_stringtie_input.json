@@ -1,0 +1,14 @@
+{	
+	"version":"1.1",
+	"method":"KBaseRNASeq.StringTieCall",
+	"context": null,
+	"params":[ 	
+	{
+  	"ws_id": "srividya22:1475121460798",
+	"alignmentset_id" : "test_bowtie2_refactoring_sampleset_bowtie2_AlignmentSet",
+	"num_threads" : 2,
+	"label" : "STRG",
+	"ballgown_mode" : 2,
+	"skip_reads_with_no_ref" : 0
+	}]	
+}

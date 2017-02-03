@@ -1,0 +1,117 @@
+#
+# Define basic display information
+#
+name     : Align Reads using HISAT2
+tooltip  : |
+    Align sequencing reads to long reference sequences using HISAT2
+screenshots :
+    []
+
+#
+# Define the set of other narrative methods that should be suggested to the user.
+#
+method-suggestions :
+    related :
+        []
+    next :
+        [assemble_transcripts_using_cufflinks,assemble_transcripts_with_stringtie]
+
+
+#
+# Configure the display and description of the parameters
+#
+parameters :
+    sampleset_id :
+        ui-name : |
+            RNA-seq Sample or Sample Set 
+        short-hint : |
+            Select the RNA-seq sample set or reads set. If you have only one sample of RNA-seq reads, select the corresponding library object.
+    genome_id :
+        ui-name : |
+            Genome
+        short-hint : |
+            Select the Genome to align the reads
+    quality_score :
+        ui-name : |
+            Alignment Quality Score Type
+        short-hint : |
+            Select the quality score type depending on the sequencing platform
+        long-hint : |
+            phred33 is used by Illumina starting with v1.8
+    skip :
+        ui-name : |
+            Skip the first n reads or pairs in the input
+        short-hint : |
+            Skip the first n reads or pairs in the input
+        long-hint : |
+            Skip the first n reads or pairs in the input
+    trim5 :
+        ui-name : |
+            Trim Bases From 5'end
+        short-hint : |
+            Trim the base-pairs from 5' (left) end of each read before alignment
+        long-hint : |
+            Trim the base-pairs from 5' end before alignment, if needed. By default, it is 0. 
+    trim3 :
+        ui-name : |
+            Trim Bases From 3'end
+        short-hint : |
+            Trim the base-pairs from 3' (right) end of each read before alignment
+        long-hint : |
+            Trim the base-pairs from 3' end before alignment, if needed. By default, it is 0.
+    np :
+        ui-name : |
+            Penalty
+        short-hint : |
+            Sets the penalty for positions where the read, reference, or both, contain an ambiguous character such as N. 
+        long-hint : |
+            By default, penalty is 1.
+    min_intron_length :
+        ui-name : |
+            Minimum Intron Length
+        short-hint : |
+            HISAT2 will ignore donor/acceptor pairs closer than this many bases apart.
+    max_intron_length :
+        ui-name : |
+            Maximum Intron Length
+        short-hint : |
+            HISAT2 will ignore donor/acceptor pairs farther than this many bases apart.
+    no_spliced_alignment :
+        ui-name : |
+            Disable Splice Alignment
+        short-hint : |
+            HISAT2 will disable splice alignment.
+    transcriptome_mapping_only :
+        ui-name : |
+            Transcriptome Mapping Only
+        short-hint : |
+            HISAT2 will report only those alignments within known transcripts.
+    orientation :
+        ui-name : |
+            Orientation
+        short-hint : |
+            Select the upstream/downstream mate orientations for a valid paired-end alignments against the forward reference strand. 
+        long-hint : |
+            By default, fr is used. 
+            
+description : |
+    <p>This App aligns the sequencing reads for a set of two or more samples to long reference sequences of a genome using HISAT2 and outputs a set of alignments for the given sample set or reads set in BAM format. If the user has only a single sample of reads, this App will take single-end or paired-end library object instead of a sample set.</p> 
+    
+    <p>In addition, it outputs the alignment statistics such as total reads, mapped and unmapped reads, singletons, multiple alignments, and alignment rate in the table format.</p>
+    
+    <p>HISAT2 is essentially a successor of TopHat2 and is relatively faster and more sensitive while still maintaining low memory requirements. The HISAT2 index is based on the FM Index of Ferragina and Manzini, which in turn is based on the Burrows-Wheeler transform. The algorithm used to build the index is based on the blockwise algorithm of Karkkainen.
+
+    <p><strong>NOTE:</strong> This method is one of the steps of the <a href= "http://kbase.us/rna-seq/"> KBase RNA-seq Pipeline </a>, however it can also be run standalone for one or more RNA-seq samples.</p>
+  
+    <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
+    Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Vivek Kumar</p>
+    
+publications :
+    -
+        display-text: |
+            Kim D, Langmead B and Salzberg SL (2015). HISAT: a fast spliced aligner with low memory requirements. Nature Methods 2015
+        link: http://www.nature.com/nmeth/journal/v12/n4/full/nmeth.3317.html
+    -
+        display-text: |
+            Kim D, Pertea G, Trapnell C, Pimentel H, Kelley R, Salzberg SL (2013) TopHat2: accurate alignment of transcriptomes in the presence of insertions, deletions and gene fusions. Genome Biology. 14:R36
+        link: http://www.genomebiology.com/2013/14/4/R36/abstract

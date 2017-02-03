@@ -26,24 +26,188 @@ except:
     from biokbase.AbstractHandle.Client import AbstractHandle as HandleService
 
 from biokbase.workspace.client import Workspace
+from AssemblyUtil.AssemblyUtilClient import AssemblyUtil
+from GenomeFileUtil.GenomeFileUtilClient import GenomeFileUtil
+from DataFileUtil.DataFileUtilClient import DataFileUtil
 import doekbase.data_api
 from doekbase.data_api.annotation.genome_annotation.api import GenomeAnnotationAPI, GenomeAnnotationClientAPI
 from doekbase.data_api.sequence.assembly.api import AssemblyAPI, AssemblyClientAPI
 import datetime
 
+from ReadsUtils.ReadsUtilsClient import ReadsUtils
+
+def check_sys_stat(logger):
+    check_disk_space(logger)
+    check_memory_usage(logger)
+    check_cpu_usage(logger)
+
+def check_disk_space(logger):
+    runProgram(logger=logger, progName="df", argStr="-h")
+def check_memory_usage(logger):
+    runProgram(logger=logger, progName="vmstat", argStr="-s")
+def check_cpu_usage(logger):
+    runProgram(logger=logger, progName="mpstat", argStr="-P ALL")
+
+def trim_gz(name):
+    if name.endswith(".gz"):
+      return name.split('.')[:-1]
+    else:
+      return name
+
+def ru_reads_download(logger, ref, tdir, token):
+    check_disk_space(logger)
+    logger.info("{0} will be downloaded and transferred to {1}".format(ref,tdir))
+    ru = ReadsUtils(url=os.environ['SDK_CALLBACK_URL'], token=token)
+    ds = ru.download_reads({"read_libraries" : [ref], "interleaved" : "false"})
+    logger.info("{0} will be downloaded and transferred to {1}".format(ref,tdir))
+    
+    #ds['fwd'] = os.path.join(tdir, trim_gz(ds['files'][ref]['files']['fwd_name']))
+    ds['fwd'] = os.path.join(tdir, os.path.basename(ds['files'][ref]['files']['fwd']))
+    os.rename(ds['files'][ref]['files']['fwd'],ds['fwd'])
+    if ds['files'][ref]['files']['type'] == 'paired':
+        if ds['files'][ref]['files']['rev_name'] is None:
+            ds['rev'] = os.path.join(tdir, 'rev.fastq')
+        else:
+            ds['rev'] = os.path.join(tdir, os.path.basename(ds['files'][ref]['files']['rev']))
+        os.rename(ds['files'][ref]['files']['rev'],ds['rev'])
+    logger.info("{0} will be downloaded and transferred to {1}".format(ref,tdir))
+    return ds
+
+
+###
+# Workspace helper functions
+###
+# ws_id is default ws_id and it will be ignored obj_id is ws reference type "ws/obj/ver"
+def ws_get_obj_info(logger, ws_client, ws_id, obj_id):
+    if '/' in obj_id:
+        return ws_client.get_object_info_new({"objects": [{'ref': obj_id}]})
+    else:
+        return ws_client.get_object_info_new({"objects": [{'name': obj_id, 'workspace': ws_id}]})
+
+def ws_get_ref(logger, ws_client, ws_id, obj_id):
+    if '/' in obj_id:
+        return obj_id
+    else:
+        info = ws_client.get_object_info_new({"objects": [{'name': obj_id, 'workspace': ws_id}]})[0]
+        return "{0}/{1}/{2}".format(info[6],info[0],info[4])
+
+def ws_get_type_name(logger, ws_client, ws_id, obj_id):
+    info = ws_get_obj_info(logger,ws_client, ws_id, obj_id)[0]
+    return info[2].split('-')[0]
+
+def ws_get_obj_name(logger, ws_client, ws_id, obj_id):
+    info = ws_get_obj_info(logger,ws_client, ws_id, obj_id)[0]
+    return info[1]
+
+# process `!` and `/` at the moment
+def ws_get_obj_name4file(logger, ws_client, ws_id, obj_id):
+    info = ws_get_obj_info(logger,ws_client, ws_id, obj_id)[0]
+    return info[1].replace("!","_").replace("/","_")
+
+# translate ref to ws name and object name pair
+# if it is object name, it returns the same ws name and object name
+def ws_translate2name(logger, ws_client, default_ws_id, obj_id):
+    info = ws_get_obj_info(logger, ws_client, default_ws_id, obj_id)
+    return [info[0][7], info[0][1], info[0][4]]
+
+def ws_get_obj(logger, ws_client, ws_id, obj_id):
+    if '/' in obj_id:
+        return ws_client.get_objects([{'ref': obj_id}])
+    else:
+        logger.info("{0}:{1}".format(ws_id, obj_id))
+        return ws_client.get_objects([{'name': obj_id, 'workspace': ws_id}])
+	       
+
+def if_obj_exists(logger,ws_client,ws_id,o_type,obj_l):
+    obj_list = ws_client.list_objects( {"workspaces" : [ws_id ] ,"type" : o_type,'showHidden' : 1})
+    obj_names = [i[1] for i in obj_list]
+    existing_names = [i for i in obj_l if i in obj_names]
+    obj_ids = None
+    if len(existing_names) != 0:
+        e_queries = [{'name' : j , 'workspace' : ws_id } for j in existing_names]
+        e_infos = ws_client.get_object_info_new({"objects": e_queries })      
+	obj_ids =[ (str(k[1]) , (str(k[6]) + '/' + str(k[0]) + '/' + str(k[4])) ) for k in e_infos]
+    return obj_ids
+
+def check_and_download_existing_handle_obj(logger,ws_client,urls,ws_id,ws_object_name,ws_obj_type,directory,token):
+        try:
+            obj_id = ws_get_ref(logger, ws_client, ws_id, ws_object_name)
+        except Exception, e:
+            return None
+
+        logger.info("Object {0} exists".format(obj_id))
+        obj_info=ws_client.get_objects([{'ref' : obj_id}])[0]
+        handle_id=obj_info['data']['handle']['id']
+        handle_name=obj_info['data']['handle']['file_name']
+        try:
+                 download_file_from_shock(logger, shock_service_url=urls['shock_service_url'], shock_id=handle_id,filename=handle_name,directory=directory,token=token)
+                 file_path = os.path.join(directory,handle_name)
+        except Exception,e:
+                    raise Exception( "Unable to download shock file, {0}".format(handle_name))
+	return file_path
+
+def if_ws_obj_exists_notype(logger,ws_client,ws_id,obj_l):
+    existing_names = None
+    obj_list = ws_client.list_objects( {"workspaces" : [ws_id ] ,'showHidden' : 1})
+    obj_names = [i[1] for i in obj_list]
+    existing_names = [i for i in obj_l if i in obj_names]
+    return existing_names
+
+def if_ws_obj_exists(logger,ws_client,ws_id,o_type, obj_l):
+    existing_names = None
+    obj_list = ws_client.list_objects( {"workspaces" : [ws_id ] ,"type" : o_type,'showHidden' : 1})
+    obj_names = [i[1] for i in obj_list]
+    existing_names = [i for i in obj_l if i in obj_names]
+    return existing_names
+
+def find_read_objects(logger,ex_reads_alignments,suffix1,suffix2):
+    #try:
+    if len(ex_reads_alignments) != 0:
+            objects = []
+            for i in ex_reads_alignments:
+                 objects.append(i.split(suffix1)[0]+suffix2)
+
+            return objects
+    else:
+            return None
+### TODO Remove this function from script_util , already moved to rnaseq_util
+def get_fasta_from_genome(logger,ws_client,urls,genome_id):
+    
+    ref = ws_client.get_object_subset(
+                                     [{ 'ref' : genome_id ,'included': ['contigset_ref']}])
+    contig_id = ref[0]['data']['contigset_ref']
+    logger.info( "Generating FASTA from Genome")
+    try:
+         ## get the FASTA
+         assembly = AssemblyUtil(urls['callback_url'])
+         ret = assembly.get_assembly_as_fasta({'ref':contig_id})
+         output_file = ret['path']
+         fasta_file = os.path.basename(output_file)
+    	 return fasta_file
+    except Exception, e:
+	 raise Exception(e)
+	 raise Exception("Unable to Create FASTA file from Genome : {0}".format(genome_id))
+    return None
+	
+### TODO Remove this function from script_util , already moved to rnaseq_util
 def generate_fasta(logger,internal_services,token,ref,output_dir,obj_name):
 	try:
 		ga = GenomeAnnotationAPI(internal_services,
                              token=token,
-                             ref= "{}/{}".format(ref,obj_name))
+                             ref= ref)
 	except Exception as e:
-		raise Exception("Unable to Call GenomeAnnotationAPI : {0}: {1}".format(e))
-	logger.info("Generating FASTA file from Assembly for {}/{}".format(ref,obj_name))	
+		raise Exception("Unable to Call GenomeAnnotationAPI : {0}".format("".join(traceback.format_exc())))
+	logger.info("Generating FASTA file from Assembly for {}".format(obj_name))	
 	fasta_start = datetime.datetime.utcnow()
 	output_file = os.path.join(output_dir,'{}.fasta'.format(obj_name))
-    	with open(output_file, 'w') as fasta_file:
+	fasta_file= io.open(output_file, 'wb')
+    	try:
         	ga.get_assembly().get_fasta().to_file(fasta_file)
-	fasta_file.close()
+	except Exception as e:
+		#raise Exception("Unable to Create FASTA file from Genome Annotation : {0}".format(obj_name))
+		raise Exception("Unable to Create FASTA file from Genome Annotation : {0}".format("".join(traceback.format_exc())))
+	finally:
+		fasta_file.close()
     	fasta_end = datetime.datetime.utcnow()
 	logger.info("Generating FASTA for {} took {}".format(obj_name, fasta_end - fasta_start))
 	return output_file
@@ -53,24 +217,219 @@ def generate_fasta(logger,internal_services,token,ref,output_dir,obj_name):
     	#c_mapping.replace_fasta_contig_ids(output_file, mapping_filename, to_modified=True)
 	#logger.info("Generating FASTA file completed successfully : {}".format(datetime.datetime.utcnow()))
 
+### TODO Remove this function from script_util , already moved to rnaseq_util
 def generate_gff(logger,internal_services,token,ref,output_dir,obj_name,output_file):
         try:
                 ga = GenomeAnnotationAPI(internal_services,
                              token=token,
-                             ref= "{}/{}".format(ref,obj_name))
+                             ref= ref)
         except:
-                raise Exception("Unable to Call GenomeAnnotationAPI : {0}".format(e))
-        logger.info("Requesting GenomeAnnotation GFF for {}/{}".format(ref,obj_name))
+                raise Exception("Unable to Call GenomeAnnotationAPI : {0}".format(("".join(traceback.format_exc()))))
+        logger.info("Requesting GenomeAnnotation GFF for {}".format(obj_name))
     	gff_start = datetime.datetime.utcnow()
+        gff_file= io.open(output_file, 'wb')
 	#output_file = os.path.join(output_dir,'{}.gff'.format(obj_name))
-    	with open(output_file, 'w') as gff_file:
+	try:
         	ga.get_gff().to_file(gff_file)
-    	gff_file.close()
+	except Exception as e:
+                #raise Exception("Unable to Create GFF  file from Genome Annotation : {0}: {1}".format(obj_name,e))
+                raise Exception("Unable to Create GFF  file from Genome Annotation : {0}: {1}".format(obj_name,"".join(traceback.format_exc())))
+        finally:
+    		gff_file.close()
 	gff_end = datetime.datetime.utcnow()
     	logger.info("Generating GFF for {} took {}".format(obj_name, gff_end - gff_start))
         ## Additional Step for sanitizing contig id
         #logger.info("Sanitizing the gff file to correct id names {}".format(datetime.datetime.utcnow()))
 
+### TODO Remove this function from script_util , already moved to rnaseq_util
+def create_gtf_annotation_from_genome(logger,ws_client,hs_client,urls,ws_id,genome_ref,genome_id,fasta_file,directory,token):
+        try:
+		#tmp_file = os.path.join(directory,genome_id + "_GFF.gff")
+                ## get the GFF
+		genome = GenomeFileUtil(urls['callback_url'])
+		ret = genome.genome_to_gff({'genome_ref':genome_ref})
+		file_path = ret['file_path']
+		gtf_ext = ".gtf"
+		if not file_path.endswith(gtf_ext): 
+               		gtf_path = os.path.join(directory,genome_id+".gtf")
+                	gtf_cmd = " -E {0} -T -o {1}".format(file_path,gtf_path)
+                	try:
+                   		logger.info("Executing: gffread {0}".format(gtf_cmd))
+                   		cmdline_output = runProgram(None,"gffread",gtf_cmd,None,directory)
+                	except Exception as e:
+                   		raise Exception("Error Converting the GFF file to GTF using gffread {0},{1}".format(gtf_cmd,"".join(traceback.format_exc())))
+		else:
+			gtf_path = file_path
+                if os.path.exists(gtf_path):
+                               annotation_handle = hs_client.upload(gtf_path)
+                               a_handle = { "handle" : annotation_handle ,"size" : os.path.getsize(gtf_path), 'genome_id' : genome_ref}
+                ##Saving GFF/GTF annotation to the workspace
+                res= ws_client.save_objects(
+                                        {"workspace":ws_id,
+                                         "objects": [{
+                                         "type":"KBaseRNASeq.GFFAnnotation",
+                                         "data":a_handle,
+                                         "name":genome_id+"_GTF_Annotation",
+                                        "hidden":1}
+                                        ]})
+        except Exception as e:
+                raise ValueError("Generating GTF file from Genome Annotation object Failed :  {}".format("".join(traceback.format_exc())))
+	return gtf_path
+
+### TODO Remove this function from script_util , already moved to rnaseq_util
+def create_gtf_annotation(logger,ws_client,hs_client,internal_services,ws_id,genome_ref,genome_id,fasta_file,directory,token):
+        try:
+		tmp_file = os.path.join(directory,genome_id + "_GFF.gff")
+        	fasta_file= generate_fasta(logger,internal_services,token,genome_ref,directory,genome_id)
+            	logger.info("Sanitizing the fasta file to correct id names {}".format(datetime.datetime.utcnow()))
+                mapping_filename = c_mapping.create_sanitized_contig_ids(fasta_file)
+                c_mapping.replace_fasta_contig_ids(fasta_file, mapping_filename, to_modified=True)
+                logger.info("Generating FASTA file completed successfully : {}".format(datetime.datetime.utcnow()))
+                generate_gff(logger,internal_services,token,genome_ref,directory,genome_id,tmp_file)
+                c_mapping.replace_gff_contig_ids(tmp_file, mapping_filename, to_modified=True)
+                gtf_path = os.path.join(directory,genome_id+"_GTF.gtf")
+                gtf_cmd = " -E {0} -T -o {1}".format(tmp_file,gtf_path)
+                try:
+                   logger.info("Executing: gffread {0}".format(gtf_cmd))
+                   cmdline_output = runProgram(None,"gffread",gtf_cmd,None,directory)
+                except Exception as e:
+                   raise Exception("Error Converting the GFF file to GTF using gffread {0},{1}".format(gtf_cmd,"".join(traceback.format_exc())))
+		#if os.path.exists(tmp_file): os.remove(tmp_file)
+                if os.path.exists(gtf_path):
+                               annotation_handle = hs_client.upload(gtf_path)
+                               a_handle = { "handle" : annotation_handle ,"size" : os.path.getsize(gtf_path), 'genome_id' : genome_ref}
+                ##Saving GFF/GTF annotation to the workspace
+                res= ws_client.save_objects(
+                                        {"workspace":ws_id,
+                                         "objects": [{
+                                         "type":"KBaseRNASeq.GFFAnnotation",
+                                         "data":a_handle,
+                                         "name":genome_id+"_GTF_Annotation",
+                                        "hidden":1}
+                                        ]})
+        except Exception as e:
+                raise ValueError("Generating GTF file from Genome Annotation object Failed :  {}".format("".join(traceback.format_exc())))
+	return gtf_path
+	
+
+### TODO Remove this function from script_util , already moved to rnaseq_util
+def create_RNASeq_AlignmentSet_and_build_report(logger,ws_client,ws_id,sample_list,sampleset_id,genome_id,bowtie2index_id,results,alignmentSet_name):
+	 results =  [ ret for ret in results if not ret is None ]
+	 if len(results) < 2:
+	  	raise ValueError("Not enough alignments got created for a AlignmentSet obj")
+	 set_obj = { 'sampleset_id' :sampleset_id ,'genome_id' : genome_id}
+	 if not bowtie2index_id is None:
+		set_obj['bowtie2_index'] = bowtie2index_id
+         sids=[]
+         m_alignments = []
+         alignments = []
+	 m_align_names = []
+	 output_objs = []
+	 num_samples = len(sample_list)
+	 num_results = len(results)
+	 num_failed = num_samples - num_results
+	 run_list = [ k for (k,v) in results ]
+	 print run_list
+	 failed_list = [k for k in sample_list if k not in run_list ]
+	 print  "\n".join(failed_list)
+         for sid,s_alignments in results:
+                    a_ref = ws_client.get_object_info_new({"objects": [{'name':s_alignments, 'workspace': ws_id}]})[0]
+                    a_id = str(a_ref[6]) + '/' + str(a_ref[0]) + '/' + str(a_ref[4])
+                    m_alignments.append({sid : a_id})
+                    m_align_names.append({sid : s_alignments})
+                    output_objs.append({'ref' : a_id , 'description': "RNA-seq Alignment for reads Sample :  {0}".format(sid)})
+                    sids.append(sid)
+                    alignments.append(a_id)
+         set_obj['read_sample_ids']= sids
+         set_obj['sample_alignments']= alignments
+         set_obj['mapped_alignments_ids']=m_alignments
+	 set_obj['mapped_rnaseq_alignments'] = m_align_names
+         try:
+        	logger.info( "Saving AlignmentSet object to  workspace")
+                res= ws_client.save_objects(
+                                        {"workspace":ws_id,
+                                         "objects": [{
+                                         "type":"KBaseRNASeq.RNASeqAlignmentSet",
+                                         "data":set_obj,
+                                         "name":alignmentSet_name}
+                                        ]})[0]
+                                                                
+                output_objs.append({'ref': str(res[6]) + '/' + str(res[0]) + '/' + str(res[4]),'description' : "Set of Alignments for Sampleset : {0}".format(sampleset_id)})
+	 except Exception as e:
+                    logger.exception(e)
+                    raise Exception("Failed Saving AlignmentSet to Workspace") 
+	 ### Build Report obj ###
+	 report = []
+	 report.append("Total number of reads : {0}".format(str(num_samples)))
+	 report.append("Number of reads ran successfully : {0}".format(str(num_results)))
+	 report.append("Number of reads failed during this run : {0}".format(str(num_failed))) 
+	 if len(failed_list) != 0:
+		report.append("List of reads failed in this run : {0}".format("\n".join(failed_list)))
+	 reportObj = {
+                      'objects_created':output_objs,
+                      'text_message':'\n'.join(report)
+                     }
+	 return reportObj
+
+### TODO Remove this function from script_util , already moved to rnaseq_util
+def create_RNASeq_ExpressionSet_and_build_report(logger,ws_client,tool_used, tool_version,tool_opts,ws_id,alignment_list,alignmentset_id,genome_id,sampleset_id,results,expressionSet_name):
+	 results =  [ ret for ret in results if not ret is None ]
+	 if len(results) < 2:
+	  	raise ValueError("Not enough expression results to create a ExpressionSet object")
+	 set_obj = { 'tool_used': tool_used, 'tool_version': tool_version,'alignmentSet_id' : alignmentset_id ,'genome_id' : genome_id,'sampleset_id' : sampleset_id }
+	 if not tool_opts is None:
+		set_obj['tool_opts'] = tool_opts
+         sids=[]
+         condition = []
+	 expr_ids = []
+         m_expr_names= []
+	 m_expr_ids = []
+	 output_objs = []
+	 num_samples = len(alignment_list)
+	 num_results = len(results)
+	 num_failed = num_samples - num_results
+	 run_list = [ k for (k,v) in results ]
+	 failed_list = [k for k in alignment_list if k not in run_list ]
+         for a_name, e_name in results:
+                    a_ref,e_ref = ws_client.get_object_info_new({"objects": [{'name':a_name, 'workspace': ws_id},{'name':e_name, 'workspace': ws_id}]})
+                    a_id = str(a_ref[6]) + '/' + str(a_ref[0]) + '/' + str(a_ref[4])
+                    e_id = str(e_ref[6]) + '/' + str(e_ref[0]) + '/' + str(e_ref[4])
+                    m_expr_ids.append({a_id : e_id})
+                    m_expr_names.append({a_name : e_name})
+                    output_objs.append({'ref' : e_id , 'description': "RNA-seq Alignment for reads Sample :  {0}".format(a_name)})
+                    expr_ids.append(e_id)
+         set_obj['sample_expression_ids']= expr_ids
+         set_obj['mapped_expression_objects']= m_expr_names
+         set_obj['mapped_expression_ids'] = m_expr_ids
+         try:
+        	logger.info( "Saving AlignmentSet object to  workspace")
+                res= ws_client.save_objects(
+                                        {"workspace":ws_id,
+                                         "objects": [{
+                                         "type":"KBaseRNASeq.RNASeqExpressionSet",
+                                         "data":set_obj,
+                                         "name":expressionSet_name}
+                                        ]})[0]
+                                                                
+                output_objs.append({'ref': str(res[6]) + '/' + str(res[0]) + '/' + str(res[4]),'description' : "Set of Expression objects for AlignmentSet : {0}".format(alignmentset_id)})
+	 except Exception as e:
+		    logger.exception("".join(traceback.format_exc()))
+                    raise Exception("Failed Saving ExpressionSet to Workspace") 
+	 ### Build Report obj ###
+	 report = []
+	 report.append("Total number of alignments given : {0}".format(str(num_samples)))
+	 report.append("Number of assemblies ran successfully : {0}".format(str(num_results)))
+	 report.append("Number of  assemblies failed during this run : {0}".format(str(num_failed))) 
+	 if len(failed_list) != 0:
+		report.append("List of reads failed in this run : {0}".format("\n".join(failed_list)))
+	 reportObj = {
+                      'objects_created':output_objs,
+                      'text_message':'\n'.join(report)
+                     }
+	 return reportObj
+
+		   	
+### TODO Remove this function from script_util , already moved to rnaseq_util
 def updateAnalysisTO(logger, ws_client, field, map_key, map_value, anal_ref, ws_id, objid):
     
         analysis = ws_client.get_objects([{'ref' : anal_ref}])[0]
@@ -89,6 +448,7 @@ def updateAnalysisTO(logger, ws_client, field, map_key, map_value, anal_ref, ws_
                             ]})
 
 
+### TODO Remove this function from script_util , already moved to rnaseq_util
 def extractStatsInfo(logger,ws_client,ws_id,sample_id,result,stats_obj_name):
 	lines = result.splitlines()
         if  len(lines) != 11:
@@ -139,6 +499,7 @@ def extractStatsInfo(logger,ws_client,ws_id,sample_id,result,stats_obj_name):
         except Exception, e:
                 raise Exception("get Alignment Statistics failed: {0}".format(e))
 
+### TODO Remove this function from script_util , already moved to rnaseq_util
 def extractAlignmentStatsInfo(logger,tool_used,ws_client,ws_id,sample_id,result,stats_obj_name):
         lines = result.splitlines()
 	if tool_used == 'samtools':
@@ -191,7 +552,7 @@ def extractAlignmentStatsInfo(logger,tool_used,ws_client,ws_id,sample_id,result,
 		pass 
         # Create Workspace object
         stats_data =  {
-                       "alignment_id": sample_id,
+                       #"alignment_id": sample_id,
                        "alignment_rate": alignment_rate,
                        "multiple_alignments": multiple_alignments, 
                        "properly_paired": properly_paired,
@@ -200,20 +561,23 @@ def extractAlignmentStatsInfo(logger,tool_used,ws_client,ws_id,sample_id,result,
                        "unmapped_reads": unmapped_r,
                        "mapped_reads": mapped_r
                        }
+	#print stats_data
+	return stats_data
         ## Save object to workspace
-        logger.info( "Saving Alignment Statistics to the Workspace")
-        try:
-                res= ws_client.save_objects(
-                                        {"workspace":ws_id,
-                                         "objects": [{
-                                         "type":"KBaseRNASeq.AlignmentStatsResults",
-                                         "data": stats_data,
-                                         "hidden" : 1,
-                                         "name":stats_obj_name}
-                                        ]})
-                res = stats_data
-        except Exception, e:
-                raise Exception("get Alignment Statistics failed: {0}".format(e))
+        #logger.info( "Saving Alignment Statistics to the Workspace")
+#        try:
+#                res= ws_client.save_objects(
+#                                        {"workspace":ws_id,
+#                                         "objects": [{
+#                                         "type":"KBaseRNASeq.AlignmentStatsResults",
+#                                         "data": stats_data,
+#                                         "hidden" : 1,
+#                                         "name":stats_obj_name}
+#                                        ]})
+#                res = stats_data
+#        except Exception, e:
+#                raise Exception("get Alignment Statistics failed: {0}".format(e))
+
 def getExpressionHistogram(obj,obj_name,num_of_bins,ws_id,output_obj_name):
     if 'expression_levels' in obj['data']:
         hdict = obj['data']['expression_levels']
@@ -325,24 +689,6 @@ def download_file_from_shock(logger,
     to a file on disk.
     """
 
-    header = dict()
-    header["Authorization"] = "Oauth {0}".format(token)
-    #logger.info("Downloading shock node {0}/node/{1}".format(shock_service_url,shock_id))
-
-    metadata_response = requests.get("{0}/node/{1}?verbosity=metadata".format(shock_service_url, shock_id), headers=header, stream=True, verify=True)
-    shock_metadata = metadata_response.json()['data']
-    #print "shock metadata is {0}".format(shock_metadata)
-    if shock_metadata is not None:
-    	shockFileName = shock_metadata['file']['name']
-    	shockFileSize = shock_metadata['file']['size']
-    metadata_response.close()
-        
-    download_url = "{0}/node/{1}?download_raw".format(shock_service_url, shock_id)
-    #print "download_url is {0}".format(download_url)
-    try: 
-    	data = requests.get(download_url, headers=header, stream=True, verify=True)
-    except Exception,e:
-	print(traceback.format_exc())
     if filename is not None:
         shockFileName = filename
 
@@ -351,24 +697,19 @@ def download_file_from_shock(logger,
     else:
         filePath = shockFileName
 
-    if filesize is not None:
-	shockFileSize = filesize
+    #shock_service_url is from config
+    dfu = DataFileUtil(os.environ['SDK_CALLBACK_URL'], token=token)
+    return dfu.shock_to_file({"shock_id" : shock_id, "file_path":filePath, "unpack" : None})
 
-    chunkSize = shockFileSize/4
-    
-    maxChunkSize = 2**30
-    
-    if chunkSize > maxChunkSize:
-        chunkSize = maxChunkSize
-    
-    f = io.open(filePath, 'wb')
-    try:
-        for chunk in data.iter_content(chunkSize):
-            f.write(chunk)
-    finally:
-        data.close()
-        f.close()      
-    
+
+
+def download_shock_files(logger,shock_url,directory,dict_of_files,token):
+	for name, fid in dict_of_files.items():
+		try:
+			download_file_from_shock(logger, shock_service_url=shock_url, shock_id=fid,filename=name, directory=directory,token=token) 
+	   	except Exception,e:
+                        raise Exception( "Unable to download shock file , {0},{1}".format(name,fid))
+
 def query_shock_node(logger,
                              shock_service_url = None,
                              condition = None,
@@ -382,7 +723,6 @@ def query_shock_node(logger,
     header["Authorization"] = "Oauth {0}".format(token)
 
     query_str = urllib.urlencode(condition)
-    #print query_str
     
     logger.info("Querying shock node {0}/node/?query&{1}".format(shock_service_url,query_str))
 
@@ -393,46 +733,22 @@ def query_shock_node(logger,
 
 
 def upload_file_to_shock(logger,
+                         filePath,
+                         make_handle = True,
                          shock_service_url = None,
-                         filePath = None,
-                         attributes = '{}',
+                         #attributes = '{}',
                          ssl_verify = True,
                          token = None):
     """
     Use HTTP multi-part POST to save a file to a SHOCK instance.
     """
 
-    if token is None:
-        raise Exception("Authentication token required!")
     
-    #build the header
-    header = dict()
-    header["Authorization"] = "Oauth {0}".format(token)
+    #shock_service_url is from config
+    dfu = DataFileUtil(os.environ['SDK_CALLBACK_URL'], token=token)
+    #return dfu.file_to_shock({"file_path":filePath, "attributes": json.dumps(attributes), "make_handle" : make_handle})
+    return dfu.file_to_shock( { "file_path":filePath,  "make_handle" : make_handle } )
 
-    if filePath is None:
-        raise Exception("No file given for upload to SHOCK!")
-
-    dataFile = open(os.path.abspath(filePath), 'r')
-    m = MultipartEncoder(fields={'attributes_str': json.dumps(attributes), 'upload': (os.path.split(filePath)[-1], dataFile)})
-    header['Content-Type'] = m.content_type
-
-    logger.info("Sending {0} to {1}".format(filePath,shock_service_url))
-    try:
-        response = requests.post(shock_service_url + "/node", headers=header, data=m, allow_redirects=True, verify=ssl_verify)
-        dataFile.close()
-    except:
-        dataFile.close()
-        raise    
-
-    if not response.ok:
-        response.raise_for_status()
-
-    result = response.json()
-
-    if result['error']:            
-        raise Exception(result['error'][0])
-    else:
-        return result["data"]    
 
 def shock_node_2b_public(logger,
                          node_id = None,
@@ -571,9 +887,7 @@ def get_obj_info(logger,ws_url,objects,ws_id,token):
     for obj in  objects:
     	try:
             obj_infos = ws_client.get_object_info_new({"objects": [{'name': obj, 'workspace': ws_id}]})
-            #print obj_infos
             ret.append("{0}/{1}/{2}".format(obj_infos[0][6],obj_infos[0][0],obj_infos[0][4]))
-            #print ret
         except Exception, e:
                      logger.error("Couldn't retrieve %s:%s from the workspace , %s " %(ws_id,obj,e))
     return ret
@@ -612,6 +926,9 @@ def runProgram(logger=None,
 
         # Construct shell command
         cmdStr = "%s %s" % (progPath,argStr)
+	print "Executing : "+cmdStr
+	if logger is not None:
+		logger.info("Executing : "+cmdStr)
         #if working_dir is None:
         #    logger.info("Executing: " + cmdStr + " on cwd")
         #else:
@@ -625,16 +942,22 @@ def runProgram(logger=None,
                                cwd=working_dir)
         # Get results
         result,stderr  = process.communicate()
-      
+     	#print result
+	#print stderr 
         # keep this until your code is stable for easier debugging
         if logger is not None and result is not None and len(result) > 0:
             logger.info(result)
+        else:
+            print result
         if logger is not None and stderr is not None and len(stderr) > 0:
             logger.info(stderr)
+        else:
+	    print stderr
 
         # Check returncode for success/failure
         if process.returncode != 0:
-                raise RuntimeError('Return Code : {0} , result {1} , progName {2}'.format(process.returncode,result[1],progName))
+		raise Exception("Command execution failed  {0}".format("".join(traceback.format_exc())))
+                raise RuntimeError('Return Code : {0} , result {1} , progName {2}'.format(process.returncode,result,progName))
 
         # Return result
         return { "result" : result , "stderr" :stderr }
@@ -698,15 +1021,24 @@ def histogram(iterable, low, high, bins):
     return { "x_axis" : ranges , "y_axis" : [dist[b] for b in range(bins)] }
 
 
-
-def parse_FPKMtracking(filename):
-    result={}
-    with open(filename) as f:
-	next(f)
-    	for line in f:
-		larr = line.split("\t")
-		result[larr[0]] = math.log(float(larr[9])+1,2)
-    return result
+#
+# This has been moved to rnaseq_util.py (mccorkle 5 Jan 2017)
+#
+#def parse_FPKMtracking(filename,tool,metric):
+#    result={}
+#    pos1= 0
+#    if tool == 'StringTie':
+#        if metric == 'FPKM': pos2 = 7
+#        if metric == 'TPM': pos2 = 8
+#    if tool == 'Cufflinks':
+#        pos2 = 9
+#    with open(filename) as f:
+#        next(f)
+#        for line in f:
+#        larr = line.split("\t")
+#        if larr[pos1] != "":
+#                result[larr[pos1]] = math.log(float(larr[pos2])+1,2)
+#    return result
 
 def get_end(start,leng,strand):
     stop = 0

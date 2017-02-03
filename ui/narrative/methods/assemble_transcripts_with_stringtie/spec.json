@@ -1,0 +1,145 @@
+{
+  "ver" : "1.0.0",
+  "authors" : [ ],
+  "contact" : "help@kbase.us",
+  "visible" : true,
+  "categories" : ["active","expression","assembly"],
+  "widgets" : {
+    "input" : null,
+    "output" : "kbaseExpressionSampleTableNew"
+  },
+   "parameters" : [ {
+    "id" : "alignmentset_id",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : ["KBaseRNASeq.RNASeqAlignmentSet" , "KBaseRNASeq.RNASeqAlignment" ]
+    }
+  }, {
+   "id" : "min_isoform_abundance",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "0.1" ],
+    "field_type" : "text",
+    "text_options" : {
+      "validate_as": "float"
+    }
+  }, {
+   "id" : "min_length",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "200" ],    
+    "field_type" : "text",
+    "text_options" : {
+      "validate_as": "int"
+    }
+  }, {
+    "id" : "a_juncs",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "10" ],    
+    "field_type" : "text",
+    "text_options" : {
+      "validate_as": "int"
+    }
+  }, {
+    "id" : "j_min_reads",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "1" ],     
+    "field_type" : "text",
+    "text_options" : {
+      "validate_as": "float"
+    }
+  }, {
+    "id" : "c_min_read_coverage",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "2.5" ],
+    "field_type" : "text",
+    "text_options" : {
+      "validate_as": "float"
+    }
+  }, {
+    "id" : "gap_sep_value",
+    "optional" : true,
+    "advanced" : true,
+    "allow_multiple" : false,
+    "default_values" : [ "50" ],
+    "field_type" : "text",
+    "text_options" : {
+      "validate_as": "int"
+    }
+} ],
+  "behavior" : {
+    "service-mapping" : {
+      "url" : "",
+      "name" : "KBaseRNASeq",
+      "method" : "StringTieCall",
+      "input_mapping" : [
+        {
+          "narrative_system_variable": "workspace",
+          "target_property" : "ws_id"
+        },
+        {
+          "input_parameter" : "alignmentset_id",
+          "target_property" : "alignmentset_id"
+        },
+	{
+          "constant_value"  : 1,
+          "target_property" : "ballgown_mode"
+        },        
+	{
+          "constant_value"  : 1,
+          "target_property" : "skip_reads_with_no_ref"
+        },       
+	{
+          "constant_value"  : 2,
+          "target_property" : "num_threads"
+        },      
+        {
+          "input_parameter" : "min_length",
+          "target_property" : "min_length"
+        },
+        {
+          "input_parameter" : "min_isoform_abundance",
+          "target_property" : "min_isoform_abundance"
+        },
+	{
+          "input_parameter" : "a_juncs",
+          "target_property" : "a_juncs"
+        },     
+	{
+          "input_parameter" : "j_min_reads",
+          "target_property" : "j_min_reads"
+        },    
+	{
+          "input_parameter" : "c_min_read_coverage",
+          "target_property" : "c_min_read_coverage"
+        },   
+	{
+          "input_parameter" : "gap_sep_value",
+          "target_property" : "gap_sep_value"
+        }],
+      "output_mapping" : [
+	{
+         "service_method_output_path": [0,"output"],
+         "target_property": "output"
+        },
+        {
+         "service_method_output_path": [0,"workspace"],
+         "target_property": "workspace"
+        }
+      ]
+    }
+  },
+  "job_id_output_field" : "docker"
+}

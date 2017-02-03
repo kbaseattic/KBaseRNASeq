@@ -1,0 +1,62 @@
+{
+        "version":"1.1",
+        "method":"KBaseRNASeq.StringTieCall_collect",
+        "context": null,
+        "params":[
+                   {
+                    "global_params": {
+			              "ws_id"                  : "srividya22:1475121460798",
+			              "alignmentset_id"        : "test_bowtie2_refactoring_sampleset_bowtie2_AlignmentSet",
+			              "num_threads"            : 2,
+			              "label"                  : "STRG",
+			              "ballgown_mode"          : 2,
+			              "skip_reads_with_no_ref" : 0,
+                                      "is_alignment_set"       : 1
+                                     },
+                    "input_result_pairs": [
+                                            {
+                                              "input":  { "input_arguments": 
+                                                             [
+                                                               {
+       								"alignmentset_id": "11696/12/2",
+								"stringtie_dir": "/kb/module/work/tmp",
+								"annotation_id": "11696/7/13",
+								"job_id": "11696/8/3",
+								"sample_id": "Ecoli_SE_8083_R1.fastq",
+								"genome_id": "11696/5/2",
+								"gtf_file": "/kb/module/work/tmp/Escherichia_coli_K12.gtf",
+								"ws_id": "srividya22:1475121460798",
+								"ws_gtf": "Escherichia_coli_K12_GTF_Annotation"
+                                                               }
+                                                             ]
+                                                        },
+                                              "result": {
+                                                         "alignmentset_id": "Ecoli_SE_8083_R1_bowtie2_alignment",
+                                                         "output_name": "Ecoli_SE_8083_R1_bowtie2_stringtie_expression"
+                                                        }
+                                            },
+                                            {
+                                              "input":  { "input_arguments": 
+                                                             [
+                                                               {
+		   			                        "alignmentset_id": "11696/12/2",
+		   			                        "stringtie_dir": "/kb/module/work/tmp",
+		   			                        "annotation_id": "11696/7/13",
+		   			                        "job_id": "11696/11/2",
+		   			                        "sample_id": "Ecoli_SE_8085_R1.fastq",
+		   			                        "genome_id": "11696/5/2",
+		   			                        "gtf_file": "/kb/module/work/tmp/Escherichia_coli_K12.gtf",
+		   			                        "ws_id": "srividya22:1475121460798",
+		   			                        "ws_gtf": "Escherichia_coli_K12_GTF_Annotation"
+                                                               }
+                                                             ]
+                                                        },
+                                              "result": {
+                                                         "alignmentset_id": "Ecoli_SE_8085_R1_bowtie2_alignment",
+                                                         "output_name": "Ecoli_SE_8085_R1_bowtie2_stringtie_expression"
+                                                        }
+                                            }
+                                          ]
+                   }
+                 ]
+}

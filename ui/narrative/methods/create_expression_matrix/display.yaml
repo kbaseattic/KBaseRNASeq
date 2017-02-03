@@ -4,7 +4,7 @@
 name     : Create Expression Matrix
 
 tooltip  : |
-    This method creates the expression matrix for given RNASeq differential expression data. 
+    This method creates the expression matrix for a given RNA-seq differential expression data obtained from Cuffdiff.
 screenshots :
     []
 
@@ -24,18 +24,18 @@ method-suggestions :
 parameters :
     rnaseq_exp_details :
         ui-name : |
-            Differentailly expressed data from cuffdiff
+            Differentailly expressed data from Cuffdiff
         short-hint : |
-            Cuffdiff output is used as input
+            Cuffdiff output is used as an input
     output_obj_name :
         ui-name : |
             Expression Matrix
         short-hint : |
             Provide the name of expression matrix
 description : |
-    <p>This method allows you to create the expression matrix for given RNAseq differentially expressed data.</p>
+    <p>This method allows to create the expression matrix for a given RNA-seq differentially expressed data obtained from Cuffdiff.</p>
       <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
-    Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Fei He, Vivek Kumar</p>
+    Srividya Ramakrishnan, Sunita Kumari, Shinjae Yoo, Priya Ranjan, Jim Thomason, Vivek Kumar</p>
     
 publications :
     -

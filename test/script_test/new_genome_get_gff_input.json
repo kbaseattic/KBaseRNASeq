@@ -3,7 +3,7 @@
 	"method":"KBaseRNASeq.GetFeaturesToGTF",
 	"context": null,
 	"params":[
-	{"ws_id" : "ReferenceEnsemblPlantGenomeAnnotations",
-	 "output_obj_name" :  "Algae_Ensembl_Reference_Annotation" ,
-	 "reference" : "280699_Ensembl" } ]
+	{"ws_id" : "kbasetest:1462219104503",
+	 "output_obj_name" :  "Escherichia_Reference_Annotation" ,
+	 "reference" : "Escherichia_coli_str_K-12_substr_MG1655" } ]
 }

@@ -3,7 +3,7 @@
 	"method":"KBaseRNASeq.BuildBowtie2Index",
 	"context": null,
 	"params":[
-	{"ws_id" : "ReferenceEnsemblPlantGenomeAnnotations",
-	 "output_obj_name" :"Algae_Ensembl_bowtie2_index" ,
-	 "reference" : "280699_Ensembl" } ]
+	{"ws_id" : "srividya22:1475121460798",
+	 "output_obj_name" :"Escherichia_coli_K12_bw_index" ,
+	 "reference" : "Escherichia_coli_K12" } ]
 }

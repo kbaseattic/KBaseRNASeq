@@ -4,10 +4,9 @@
 	"context": null,
 	"params":[ 	
 	{
-  	"ws_id": "srividya22:1456962933354",
-	"rnaseq_exp_details" : "Athaliana_sdk_test_exp",
-	"output_obj_name" : "SDK_ath_cuffdiff",
-	"annotation_gtf" : "Arabidopsis_annotation.gtf",
+  	"ws_id": "srividya22:1475121460798",
+	"expressionset_id" : "test_bowtie2_refactoring_sampleset_bowtie2_AlignmentSet_stringtie_ExpressionSet",
+	"output_obj_name" : "Ecoli_bowtie_cuffdiff",
 	"labels" : null,
 	"num-threads" : 2,
 	"min-alignment-count" : 1,

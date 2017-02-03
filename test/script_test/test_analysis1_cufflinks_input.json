@@ -4,9 +4,8 @@
 	"context": null,
 	"params":[ 	
 	{
-  	"ws_id": "srividya22:1456962933354",
-	"alignment_sample_id" : "SDK_test_ath_hy5_tophat",
-	"annotation_gtf" : "Arabidopsis_annotation.gtf",
-	"output_obj_name" : "SDK_test_ath_hy5_cufflinks"
+  	"ws_id": "srividya22:1474317595261",
+	"alignmentset_id" : "Ecoli_test_3_sampleset_bowtie2_AlignmentSet",
+	"num_threads" : 2
 	}]	
 }
