@@ -8,7 +8,6 @@
                      "expressionset_id"        : "16162/19/1",
                      "output_obj_name"         : "third_ballgown_test",
 
-                     "expr_ids_list"           : {
                                                   "group_name1":  "WT",
                                                   "expr_ids1"  : [ 
                                                                    "16162/16/1",
@@ -18,12 +17,10 @@
                                                   "expr_ids2"  : [ 
                                                                    "16162/17/1",
                                                                    "16162/18/1"
-                                                                 ]
-                                                 },
+                                                                 ],
                      "fold_scale_type"         : "log2+1",
                      "fold_change_cutoff"      : 307,
                      "alpha_cutoff"            : 0.5,
-                     "maximum_num_genes"       : 100,
                      "filtered_expr_matrix"    : "filtered_em_test_2_log2_307",
 
 		     "num_threads"             : 1
