@@ -30,16 +30,6 @@
       "is_output_name": true
     }
   }, {
-    "id" : "num_threads",
-    "optional" : true,
-    "advanced" : true,
-    "allow_multiple" : false,
-    "default_values" : [ "2" ],    
-    "field_type" : "text",
-    "text_options" : {
-      "validate_as": "int"
-    }
-  }, {
     "id" : "min_alignment_count",
     "optional" : true,
     "advanced" : true,
@@ -142,10 +132,6 @@
         {
           "input_parameter" : "output_obj_name",
           "target_property" : "output_obj_name"
-        },
-        {
-          "input_parameter" : "num_threads",
-          "target_property" : "num_threads"
         },
         {
           "input_parameter" : "time_series",

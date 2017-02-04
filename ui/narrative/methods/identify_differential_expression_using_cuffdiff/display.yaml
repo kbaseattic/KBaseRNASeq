@@ -34,11 +34,6 @@ parameters :
       Cuffdiff Output
     short-hint : |
       Provide the name of Cuffdiff output
-  num_threads :
-    ui-name : |
-      Number of Threads
-    short-hint : |
-      Number of  computational threads to align reads. The default is 2.
   min_alignment_count :
     ui-name : |
       Minimum Alignments
