@@ -53,6 +53,7 @@ from biokbase.RNASeq.TophatSample import TophatSample
 from biokbase.RNASeq.CufflinksSampleSet import CufflinksSampleSet
 from biokbase.RNASeq.CufflinksSample import CufflinksSample
 from biokbase.RNASeq.DiffExpforBallgown import DiffExpforBallgown
+from KBaseReport.KBaseReportClient import KBaseReport
 
 _KBaseRNASeq__DATA_VERSION = "0.2"
 
@@ -691,7 +692,7 @@ class KBaseRNASeq:
             # but we don't have a working example for that.
             
         # save the report
-        report = KBaseReport(self.__callbackURL, token=ctx['token'], service_ver='dev')
+        report = KBaseReport(self.__CALLBACK_URL, token=ctx['token'], service_ver='dev')
         report_info = report.create({'report':reportObj, 'workspace_name':params['ws_id']})
         returnVal = { 'report_name': report_info['name'], 'report_ref': report_info['ref'] }
         #END Hisat2StringTieCall
