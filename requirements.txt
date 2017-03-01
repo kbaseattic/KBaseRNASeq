@@ -3,3 +3,4 @@ bunch
 mpipe
 numpy
 multiprocessing
+coverage
