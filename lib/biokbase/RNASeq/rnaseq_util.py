@@ -671,6 +671,45 @@ def number_of_lines_in_file( fname ):
             n = n + 1
     return n + 1
 
+def  create_sample_dir_group_file( logger,
+                                   ws_client,
+                                   ws_id,
+                                   subdir_list, 
+                                   condition_list,
+                                   sample_dir_group_file 
+                                 ):
+
+        # QUESTION:  is it possible that duplicate subdirs can appear here?
+        #            and with same or differen
+        # ballgown requires numeric identifiers for experimental condition groups, 
+        # so first make a table mapping condition names
+
+        logger.info( "new create_sample_dir_group_file:" )
+        logger.info( pformat( condition_list ) )
+        logger.info( pformat( subdir_list) )
+
+        ngroups = 0
+        group_name_indices = {}
+        for group in condition_list:
+            if not group in group_name_indices:
+                group_name_indices[group] = ngroups
+                ngroups = ngroups + 1
+        if ngroups < 2:
+            raise Exception( "At least two condition groups are needed for this analysis" )
+
+        # write the file
+
+        try:
+            f = open( sample_dir_group_file, "w" )
+        except Exception:
+            raise Exception( "Can't open file {0} for writing {1}".format( sample_dir_group_file, traceback.format_exc() ) )
+ 
+        for subdir, group in zip( subdir_list, condition_list ):
+            f.write( "{0}  {1}\n".format( subdir, group_name_indices[group] ))
+        f.close()
+
+        return
+
 # this converts the input group set lists writes a file that can be loaded
 # as a table by the ballgown_fpkmgenematrix.R  script to pass to
 # ballgown to assign group ids to each setn
@@ -678,55 +717,55 @@ def number_of_lines_in_file( fname ):
 # this returns an ordered list of group names that corresponds to
 # the input subdir_list
 
-def create_sample_dir_group_file( logger,
-                                  ws_client,
-                                  ws_id,
-                                  subdir_list, 
-                                  group1_name,
-                                  group1_set,
-                                  group2_name,
-                                  group2_set,
-                                  sample_dir_group_file ):
-
-        group1_name_set = get_ws_object_names( logger, ws_client, ws_id, group1_set )   # change potential refnames to names for comparisons
-        group2_name_set = get_ws_object_names( logger, ws_client, ws_id, group2_set )
-
-        if ( len( group1_name_set) < 2 ):
-            raise Exception( "first condition group must have at least two members" )
-        if ( len( group2_name_set) < 2 ):
-            raise Exception( "second condition group must have at least two members" )
-
-        dup = find_dup( group1_name_set + group2_name_set )
-        if ( dup ):
-            raise Exception( "input error:  duplicate input found {0}".format( dup ) )
-
-        try:
-            f = open( sample_dir_group_file, "w")
-        except Exception:
-            raise Exception( "Can't open file {0} for writing {1}".format( sample_dir_group_file, traceback.format_exc() ) )
-        group_name_list = []
-        for subdir in subdir_list:
-            group = None
-            exp = os.path.basename( subdir )
-            if  exp in group1_name_set:
-                if  exp in group2_name_set:
-                    raise Exception( "group error - {0} is found in both group sets".format( exp ) )
-                group = 0
-                group_name_list.append( group1_name )
-            elif  exp in group2_name_set:
-                if  exp in group1_name_set:
-                    raise Exception( "group error - {0} is found in both group sets".format( exp ) )
-                group = 1
-                group_name_list.append( group2_name )
-            # remove restriction that all groups in a set must be used in the comparison
-            # sometimes there are three or more groups 
-            #else:
-            #    raise Exception( "group error - {0} is not found in either group set".format( exp ) )
-            if ( group != None ):
-                f.write( "{0}  {1}\n".format( subdir, group ))
-        f.close()
-
-        return( group_name_list )
+#def create_sample_dir_group_file( logger,
+#                                  ws_client,
+#                                  ws_id,
+#                                  subdir_list, 
+#                                  group1_name,
+#                                  group1_set,
+#                                  group2_name,
+#                                  group2_set,
+#                                  sample_dir_group_file ):
+#
+#        group1_name_set = get_ws_object_names( logger, ws_client, ws_id, group1_set )   # change potential refnames to names for comparisons
+#        group2_name_set = get_ws_object_names( logger, ws_client, ws_id, group2_set )
+#
+#        if ( len( group1_name_set) < 2 ):
+#            raise Exception( "first condition group must have at least two members" )
+#        if ( len( group2_name_set) < 2 ):
+#            raise Exception( "second condition group must have at least two members" )
+#
+#        dup = find_dup( group1_name_set + group2_name_set )
+#        if ( dup ):
+#            raise Exception( "input error:  duplicate input found {0}".format( dup ) )
+#
+#        try:
+#            f = open( sample_dir_group_file, "w")
+#        except Exception:
+#            raise Exception( "Can't open file {0} for writing {1}".format( sample_dir_group_file, traceback.format_exc() ) )
+#        group_name_list = []
+#        for subdir in subdir_list:
+#            group = None
+#            exp = os.path.basename( subdir )
+#            if  exp in group1_name_set:
+#                if  exp in group2_name_set:
+#                    raise Exception( "group error - {0} is found in both group sets".format( exp ) )
+#                group = 0
+#                group_name_list.append( group1_name )
+#            elif  exp in group2_name_set:
+#                if  exp in group1_name_set:
+#                    raise Exception( "group error - {0} is found in both group sets".format( exp ) )
+#                group = 1
+#                group_name_list.append( group2_name )
+#            # remove restriction that all groups in a set must be used in the comparison
+#            # sometimes there are three or more groups 
+#            #else:
+#            #    raise Exception( "group error - {0} is not found in either group set".format( exp ) )
+#            if ( group != None ):
+#                f.write( "{0}  {1}\n".format( subdir, group ))
+#        f.close()
+#
+#        return( group_name_list )
 
 # returns the value of the first duplicate member found in list
 # returns None if no duplicates found
