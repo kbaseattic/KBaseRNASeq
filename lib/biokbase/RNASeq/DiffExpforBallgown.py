@@ -192,12 +192,6 @@ class DiffExpforBallgown(ExecutionBase):
         volcano_plot_file = "volcano_plot.png"
         stringtie_dir_prefix = "StringTie_outdir_"
 
-        # 
-        #  1) need a pattern RE to match all the StringTie subdirs, so prefix all
-        #     unzipped dirs with "stringtie_out_"
-        #  2) need a group identifier string i.e. "111000"
-        #
-
         ballgown_set_info = rnaseq_util.get_info_and_download_for_ballgown( logger, 
                                                                             ws_client, 
                                                                             hs_client, 
@@ -212,15 +206,16 @@ class DiffExpforBallgown(ExecutionBase):
         logger.info( pformat( ballgown_set_info ) )
 
         sample_dir_group_file = "sample_dir_group_table"  # output file
-        group_list = rnaseq_util.create_sample_dir_group_file( logger,
-                                                               ws_client,
-                                                               ws_id,
-                                                               ballgown_set_info['subdirs'], 
-                                                               params['group_name1'],
-                                                               params['expr_ids1'],
-                                                               params['group_name2'],
-                                                               params['expr_ids2'],
-                                                               sample_dir_group_file )
+        rnaseq_util.create_sample_dir_group_file( logger,
+                                                  ws_client,
+                                                  ws_id,
+                                                  ballgown_set_info['subdirs'], 
+                                                  ballgown_set_info['conditions'],    # 'condition' field from expression object
+                                                  #params['group_name1'],
+                                                  #params['expr_ids1'],
+                                                  #params['group_name2'],
+                                                  #params['expr_ids2'],
+                                                  sample_dir_group_file )
 
         ballgown_output_dir = os.path.join( diffexp_dir, "ballgown_out" )
         logger.info( "ballgown output dir is {0}".format( ballgown_output_dir) )
@@ -249,7 +244,8 @@ class DiffExpforBallgown(ExecutionBase):
                                                                         self.details["used_tool"],
                                                                         self.details["tool_version"],
                                                                         ballgown_set_info['sample_expression_ids'],  # for sample ids? Is this good?
-                                                                        group_list,                                  # conditions
+                                                                        ballgown_set_info['conditions'],                 # conditions
+                                                                        #group_list,                                  # conditions
                                                                         ballgown_set_info['genome_id'],              # genome_id
                                                                         ballgown_set_info['expressionset_id'],       # expressionset_id
                                                                         ballgown_set_info['alignmentSet_id'],        # alignmentset_id
@@ -266,10 +262,13 @@ class DiffExpforBallgown(ExecutionBase):
 
         # this returns a list of gene ids passing the specified cuts, ordered by
         # descending fold_change
+        fold_change_cutoff = params['fold_change_cutoff']
+        if len( ballgown_set_info['labels'] ) > 2:               # no fold change for 3 or more conditions
+            fold_change_cutoff = None
         selected_gene_list = rnaseq_util.filter_genes_diff_expr_matrix( diff_expr_matrix, 
                                                                         params['fold_scale_type'], 
                                                                         params['alpha_cutoff'], 
-                                                                        params['fold_change_cutoff'],
+                                                                        fold_change_cutoff,
                                                                         max_num_genes
                                                                       )
         #  !!!!! IF selected_gene_list is empty print some kind of message, take no further action
