@@ -210,7 +210,7 @@ class DiffExpforBallgown(ExecutionBase):
                                                   ws_client,
                                                   ws_id,
                                                   ballgown_set_info['subdirs'], 
-                                                  ballgown_set_info['labels'],    # 'condition' field from expression object
+                                                  ballgown_set_info['conditions'],    # 'condition' field from expression object
                                                   #params['group_name1'],
                                                   #params['expr_ids1'],
                                                   #params['group_name2'],
@@ -244,7 +244,7 @@ class DiffExpforBallgown(ExecutionBase):
                                                                         self.details["used_tool"],
                                                                         self.details["tool_version"],
                                                                         ballgown_set_info['sample_expression_ids'],  # for sample ids? Is this good?
-                                                                        ballgown_set_info['labels'],                 # conditions
+                                                                        ballgown_set_info['conditions'],                 # conditions
                                                                         #group_list,                                  # conditions
                                                                         ballgown_set_info['genome_id'],              # genome_id
                                                                         ballgown_set_info['expressionset_id'],       # expressionset_id
@@ -262,10 +262,13 @@ class DiffExpforBallgown(ExecutionBase):
 
         # this returns a list of gene ids passing the specified cuts, ordered by
         # descending fold_change
+        fold_change_cutoff = params['fold_change_cutoff']
+        if len( ballgown_set_info['labels'] ) > 2:               # no fold change for 3 or more conditions
+            fold_change_cutoff = None
         selected_gene_list = rnaseq_util.filter_genes_diff_expr_matrix( diff_expr_matrix, 
                                                                         params['fold_scale_type'], 
                                                                         params['alpha_cutoff'], 
-                                                                        params['fold_change_cutoff'],
+                                                                        fold_change_cutoff,
                                                                         max_num_genes
                                                                       )
         #  !!!!! IF selected_gene_list is empty print some kind of message, take no further action

@@ -586,7 +586,8 @@ def get_info_and_download_for_ballgown( logger, ws_client, hs, ws_id, urls, dire
         m_expr_ids = expression_set['data']['mapped_expression_ids']
         if len(m_expr_ids)  < 2:
            raise ValueError("Error the ExpressionSet object has less than 2 expression samples. Kindly check your reads files and repeat the previous step (Cufflinks)")
-        output_obj['labels'] = []
+        output_obj['labels'] = []   # not sure why this is still needed - remove if not
+        output_obj['conditions'] = []
         #output_obj['alignments'] = []   
         output_obj['subdirs'] = []
         counter = 0
@@ -611,6 +612,7 @@ def get_info_and_download_for_ballgown( logger, ws_client, hs, ws_id, urls, dire
                     output_obj['labels'].append( condition )
                 else:
                     counter += 1 #### comment it when replicate_id is available from methods
+                output_obj['conditions'].append( condition )
 
                 #subdir = os.path.join( directory, dir_prefix + "_" + condition + "_" + str(counter) ) ### Comment this line when replicate_id is available from the methods
                 # Fix this - we're getting expression object name from the zip file
@@ -690,12 +692,23 @@ def  create_sample_dir_group_file( logger,
 
         ngroups = 0
         group_name_indices = {}
+        group_counts = {}
+
         for group in condition_list:
             if not group in group_name_indices:
                 group_name_indices[group] = ngroups
                 ngroups = ngroups + 1
+            if not group in group_counts:
+                group_counts[group] = 1
+            else:
+                group_counts[group] = group_counts[group] + 1
+
+        # checks for proper ballgown execution:
         if ngroups < 2:
             raise Exception( "At least two condition groups are needed for this analysis" )
+        for group in condition_list:
+            if group_counts[group] < 2:
+                raise Exception( "condition group {0} has less than 2 members; ballgown will not run".format( group ) )
 
         # write the file
 
@@ -1067,8 +1080,13 @@ def create_and_save_volcano_plot_report( logger,
     ##logger.info( "making shock handle for zipped ")
     #image_zip_shock_ret = script_util.upload_file_to_shock( logger, image_zip_path )
     #image_zip_shock_ret = script_util.upload_file_to_shock( logger, image_zip_path )
-    volcano_file_shock_ret = script_util.upload_file_to_shock( logger, volcano_file_path )
-    logger.info( pformat( volcano_file_shock_ret ) )
+
+    if os.path.exists( volcano_file_path ):
+        volcano_file_shock_ret = script_util.upload_file_to_shock( logger, volcano_file_path )
+        logger.info( pformat( volcano_file_shock_ret ) )
+    else:
+        logger.info( "no volcano file {0} found - skipping".format( volcano_file_path ))
+
 
     html_file = "index.html"
     html_path = os.path.join( ballgown_output_dir, html_file )
@@ -1085,7 +1103,10 @@ def create_and_save_volcano_plot_report( logger,
     f.write( '   <title>title</title>\n' )
     f.write( ' </head>\n' )
     f.write( '<body>\n' )
-    f.write( "<img src={0}>\n".format(  '"' + volcano_plot_file + '"' ) )       
+    if os.path.exists( volcano_file_path ):
+        f.write( "<img src={0}>\n".format(  '"' + volcano_plot_file + '"' ) )
+    else:
+        f.write( '  no volcano plot file generated' )
     f.write( '  </body>\n' )
     f.write( '</html>\n' )
     f.close()
