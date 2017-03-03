@@ -118,22 +118,6 @@
           "target_property" : "expressionset_id"
         },
         {
-          "input_parameter" : "expr_ids1",
-          "target_property" : "expr_ids1"
-        },
-        {
-          "input_parameter" : "expr_ids2",
-          "target_property" : "expr_ids2"
-        },
-        {
-          "input_parameter" : "group_name1",
-          "target_property" : "group_name1"
-        },
-        {
-          "input_parameter" : "group_name2",
-          "target_property" : "group_name2"
-        },
-        {
           "input_parameter" : "alpha_cutoff",
           "target_property" : "alpha_cutoff"
         },
