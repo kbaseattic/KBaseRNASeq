@@ -40,44 +40,6 @@
       "valid_ws_types" : ["KBaseFeatureValues.ExpressionMatrix"],
       "is_output_name": true
     }
-  },{
-    "id" : "expr_ids1",
-    "optional" : false,
-    "advanced" : false,
-    "allow_multiple" : true,
-    "default_values" : [ "" ],
-    "field_type" : "text",
-    "text_options" : {
-      "valid_ws_types" : [ "KBaseRNASeq.RNASeqExpression"] 
-    }
-  },{
-    "id" : "expr_ids2",
-    "optional" : false,
-    "advanced" : false,
-    "allow_multiple" : true,
-    "default_values" : [ "" ],
-    "field_type" : "text",
-    "text_options" : {
-      "valid_ws_types" : [ "KBaseRNASeq.RNASeqExpression"] 
-    }
-  },{
-    "id" : "group_name1",
-    "optional" : false,
-    "advanced" : false,
-    "allow_multiple" : false,
-    "default_values" : [ "" ],
-    "field_type" : "text",
-    "text_options" : {
-    }
-  },{
-    "id" : "group_name2",
-    "optional" : false,
-    "advanced" : false,
-    "allow_multiple" : false,
-    "default_values" : [ "" ],
-    "field_type" : "text",
-    "text_options" : {
-    }
   }, {
     "id" : "fold_change_cutoff",
     "optional" : true,

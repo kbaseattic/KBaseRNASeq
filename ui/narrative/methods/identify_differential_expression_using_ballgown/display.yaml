@@ -27,26 +27,6 @@ parameters :
       RNA-seq Expression Set
     short-hint : |
       Select the RNA-seq expression set associated with transcripts assembled by Cufflinks or StringTie.
-  group_name1 :
-    ui-name : |
-      Group 1 Name
-    short-hint : |
-      Provide the first group name
-  group_name2 :
-    ui-name : |
-      Group 2 Name
-    short-hint : |
-      Provide the second group name
-  expr_ids1 :
-    ui-name : |
-      Group 1 Objects
-    short-hint : |
-      Select the first group of RNA-seq Expression objects
-  expr_ids2 :
-    ui-name : |
-      Group 2 Objects
-    short-hint : |
-      Select the second group of RNA-seq Expression objects
   output_obj_name :
     ui-name : |
       Differential Expression Output Name
