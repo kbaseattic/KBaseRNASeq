@@ -113,7 +113,7 @@
   "parameter-groups": [
       {
         "id": "sample_n_conditions",
-        "parameters": ["sample_id", "condition"],
+        "parameters": ["condition", "sample_id"],
         "optional": false,
         "allow_multiple": true,
         "with_border": true
