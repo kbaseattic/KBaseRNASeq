@@ -41,16 +41,6 @@
       "is_output_name": true
     }
   }, {
-    "id" : "fold_change_cutoff",
-    "optional" : true,
-    "advanced" : false,
-    "allow_multiple" : false,
-    "default_values" : [ "1.5" ],    
-    "field_type" : "text",
-    "text_options" : {
-      "validate_as": "float"
-    }
-  }, {
     "id" : "alpha_cutoff",
     "optional" : true,
     "advanced" : false,
@@ -82,10 +72,6 @@
         {
           "input_parameter" : "alpha_cutoff",
           "target_property" : "alpha_cutoff"
-        },
-        {
-          "input_parameter" : "fold_change_cutoff",
-          "target_property" : "fold_change_cutoff"
         },
         {
           "input_parameter" : "filtered_expr_matrix",
