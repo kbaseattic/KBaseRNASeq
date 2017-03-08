@@ -37,11 +37,6 @@ parameters :
       Filtered Differential Expression Matrix
     short-hint : |
       Provide the name of filtered differential expression Matrix
-  fold_change_cutoff:
-      ui-name : |
-          Fold Change Cutoff
-      short-hint : |
-          Absolute value of fold change cutoff
   alpha_cutoff:
       ui-name : |
           Alpha Cutoff
