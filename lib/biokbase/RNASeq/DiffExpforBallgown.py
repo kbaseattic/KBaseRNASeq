@@ -262,7 +262,11 @@ class DiffExpforBallgown(ExecutionBase):
 
         # this returns a list of gene ids passing the specified cuts, ordered by
         # descending fold_change
-        fold_change_cutoff = params['fold_change_cutoff']
+        if 'fold_change_cutoff' in params:
+            fold_change_cutoff = params['fold_change_cutoff']
+        else:
+            fold_change_cutoff = None
+
         if len( ballgown_set_info['labels'] ) > 2:               # no fold change for 3 or more conditions
             fold_change_cutoff = None
         selected_gene_list = rnaseq_util.filter_genes_diff_expr_matrix( diff_expr_matrix, 
