@@ -4,9 +4,20 @@
 	"context": null,
 	"params":[ 
                     {
-                     "ws_id"                   : "mccorkle:narrative_1488284861674",
-                     "expressionset_id"        : "18030/31/1",
+                     "ws_id"                   : "mccorkle:1484837859347",
+                     "expressionset_id"        : "16162/19/1",
                      "output_obj_name"         : "third_ballgown_test",
+
+                                                  "group_name1":  "WT",
+                                                  "expr_ids1"  : [ 
+                                                                   "16162/16/1",
+                                                                   "16162/15/1"
+                                                                 ],
+                                                  "group_name2":  "hy5",
+                                                  "expr_ids2"  : [ 
+                                                                   "16162/17/1",
+                                                                   "16162/18/1"
+                                                                 ],
                      "fold_scale_type"         : "log2+1",
                      "fold_change_cutoff"      : 307,
                      "alpha_cutoff"            : 0.5,

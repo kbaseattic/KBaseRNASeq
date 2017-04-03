@@ -429,20 +429,6 @@
 
   async funcdef BuildBowtie2Index(Bowtie2IndexParams params)
      returns(ResultsToReport) authentication required;
-
-  typedef structure{
-	string ws_id;
-	string rnaseq_exp_details;
-	string output_obj_name;
-	}ExpressionMatrixParams;
-
-	typedef structure {
-		string output_obj_name;
-		string ws_id;
-    }ExpressionMatrixResult;
-
-  async funcdef createExpressionMatrix(ExpressionMatrixParams params)
-     returns(ExpressionMatrixResult) authentication required;
 	
    typedef structure{
 	string ws_id;

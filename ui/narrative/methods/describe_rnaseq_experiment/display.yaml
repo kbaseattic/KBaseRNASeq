@@ -46,7 +46,7 @@ parameters :
             The type of sequencing reads - single-end vs. paired-end 
     condition:
         ui-name : |
-            Condition Label
+            Condition Labels
         short-hint : |
             Short label for each sample in the RNA-seq experiment. All replicates for the same condition must have same label.
     sample_id:

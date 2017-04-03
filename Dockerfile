@@ -8,7 +8,7 @@ RUN \
   rm -rf jars && \
   git clone https://github.com/kbase/jars && \
   rm -rf kb_sdk && \
-  git clone https://github.com/kbase/kb_sdk -b auth2 && \
+  git clone https://github.com/kbase/kb_sdk -b develop && \
   rm -rf handle_service && \
   git clone https://github.com/kbase/handle_service && \
   cd /kb/dev_container/modules/jars && \
@@ -16,15 +16,7 @@ RUN \
   cd /kb/dev_container/modules/kb_sdk && \
   make && make deploy && \
   cd /kb/dev_container/modules/handle_service && \
-  make && make deploy && \
-  cd /kb/dev_container/modules && \
-  rm -rf transform && \
-  git clone https://github.com/kbase/transform && \
-  rm -rf workspace_deluxe && \
-  git clone https://github.com/kbase/workspace_deluxe && \
-  cd /kb/dev_container/modules/workspace_deluxe && \
-  cp -rv lib/* /kb/deployment/lib/
-
+  make && make deploy 
 RUN \
   . /kb/dev_container/user-env.sh && \
   cd /kb/dev_container/modules && \
