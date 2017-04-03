@@ -40,54 +40,6 @@
       "valid_ws_types" : ["KBaseFeatureValues.ExpressionMatrix"],
       "is_output_name": true
     }
-  },{
-    "id" : "expr_ids1",
-    "optional" : false,
-    "advanced" : false,
-    "allow_multiple" : true,
-    "default_values" : [ "" ],
-    "field_type" : "text",
-    "text_options" : {
-      "valid_ws_types" : [ "KBaseRNASeq.RNASeqExpression"] 
-    }
-  },{
-    "id" : "expr_ids2",
-    "optional" : false,
-    "advanced" : false,
-    "allow_multiple" : true,
-    "default_values" : [ "" ],
-    "field_type" : "text",
-    "text_options" : {
-      "valid_ws_types" : [ "KBaseRNASeq.RNASeqExpression"] 
-    }
-  },{
-    "id" : "group_name1",
-    "optional" : false,
-    "advanced" : false,
-    "allow_multiple" : false,
-    "default_values" : [ "" ],
-    "field_type" : "text",
-    "text_options" : {
-    }
-  },{
-    "id" : "group_name2",
-    "optional" : false,
-    "advanced" : false,
-    "allow_multiple" : false,
-    "default_values" : [ "" ],
-    "field_type" : "text",
-    "text_options" : {
-    }
-  }, {
-    "id" : "fold_change_cutoff",
-    "optional" : true,
-    "advanced" : false,
-    "allow_multiple" : false,
-    "default_values" : [ "1.5" ],    
-    "field_type" : "text",
-    "text_options" : {
-      "validate_as": "float"
-    }
   }, {
     "id" : "alpha_cutoff",
     "optional" : true,
@@ -118,28 +70,8 @@
           "target_property" : "expressionset_id"
         },
         {
-          "input_parameter" : "expr_ids1",
-          "target_property" : "expr_ids1"
-        },
-        {
-          "input_parameter" : "expr_ids2",
-          "target_property" : "expr_ids2"
-        },
-        {
-          "input_parameter" : "group_name1",
-          "target_property" : "group_name1"
-        },
-        {
-          "input_parameter" : "group_name2",
-          "target_property" : "group_name2"
-        },
-        {
           "input_parameter" : "alpha_cutoff",
           "target_property" : "alpha_cutoff"
-        },
-        {
-          "input_parameter" : "fold_change_cutoff",
-          "target_property" : "fold_change_cutoff"
         },
         {
           "input_parameter" : "filtered_expr_matrix",

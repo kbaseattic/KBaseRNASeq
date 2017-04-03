@@ -586,7 +586,8 @@ def get_info_and_download_for_ballgown( logger, ws_client, hs, ws_id, urls, dire
         m_expr_ids = expression_set['data']['mapped_expression_ids']
         if len(m_expr_ids)  < 2:
            raise ValueError("Error the ExpressionSet object has less than 2 expression samples. Kindly check your reads files and repeat the previous step (Cufflinks)")
-        output_obj['labels'] = []
+        output_obj['labels'] = []   # not sure why this is still needed - remove if not
+        output_obj['conditions'] = []
         #output_obj['alignments'] = []   
         output_obj['subdirs'] = []
         counter = 0
@@ -611,6 +612,7 @@ def get_info_and_download_for_ballgown( logger, ws_client, hs, ws_id, urls, dire
                     output_obj['labels'].append( condition )
                 else:
                     counter += 1 #### comment it when replicate_id is available from methods
+                output_obj['conditions'].append( condition )
 
                 #subdir = os.path.join( directory, dir_prefix + "_" + condition + "_" + str(counter) ) ### Comment this line when replicate_id is available from the methods
                 # Fix this - we're getting expression object name from the zip file
@@ -671,6 +673,56 @@ def number_of_lines_in_file( fname ):
             n = n + 1
     return n + 1
 
+def  create_sample_dir_group_file( logger,
+                                   ws_client,
+                                   ws_id,
+                                   subdir_list, 
+                                   condition_list,
+                                   sample_dir_group_file 
+                                 ):
+
+        # QUESTION:  is it possible that duplicate subdirs can appear here?
+        #            and with same or differen
+        # ballgown requires numeric identifiers for experimental condition groups, 
+        # so first make a table mapping condition names
+
+        logger.info( "new create_sample_dir_group_file:" )
+        logger.info( pformat( condition_list ) )
+        logger.info( pformat( subdir_list) )
+
+        ngroups = 0
+        group_name_indices = {}
+        group_counts = {}
+
+        for group in condition_list:
+            if not group in group_name_indices:
+                group_name_indices[group] = ngroups
+                ngroups = ngroups + 1
+            if not group in group_counts:
+                group_counts[group] = 1
+            else:
+                group_counts[group] = group_counts[group] + 1
+
+        # checks for proper ballgown execution:
+        if ngroups < 2:
+            raise Exception( "At least two condition groups are needed for this analysis" )
+        for group in condition_list:
+            if group_counts[group] < 2:
+                raise Exception( "condition group {0} has less than 2 members; ballgown will not run".format( group ) )
+
+        # write the file
+
+        try:
+            f = open( sample_dir_group_file, "w" )
+        except Exception:
+            raise Exception( "Can't open file {0} for writing {1}".format( sample_dir_group_file, traceback.format_exc() ) )
+ 
+        for subdir, group in zip( subdir_list, condition_list ):
+            f.write( "{0}  {1}\n".format( subdir, group_name_indices[group] ))
+        f.close()
+
+        return
+
 # this converts the input group set lists writes a file that can be loaded
 # as a table by the ballgown_fpkmgenematrix.R  script to pass to
 # ballgown to assign group ids to each setn
@@ -678,55 +730,55 @@ def number_of_lines_in_file( fname ):
 # this returns an ordered list of group names that corresponds to
 # the input subdir_list
 
-def create_sample_dir_group_file( logger,
-                                  ws_client,
-                                  ws_id,
-                                  subdir_list, 
-                                  group1_name,
-                                  group1_set,
-                                  group2_name,
-                                  group2_set,
-                                  sample_dir_group_file ):
-
-        group1_name_set = get_ws_object_names( logger, ws_client, ws_id, group1_set )   # change potential refnames to names for comparisons
-        group2_name_set = get_ws_object_names( logger, ws_client, ws_id, group2_set )
-
-        if ( len( group1_name_set) < 2 ):
-            raise Exception( "first condition group must have at least two members" )
-        if ( len( group2_name_set) < 2 ):
-            raise Exception( "second condition group must have at least two members" )
-
-        dup = find_dup( group1_name_set + group2_name_set )
-        if ( dup ):
-            raise Exception( "input error:  duplicate input found {0}".format( dup ) )
-
-        try:
-            f = open( sample_dir_group_file, "w")
-        except Exception:
-            raise Exception( "Can't open file {0} for writing {1}".format( sample_dir_group_file, traceback.format_exc() ) )
-        group_name_list = []
-        for subdir in subdir_list:
-            group = None
-            exp = os.path.basename( subdir )
-            if  exp in group1_name_set:
-                if  exp in group2_name_set:
-                    raise Exception( "group error - {0} is found in both group sets".format( exp ) )
-                group = 0
-                group_name_list.append( group1_name )
-            elif  exp in group2_name_set:
-                if  exp in group1_name_set:
-                    raise Exception( "group error - {0} is found in both group sets".format( exp ) )
-                group = 1
-                group_name_list.append( group2_name )
-            # remove restriction that all groups in a set must be used in the comparison
-            # sometimes there are three or more groups 
-            #else:
-            #    raise Exception( "group error - {0} is not found in either group set".format( exp ) )
-            if ( group != None ):
-                f.write( "{0}  {1}\n".format( subdir, group ))
-        f.close()
-
-        return( group_name_list )
+#def create_sample_dir_group_file( logger,
+#                                  ws_client,
+#                                  ws_id,
+#                                  subdir_list, 
+#                                  group1_name,
+#                                  group1_set,
+#                                  group2_name,
+#                                  group2_set,
+#                                  sample_dir_group_file ):
+#
+#        group1_name_set = get_ws_object_names( logger, ws_client, ws_id, group1_set )   # change potential refnames to names for comparisons
+#        group2_name_set = get_ws_object_names( logger, ws_client, ws_id, group2_set )
+#
+#        if ( len( group1_name_set) < 2 ):
+#            raise Exception( "first condition group must have at least two members" )
+#        if ( len( group2_name_set) < 2 ):
+#            raise Exception( "second condition group must have at least two members" )
+#
+#        dup = find_dup( group1_name_set + group2_name_set )
+#        if ( dup ):
+#            raise Exception( "input error:  duplicate input found {0}".format( dup ) )
+#
+#        try:
+#            f = open( sample_dir_group_file, "w")
+#        except Exception:
+#            raise Exception( "Can't open file {0} for writing {1}".format( sample_dir_group_file, traceback.format_exc() ) )
+#        group_name_list = []
+#        for subdir in subdir_list:
+#            group = None
+#            exp = os.path.basename( subdir )
+#            if  exp in group1_name_set:
+#                if  exp in group2_name_set:
+#                    raise Exception( "group error - {0} is found in both group sets".format( exp ) )
+#                group = 0
+#                group_name_list.append( group1_name )
+#            elif  exp in group2_name_set:
+#                if  exp in group1_name_set:
+#                    raise Exception( "group error - {0} is found in both group sets".format( exp ) )
+#                group = 1
+#                group_name_list.append( group2_name )
+#            # remove restriction that all groups in a set must be used in the comparison
+#            # sometimes there are three or more groups 
+#            #else:
+#            #    raise Exception( "group error - {0} is not found in either group set".format( exp ) )
+#            if ( group != None ):
+#                f.write( "{0}  {1}\n".format( subdir, group ))
+#        f.close()
+#
+#        return( group_name_list )
 
 # returns the value of the first duplicate member found in list
 # returns None if no duplicates found
@@ -1028,8 +1080,13 @@ def create_and_save_volcano_plot_report( logger,
     ##logger.info( "making shock handle for zipped ")
     #image_zip_shock_ret = script_util.upload_file_to_shock( logger, image_zip_path )
     #image_zip_shock_ret = script_util.upload_file_to_shock( logger, image_zip_path )
-    volcano_file_shock_ret = script_util.upload_file_to_shock( logger, volcano_file_path )
-    logger.info( pformat( volcano_file_shock_ret ) )
+
+    if os.path.exists( volcano_file_path ):
+        volcano_file_shock_ret = script_util.upload_file_to_shock( logger, volcano_file_path )
+        logger.info( pformat( volcano_file_shock_ret ) )
+    else:
+        logger.info( "no volcano file {0} found - skipping".format( volcano_file_path ))
+
 
     html_file = "index.html"
     html_path = os.path.join( ballgown_output_dir, html_file )
@@ -1046,7 +1103,10 @@ def create_and_save_volcano_plot_report( logger,
     f.write( '   <title>title</title>\n' )
     f.write( ' </head>\n' )
     f.write( '<body>\n' )
-    f.write( "<img src={0}>\n".format(  '"' + volcano_plot_file + '"' ) )       
+    if os.path.exists( volcano_file_path ):
+        f.write( "<img src={0}>\n".format(  '"' + volcano_plot_file + '"' ) )
+    else:
+        f.write( '  no volcano plot file generated' )
     f.write( '  </body>\n' )
     f.write( '</html>\n' )
     f.close()

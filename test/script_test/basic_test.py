@@ -9,19 +9,52 @@ from pprint import pprint
 
 from subprocess import call
 
+import sys
 from biokbase.auth import Token
+from os import environ
 
 # Before all the tests, read the config file and get a user token and
 # save it to a file used by the main service script
 class TestRNASeqMethodsSetup(unittest.TestCase):
-  def setUp(self):
-    config = ConfigParser.RawConfigParser()
-    config.read('test/test.cfg')
-    user_id = config.get('KBaseRNASeqTest','user')
-    password = config.get('KBaseRNASeqTest','password')
-    token = Token(user_id=user_id, password=password)
-    token_file = open('test/script_test/token.txt','w')
-    token_file.write(token.token)
+
+  @classmethod
+  def setUp(cls):
+    token = environ.get('KB_AUTH_TOKEN', None)
+
+    if token is None:
+        sys.stderr.write("Error: Unable to run tests without authentication token!\n")
+        sys.exit(1)
+
+    token_file = open('test/script_test/token.txt', 'w')
+    token_file.write(token)
+
+    #######################################
+    from biokbase.RNASeq.authclient import KBaseAuth as _KBaseAuth
+    from biokbase.workspace.client import Workspace as Workspace
+    try:
+        from ConfigParser import ConfigParser  # py2
+    except:
+        from configparser import ConfigParser  # py3
+
+    config_file = environ.get('KB_DEPLOYMENT_CONFIG', None)
+    cls.cfg = {}
+    config = ConfigParser()
+    config.read(config_file)
+    for nameval in config.items('KBaseRNASeq'):
+        cls.cfg[nameval[0]] = nameval[1]
+    auth_service_url = cls.cfg.get('auth-service-url',
+                                   "https://kbase.us/services/authorization/Sessions/Login")
+    ws_url = cls.cfg['ws_url']
+    auth_service_url_allow_insecure = cls.cfg['auth-service-url-allow-insecure']
+    auth_client = _KBaseAuth(auth_service_url)
+    print('>>>>>>>>>>>>>>>>>>>>AUTH_SERVICE_URL: ' + auth_service_url)
+    print('>>>>>>>>>>>>>>>>>>>>TOKEN: ' + token)
+    user_id = auth_client.get_user(token)
+    print('>>>>>>>>>>>>>>>>>>>>USERID: '+user_id)
+
+    ws = Workspace(url=ws_url, token=token, auth_svc=auth_service_url,
+                   trust_all_ssl_certificates=auth_service_url_allow_insecure)
+    #######################################
 
 # Define all our other test cases here
 class TestRNASeqMethods(TestRNASeqMethodsSetup): 
