@@ -4,7 +4,35 @@ language: python
 python:
   - "2.7"
 
-sudo: false
+sudo: required
+
+services:
+    - docker
+
+notifications:
+  email:
+    recipients:
+      - arfathpasha@gmail.com
+    on_success: never # default: change
+    on_failure: always # default: always
+
+env:
+  global:
+    # TEST_USER
+    - secure: "Yj5naQWntR9Mjc41USqNepyicl/e2/ARKBowdaVfF/pZ+rMrhOk0IgeH+cpqhrUdnDlAG7GHsOfvqP4eYGId3xJHT/YQQm2Ss+9OOaNq4/obufzxmxuMlLXzWjsQCOUw+TIK0Tvi+PELeqTkqg6HBiWJX/eUYVNjyp8lG16wGmAIwHlfqXdzyD7RXX87hlzNff4kIybcdG9qJctrrFbJfENOW1NocktUn6Pv095v4R41Nw/xR//F42eu9gv+LTkRUw0CBs2ih3DEjgAeUQN0fYV/pgsIxCe3LWK6cJH7J0D/Vge1ZknTdVynD9t2freyM4/Qa61Hi47s9zSTOPDg2NeJRbmgaGCQcwiN47ahsbdWuxpkU4tok/yWKAdiQckkRg+P0vUGrj/C/eu1mW6EwY/52WqW+afW48wAKzuUuRH0jKJtYaQtfagIdhH++0GxEAn5bscnk/8V/IKytKWLkC0KQDsbx54wkPoxXu87iSXlOw6JYQsbgEL2SU/HqZCv/R+pOePu/z9Bzcged0geykK7NvCrgCccsmFeCHpNpIaR5qXmLTabIsjdQIGhGPK4RMCFs1DFYxjGKX3BTEVcsrDK1RSHyFKFY5AlkeZI+2jfR0y0mTwf+6ckKnGaENUuC7HL2G+JRJIiDD5gSMUZ/fciaBXix3F4I8skMt+iF/4="
+    # TEST_PASSWORD
+    - secure: "V8TuLmNg7n/fzdOkv3hcd/TFzexKRmrjBmFmlMqSXXbG3A1BlkIJOdhDLWjxKiWVGLOENXkiBd9CPOEKwZnJAfoOm3hdpZ3tTrsGqL/0DTCgwmP8Uj1RZ8zt5hYu4IfTnJHLJmNEzwfZ29eC1ONhsSXp9ATbG7lyI2BqFchwnOFGcg03CJ5fl+CJAucrJta/uHNaRXRpnf33DG3M105X/V7WdzNDIfQBCLgx+ZyuvQo0AxZpDy9+iRFqt0cNfhAsYKnsLFJ+VSv+4Fzj+a+uGnXLz/jLFJCSt3Z9CuOuuiepCjkFAgMuJ6W58C6M/0t8/ixPeeVKs7acIKnaTKJ7B8MPM/O1Y3GMdpS+elwLWV1Z9Ku3V3suSMcYv+PeErN78+vGVR/iH/zw8mue+1yxQvBPMjl/zVmgHgG3YOevHKu/RUNLLVMt+/jrHGe2+HqHIIdejO1dwOWDDfstsVRGbpFU8VXQplM7+3iSe6q7aY07ZsRgDzk2SHI2cCg0Th5lUp8ri2oeMaAuFJSD2nWpT0bvull1jNoYRK4/h/3Pam2Hw64CQr2wIMhLBAfeVcvhLaNaVi8wCWxTHyHJ0cDpTd307mqnsuU+HIfmVzatYpXM7RXJXvYcAxfmRnKh9xOsNRyetyFbfmuzLTEedMYMT5Q6J7v5DORDzpU5F8kklA0="
+
+
+branches:
+  only:
+    - master
+    - staging
+    - develop
+
+before_install:
+    - docker version
+    - python --version
 
 cache:
   directories:

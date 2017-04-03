@@ -102,6 +102,8 @@ class KBaseRNASeq:
         #BEGIN_CONSTRUCTOR
         # This is where config variable for deploy.cfg are available
         #pprint(config)
+        if 'auth-service-url' in config:
+              self.__AUTH_SERVICE_URL = config['auth-service-url']
         if 'max_cores' in config:
               self.__MAX_CORES= int(config['max_cores'])
         if 'ws_url' in config:
@@ -945,7 +947,7 @@ class KBaseRNASeq:
         print( "type of self.__LOGGER is " + pformat( type( self.__LOGGER ) ) )
         if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
         diffexp_dir = os.path.join( self.__SCRATCH, "tmp" )
-        handler_util.setupWorkingDir( self.__LOGGER, diffexp_dir ) 
+        handler_util.setupWorkingDir( self.__LOGGER, diffexp_dir )
         # Set the common Params
         common_params = {'ws_client'    : Workspace(url=self.__WS_URL, token=ctx['token']),
                          'hs_client'    : HandleService(url=self.__HS_URL, token=ctx['token']),
