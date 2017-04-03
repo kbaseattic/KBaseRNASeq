@@ -11,7 +11,6 @@
 #                              --output_dir             <dir name>                      (required)
 #                              --output_csvfile         <filename for diff exp matrix>  (required)
 #                              --volcano_plot_file      <filename for volcano plot>     (optional)
-#                                                       (only available if there are two condition groups)
 #
 #                      planned, not yet implemented:
 #                              --p_dist_plot_file 
@@ -49,9 +48,7 @@
 #                         "AT1G01050"	1			NA			NA
 #                         "AT1G01060"	0.293968217480655	0.212709415508708	0.787884152938117
 #               
-#           note that fold change "fc" values are only available when there's two condition groups.  
-#           If there are more than two condition groups, this column will be populated by NA 
-#
+
 
                          #############################
                          # Subroutines and functions #
@@ -116,10 +113,6 @@ dmesg( "about to get samples_groups table" )
 smg <- get_and_check_samples_groups( opt$sample_dir_group_table )
 print( smg )
 
-ncond <- length( levels( as.factor( smg$group ) ) )
-dmesg( "this contains", ncond, "condition groups" )
-
-
 dmesg( "creating phenotype data frame for ballgown() constructor" )
 pg <- data.frame( id    = basename( as.character( smg$sample_dir) ),
                   group = smg$group )
@@ -143,23 +136,11 @@ dmesg( "here is pData(bg)" )
 print( pData(bg) )
 
 
+
 dmesg( "about to stattest" )
 
 # create gene-level differential expression table
-
-gene_diff_ex_tab <- stattest( bg, feature='gene', meas='FPKM', covariate='group', 
-                              getFC = (ncond == 2) )
-
-# for more than two conditions, we need to add in a column of NA for fold change to
-# preserve the table format
-
-if ( ncond > 2 )
-   gene_diff_ex_tab <- data.frame( feature = gene_diff_ex_tab$feature,
-                                   id = gene_diff_ex_tab$id,
-                                   fc = NA,
-                                   pval = gene_diff_ex_tab$pval,
-                                   qval = gene_diff_ex_tab$pval
-                                 )
+gene_diff_ex_tab <- stattest( bg, feature='gene', meas='FPKM', covariate='group', getFC=TRUE )
 
 dmesg( "about to write.table" )
 
@@ -169,9 +150,8 @@ write.table( gene_diff_ex_tab[,-1],
 
 # If volcano_plot_file option is given, generate the plot and put
 # it into the specified file
-# (only available for two condition groups)
 
-if ( ( ncond == 2 ) && ! is.null( opt$volcano_plot_file ) )
+if ( ! is.null( opt$volcano_plot_file ) )
    {
     dmesg( paste( "creating volcano plot in", opt$volcano_plot_file ) )
 

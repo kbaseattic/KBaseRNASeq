@@ -4,10 +4,6 @@
 
 python ./scripts/prepare_deploy_cfg.py ./deploy.cfg ./work/config.properties
 
-if [ -f ./work/token ] ; then
-  export KB_AUTH_TOKEN=$(<./work/token)
-fi
-
 if [ $# -eq 0 ] ; then
   sh ./scripts/start_server.sh
 elif [ "${1}" = "test" ] ; then
