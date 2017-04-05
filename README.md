@@ -3,9 +3,13 @@ KBaseRNASeq
 
 This module provides functionality to perform  RNASeq analysis to enable users to quantify gene expression, identify splice junctions and measure differential expression using the Tuxedo suite of tools.
 
-[![Build Status](https://travis-ci.org/kbase/KBaseRNASeq.svg?branch=master)](https://travis-ci.org/kbase/KBaseRNASeq)
-Code coverage: (develop branch)
-[![Coverage Status](https://coveralls.io/repos/github/kbase/KBaseRNASeq/badge.svg?branch=master)](https://coveralls.io/github/kbase/KBaseRNASeq?branch=master)
+Build status:</br>
+master:  [![Build Status](https://travis-ci.org/arfathpasha/KBaseRNASeq.svg?branch=master)](https://travis-ci.org/arfathpasha/KBaseRNASeq)</br>
+staging: [![Build Status](https://travis-ci.org/arfathpasha/KBaseRNASeq.svg?branch=staging)](https://travis-ci.org/arfathpasha/KBaseRNASeq)</br>
+develop: [![Build Status](https://travis-ci.org/arfathpasha/KBaseRNASeq.svg?branch=develop)](https://travis-ci.org/arfathpasha/KBaseRNASeq)</br>
+
+Code coverage: (master branch)
+[![Coverage Status](https://coveralls.io/repos/github/arfathpasha/KBaseRNASeq/badge.svg?branch=master)](https://coveralls.io/github/arfathpasha/KBaseRNASeq?branch=master)</br>
 
 Examples of tools that will be developed in this module:
 
@@ -46,6 +50,8 @@ Notes for development:
 5) make deploy
 
 6) testing the command:  ./bin/run_KBaseRNASeq.sh test/script_test/input.json output.txt /mnt/project/mytoken.txt
+
+7) The ballgown package from Bioconductor did not install successfully from CRAN mirror index=52 (source Michigan 1). But on changing the index to 48 (source California 1) in deps/kb_ballgown/install_ballgown.sh, the package installed successfully.
 
 References:
 ============
