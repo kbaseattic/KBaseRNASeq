@@ -15,7 +15,7 @@ DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confdef" -
 
 echo "##########" About to load bioconductor and ballgown "###########"
 
-R -q -e 'chooseCRANmirror(ind=52); install.packages(c("getopt")); source("http://bioconductor.org/biocLite.R"); biocLite("ballgown")' 
+R -q -e 'chooseCRANmirror(ind=48); install.packages(c("getopt")); source("https://bioconductor.org/biocLite.R"); biocLite("ballgown")'
 
 echo "##########" Finished loading bioconductor and ballgown "###########"
 
