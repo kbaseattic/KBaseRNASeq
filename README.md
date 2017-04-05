@@ -51,6 +51,8 @@ Notes for development:
 
 6) testing the command:  ./bin/run_KBaseRNASeq.sh test/script_test/input.json output.txt /mnt/project/mytoken.txt
 
+7) The ballgown package from Bioconductor did not install successfully from CRAN mirror index=52. But on changing the index to 48 (source California) in deps/kb_ballgown/install_ballgown.sh, the package installed successfully.
+
 References:
 ============
 
