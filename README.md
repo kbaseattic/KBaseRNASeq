@@ -3,12 +3,6 @@ KBaseRNASeq
 
 This module provides functionality to perform  RNASeq analysis to enable users to quantify gene expression, identify splice junctions and measure differential expression using the Tuxedo suite of tools.
 
-[![Build Status](https://travis-ci.org/kbase/KBaseRNASeq.svg?branch=master)](https://travis-ci.org/kbase/KBaseRNASeq)
-Code coverage: (develop branch)
-[![Coverage Status](https://coveralls.io/repos/github/kbase/KBaseRNASeq/badge.svg?branch=master)](https://coveralls.io/github/kbase/KBaseRNASeq?branch=master)
-
-https://travis-ci.org/arfathpasha/KBaseRNASeq.svg?branch=master
-
 Build status:</br>
 master:  [![Build Status](https://travis-ci.org/arfathpasha/KBaseRNASeq.svg?branch=master)](https://travis-ci.org/arfathpasha/KBaseRNASeq)</br>
 staging: [![Build Status](https://travis-ci.org/arfathpasha/KBaseRNASeq.svg?branch=staging)](https://travis-ci.org/arfathpasha/KBaseRNASeq)</br>
