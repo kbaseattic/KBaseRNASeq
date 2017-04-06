@@ -83,7 +83,7 @@ deploy: deploy-scripts
 
 deploy-scripts: deploy-libs2 deploy-executable-script
 
-deploy-service: deploy-libs2 deploy-executable-script deploy-service-scripts deploy-cfg
+deploy-service: deploy-libs2 deploy-executable-script deploy-service-scripts 
 
 deploy-libs2:
 	kb-sdk install AssemblyUtil
@@ -146,7 +146,7 @@ DEPLOY_RUNTIME ?= /kb/runtime
 TARGET ?= /kb/deployment
 #SERVICE_DIR ?= $(TARGET)/services/$(MODULE)
 
-deploy: deploy-lscripts deploy-cfg
+deploy: deploy-lscripts 
 	
 
 deploy-ensure-dirs:
