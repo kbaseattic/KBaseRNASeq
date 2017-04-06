@@ -5,16 +5,8 @@ RUN pip install --upgrade virtualenv
 RUN \
   . /kb/dev_container/user-env.sh && \
   cd /kb/dev_container/modules && \
-  rm -rf jars && \
-  git clone https://github.com/kbase/jars && \
-  rm -rf kb_sdk && \
-  git clone https://github.com/kbase/kb_sdk -b auth2 && \
   rm -rf handle_service && \
   git clone https://github.com/kbase/handle_service && \
-  cd /kb/dev_container/modules/jars && \
-  make deploy && \
-  cd /kb/dev_container/modules/kb_sdk && \
-  make && make deploy && \
   cd /kb/dev_container/modules/handle_service && \
   make && make deploy && \
   cd /kb/dev_container/modules && \
