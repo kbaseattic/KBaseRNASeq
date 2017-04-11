@@ -112,7 +112,7 @@ def ws_translate2name(logger, ws_client, default_ws_id, obj_id):
 
 def ws_get_obj(logger, ws_client, ws_id, obj_id):
     if '/' in obj_id:
-        return ws_client.get_objects([{'ref': obj_id}])
+        return ws_client.get_objects2({'objects': [{'ref': obj_id}]})['data']
     else:
         logger.info("{0}:{1}".format(ws_id, obj_id))
         return ws_client.get_objects([{'name': obj_id, 'workspace': ws_id}])

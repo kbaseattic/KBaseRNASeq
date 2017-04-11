@@ -6,6 +6,7 @@ import json
 import ConfigParser
 
 from pprint import pprint
+from string import Template
 
 from subprocess import call
 
@@ -28,6 +29,7 @@ class TestRNASeqMethodsSetup(unittest.TestCase):
     token_file = open('test/script_test/token.txt', 'w')
     token_file.write(token)
 
+    '''
     #######################################
     from biokbase.RNASeq.authclient import KBaseAuth as _KBaseAuth
     from biokbase.workspace.client import Workspace as Workspace
@@ -54,7 +56,54 @@ class TestRNASeqMethodsSetup(unittest.TestCase):
 
     ws = Workspace(url=ws_url, token=token, auth_svc=auth_service_url,
                    trust_all_ssl_certificates=auth_service_url_allow_insecure)
+
+    filename = "test/script_test/input_meta_data/hisat2_input1.json"
+    INPUT_DATA_DIR = "test/script_test/input_data"
+    with open(filename, 'r') as infile:
+        input_meta_data = json.load(infile)
+
+    # create workspace that is local to the user if it does not exist
+    workspace_name = str(input_meta_data['params'][0]['ws_id'])
+    print('workspace_name: ' + workspace_name)
+
+    try:
+        ws_info = ws.get_workspace_info({'workspace': workspace_name})
+        print("workspace already exists: " + str(ws_info))
+    except:
+        ws_info = ws.create_workspace(
+            {'workspace': workspace_name, 'description': 'Workspace for ' + str(input_meta_data['method'])})
+        print("Created new workspace: " + str(ws_info))
+
+    input_data_filename = 'test/script_test/input_data/Athaliana_PhytozomeV11_TAIR10.json'
+    print('input data filename: ' + input_data_filename)
+
+    with open(input_data_filename, 'r') as infile:
+        input_data = json.load(infile)
+
+    # upload data (no effect if data already exists in workspace)
+    print('uploading input data to workspace')
+    ws.save_objects(
+        {'workspace': workspace_name, 'objects': [{'type': "KBaseGenomes.Genome",
+                                                   'data': input_data,
+                                                   'name': 'Athaliana_PhytozomeV11_TAIR10'}]})
+
+    input_data_filename = 'test/script_test/input_data/Ath_WT_Hy5_sampleset.json'
+    print('input data filename: ' + input_data_filename)
+
+    with open(input_data_filename, 'r') as infile:
+        input_data = json.load(infile)
+
+    # upload data (no effect if data already exists in workspace)
+    print('uploading input data to workspace')
+    ws.save_objects(
+        {'workspace': workspace_name, 'objects': [{'type': 'KBaseRNASeq.RNASeqSampleSet',
+                                                   'data': input_data,
+                                                   'name': 'Ath_WT_Hy5_sampleset'}]})
+
+    print('ws objects: ' + str(ws.list_objects({'workspaces': [workspace_name]})))
     #######################################
+    '''
+
 
 # Define all our other test cases here
 class TestRNASeqMethods(TestRNASeqMethodsSetup): 
