@@ -100,12 +100,6 @@ class Bowtie2(ExecutionBase):
                         bowtie2_cmd += " -U {0} -x {1} -S {2}".format(ds['fwd'],bowtie2_base,out_file)
                 if sample_type == 'KBaseAssembly.PairedEndLibrary' or sample_type == 'KBaseFile.PairedEndLibrary':
                         lib_type = 'PairedEnd'
-                        if sample_type == 'KBaseAssembly.PairedEndLibrary':
-                            if('orientation' in params and params['orientation'] is not None): hisat2_cmd += ( ' --'+params['orientation'])
-                        else:
-                            # TODO: the following can be read from PEL object
-                            if('orientation' in params and params['orientation'] is not None): hisat2_cmd += ( ' --'+params['orientation'])
-                        hisat2_cmd += " -1 {0} -2 {1} -x {2} -S {3}".format(ds['fwd'], ds['rev'],hisat2_base,out_file)
                         bowtie2_cmd += " -1 {0} -2 {1} -x {2} -S {3}".format(ds['fwd'], ds['rev'],bowtie2_base,out_file)
                 ###
 #                if sample_type  == 'KBaseAssembly.SingleEndLibrary' or sample_type  == 'KBaseFile.SingleEndLibrary':
