@@ -158,7 +158,7 @@ if ( ncond > 2 )
                                    id = gene_diff_ex_tab$id,
                                    fc = NA,
                                    pval = gene_diff_ex_tab$pval,
-                                   qval = gene_diff_ex_tab$pval
+                                   qval = gene_diff_ex_tab$qval
                                  )
 
 dmesg( "about to write.table" )
