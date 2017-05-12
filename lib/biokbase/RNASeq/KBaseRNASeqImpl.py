@@ -53,6 +53,7 @@ from biokbase.RNASeq.TophatSample import TophatSample
 from biokbase.RNASeq.CufflinksSampleSet import CufflinksSampleSet
 from biokbase.RNASeq.CufflinksSample import CufflinksSample
 from biokbase.RNASeq.DiffExpforBallgown import DiffExpforBallgown
+from KBaseReport.KBaseReportClient import KBaseReport
 
 _KBaseRNASeq__DATA_VERSION = "0.2"
 
@@ -654,19 +655,16 @@ class KBaseRNASeq:
         pprint(hisat2_rv)
 
         if params['run_stringtie']:
-            # Set up 1st StringTie call to assemble transcripts
+            # Set up StringTie call to assemble transcripts
             # 1) don't explicitly set num_threads, since that will be
             #    set automatically
-            # 2) sample_alignment appears to be unused, or changed
-            #    to alignmentset_id
-            # 3) There is no way to set the output alignment set name
+            # 2) There is no way to set the output alignment set name
             #    (which should be params['output_alignment_set_name']);
             #    instead, this gets set based on the
             #    params['alignmentset_id'] input name, and is returned
             #    from the call as returnVal['output']
             stringtie_params = {'ws_id' : params['ws_id'],
                                 'alignmentset_id' : hisat2_rv['output'],
-                                'sample_alignment' : hisat2_rv['output'],
                                 'label' : params['st_options']['st_label'],
                                 'min_isoform_abundance' : params['st_options']['st_min_isoform_abundance'],
                                 'a_juncs' : params['st_options']['st_a_juncs'],
@@ -675,8 +673,8 @@ class KBaseRNASeq:
                                 'c_min_read_coverage' : params['st_options']['st_c_min_read_coverage'],
                                 'gap_sep_value' : params['st_options']['st_gap_sep_value'],
                                 'disable_trimming' : params['st_options']['st_disable_trimming'],
-                                'ballgown_mode' : False,
-                                'skip_reads_with_no_ref' : False,
+                                'ballgown_mode' : True,
+                                'skip_reads_with_no_ref' : True,
                                 'merge' : False
                             }
             reportObj['text_message'] += "Calling StringTie to assemble transcripts\n"
@@ -690,76 +688,13 @@ class KBaseRNASeq:
             self.__LOGGER.info("StringTie output:")
             pprint(stringtie_rv)
 
-            # At this point, we want to run StringTie two more
-            # times, but the first call is giving me back only
-            # a RNASeqExpression object, not another
-            # RNASeqAlignment object.  Not sure how to proceed!
-
-            #####################################################
-
-            # Set up 2nd StringTie call to merge transcripts
-            # Note that the user probably wants different values for
-            # these parameters the 2nd time; we'll need a
-            # different parameter group for the --merge calls
-            # that includes other parameters like -F, -T, etc
-            # stringtie_params = {'ws_id' : params['ws_id'],
-            #                     'alignmentset_id' : ???
-            #                     'sample_alignment' : ???
-            #                     'label' : params['st_options']['st_label'],
-            #                     'min_isoform_abundance' : params['st_options']['st_min_isoform_abundance'],
-            #                     'min_length' : params['st_options']['st_min_length'],
-            #                     'c_min_read_coverage' : params['st_options']['st_c_min_read_coverage'],
-            #                     'ballgown_mode' : False,
-            #                     'skip_reads_with_no_ref' : False,
-            #                     'merge' : True
-            #                 }
-            # reportObj['text_message'] += "Calling StringTie to merge transcripts\n"
-            # self.__LOGGER.info("Calling StringTie to merge transcripts")
-            # stringtie_rv = self.StringTieCall(ctx, stringtie_params)[0]
-            # # note that StringTieCall currently doesn't actually make a report.
-            # # if it did, we'd want to append it to our report
-            # reportObj['text_message'] += "StringTie finished\n"
-            # self.__LOGGER.info("StringTie finished")
-
-            # Set up 3rd StringTie call to create the read coverage tables
-            # This may need a 3rd set of parameters?
-            # stringtie_params = {'ws_id' : params['ws_id'],
-            #                     'alignmentset_id' : ???
-            #                     'sample_alignment' : ???
-            #                     'label' : params['st_options']['st_label'],
-            #                     'min_isoform_abundance' : params['st_options']['st_min_isoform_abundance'],
-            #                     'a_juncs' : params['st_options']['st_a_juncs'],
-            #                     'min_length' : params['st_options']['st_min_length'],
-            #                     'j_min_reads' : params['st_options']['st_j_min_reads'],
-            #                     'c_min_read_coverage' : params['st_options']['st_c_min_read_coverage'],
-            #                     'gap_sep_value' : params['st_options']['st_gap_sep_value'],
-            #                     'disable_trimming' : params['st_options']['st_disable_trimming'],
-            #                     'ballgown_mode' : True,
-            #                     'skip_reads_with_no_ref' : True,
-            #                     'merge' : False
-            #                }
-            # reportObj['text_message'] += "Calling StringTie to create read coverage tables\n"
-            # self.__LOGGER.info("Calling StringTie to create read coverage tables")
-            # stringtie_rv = self.StringTieCall(ctx, stringtie_params)[0]
-            # # note that StringTieCall currently doesn't actually make a report.
-            # # if it did, we'd want to append it to our report
-            # reportObj['text_message'] += "StringTie finished\n"
-            # self.__LOGGER.info("StringTie finished")
-
-            # Finally, we want to run prepDE.py
-            # to create the expression matrix.
-            # There used to be a method called
-            # createExpressionMatrix, but it's now gone?
-            # Not implementing this for now.
+            # Finally, we want to create the expression matrix,
+            # but we don't have a working example for that.
             
         # save the report
-        # don't do this for now, since adding a report client would
-        # be a larger change than we want to merge in one step
-        # report = KBaseReport(self.__callbackURL, token=ctx['token'], service_ver='dev')
-        # report_info = report.create({'report':reportObj, 'workspace_name':params['ws_id']})
-
-        # returnVal = { 'report_name': report_info['name'], 'report_ref': report_info['ref'] }
-        returnVal = {}
+        report = KBaseReport(self.__CALLBACK_URL, token=ctx['token'], service_ver='dev')
+        report_info = report.create({'report':reportObj, 'workspace_name':params['ws_id']})
+        returnVal = { 'report_name': report_info['name'], 'report_ref': report_info['ref'] }
         #END Hisat2StringTieCall
 
         # At some point might do deeper type checking...

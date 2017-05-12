@@ -496,8 +496,8 @@
 
  typedef structure{
         string ws_id;
-        string sample_alignment;
-        int num-threads;
+        string alignmentset_id;
+        int num_threads;
 	string label;
         float min_isoform_abundance;
 	int a_juncs;
