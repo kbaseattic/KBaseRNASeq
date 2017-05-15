@@ -1,0 +1,16 @@
+{
+  "version": "1.1",
+  "method": "KBaseRNASeq.BuildBowtie2Index",
+  "context": null,
+  "params": [
+    {
+      "ws_id": "KBaseRNASeq_test_$user_id",
+      "output_obj_name": "at_chrom1_section_index",
+      "reference": "at_chrom1_section",
+      "type": "KBaseGenomes.Genome",
+      "source": "thale-cress",
+      "version": "1TAIR10",
+      "comment": "Arabidopsis thaliana, downsized test data created for fast unit testing. Note workspace id is tied to user_id"
+    }
+  ]
+}

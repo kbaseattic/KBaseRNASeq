@@ -1,0 +1,18 @@
+{
+  "version": "1.1",
+  "method": "KBaseRNASeq.DiffExpCallforBallgown",
+  "context": null,
+  "params": [
+    {
+      "ws_id": "KBaseRNASeq_test_$user_id",
+      "expressionset_id": "downsized_AT_reads_hisat2_AlignmentSet_stringtie_ExpressionSet",
+      "output_obj_name": "downsized_AT_differential_expression_object",
+      "filtered_expr_matrix": "downsized_AT_filtered_expression_matrix",
+      "alpha_cutoff": 0.05,
+      "fold_scale_type" : "log2+1",
+      "fold_change_cutoff" : 300
+    }
+  ]
+}
+
+
