@@ -16,7 +16,8 @@ It has the following primary scripts for the following narrative methhods:
 
 ---
 
-VERSION 0.1
+VERSION 1.0.3
 
 ---
+- Updated tests to use local data stored in the git repo
 
