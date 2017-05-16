@@ -1,7 +1,7 @@
 #
 # Define basic display information
 #
-name     : Align Reads using HISAT2
+name     : Align Reads using HISAT2 - v2.0.4
 tooltip  : |
     Align sequencing reads to long reference sequences using HISAT2
 screenshots :

@@ -1,7 +1,7 @@
 #
 # Define basic display information
 #
-name     : Create Differential Expression Matrix using Ballgown
+name     : Create Differential Expression Matrix using Ballgown - v2.0.0
 
 tooltip  : |
     Create differential expression matrix based on a given threshold cutoff

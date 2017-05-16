@@ -1,7 +1,7 @@
 #
 # Define basic display information
 #
-name     : Build Bowtie2 Index 
+name     : Build Bowtie2 Index - v2.2.9
 tooltip  : |
     Index the sequences in a reference genome using Bowtie2.
 

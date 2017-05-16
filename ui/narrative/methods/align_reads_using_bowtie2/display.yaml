@@ -1,7 +1,7 @@
 #
 # Define basic display information
 #
-name     : Align Reads using Bowtie2
+name     : Align Reads using Bowtie2 - v2.2.9
 tooltip  : |
     Align sequencing reads to long reference prokaryotic genome sequences using Bowtie2
 
