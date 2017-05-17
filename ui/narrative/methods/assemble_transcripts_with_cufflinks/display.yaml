@@ -1,7 +1,7 @@
 #
 # Define basic display information
 #
-name     : Assemble Transcripts using Cufflinks
+name     : Assemble Transcripts using Cufflinks - v2.2.1
 
 tooltip  : |
     Assemble the transcripts from RNA-seq reads using Cufflinks. 

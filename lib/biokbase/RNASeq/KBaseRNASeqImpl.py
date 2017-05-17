@@ -81,7 +81,7 @@ class KBaseRNASeq:
     VERSION = "0.0.1"
     GIT_URL = "https://github.com/kbase/KBaseRNASeq"
     GIT_COMMIT_HASH = "13e98933aea51ffac6b401451d8aebb874958614"
-    
+
     #BEGIN_CLASS_HEADER
     __TEMP_DIR = 'temp'
     __PUBLIC_SHOCK_NODE = 'true'
@@ -127,11 +127,11 @@ class KBaseRNASeq:
         #      self.__RSCRIPTS_DIR = config['rscripts_dir']
         if 'force_shock_node_2b_public' in config: # expect 'true' or 'false' string
               self.__PUBLIC_SHOCK_NODE = config['force_shock_node_2b_public']
-        self.__CALLBACK_URL = os.environ['SDK_CALLBACK_URL']	
-        
+        self.__CALLBACK_URL = os.environ['SDK_CALLBACK_URL']
+
         self.__SERVICES = { 'workspace_service_url' : self.__WS_URL,
                             'shock_service_url'     : self.__SHOCK_URL,
-                            'handle_service_url'    : self.__HS_URL, 
+                            'handle_service_url'    : self.__HS_URL,
                             'callback_url'          : self.__CALLBACK_URL }
         # logging
         self.__LOGGER = logging.getLogger('KBaseRNASeq')
@@ -150,7 +150,7 @@ class KBaseRNASeq:
 
         #END_CONSTRUCTOR
         pass
-    
+
 
     def CreateRNASeqSampleSet(self, ctx, params):
         """
@@ -180,16 +180,17 @@ class KBaseRNASeq:
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN CreateRNASeqSampleSet
-	
+
 	user_token=ctx['token']
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
 	hs = HandleService(url=self.__HS_URL, token=user_token)
 	try:
-            params["sample_ids"] = [ sample_id for item in params['sample_n_conditions'] for sample_id in item['sample_id']]
-            params["condition"]  = [ item['condition'] for item in params['sample_n_conditions'] for sample_id in item['sample_id']]
-            del params['sample_n_conditions']
+            # commented out these lines since these keys are not in params
+            #params["sample_ids"] = [ sample_id for item in params['sample_n_conditions'] for sample_id in item['sample_id']]
+            #params["condition"]  = [ item['condition'] for item in params['sample_n_conditions'] for sample_id in item['sample_id']]
+            #del params['sample_n_conditions']
 	    ### Create the working dir for the method; change it to a function call
-	    out_obj = { k:v for k,v in params.iteritems() if not k in ('ws_id')}  	
+	    out_obj = { k:v for k,v in params.iteritems() if not k in ('ws_id')}
 	    sample_ids = params["sample_ids"]
 	    out_obj['num_samples'] = len(sample_ids)
 	    ## Validation to check if the Set contains more than one samples
@@ -206,15 +207,15 @@ class KBaseRNASeq:
 	    	s_info = script_util.ws_get_obj_info(self.__LOGGER, ws_client, params['ws_id'], i)
                 obj_type = s_info[0][2].split('-')[0]
 		if not (obj_type in lib_type):
-			raise ValueError("Library_type mentioned : {0}. Please add only {1} typed objects in Reads fields".format(params["Library_type"],params["Library_type"])) 
-	
+			raise ValueError("Library_type mentioned : {0}. Please add only {1} typed objects in Reads fields".format(params["Library_type"],params["Library_type"]))
+
    	    ## Code to Update the Provenance; make it a function later
             provenance = [{}]
             if 'provenance' in ctx:
                 provenance = ctx['provenance']
             #add additional info to provenance here, in this case the input data object reference
             provenance[0]['input_ws_objects']=[ script_util.ws_get_ref(self.__LOGGER, ws_client,params['ws_id'],sample) for sample in sample_ids]
-	    
+
 	    #Saving RNASeqSampleSet to Workspace
 	    self.__LOGGER.info("Saving {0} object to workspace".format(params['sampleset_id']))
 	    res= ws_client.save_objects(
@@ -256,7 +257,7 @@ class KBaseRNASeq:
 	hs = HandleService(url=self.__HS_URL, token=user_token)
 	try:
 	    	if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
-                bowtie_dir = os.path.join(self.__SCRATCH ,'tmp') 
+                bowtie_dir = os.path.join(self.__SCRATCH ,'tmp')
 	        handler_util.setupWorkingDir(self.__LOGGER,bowtie_dir)
 		## Update the provenance
 	     	provenance = [{}]
@@ -264,7 +265,7 @@ class KBaseRNASeq:
             		provenance = ctx['provenance']
         	# add additional info to provenance here, in this case the input data object reference
         	provenance[0]['input_ws_objects']=[script_util.ws_get_ref(self.__LOGGER, ws_client, params['ws_id'],params['reference'])]
-		
+
 		try:
 			ref_id, outfile_ref_name = rnaseq_util.get_fa_from_genome(self.__LOGGER,ws_client,self.__SERVICES,params['ws_id'],bowtie_dir,params['reference'])
                 except Exception, e:
@@ -275,14 +276,14 @@ class KBaseRNASeq:
 	    		if outfile_ref_name:
 				bowtie_index_cmd = "{0} {1}".format(outfile_ref_name,params['reference'])
 			else:
-				bowtie_index_cmd = "{0} {1}".format(params['reference'],params['reference']) 
-	    	        self.__LOGGER.info("Executing: bowtie2-build {0}".format(bowtie_index_cmd))  	
+				bowtie_index_cmd = "{0} {1}".format(params['reference'],params['reference'])
+	    	        self.__LOGGER.info("Executing: bowtie2-build {0}".format(bowtie_index_cmd))
 			cmdline_output = script_util.runProgram(self.__LOGGER,"bowtie2-build",bowtie_index_cmd,None,bowtie_dir)
 			if 'result' in cmdline_output:
 				report = cmdline_output['result']
 		except Exception,e:
 			raise KBaseRNASeqException("Error while running BowtieIndex {0},{1}".format(params['reference'],e))
-		
+
 	    ## Zip the Index files
 		try:
 			script_util.zip_files(self.__LOGGER, bowtie_dir,os.path.join(self.__SCRATCH ,"%s.zip" % params['output_obj_name']))
@@ -304,7 +305,7 @@ class KBaseRNASeq:
                         except Exception, e2:
                             self.__LOGGER.exception(e2)
 			    raise KBaseRNASeqException("Failed to upload the Zipped Bowtie2Indexes file: {0}".format(e))
-	    	bowtie2index = { "handle" : bowtie_handle ,"size" : os.path.getsize(out_file_path),'genome_id' : ref_id}   
+	    	bowtie2index = { "handle" : bowtie_handle ,"size" : os.path.getsize(out_file_path),'genome_id' : ref_id}
 
 	     ## Save object to workspace
 	   	self.__LOGGER.info( "Saving bowtie indexes object to  workspace")
@@ -375,15 +376,15 @@ class KBaseRNASeq:
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN Bowtie2Call
-	
+
 	if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
         bowtie2_dir = os.path.join(self.__SCRATCH,"tmp")
-        handler_util.setupWorkingDir(self.__LOGGER,bowtie2_dir) 
+        handler_util.setupWorkingDir(self.__LOGGER,bowtie2_dir)
         common_params = {'ws_client' : Workspace(url=self.__WS_URL, token=ctx['token']),
                          'hs_client' : HandleService(url=self.__HS_URL, token=ctx['token']),
                          'user_token' : ctx['token']
                         }
-        # Set the Number of threads if specified 
+        # Set the Number of threads if specified
 
         if 'num_threads' in params and params['num_threads'] is not None:
             common_params['num_threads'] = params['num_threads']
@@ -432,13 +433,13 @@ class KBaseRNASeq:
         #BEGIN Hisat2Call
 	if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
         hisat2_dir = os.path.join(self.__SCRATCH,"tmp")
-        handler_util.setupWorkingDir(self.__LOGGER,hisat2_dir) 
+        handler_util.setupWorkingDir(self.__LOGGER,hisat2_dir)
 	# Set the common Params
 	common_params = {'ws_client' : Workspace(url=self.__WS_URL, token=ctx['token']),
                          'hs_client' : HandleService(url=self.__HS_URL, token=ctx['token']),
                          'user_token' : ctx['token']
                         }
-	# Set the Number of threads if specified 
+	# Set the Number of threads if specified
 
         if 'num_threads' in params and params['num_threads'] is not None:
             common_params['num_threads'] = params['num_threads']
@@ -487,13 +488,13 @@ class KBaseRNASeq:
         #BEGIN TophatCall
 	if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
         tophat_dir = os.path.join(self.__SCRATCH,"tmp")
-        handler_util.setupWorkingDir(self.__LOGGER,tophat_dir) 
+        handler_util.setupWorkingDir(self.__LOGGER,tophat_dir)
 	# Set the common Params
 	common_params = {'ws_client' : Workspace(url=self.__WS_URL, token=ctx['token']),
                          'hs_client' : HandleService(url=self.__HS_URL, token=ctx['token']),
                          'user_token' : ctx['token']
                         }
-	# Set the Number of threads if specified 
+	# Set the Number of threads if specified
         if 'num_threads' in params and params['num_threads'] is not None:
             common_params['num_threads'] = params['num_threads']
 
@@ -544,13 +545,13 @@ class KBaseRNASeq:
         #BEGIN StringTieCall
 	if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
         stringtie_dir = os.path.join(self.__SCRATCH,"tmp")
-        handler_util.setupWorkingDir(self.__LOGGER,stringtie_dir) 
+        handler_util.setupWorkingDir(self.__LOGGER,stringtie_dir)
 	# Set the common Params
 	common_params = {'ws_client' : Workspace(url=self.__WS_URL, token=ctx['token']),
                          'hs_client' : HandleService(url=self.__HS_URL, token=ctx['token']),
                          'user_token' : ctx['token']
                         }
-	# Set the Number of threads if specified 
+	# Set the Number of threads if specified
         if 'num_threads' in params and params['num_threads'] is not None:
             common_params['num_threads'] = params['num_threads']
 
@@ -559,7 +560,7 @@ class KBaseRNASeq:
 	#obj_info = wsc.get_object_info_new({"objects": [{'name': params['alignmentset_id'], 'workspace': params['ws_id']}]})
         obj_info = script_util.ws_get_obj_info(self.__LOGGER, wsc, params['ws_id'], params['alignmentset_id'])
         obj_type = obj_info[0][2].split('-')[0]
-	if obj_type == 'KBaseRNASeq.RNASeqAlignmentSet':	
+	if obj_type == 'KBaseRNASeq.RNASeqAlignmentSet':
 		self.__LOGGER.info("StringTie AlignmentSet Case")
         	sts = StringTieSampleSet(self.__LOGGER, stringtie_dir, self.__SERVICES, self.__MAX_CORES)
         	returnVal = sts.run(common_params, params)
@@ -753,7 +754,7 @@ class KBaseRNASeq:
             # There used to be a method called
             # createExpressionMatrix, but it's now gone?
             # Not implementing this for now.
-            
+
         # save the report
         # don't do this for now, since adding a report client would
         # be a larger change than we want to merge in one step
@@ -793,7 +794,7 @@ class KBaseRNASeq:
                          'hs_client' : HandleService(url=self.__HS_URL, token=ctx['token']),
                          'user_token' : ctx['token']
                         }
-        # Set the Number of threads if specified 
+        # Set the Number of threads if specified
         if 'num_threads' in params and params['num_threads'] is not None:
             common_params['num_threads'] = params['num_threads']
 
@@ -867,16 +868,16 @@ class KBaseRNASeq:
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN CuffdiffCall
-		
+
 	if not os.path.exists(self.__SCRATCH): os.makedirs(self.__SCRATCH)
         cuffdiff_dir = os.path.join(self.__SCRATCH,"tmp")
-        handler_util.setupWorkingDir(self.__LOGGER,cuffdiff_dir) 
+        handler_util.setupWorkingDir(self.__LOGGER,cuffdiff_dir)
 	# Set the common Params
 	common_params = {'ws_client' : Workspace(url=self.__WS_URL, token=ctx['token']),
                          'hs_client' : HandleService(url=self.__HS_URL, token=ctx['token']),
                          'user_token' : ctx['token']
                         }
-	# Set the Number of threads if specified 
+	# Set the Number of threads if specified
         if 'num_threads' in params and params['num_threads'] is not None:
             common_params['num_threads'] = params['num_threads']
 
@@ -954,7 +955,7 @@ class KBaseRNASeq:
                          'user_token'   : ctx['token']
                          #'rscripts_dir' : self.__RSCRIPTS_DIR         # QUESTION: is this the right place to pass this?
                         }
-        # Set the Number of threads if specified 
+        # Set the Number of threads if specified
         if 'num_threads' in params and params['num_threads'] is not None:
             common_params['num_threads'] = params['num_threads']
 
@@ -977,7 +978,7 @@ class KBaseRNASeq:
 
     def status(self, ctx):
         #BEGIN_STATUS
-        returnVal = {'state': "OK", 'message': "", 'version': self.VERSION, 
+        returnVal = {'state': "OK", 'message': "", 'version': self.VERSION,
                      'git_url': self.GIT_URL, 'git_commit_hash': self.GIT_COMMIT_HASH}
         #END_STATUS
         return [returnVal]

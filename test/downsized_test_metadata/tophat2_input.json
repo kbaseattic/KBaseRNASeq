@@ -1,0 +1,16 @@
+{	
+	"version":"1.1",
+	"method":"KBaseRNASeq.TophatCall",
+	"context": null,
+	"params":[
+	{
+	 "ws_id" : "KBaseRNASeq_test_$user_id",
+	 "sampleset_id" : "downsized_AT_reads" ,
+	 "bowtie_index" : "at_chrom1_section_index",
+	 "read_mismatches" : 2,
+	 "read_gap_length" : 2,
+         "min_intron_length" : 70,
+		"max_intron_length" : 5000000,
+	 "num_threads" : 2,
+	 "no_coverage_search" : 0 } ]
+}

@@ -1,0 +1,13 @@
+{	
+	"version":"1.1",
+	"method":"KBaseRNASeq.CufflinksCall",
+	"context": null,
+	"params":[ 	
+	{
+  	"ws_id": "KBaseRNASeq_test_$user_id",
+	"alignmentset_id" : "downsized_AT_reads_hisat2_AlignmentSet",
+    "min-intron-length" : 50,
+	"max-intron-length" : 300000,
+    "overhang-tolerance" : 8
+	}]	
+}

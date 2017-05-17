@@ -1,0 +1,31 @@
+{
+  "version": "1.1",
+  "method": "KBaseRNASeq.CreateRNASeqSampleSet",
+  "context": null,
+  "params": [
+    {
+      "ws_id": "KBaseRNASeq_test_$user_id",
+      "sampleset_id": "downsized_AT_reads",
+      "sampleset_desc": null,
+      "domain": "Eukaryotes",
+      "platform": "Illumina",
+      "sample_ids": [
+        "extracted_hy5_rep1.fastq",
+        "extracted_hy5_rep2.fastq",
+        "extracted_WT_rep1.fastq",
+        "extracted_WT_rep2.fastq"
+      ],
+      "condition": [
+        "hy5",
+        "hy5",
+        "WT",
+        "WT"
+      ],
+      "source": "NCBI",
+      "Library_type": "SingleEnd",
+      "publication_id": null,
+      "platform": null,
+      "string external_source_date": "not sure"
+    }
+  ]
+}

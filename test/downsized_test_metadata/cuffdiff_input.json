@@ -1,0 +1,19 @@
+{
+  "version": "1.1",
+  "method": "KBaseRNASeq.CuffdiffCall",
+  "context": null,
+  "params": [
+    {
+      "ws_id": "KBaseRNASeq_test_$user_id",
+      "expressionset_id": "downsized_AT_reads_hisat2_AlignmentSet_cufflinks_ExpressionSet",
+      "output_obj_name": "downsized_AT_reads_cuffdiff_output",
+      "labels": null,
+      "num-threads": 2,
+      "min-alignment-count": 10,
+      "time-series": 0,
+      "multi-read-correct": 0,
+      "library-norm-method": "no scaling to FPKM",
+      "library-type": "Standard Illumina"
+    }
+  ]
+}
