@@ -8,13 +8,14 @@
       "sampleset_id": "downsized_AT_reads",
       "sampleset_desc": null,
       "domain": "Eukaryotes",
-      "platform": "Illumina",
-      "sample_ids": [
-        "extracted_hy5_rep1.fastq",
-        "extracted_hy5_rep2.fastq",
-        "extracted_WT_rep1.fastq",
-        "extracted_WT_rep2.fastq"
-      ],
+      "platform": "",
+      "sample_n_conditions": [{
+            "condition": "WT",
+            "sample_id": ["extracted_hy5_rep1.fastq", "extracted_hy5_rep2.fastq"]
+        }, {
+            "condition": "hy5",
+            "sample_id": ["extracted_WT_rep1.fastq", "extracted_WT_rep2.fastq"]
+        }],
       "condition": [
         "hy5",
         "hy5",
