@@ -185,10 +185,9 @@ class KBaseRNASeq:
         ws_client=Workspace(url=self.__WS_URL, token=user_token)
 	hs = HandleService(url=self.__HS_URL, token=user_token)
 	try:
-            # commented out these lines since these keys are not in params
-            #params["sample_ids"] = [ sample_id for item in params['sample_n_conditions'] for sample_id in item['sample_id']]
-            #params["condition"]  = [ item['condition'] for item in params['sample_n_conditions'] for sample_id in item['sample_id']]
-            #del params['sample_n_conditions']
+            params["sample_ids"] = [ sample_id for item in params['sample_n_conditions'] for sample_id in item['sample_id']]
+            params["condition"]  = [ item['condition'] for item in params['sample_n_conditions'] for sample_id in item['sample_id']]
+            del params['sample_n_conditions']
 	    ### Create the working dir for the method; change it to a function call
 	    out_obj = { k:v for k,v in params.iteritems() if not k in ('ws_id')}
 	    sample_ids = params["sample_ids"]
