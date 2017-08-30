@@ -3,7 +3,7 @@
   "authors" : [ ],
   "contact" : "help@kbase.us",
   "visible" : true,
-  "categories" : ["active","expression","sequence"],
+  "categories" : ["inactive"],
   "widgets" : {
     "input" : null,
     "output" : "kbaseRNASeqPieNew"

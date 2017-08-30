@@ -3,7 +3,7 @@
   "authors" : [ ],
   "contact" : "help@kbase.us",
   "visible" : true,
-  "categories" : ["active","expression","assembly"],
+  "categories" : ["inactive"],
   "widgets" : {
     "input" : null,
     "output" : "kbaseExpressionSampleTableNew"
