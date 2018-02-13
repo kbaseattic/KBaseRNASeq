@@ -640,6 +640,8 @@ typedef structure{
         string   workspace;
   }   BallgownResult;
 
-  funcdef DiffExpCallforBallgown( BallgownDifferentialExpParams params )
-     returns ( BallgownResult ) authentication required;
+ /*
+  * funcdef DiffExpCallforBallgown( BallgownDifferentialExpParams params )
+  *    returns ( BallgownResult ) authentication required;
+  */
 };
