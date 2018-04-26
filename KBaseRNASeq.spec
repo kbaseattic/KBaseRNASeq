@@ -138,7 +138,7 @@
 
 /*
   Object to Describe the RNASeq SampleSet
-  @optional platform num_replicates source publication_Id external_source_date sample_ids
+  @optional platform num_replicates source publication_Id external_source_date
   @metadata ws sampleset_id
   @metadata ws sample_ids
   @metadata ws platform
