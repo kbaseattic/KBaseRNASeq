@@ -130,9 +130,15 @@
 
         typedef string ws_bowtieIndex_id;
 
+   /*
+   The workspace id for a single end or paired end reads object
+   @id ws KBaseFile.PairedEndLibrary KBaseAssembly.PairedEndLibrary KBaseFile.SingleEndLibrary KBaseAssembly.SingleEndLibrary
+   */
+   typedef string ws_reads_id;
+
 /*
   Object to Describe the RNASeq SampleSet
-  @optional platform num_replicates source publication_Id external_source_date sample_ids
+  @optional platform num_replicates source publication_Id external_source_date
   @metadata ws sampleset_id
   @metadata ws platform
   @metadata ws num_samples
@@ -147,7 +153,7 @@
         string platform;
         int num_samples;
         int num_replicates;
-        list<string> sample_ids;
+        list<ws_reads_id> sample_ids;
         list<string> condition;
         string source;
         string Library_type;
