@@ -1,30 +1,5 @@
-FROM kbase/kbase:sdkbase.latest
+FROM kbase/kbase:sdkbase2.latest
 MAINTAINER KBase Developer
-# Install the SDK (should go away eventually)
-RUN pip install --upgrade virtualenv
-RUN \
-  . /kb/dev_container/user-env.sh && \
-  cd /kb/dev_container/modules && \
-  rm -rf handle_service && \
-  git clone https://github.com/kbase/handle_service && \
-  cd /kb/dev_container/modules/handle_service && \
-  make && make deploy && \
-  cd /kb/dev_container/modules && \
-  rm -rf transform && \
-  git clone https://github.com/kbase/transform && \
-  rm -rf workspace_deluxe && \
-  git clone https://github.com/kbase/workspace_deluxe && \
-  cd /kb/dev_container/modules/workspace_deluxe && \
-  cp -rv lib/* /kb/deployment/lib/
-
-RUN \
-  . /kb/dev_container/user-env.sh && \
-  cd /kb/dev_container/modules && \
-  rm -rf data_api && \
-  git clone https://github.com/kbase/data_api -b 0.3.0-dev && \
-  pip install --upgrade /kb/dev_container/modules/data_api
-####END OF KBASE #############################
-#apt-get update && apt-get install -y ant && \
 # -----------------------------------------
 # Insert apt-get instructions here to install
 # any required dependencies for your module.

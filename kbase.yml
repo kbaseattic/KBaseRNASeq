@@ -2,7 +2,7 @@ module-name:
     KBaseRNASeq
 
 module-version:
-    1.0.4
+    1.0.5
 
 module-description:
     KBase module for the RNASeq service
