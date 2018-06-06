@@ -136,9 +136,15 @@
    */
    typedef string ws_reads_id;
 
+  /*
+   The workspace id for a ConditionSet object
+   @id ws KBaseExperiments.ConditionSet
+   */
+   typedef string conditionset_ref;
+
 /*
   Object to Describe the RNASeq SampleSet
-  @optional platform num_replicates source publication_Id external_source_date
+  @optional platform num_replicates source publication_Id external_source_date conditionset_ref
   @metadata ws sampleset_id
   @metadata ws platform
   @metadata ws num_samples
@@ -154,6 +160,7 @@
         int num_samples;
         int num_replicates;
         list<ws_reads_id> sample_ids;
+        conditionset_ref conditionset_ref;
         list<string> condition;
         string source;
         string Library_type;
